@@ -9,7 +9,7 @@
 
 import http from "node:http";
 import { randomBytes, createHash } from "node:crypto";
-import { spawn } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs/promises";
 import {
   CLIENT_ID,
@@ -53,13 +53,44 @@ function buildAuthorizeUrl(challenge, state) {
   return url.toString();
 }
 
-function openBrowser(url) {
-  const cmd = process.platform === "darwin" ? "open" : process.platform === "win32" ? "start" : "xdg-open";
-  try {
-    spawn(cmd, [url], { stdio: "ignore", detached: true, shell: process.platform === "win32" }).unref();
-  } catch {
-    /* user opens it manually */
+// Copy text to the OS clipboard (best effort) so the URL can be pasted if auto-open fails.
+function copyToClipboard(text) {
+  const tools =
+    process.platform === "darwin"
+      ? [["pbcopy", []]]
+      : process.platform === "win32"
+        ? [["clip", []]]
+        : [["wl-copy", []], ["xclip", ["-selection", "clipboard"]], ["xsel", ["--clipboard", "--input"]]];
+  for (const [cmd, args] of tools) {
+    try {
+      const r = spawnSync(cmd, args, { input: text });
+      if (!r.error && r.status === 0) return true;
+    } catch {
+      /* try next tool */
+    }
   }
+  return false;
+}
+
+// Open a URL in the default browser. Uses spawnSync so we get a real exit status
+// (the detached spawn().unref() pattern silently fails to launch on macOS). The
+// launchers all return immediately after handing off to the OS.
+function openBrowser(url) {
+  const launchers =
+    process.platform === "darwin"
+      ? [["open", [url]]]
+      : process.platform === "win32"
+        ? [["cmd", ["/c", "start", "", url]]]
+        : [["xdg-open", [url]], ["gio", ["open", url]], ["sensible-browser", [url]], ["x-www-browser", [url]]];
+  for (const [cmd, args] of launchers) {
+    try {
+      const r = spawnSync(cmd, args, { stdio: "ignore" });
+      if (!r.error && (r.status === 0 || r.status === null)) return true;
+    } catch {
+      /* try next launcher */
+    }
+  }
+  return false;
 }
 
 async function exchangeCode(code, verifier) {
@@ -112,12 +143,31 @@ async function login() {
       if (returnedState !== state) return reject(new Error("state mismatch (possible CSRF) — aborting"));
       resolve(code);
     });
-    server.on("error", reject);
+    server.on("error", (e) => {
+      if (e.code === "EADDRINUSE") {
+        reject(
+          new Error(
+            `port ${CALLBACK_PORT} is already in use — another login is probably still running. ` +
+              "Close it (e.g. `pkill -f login.js`), then run `npm run login` again.",
+          ),
+        );
+      } else {
+        reject(e);
+      }
+    });
     server.listen(CALLBACK_PORT, "127.0.0.1", () => {
-      console.log("\n  Sign in with your ChatGPT account in the browser window that just opened.");
-      console.log("  If it didn't open, paste this URL manually:\n");
-      console.log("  " + authorizeUrl + "\n");
-      openBrowser(authorizeUrl);
+      const opened = openBrowser(authorizeUrl);
+      const copied = copyToClipboard(authorizeUrl);
+      console.log("");
+      console.log(
+        opened
+          ? "  ➜  Opening the ChatGPT sign-in page in your browser..."
+          : "  ⚠  Couldn't open your browser automatically.",
+      );
+      console.log("  If it doesn't appear, open this URL manually" + (copied ? " (copied to your clipboard)" : "") + ":");
+      console.log("");
+      console.log("    " + authorizeUrl);
+      console.log("");
     });
   });
 
