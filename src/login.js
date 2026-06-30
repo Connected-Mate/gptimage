@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Interactive "Sign in with ChatGPT" — OAuth + PKCE, same flow as the Codex CLI.
 // Opens your browser, you log in with your own ChatGPT account, and the resulting
-// subscription token is stored at ~/.cc-gpt-image/auth.json.
+// subscription token is stored at ~/.gptimage/auth.json.
 //
 //   node src/login.js            log in
 //   node src/login.js --status   show current auth
@@ -118,7 +118,7 @@ const SUCCESS_HTML = `<!doctype html><html><head><meta charset="utf-8"><title>Si
 .card{text-align:center}.check{width:56px;height:56px;border-radius:50%;background:#16a34a;display:grid;place-items:center;margin:0 auto 20px}
 .check svg{width:30px;height:30px;stroke:#fff;stroke-width:3;fill:none}h1{font-size:20px;margin:0 0 8px}p{color:#a1a1aa;margin:0}</style></head>
 <body><div class="card"><div class="check"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
-<h1>Signed in to cc-gpt-image</h1><p>You can close this tab and return to your terminal.</p></div></body></html>`;
+<h1>Signed in to gptimage</h1><p>You can close this tab and return to your terminal.</p></div></body></html>`;
 
 async function login() {
   const { verifier, challenge } = makePkce();
@@ -181,7 +181,40 @@ async function login() {
   };
   await writeOurStore(record);
   const plan = planFromToken(access);
-  console.log(`  ✓ Signed in${plan ? ` (plan: ${plan})` : ""}. Credentials saved to ${OUR_STORE}`);
+  printSuccess(plan);
+}
+
+// Best-effort check that the MCP tool is registered with Claude Code.
+function mcpIsRegistered() {
+  try {
+    const r = spawnSync("claude", ["mcp", "get", "gptimage"], { stdio: "ignore" });
+    return !r.error && r.status === 0;
+  } catch {
+    return false;
+  }
+}
+
+function printSuccess(plan) {
+  const registered = mcpIsRegistered();
+  console.log("");
+  console.log("  ────────────────────────────────────────────────────────");
+  console.log(`  ✅  Signed in to GPTImage${plan ? `   ·   plan: ${plan}` : ""}`);
+  console.log("  ────────────────────────────────────────────────────────");
+  console.log("");
+  console.log("  Setup complete — you only do this once.");
+  console.log("  Image generation is now available in EVERY Claude Code");
+  console.log("  project on this machine.");
+  console.log("");
+  if (!registered) {
+    console.log("  ⚠  One step left — register the tool:   ./install.sh");
+    console.log("");
+  }
+  console.log("  ▶  Open Claude Code in any project (restart it if it was");
+  console.log("     already open), then just ask, e.g.:");
+  console.log("");
+  console.log('       "Generate a watercolor red fox, save it to fox.png,');
+  console.log('        using the gptimage image tool."');
+  console.log("");
 }
 
 async function status() {
@@ -204,7 +237,7 @@ async function logout() {
     await fs.unlink(OUR_STORE);
     console.log(`Removed ${OUR_STORE}.`);
   } catch {
-    console.log("No cc-gpt-image credentials to remove.");
+    console.log("No gptimage credentials to remove.");
   }
   console.log("(Codex CLI credentials at ~/.codex/auth.json were left untouched.)");
 }

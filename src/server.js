@@ -13,9 +13,9 @@ import { readReferenceImages, savePng } from "./images.js";
 
 // Claude Code does not pass a working directory to MCP tools, so resolve relative
 // output/reference paths against the project root it launched us in.
-const PROJECT_DIR = process.env.CC_GPT_IMAGE_PROJECT_DIR || process.cwd();
+const PROJECT_DIR = process.env.GPTIMAGE_PROJECT_DIR || process.cwd();
 
-const server = new McpServer({ name: "cc-gpt-image", version: "0.1.0" });
+const server = new McpServer({ name: "gptimage", version: "0.1.0" });
 
 server.tool(
   "generate_image",
@@ -55,7 +55,7 @@ server.tool(
 
 server.tool(
   "image_auth_status",
-  "Check whether cc-gpt-image is authenticated with a ChatGPT account, and via which store. Call this if generation fails with an auth error.",
+  "Check whether gptimage is authenticated with a ChatGPT account, and via which store. Call this if generation fails with an auth error.",
   {},
   async () => {
     const record = await loadAuth();
@@ -64,7 +64,7 @@ server.tool(
         content: [
           {
             type: "text",
-            text: "Not authenticated. The user must run `npm run login` in the cc-gpt-image directory (sign in with their ChatGPT account), or have the Codex CLI logged in (`codex login`).",
+            text: "Not authenticated. The user must run `npm run login` in the gptimage directory (sign in with their ChatGPT account), or have the Codex CLI logged in (`codex login`).",
           },
         ],
       };
@@ -83,4 +83,4 @@ server.tool(
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
-console.error("cc-gpt-image MCP server running (stdio).");
+console.error("gptimage MCP server running (stdio).");

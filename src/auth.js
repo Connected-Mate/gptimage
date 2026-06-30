@@ -1,12 +1,12 @@
-// Authentication for cc-gpt-image.
+// Authentication for gptimage.
 //
 // We authenticate against ChatGPT the same way the official Codex CLI does:
 // an OAuth + PKCE flow against auth.openai.com that mints a token tied to the
 // user's ChatGPT subscription (NOT an API key — usage is billed to the plan).
 //
 // Token resolution order:
-//   1. CC_GPT_IMAGE_ACCESS_TOKEN env var (escape hatch / CI)
-//   2. our own store:   ~/.cc-gpt-image/auth.json   (written by `login.js`)
+//   1. GPTIMAGE_ACCESS_TOKEN env var (escape hatch / CI)
+//   2. our own store:   ~/.gptimage/auth.json   (written by `login.js`)
 //   3. codex fallback:  ~/.codex/auth.json          (if you already ran codex login)
 //
 // When an access token is expired we refresh it in place, writing the rotated
@@ -25,7 +25,7 @@ export const SCOPE = "openid profile email offline_access";
 const JWT_CLAIM_PATH = "https://api.openai.com/auth";
 const EXPIRY_MARGIN_MS = 60_000;
 
-export const OUR_STORE = path.join(os.homedir(), ".cc-gpt-image", "auth.json");
+export const OUR_STORE = path.join(os.homedir(), ".gptimage", "auth.json");
 export const CODEX_STORE = path.join(os.homedir(), ".codex", "auth.json");
 
 // ---------------------------------------------------------------------------
@@ -135,12 +135,12 @@ async function writeBack(record) {
 
 // Read the first available credentials without refreshing.
 export async function loadAuth() {
-  if (process.env.CC_GPT_IMAGE_ACCESS_TOKEN) {
-    const access = process.env.CC_GPT_IMAGE_ACCESS_TOKEN;
+  if (process.env.GPTIMAGE_ACCESS_TOKEN) {
+    const access = process.env.GPTIMAGE_ACCESS_TOKEN;
     return {
       access,
       refresh: null,
-      accountId: process.env.CC_GPT_IMAGE_ACCOUNT_ID ?? accountIdFromToken(access) ?? null,
+      accountId: process.env.GPTIMAGE_ACCOUNT_ID ?? accountIdFromToken(access) ?? null,
       expires: expiryFromToken(access),
       store: "env",
       format: "env",

@@ -1,56 +1,67 @@
-# cc-gpt-image
+<div align="center">
 
-**Give Claude Code (and other agents) the ability to generate images using your ChatGPT subscription — no API key.**
+<img src="assets/mascot.png" width="220" alt="GPTImage mascot" />
 
-It signs in with your ChatGPT account via the same OAuth flow the official Codex CLI uses, then calls the subscription image model (`gpt-image` via the Codex backend). Generation is **billed to your ChatGPT plan**, not to a pay-per-image API key.
+# GPTImage
 
-> ⚠️ **Grey area, by design.** "Sign in with ChatGPT" is officially meant for Codex. Reusing that token to generate images works and is widely done, but it is *not* an officially sanctioned API. Keep usage personal/local. Heavy use can trigger plan rate-limits (429) or, worst case, account restrictions. You accept that risk by using this.
+**Image generation for Claude Code — powered by GPT Image 2, through your ChatGPT subscription.**
+
+No API key. No per-image bill. You sign in with your ChatGPT account once, and Claude Code can generate & edit images in any project.
+
+</div>
 
 ---
+
+> ⚠️ **Grey area, by design.** "Sign in with ChatGPT" is officially meant for Codex. GPTImage reuses that token to reach **GPT Image 2** (ChatGPT Images 2.0). It works and is widely done, but it is *not* an officially sanctioned API. Keep usage personal/local. Heavy use can trigger plan rate-limits (429) or, worst case, account restrictions. You accept that risk by using this.
 
 ## What you get
 
 - A **local MCP server** Claude Code talks to (`generate_image`, `image_auth_status`).
-- A **Claude Code skill** (`/gpt-image`) that teaches the agent when and how to use it.
+- A **Claude Code skill** (`/gptimage`) that teaches the agent when and how to use it.
 - A **CLI** for login and one-shot generation.
-- No API key. No password ever handled by the tool — you log in yourself in the browser.
+- **No API key.** No password ever handled by the tool — you log in yourself in the browser.
 
 ## Requirements
 
 - Node.js ≥ 20 (tested on v22)
 - A ChatGPT account with an active plan (Plus / Pro / etc.)
 
-## Install
+## Install — one flow
 
 ```bash
-cd cc-gpt-image
+git clone https://github.com/Connected-Mate/gptimage.git
+cd gptimage
 npm install
-./install.sh        # registers the MCP server + skill with Claude Code
+./install.sh
 ```
 
-## Authenticate
+`./install.sh` registers the tool **globally** with Claude Code, then opens your
+browser to **sign in with ChatGPT**. When you see the success screen, you're done.
 
-Either sign in directly:
+> Because the tool is registered at the user level, it works in **every** Claude Code
+> project on your machine — you only set it up once. (Restart Claude Code if it was
+> already open, so it picks up the new tool.)
+
+Check it any time:
 
 ```bash
-npm run login       # opens your browser → sign in with ChatGPT
-npm run status      # show current auth (plan, account, expiry)
-npm run logout      # remove stored credentials
+npm run status     # show plan, account, token expiry
+npm run logout     # remove stored credentials
+npm run login      # sign in again
 ```
 
-…or, if you already use the Codex CLI (`codex login`), do nothing — the server
-automatically falls back to `~/.codex/auth.json`.
+## Use it in Claude Code
 
-Credentials are stored at `~/.cc-gpt-image/auth.json` (mode 0600). Tokens are
-refreshed automatically when they expire.
+Open Claude Code in any project and just ask:
 
-## Use it
+```
+Generate a watercolor red fox in snow and save it to fox.png using the gptimage tool.
+```
 
-### In Claude Code
-Just ask: *"generate a logo of a fox, save it to assets/fox.png"*. The `/gpt-image`
-skill triggers and the agent calls the `generate_image` MCP tool.
+Claude Code calls `generate_image` and saves the PNG.
 
-### From the CLI
+### Or from the terminal
+
 ```bash
 npm run gen -- --prompt "a red fox in snow, watercolor" --out fox.png --size 1024x1024
 npm run gen -- -p "apply Image 1's style to Image 2" -o out.png --ref style.png --ref subject.png
@@ -63,14 +74,14 @@ your prompt
    │
    ▼
 generate_image (MCP tool)
-   │   reads token from ~/.cc-gpt-image/auth.json  (or ~/.codex/auth.json)
+   │   reads your ChatGPT token from ~/.gptimage/auth.json  (or ~/.codex/auth.json)
    │   refreshes via auth.openai.com/oauth/token if expired
    ▼
 POST https://chatgpt.com/backend-api/codex/responses
-   model: gpt-5.5, tools:[{ type: image_generation }], tool_choice forced
+   model: gpt-5.5, tools:[{ type: image_generation }]  ← GPT Image 2
    headers: Authorization: Bearer <subscription token>, chatgpt-account-id
    ▼
-SSE stream → item.type "image_generation_call" → base64 PNG
+SSE stream → "image_generation_call" → base64 PNG
    ▼
 saved to disk (auto-versioned, never overwrites)
 ```
@@ -88,10 +99,10 @@ saved to disk (auto-versioned, never overwrites)
 
 | Var | Purpose |
 |-----|---------|
-| `CC_GPT_IMAGE_MODEL` | Override the subscription model slug (default `gpt-5.5`) if OpenAI rotates it |
-| `CC_GPT_IMAGE_ORIGINATOR` | Client identifier sent to the backend (default `codex_cli_rs`) |
-| `CC_GPT_IMAGE_PROJECT_DIR` | Base dir for relative paths (MCP server) |
-| `CC_GPT_IMAGE_ACCESS_TOKEN` | Provide a token directly (CI / escape hatch) |
+| `GPTIMAGE_MODEL` | Override the subscription model slug (default `gpt-5.5`) if OpenAI rotates it |
+| `GPTIMAGE_ORIGINATOR` | Client identifier sent to the backend (default `codex_cli_rs`) |
+| `GPTIMAGE_PROJECT_DIR` | Base dir for relative paths (MCP server) |
+| `GPTIMAGE_ACCESS_TOKEN` | Provide a token directly (CI / escape hatch) |
 
 ## Roadmap
 

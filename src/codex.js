@@ -11,11 +11,11 @@
 const CODEX_RESPONSES_ENDPOINT = "https://chatgpt.com/backend-api/codex/responses";
 
 // Codex model slug that carries the hosted image_generation tool. Override with
-// CC_GPT_IMAGE_MODEL if OpenAI rotates the subscription model name.
-const DEFAULT_MODEL = process.env.CC_GPT_IMAGE_MODEL || "gpt-5.5";
+// GPTIMAGE_MODEL if OpenAI rotates the subscription model name.
+const DEFAULT_MODEL = process.env.GPTIMAGE_MODEL || "gpt-5.5";
 
 // Client identifier sent to the backend. Matches the official Codex CLI.
-const ORIGINATOR = process.env.CC_GPT_IMAGE_ORIGINATOR || "codex_cli_rs";
+const ORIGINATOR = process.env.GPTIMAGE_ORIGINATOR || "codex_cli_rs";
 
 const INSTRUCTIONS =
   "You are an image generation assistant running inside the Codex backend. " +

@@ -1,15 +1,16 @@
 {
-  "name": "cc-gpt-image",
+  "name": "gptimage",
   "version": "0.1.0",
-  "description": "Give Claude Code (and other agents) the ability to generate & edit images using a ChatGPT subscription — no API key, billed to your ChatGPT plan via Codex OAuth.",
+  "description": "Image generation for Claude Code, powered by GPT Image 2 through your ChatGPT subscription — no API key. MCP server + skill + CLI.",
   "type": "module",
   "private": true,
   "bin": {
-    "cc-gpt-image-login": "src/login.js",
-    "cc-gpt-image-server": "src/server.js",
-    "cc-gpt-image-gen": "src/gen.js"
+    "gptimage-login": "src/login.js",
+    "gptimage-server": "src/server.js",
+    "gptimage-gen": "src/gen.js"
   },
   "scripts": {
+    "setup": "bash install.sh",
     "login": "node src/login.js",
     "logout": "node src/login.js --logout",
     "status": "node src/login.js --status",

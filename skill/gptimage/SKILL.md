@@ -1,15 +1,15 @@
 ---
-name: gpt-image
-description: Generate and edit raster images (PNG) from text prompts using the user's ChatGPT subscription — no API key, billed to their ChatGPT plan. Use whenever the user asks to create, generate, draw, make, design, or illustrate an image, picture, logo, icon, illustration, texture, sprite, mockup, background, photo, or visual asset; or to edit/restyle/combine images using reference images. Powered by the cc-gpt-image MCP server.
+name: gptimage
+description: Generate and edit raster images (PNG) from text prompts using the user's ChatGPT subscription — no API key, billed to their ChatGPT plan. Use whenever the user asks to create, generate, draw, make, design, or illustrate an image, picture, logo, icon, illustration, texture, sprite, mockup, background, photo, or visual asset; or to edit/restyle/combine images using reference images. Powered by the gptimage MCP server.
 ---
 
-# gpt-image — image generation via ChatGPT subscription
+# gptimage — image generation via ChatGPT subscription
 
-This skill lets you create images using the **cc-gpt-image** MCP server, which calls
+This skill lets you create images using the **gptimage** MCP server, which calls
 the ChatGPT subscription image model through the Codex OAuth backend. No API key is
 involved — generation is billed to the user's ChatGPT plan.
 
-## Tools (MCP server `cc-gpt-image`)
+## Tools (MCP server `gptimage`)
 
 - **`generate_image`** — create one PNG from a prompt.
   - `prompt` (required): detailed description. Be specific: subject, style, colors, composition, lighting, mood.
@@ -29,7 +29,7 @@ involved — generation is billed to the user's ChatGPT plan.
 
 ## If not authenticated
 
-If `image_auth_status` reports "not authenticated" or a call returns a 401, tell the user to run, in the `cc-gpt-image` project directory:
+If `image_auth_status` reports "not authenticated" or a call returns a 401, tell the user to run, in the `gptimage` project directory:
 
 ```
 npm run login
