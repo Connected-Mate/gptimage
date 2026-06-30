@@ -1,0 +1,26 @@
+{
+  "name": "cc-gpt-image",
+  "version": "0.1.0",
+  "description": "Give Claude Code (and other agents) the ability to generate & edit images using a ChatGPT subscription — no API key, billed to your ChatGPT plan via Codex OAuth.",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "cc-gpt-image-login": "src/login.js",
+    "cc-gpt-image-server": "src/server.js",
+    "cc-gpt-image-gen": "src/gen.js"
+  },
+  "scripts": {
+    "login": "node src/login.js",
+    "logout": "node src/login.js --logout",
+    "status": "node src/login.js --status",
+    "server": "node src/server.js",
+    "gen": "node src/gen.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "zod": "^3.23.8"
+  }
+}
