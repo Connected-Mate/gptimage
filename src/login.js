@@ -24,6 +24,7 @@ import {
   planFromToken,
   writeOurStore,
 } from "./auth.js";
+import { printBanner } from "./banner.js";
 
 const CALLBACK_PORT = 1455;
 const CALLBACK_PATH = "/auth/callback";
@@ -121,6 +122,7 @@ const SUCCESS_HTML = `<!doctype html><html><head><meta charset="utf-8"><title>Si
 <h1>Signed in to gptimage</h1><p>You can close this tab and return to your terminal.</p></div></body></html>`;
 
 async function login() {
+  if (!process.env.GPTIMAGE_NO_BANNER) printBanner();
   const { verifier, challenge } = makePkce();
   const state = randomBytes(16).toString("hex");
   const authorizeUrl = buildAuthorizeUrl(challenge, state);

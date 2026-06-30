@@ -6,6 +6,9 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_SRC="$DIR/skill/gptimage"
 SKILL_DST="$HOME/.claude/skills/gptimage"
 
+# Pixel-art welcome — the first thing you see when you run it.
+[ -f "$DIR/src/banner.txt" ] && cat "$DIR/src/banner.txt"
+
 echo "==> Installing npm dependencies"
 ( cd "$DIR" && npm install --silent )
 
@@ -32,4 +35,4 @@ if [ "${1:-}" = "--no-login" ]; then
 fi
 
 echo "==> Last step: sign in with your ChatGPT account"
-node "$DIR/src/login.js"
+GPTIMAGE_NO_BANNER=1 node "$DIR/src/login.js"
