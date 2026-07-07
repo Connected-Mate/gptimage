@@ -22,7 +22,8 @@ server.tool(
   [
     "Generate a raster image (PNG) from a text prompt using the ChatGPT subscription image model.",
     "Use for AI-created bitmap visuals: photos, illustrations, textures, sprites, icons, mockups, backgrounds.",
-    "Optionally pass reference images (paths) to guide style/subject/composition — describe each one's role in the prompt, e.g. 'Image 1 is the character, Image 2 is the background style'.",
+    "The model is far better at TRANSFORMING reference images than creating from scratch: before the first generation, ask the user for reference images (or offer to source some from the web, e.g. Pinterest/Dribbble), store them in a references/ folder at the project root, and pass their paths in reference_images. Describe each one's role in the prompt, e.g. 'Image 1 is the character, Image 2 is the background style'. Generate from scratch only when no reference can be obtained.",
+    "When iterating, ask the user for feedback screenshots, save them into references/, and pass them plus the previous output as reference_images.",
     "Generates ONE image per call. For multiple distinct assets, call once per asset.",
     "Returns the absolute path of the saved PNG. Billed to the user's ChatGPT plan, not an API key.",
   ].join(" "),
@@ -31,7 +32,7 @@ server.tool(
     out: z.string().describe("Output file path (relative to the project directory unless absolute). A .png is written; an existing file is auto-versioned, never overwritten."),
     quality: z.enum(["low", "medium", "high", "auto"]).optional().describe("Generation quality. Default: high."),
     size: z.string().optional().describe("'auto' or WIDTHxHEIGHT (e.g. 1024x1024, 1536x1024, 1024x1536). Multiples of 16, max edge 3840, ratio <= 3:1."),
-    reference_images: z.array(z.string()).optional().describe("Optional reference image paths (relative to project dir unless absolute) used to guide generation."),
+    reference_images: z.array(z.string()).optional().describe("Reference image paths (relative to project dir unless absolute) used to guide generation. Strongly recommended — transforming references beats generating from scratch. Convention: keep them in references/ at the project root."),
   },
   async ({ prompt, out, quality, size, reference_images }) => {
     try {

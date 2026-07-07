@@ -60,6 +60,16 @@ Generate a watercolor red fox in snow and save it to fox.png using the gptimage 
 
 Claude Code calls `generate_image` and saves the PNG.
 
+### Work reference-first (recommended)
+
+GPT Image 2 is much stronger at **transforming existing images** than creating from scratch. The skill teaches Claude Code to:
+
+1. **Ask you for reference images** before the first generation (style samples, brand assets, screenshots, sketches) and store them in a `references/` folder at your project root.
+2. **Source references for you** if you have none — browsing Pinterest, Dribbble, or sites relevant to your project — and asking for your approval before generating.
+3. **Iterate with your feedback**: drop screenshots of the result in context (or annotated captures of what's wrong); they go into `references/` and feed the next generation.
+
+The `references/` folder becomes your project's visual memory — the more it grows, the better the results.
+
 ### Or from the terminal
 
 ```bash
