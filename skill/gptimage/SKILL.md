@@ -17,11 +17,12 @@ involved — generation is billed to the user's ChatGPT plan.
   - `quality`: `low` | `medium` | `high` | `auto` (default `high`).
   - `size`: `auto` or `WIDTHxHEIGHT` (e.g. `1024x1024`, `1536x1024`, `1024x1536`). Multiples of 16, max edge 3840, ratio ≤ 3:1.
   - `reference_images`: array of image paths to guide style/subject/composition.
+- **`list_references`** — list image files in the project's `references/` folder (auto-created on demand). Call this before generating to discover existing references you can pass to `generate_image`.
 - **`image_auth_status`** — check whether the user is signed in. Call this first if a generation fails with an auth error.
 
 ## Reference-first workflow (do this before generating)
 
-**GPT Image 2 is far better at transforming existing images than creating from scratch.** A generation guided by 1–3 reference images beats a text-only prompt almost every time. So before the first `generate_image` call in a project:
+**GPT Image 2 is far better at transforming existing images than creating from scratch.** A generation guided by 1–3 reference images beats a text-only prompt almost every time. Call `list_references` first to see what's already available in `references/`. Then, before the first `generate_image` call in a project:
 
 1. **Ask the user for reference images.** Style samples, brand assets, competitor screenshots, sketches, mood-board pieces — anything visual that shows what "good" looks like for them.
 2. **Store references in a `references/` folder** at the project root. Copy any images the user provides (or that you download) into `references/`, with descriptive names (e.g. `references/brand-palette.png`, `references/hero-style.jpg`). This folder is the project's growing visual memory — reuse it across sessions.

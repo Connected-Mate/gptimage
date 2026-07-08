@@ -9,7 +9,7 @@ import { z } from "zod";
 
 import { getValidCredentials, loadAuth, planFromToken } from "./auth.js";
 import { generateImage } from "./codex.js";
-import { readReferenceImages, savePng } from "./images.js";
+import { ensureReferencesDir, listReferences, readReferenceImages, savePng } from "./images.js";
 
 // Claude Code does not pass a working directory to MCP tools, so resolve relative
 // output/reference paths against the project root it launched us in.
@@ -37,19 +37,68 @@ server.tool(
   async ({ prompt, out, quality, size, reference_images }) => {
     try {
       const creds = await getValidCredentials();
+      await ensureReferencesDir(PROJECT_DIR);
+      const existingRefs = await listReferences(PROJECT_DIR);
+      const usedRefsCount = (reference_images ?? []).length;
       const referenceDataUrls = await readReferenceImages(reference_images, PROJECT_DIR);
       const base64 = await generateImage(creds, { prompt, quality: quality || "high", size, referenceDataUrls });
       const { savedPath, versioned } = await savePng(out, PROJECT_DIR, base64);
+      const notes = [];
+      if (versioned) notes.push("the requested path existed, so this was versioned");
+      if (usedRefsCount === 0 && existingRefs.length > 0) {
+        notes.push(
+          `no reference_images were passed, but references/ contains ${existingRefs.length} image(s) (${existingRefs
+            .slice(0, 5)
+            .join(", ")}${existingRefs.length > 5 ? ", ..." : ""}) — GPT Image 2 works better transforming references than generating from scratch; consider re-running with reference_images set`,
+        );
+      } else if (usedRefsCount === 0 && existingRefs.length === 0) {
+        notes.push(
+          "no reference_images passed and references/ is empty — for best results, ask the user for reference images (or offer to source some from Pinterest/Dribbble) and drop them into references/ before iterating",
+        );
+      }
+      const suffix = notes.length ? ` (${notes.join("; ")})` : "";
       return {
         content: [
           {
             type: "text",
-            text: `Image saved to ${savedPath}${versioned ? " (the requested path existed, so this was versioned)" : ""}.`,
+            text: `Image saved to ${savedPath}${suffix}.`,
           },
         ],
       };
     } catch (err) {
       return { isError: true, content: [{ type: "text", text: `Image generation failed: ${err?.message || err}` }] };
+    }
+  },
+);
+
+server.tool(
+  "list_references",
+  "List image files in the project's references/ folder (created on demand). Use before generate_image to discover existing references that can guide the next generation. Reference-driven transforms beat text-only prompts.",
+  {},
+  async () => {
+    try {
+      await ensureReferencesDir(PROJECT_DIR);
+      const refs = await listReferences(PROJECT_DIR);
+      if (refs.length === 0) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: "references/ is empty. Ask the user for reference images (style samples, brand assets, screenshots, sketches) or offer to source some (Pinterest/Dribbble/Behance) and save them into references/ before generating.",
+            },
+          ],
+        };
+      }
+      return {
+        content: [
+          {
+            type: "text",
+            text: `references/ contains ${refs.length} image(s):\n${refs.map((r) => `- ${r}`).join("\n")}\n\nPass the relevant ones as reference_images and describe each one's role in the prompt.`,
+          },
+        ],
+      };
+    } catch (err) {
+      return { isError: true, content: [{ type: "text", text: `list_references failed: ${err?.message || err}` }] };
     }
   },
 );
