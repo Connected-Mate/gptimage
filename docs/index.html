@@ -7,276 +7,433 @@
 <meta name="description" content="You already pay for ChatGPT. GPTImage lets Claude Code generate and edit images through that subscription — no API key, no per-image bill." />
 <link rel="icon" type="image/png" href="assets/favicon.png" />
 <meta property="og:title" content="GPTImage" />
-<meta property="og:description" content="You already pay for ChatGPT. Let your coding agent use it to make images. No API key, no per-image bill." />
+<meta property="og:description" content="You already pay for ChatGPT. Let your coding agent make images with it. No API key, no per-image bill." />
 <meta property="og:image" content="assets/mascot.png" />
 <style>
   :root {
-    --bg: #f4faf6;
-    --panel: #ffffff;
-    --ink: #16211c;
-    --muted: #5c6d65;
-    --line: #d9e8df;
-    --accent: #6f4fd0;
-    --accent-soft: #efeaff;
-    --mint: #1e9e77;
-    --mint-soft: #e3f7ee;
-    --warn-bg: #fff6e6;
-    --warn-line: #f0d9a8;
-    --warn-ink: #7a5a12;
-    --code-bg: #14201b;
-    --code-ink: #e6f4ec;
-    --code-dim: #7fa694;
+    --bg: #ffffff;
+    --ink: #0d0d0d;
+    --ink-2: #5d5d5d;
+    --ink-3: #8f8f8f;
+    --bubble: #f4f4f4;
+    --line: #e3e3e3;
+    --line-2: #ececec;
+    --hover: #f7f7f7;
+    --quote: #d9d9d9;
+    --btn: #0d0d0d;
+    --btn-ink: #ffffff;
+    --code-bg: #0d0d0d;
+    --code-head: #2f2f2f;
+    --code-ink: #f1f1f1;
+    --code-dim: #9b9b9b;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #0e1512;
-      --panel: #141d19;
-      --ink: #e9f2ed;
-      --muted: #9bb0a6;
-      --line: #23322b;
-      --accent: #b7a2ff;
-      --accent-soft: #1e1b33;
-      --mint: #6edcb0;
-      --mint-soft: #12261f;
-      --warn-bg: #241d0f;
-      --warn-line: #4a3c1c;
-      --warn-ink: #e6cd93;
-      --code-bg: #0a110e;
-      --code-ink: #e6f4ec;
-      --code-dim: #6f9384;
+      --bg: #212121;
+      --ink: #ececec;
+      --ink-2: #afafaf;
+      --ink-3: #8f8f8f;
+      --bubble: #303030;
+      --line: #3a3a3a;
+      --line-2: #333333;
+      --hover: #2b2b2b;
+      --quote: #4d4d4d;
+      --btn: #ffffff;
+      --btn-ink: #0d0d0d;
+      --code-bg: #0d0d0d;
+      --code-head: #2f2f2f;
+      --code-ink: #f1f1f1;
+      --code-dim: #9b9b9b;
     }
   }
 
   * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
   body {
     margin: 0;
     background: var(--bg);
     color: var(--ink);
-    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+    font-family: "Söhne", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+                 Helvetica, "Apple Color Emoji", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
   }
-  .wrap {
-    max-width: 720px;
+  .thread {
+    max-width: 768px;
     margin: 0 auto;
-    padding: 64px 20px 96px;
-  }
-  section { margin-top: 56px; }
-  h1, h2, h3 { line-height: 1.25; margin: 0 0 12px; }
-  h1 { font-size: 44px; letter-spacing: -0.02em; }
-  h2 { font-size: 24px; letter-spacing: -0.01em; }
-  h3 { font-size: 16px; }
-  p { margin: 0 0 16px; }
-  a { color: var(--accent); }
-  strong { font-weight: 650; }
-  code { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; font-size: 0.92em; }
-  p code, li code, td code {
-    background: var(--mint-soft);
-    color: var(--mint);
-    padding: 1px 5px;
-    border-radius: 4px;
+    padding: 56px 20px 72px;
   }
 
-  /* hero */
-  .hero { text-align: center; }
-  .hero img {
-    width: 168px; height: 168px;
+  /* ---------- greeting (ChatGPT empty state) ---------- */
+  .greet { text-align: center; padding: 8px 0 52px; }
+  .greet img.mascot {
+    width: 96px; height: 96px;
     image-rendering: pixelated;
-    border-radius: 18px;
+    border-radius: 20px;
     display: block;
-    margin: 0 auto 20px;
+    margin: 0 auto 22px;
   }
-  .lede {
-    font-size: 20px;
-    color: var(--ink);
-    max-width: 30ch;
-    margin: 0 auto 14px;
-  }
-  .sub { color: var(--muted); max-width: 46ch; margin: 0 auto 26px; }
-  .cta { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-  .btn {
-    display: inline-block;
-    padding: 11px 20px;
-    border-radius: 10px;
-    text-decoration: none;
+  .greet h1 {
+    font-size: 30px;
     font-weight: 600;
-    font-size: 15px;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+    margin: 0 0 10px;
+    text-wrap: balance;
+  }
+  .greet p {
+    color: var(--ink-2);
+    font-size: 16px;
+    max-width: 52ch;
+    margin: 0 auto;
+    text-wrap: balance;
+  }
+  .chips {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    justify-content: center;
+    margin-top: 26px;
+  }
+  .chip {
     border: 1px solid var(--line);
-    color: var(--ink);
-    background: var(--panel);
-  }
-  .btn.primary {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-  }
-  @media (prefers-color-scheme: dark) {
-    .btn.primary { color: #17102e; }
-  }
-
-  /* cards */
-  .cards { display: grid; gap: 14px; grid-template-columns: 1fr; }
-  @media (min-width: 620px) { .cards { grid-template-columns: repeat(3, 1fr); } }
-  .card {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 18px;
-  }
-  .card h3 { margin-bottom: 6px; }
-  .card p { margin: 0; color: var(--muted); font-size: 15px; }
-
-  /* code */
-  pre {
-    background: var(--code-bg);
-    color: var(--code-ink);
-    padding: 18px 20px;
-    border-radius: 12px;
-    overflow-x: auto;
-    margin: 0 0 16px;
+    border-radius: 999px;
+    padding: 7px 15px;
     font-size: 14px;
+    color: var(--ink-2);
+    text-decoration: none;
+    background: transparent;
+    transition: background .15s ease;
+  }
+  .chip:hover { background: var(--hover); color: var(--ink); }
+
+  /* ---------- turns ---------- */
+  .turn { scroll-margin-top: 24px; }
+  .turn + .turn { margin-top: 40px; }
+
+  .user {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 26px;
+  }
+  .user span {
+    background: var(--bubble);
+    border-radius: 22px;
+    padding: 10px 20px;
+    max-width: 82%;
+    line-height: 1.6;
+  }
+
+  .bot { display: flex; gap: 14px; align-items: flex-start; }
+  .bot img.avatar {
+    width: 28px; height: 28px;
+    flex: 0 0 28px;
+    border-radius: 50%;
+    margin-top: 4px;
+    border: 1px solid var(--line);
+  }
+  .msg { min-width: 0; flex: 1; }
+  .msg > *:first-child { margin-top: 0; }
+  .msg > *:last-child { margin-bottom: 0; }
+  .msg p { margin: 0 0 16px; }
+  .msg h2 {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.5;
+    margin: 26px 0 10px;
+  }
+  .msg ul, .msg ol { margin: 0 0 16px; padding-left: 24px; }
+  .msg li { margin-bottom: 8px; }
+  .msg li::marker { color: var(--ink-3); }
+  a { color: inherit; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: var(--quote); }
+  a:hover { text-decoration-color: currentColor; }
+  strong { font-weight: 600; }
+
+  code {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 0.875em;
+  }
+  p code, li code, td code {
+    background: var(--bubble);
+    border-radius: 5px;
+    padding: 2px 6px;
+    white-space: nowrap;
+  }
+
+  /* ---------- code block ---------- */
+  .code {
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 0 0 18px;
+    background: var(--code-bg);
+  }
+  .code-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--code-head);
+    color: var(--code-dim);
+    font-size: 12px;
+    line-height: 1;
+    padding: 9px 14px;
+  }
+  .code-head button {
+    font: inherit;
+    font-family: inherit;
+    color: var(--code-dim);
+    background: none;
+    border: 0;
+    cursor: pointer;
+    padding: 2px 0 2px 10px;
+  }
+  .code-head button:hover { color: #fff; }
+  .code pre {
+    margin: 0;
+    padding: 16px 18px;
+    overflow-x: auto;
+    color: var(--code-ink);
+    font-size: 13.5px;
     line-height: 1.7;
   }
-  pre code { font-size: inherit; }
-  .c { color: var(--code-dim); }
+  .code .c { color: var(--code-dim); }
 
-  /* ask box */
-  .ask {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-left: 3px solid var(--accent);
-    border-radius: 10px;
-    padding: 14px 18px;
-    margin-bottom: 12px;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 14.5px;
+  /* ---------- quote ---------- */
+  blockquote {
+    margin: 0 0 18px;
+    padding: 2px 0 2px 18px;
+    border-left: 2px solid var(--quote);
+    color: var(--ink-2);
   }
-  .reply { color: var(--muted); font-size: 15px; margin: 0 0 16px; }
+  blockquote p:last-child { margin-bottom: 0; }
 
-  /* steps */
-  ol.steps { padding-left: 20px; margin: 0; }
-  ol.steps li { margin-bottom: 10px; color: var(--muted); }
-  ol.steps li strong { color: var(--ink); }
-
-  /* table */
+  /* ---------- table ---------- */
+  .table-wrap { overflow-x: auto; margin: 0 0 18px; }
   table { border-collapse: collapse; width: 100%; font-size: 15px; }
-  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
-  th { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); font-weight: 600; }
-  .table-wrap { overflow-x: auto; margin-bottom: 18px; }
+  th, td { text-align: left; padding: 9px 14px; border: 1px solid var(--line); vertical-align: top; line-height: 1.6; }
+  th { font-weight: 600; background: var(--hover); }
 
-  /* note */
-  .note {
-    background: var(--warn-bg);
-    border: 1px solid var(--warn-line);
-    color: var(--warn-ink);
-    border-radius: 12px;
-    padding: 18px 20px;
-    font-size: 15px;
+  /* ---------- composer CTA ---------- */
+  .composer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 768px;
+    margin: 56px auto 0;
+    border: 1px solid var(--line);
+    border-radius: 28px;
+    padding: 12px 12px 12px 22px;
+    text-decoration: none;
+    color: var(--ink-2);
+    background: var(--bg);
+    transition: border-color .15s ease;
   }
-  .note p:last-child { margin-bottom: 0; }
-  .note strong { color: inherit; }
+  .composer:hover { border-color: var(--ink-3); }
+  .composer .label { flex: 1; font-size: 16px; }
+  .composer .send {
+    flex: 0 0 32px;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--btn);
+    color: var(--btn-ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    line-height: 1;
+  }
+  .disclaimer {
+    text-align: center;
+    color: var(--ink-3);
+    font-size: 12px;
+    margin: 14px auto 0;
+    max-width: 768px;
+  }
 
-  .end { margin-top: 56px; text-align: center; color: var(--muted); font-size: 15px; }
+  @media (max-width: 520px) {
+    .thread { padding: 40px 16px 56px; }
+    .greet h1 { font-size: 26px; }
+    .user span { max-width: 92%; }
+    .bot { gap: 10px; }
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <div class="hero">
-    <img src="assets/mascot.png" alt="GPTImage mascot: a pixel-art robot in a painter's beret holding a framed landscape" />
-    <h1>GPTImage</h1>
-    <p class="lede">You already pay for ChatGPT. Let your coding agent draw with it.</p>
-    <p class="sub">GPTImage plugs GPT Image 2 into Claude Code through your existing ChatGPT subscription. No API key. No per-image bill.</p>
-    <div class="cta">
-      <a class="btn primary" href="#install">Set it up</a>
-      <a class="btn" href="https://github.com/Connected-Mate/gptimage">View on GitHub</a>
+<div class="thread">
+
+  <div class="greet">
+    <img class="mascot" src="assets/mascot.png" alt="GPTImage mascot: a pixel-art robot in a painter's beret holding a framed landscape" />
+    <h1>What should we draw?</h1>
+    <p>Image generation for Claude Code, powered by the ChatGPT plan you already pay for.</p>
+    <div class="chips">
+      <a class="chip" href="#what">What is it?</a>
+      <a class="chip" href="#setup">Set it up</a>
+      <a class="chip" href="#use">Use it</a>
+      <a class="chip" href="#how">How it works</a>
+      <a class="chip" href="#help">Troubleshooting</a>
     </div>
   </div>
 
-  <section>
-    <h2>The idea</h2>
-    <p>Your Plus or Pro plan already includes image generation — but only inside the chat window, one picture at a time, copied out by hand. Meanwhile the image APIs want a credit card and charge per render.</p>
-    <p>GPTImage closes that gap. It signs in with the ChatGPT account you already have and hands the image model to your agent as a tool, so images land straight in your project as files.</p>
-    <div class="cards">
-      <div class="card">
-        <h3>Already paid for</h3>
-        <p>Generation is billed to the plan you're already on. Nothing new to buy.</p>
-      </div>
-      <div class="card">
-        <h3>No API key</h3>
-        <p>You sign in once in your own browser. The tool never sees your password.</p>
-      </div>
-      <div class="card">
-        <h3>Your agent drives</h3>
-        <p>Claude Code writes the prompt, calls the tool, and saves the PNG where you need it.</p>
+  <!-- 1 -->
+  <div class="turn" id="what">
+    <div class="user"><span>What is GPTImage?</span></div>
+    <div class="bot">
+      <img class="avatar" src="assets/avatar.png" alt="" />
+      <div class="msg">
+        <p>It's a small tool that lets <strong>Claude Code generate and edit images</strong> using the ChatGPT subscription you're already paying for. No API key, no per-image bill.</p>
+        <p>Your Plus or Pro plan already includes image generation — but it's stuck inside the chat window: one picture at a time, copied out by hand. Meanwhile the image APIs want a separate credit card and charge per render.</p>
+        <p>GPTImage closes that gap. It signs in with your existing ChatGPT account and hands <strong>GPT Image 2</strong> to your agent as a tool, so images land straight in your project as files.</p>
+        <ul>
+          <li><strong>Already paid for</strong> — generation is billed to the plan you're on. Nothing new to buy.</li>
+          <li><strong>No API key</strong> — you sign in once in your own browser. The tool never sees your password.</li>
+          <li><strong>Your agent drives</strong> — Claude Code writes the prompt, calls the tool, saves the PNG where you need it.</li>
+        </ul>
       </div>
     </div>
-  </section>
+  </div>
 
-  <section id="install">
-    <h2>Set it up once</h2>
-    <p>You need Node.js 20 or newer and a ChatGPT account on an active plan.</p>
+  <!-- 2 -->
+  <div class="turn" id="setup">
+    <div class="user"><span>How do I set it up?</span></div>
+    <div class="bot">
+      <img class="avatar" src="assets/avatar.png" alt="" />
+      <div class="msg">
+        <p>You'll need Node.js 20 or newer and a ChatGPT account on an active plan. Then run this once:</p>
+        <div class="code">
+          <div class="code-head"><span>bash</span><button type="button" data-copy>Copy</button></div>
 <pre><code>git clone https://github.com/Connected-Mate/gptimage.git
 cd gptimage
 npm install
 ./install.sh</code></pre>
-    <p><code>install.sh</code> registers the tool with Claude Code globally, then opens your browser to <strong>Sign in with ChatGPT</strong>. When the success screen appears, you're done.</p>
-    <p>Because it's registered at the user level, it works in <strong>every</strong> Claude Code project on your machine. Restart Claude Code once so it picks up the new tool.</p>
-  </section>
+        </div>
+        <p><code>install.sh</code> registers the tool with Claude Code globally, then opens your browser to <strong>Sign in with ChatGPT</strong>. When the success screen appears, you're done.</p>
+        <p>Because it's registered at the user level, it works in <strong>every</strong> Claude Code project on your machine. Restart Claude Code once so it picks up the new tool.</p>
+      </div>
+    </div>
+  </div>
 
-  <section>
-    <h2>Then just ask</h2>
-    <p>Open Claude Code in any project and describe what you want.</p>
-    <div class="ask">Generate a watercolor red fox in snow and save it to fox.png using the gptimage tool.</div>
-    <p class="reply">The agent expands your request into a proper prompt, calls <code>generate_image</code>, and writes the file. Existing files are auto-versioned — <code>fox-v2.png</code>, <code>fox-v3.png</code> — so nothing is ever overwritten.</p>
-    <p>Hand it reference images and it will restyle, combine, or edit from them:</p>
-    <div class="ask">Take the character in char.png and put them in the style of poster.png. Save it to hero.png.</div>
-  </section>
+  <!-- 3 -->
+  <div class="turn" id="use">
+    <div class="user"><span>Okay — how do I actually use it?</span></div>
+    <div class="bot">
+      <img class="avatar" src="assets/avatar.png" alt="" />
+      <div class="msg">
+        <p>Open Claude Code in any project and just ask:</p>
+        <div class="code">
+          <div class="code-head"><span>you, to Claude Code</span><button type="button" data-copy>Copy</button></div>
+<pre><code>Generate a watercolor red fox in snow and save it
+to fox.png using the gptimage tool.</code></pre>
+        </div>
+        <p>The agent expands your request into a proper prompt, calls <code>generate_image</code>, and writes the file. Existing files are auto-versioned — <code>fox-v2.png</code>, <code>fox-v3.png</code> — so nothing is ever overwritten.</p>
+        <p>Hand it reference images and it will restyle, combine, or edit from them:</p>
+        <div class="code">
+          <div class="code-head"><span>you, to Claude Code</span><button type="button" data-copy>Copy</button></div>
+<pre><code>Take the character in char.png and put them in the
+style of poster.png. Save it to hero.png.</code></pre>
+        </div>
 
-  <section>
-    <h2>Or from the terminal</h2>
+        <h2>Or straight from the terminal</h2>
+        <div class="code">
+          <div class="code-head"><span>bash</span><button type="button" data-copy>Copy</button></div>
 <pre><code>npm run gen -- --prompt "a red fox in snow, watercolor" \
   --out fox.png --size 1024x1024
 
 <span class="c"># with reference images</span>
 npm run gen -- -p "apply Image 1's style to Image 2" -o out.png \
   --ref style.png --ref subject.png</code></pre>
-    <p>Sizes are <code>auto</code> or <code>WIDTHxHEIGHT</code> in multiples of 16 — square <code>1024x1024</code> for icons and avatars, <code>1536x1024</code> for banners, <code>1024x1536</code> for posters.</p>
-  </section>
-
-  <section>
-    <h2>How it works</h2>
-    <ol class="steps">
-      <li><strong>You sign in</strong> with ChatGPT through the standard OAuth flow. The token is stored locally in <code>~/.gptimage/auth.json</code> and refreshed automatically. Already logged into the Codex CLI? It reuses those credentials.</li>
-      <li><strong>A local MCP server</strong> exposes two tools to Claude Code: <code>generate_image</code> and <code>image_auth_status</code>.</li>
-      <li><strong>A skill</strong> (<code>/gptimage</code>) teaches the agent when to reach for image generation and how to write a strong prompt for it.</li>
-      <li><strong>The request goes to GPT Image 2</strong> on your subscription, streams back as base64, and is saved to disk as a PNG.</li>
-    </ol>
-  </section>
-
-  <section>
-    <h2>Handy commands</h2>
-    <div class="table-wrap">
-      <table>
-        <tr><th>Command</th><th>What it does</th></tr>
-        <tr><td><code>npm run status</code></td><td>Show your plan, account, and token expiry</td></tr>
-        <tr><td><code>npm run login</code></td><td>Sign in again</td></tr>
-        <tr><td><code>npm run logout</code></td><td>Remove stored credentials</td></tr>
-        <tr><td><code>npm run gen</code></td><td>Generate an image from the terminal</td></tr>
-      </table>
+        </div>
+        <p>Sizes are <code>auto</code> or <code>WIDTHxHEIGHT</code> in multiples of 16 — square <code>1024x1024</code> for icons and avatars, <code>1536x1024</code> for banners, <code>1024x1536</code> for posters.</p>
+      </div>
     </div>
-    <p>If Claude Code can't see the tool, restart it and check that <code>claude mcp list</code> shows <code>gptimage ✔ Connected</code>. A <code>429</code> means your plan hit its rate limit — wait and retry.</p>
-  </section>
+  </div>
 
-  <section>
-    <h2>Before you start</h2>
-    <div class="note">
-      <p><strong>This is a grey area, by design.</strong> "Sign in with ChatGPT" is officially meant for Codex. GPTImage reuses that token to reach GPT Image 2. It works and it's widely done, but it is <strong>not</strong> an officially sanctioned API.</p>
-      <p>Keep usage personal and local. Heavy use can trigger plan rate limits or, in the worst case, account restrictions. You accept that risk by using this. Not affiliated with OpenAI — use at your own risk, in accordance with OpenAI's terms.</p>
+  <!-- 4 -->
+  <div class="turn" id="how">
+    <div class="user"><span>How does it work under the hood?</span></div>
+    <div class="bot">
+      <img class="avatar" src="assets/avatar.png" alt="" />
+      <div class="msg">
+        <ol>
+          <li><strong>You sign in</strong> with ChatGPT through the standard OAuth flow. The token is stored locally in <code>~/.gptimage/auth.json</code> and refreshed automatically. Already logged into the Codex CLI? It reuses those credentials.</li>
+          <li><strong>A local MCP server</strong> exposes two tools to Claude Code: <code>generate_image</code> and <code>image_auth_status</code>.</li>
+          <li><strong>A skill</strong> (<code>/gptimage</code>) teaches the agent when to reach for image generation and how to write a strong prompt for it.</li>
+          <li><strong>The request goes to GPT Image 2</strong> on your subscription, streams back as base64, and is saved to disk as a PNG.</li>
+        </ol>
+        <p>Everything runs locally. Nothing is proxied through a third party.</p>
+      </div>
     </div>
-  </section>
+  </div>
 
-  <p class="end"><a href="https://github.com/Connected-Mate/gptimage">Source, issues and roadmap on GitHub →</a></p>
+  <!-- 5 -->
+  <div class="turn" id="help">
+    <div class="user"><span>What if something breaks?</span></div>
+    <div class="bot">
+      <img class="avatar" src="assets/avatar.png" alt="" />
+      <div class="msg">
+        <div class="table-wrap">
+          <table>
+            <tr><th>Command</th><th>What it does</th></tr>
+            <tr><td><code>npm run status</code></td><td>Show your plan, account, and token expiry</td></tr>
+            <tr><td><code>npm run login</code></td><td>Sign in again</td></tr>
+            <tr><td><code>npm run logout</code></td><td>Remove stored credentials</td></tr>
+            <tr><td><code>npm run gen</code></td><td>Generate an image from the terminal</td></tr>
+          </table>
+        </div>
+        <p>If Claude Code can't see the tool, restart it and check that <code>claude mcp list</code> shows <code>gptimage ✔ Connected</code>. A <code>429</code> means your plan hit its rate limit — wait and retry.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6 -->
+  <div class="turn">
+    <div class="user"><span>Anything I should know before I start?</span></div>
+    <div class="bot">
+      <img class="avatar" src="assets/avatar.png" alt="" />
+      <div class="msg">
+        <p>Yes — one thing, and it matters.</p>
+        <blockquote>
+          <p><strong>This is a grey area, by design.</strong> "Sign in with ChatGPT" is officially meant for Codex. GPTImage reuses that token to reach GPT Image 2. It works and it's widely done, but it is <strong>not</strong> an officially sanctioned API.</p>
+          <p>Keep usage personal and local. Heavy use can trigger plan rate limits or, in the worst case, account restrictions. You accept that risk by using this.</p>
+        </blockquote>
+        <p>GPTImage is an independent open-source project. It is not affiliated with, endorsed by, or connected to OpenAI — use it at your own risk, in accordance with OpenAI's terms.</p>
+      </div>
+    </div>
+  </div>
+
+  <a class="composer" href="https://github.com/Connected-Mate/gptimage">
+    <span class="label">Get GPTImage on GitHub</span>
+    <span class="send" aria-hidden="true">↑</span>
+  </a>
+  <p class="disclaimer">GPTImage is not affiliated with OpenAI. ChatGPT is a trademark of OpenAI.</p>
 
 </div>
+
+<script>
+  document.querySelectorAll('[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var code = btn.closest('.code').querySelector('pre').innerText;
+      var done = function () {
+        btn.textContent = 'Copied!';
+        setTimeout(function () { btn.textContent = 'Copy'; }, 1600);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(done, fallback);
+      } else {
+        fallback();
+      }
+      function fallback() {
+        var ta = document.createElement('textarea');
+        ta.value = code;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); done(); } catch (e) {}
+        document.body.removeChild(ta);
+      }
+    });
+  });
+</script>
+
 </body>
 </html>
