@@ -38,3 +38,26 @@ Rules: do not use sudo, do not change any other MCP server or setting, do not co
 | 7 | Grey-area reminder |
 
 Prefer doing it by hand? See the README: `git clone …`, `npm install`, `./install.sh`.
+
+## Version française
+
+```text
+Installe GPTImage pour moi (serveur MCP de génération d'images, https://github.com/Connected-Mate/gptimage). Suis exactement ces étapes, montre-moi le résultat de chaque commande, et arrête-toi pour me demander si quelque chose échoue.
+
+1. Vérifie que Node.js 20 ou plus récent est installé (`node -v`). S'il manque ou s'il est trop ancien, arrête-toi et dis-moi de l'installer depuis https://nodejs.org.
+2. Clone le projet dans mon dossier personnel (si ~/gptimage existe déjà, ne clone pas et lance plutôt `git -C ~/gptimage pull`) :
+   git clone https://github.com/Connected-Mate/gptimage.git ~/gptimage
+3. Installe et enregistre le serveur MCP pour l'agent que tu es (choisis la ligne qui te correspond) :
+   - Claude Code : cd ~/gptimage && ./install.sh --agent claude --no-login --yes
+   - Codex :       cd ~/gptimage && ./install.sh --agent codex --no-login --yes
+   - Cursor :      cd ~/gptimage && ./install.sh --agent cursor --no-login --yes
+   - Autre agent : cd ~/gptimage && ./install.sh --agent none --no-login --yes, puis ajoute dans ta propre configuration un serveur MCP nommé "gptimage" avec la commande `node` et l'argument `~/gptimage/src/server.js` (stdio, chemin absolu).
+4. Connexion. Lance `cd ~/gptimage && npm run status`.
+   - S'il affiche « Authenticated », je suis déjà connecté (GPTImage réutilise aussi une connexion Codex CLI) : continue.
+   - Sinon, lance `cd ~/gptimage && npm run login` et dis-moi : « Ton navigateur s'ouvre : connecte-toi avec ton compte ChatGPT, puis reviens. » Attends la fin de la commande. Ne me demande JAMAIS mon mot de passe et ne le tape jamais toi-même.
+5. Vérifie : lance `cd ~/gptimage && npm run gen -- -p "un petit bateau en papier rouge sur l'eau bleue, illustration plate" -o ~/gptimage-test.png --quality low --size 1024x1024`. Il doit afficher le chemin de l'image PNG enregistrée. Donne-moi ce chemin pour que je la regarde.
+6. Dis-moi de te redémarrer (toi, l'agent) pour charger le nouvel outil « gptimage ». Après le redémarrage, appelle une fois l'outil `image_auth_status` pour confirmer la connexion.
+7. Enfin, dis-moi clairement : « GPTImage utilise ta connexion ChatGPT, pas une clé d'API. C'est un usage non officiel de cette connexion : garde-le personnel, un usage intensif peut atteindre les limites de ton abonnement. »
+
+Règles : pas de sudo, ne modifie aucun autre serveur MCP ni réglage, ne commit et ne publie rien, et n'affiche ni ne partage jamais le contenu de ~/.gptimage/auth.json ou ~/.codex/auth.json.
+```
