@@ -26,6 +26,10 @@ No API key. No per-image bill. You sign in with your ChatGPT account once, and C
 - Node.js ≥ 20 (tested on v22)
 - A ChatGPT account with an active plan (Plus / Pro / etc.)
 
+## Install with your agent
+
+Paste one prompt into Claude Code, Codex, Cursor or any coding agent and it installs GPTImage for you, connects it, and makes a test image. You only sign in to ChatGPT in your browser when asked. → **[AGENT-INSTALL.md](AGENT-INSTALL.md)**
+
 ## Install — one flow
 
 ```bash
@@ -35,8 +39,10 @@ npm install
 ./install.sh
 ```
 
-`./install.sh` registers the tool **globally** with Claude Code, then opens your
-browser to **sign in with ChatGPT**. When you see the success screen, you're done.
+`./install.sh` registers the tool with the agents it finds (Claude Code, Codex, Cursor —
+or choose with `--agent claude|codex|cursor|none`), then opens your browser to
+**sign in with ChatGPT** (skipped if you're already signed in; `--no-login` to skip,
+`--yes` never prompts). When you see the success screen, you're done.
 
 > Because the tool is registered at the user level, it works in **every** Claude Code
 > project on your machine — you only set it up once. (Restart Claude Code if it was
