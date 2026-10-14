@@ -7,7 +7,7 @@
 // Token resolution order:
 //   1. GPTIMAGE_ACCESS_TOKEN env var (escape hatch / CI)
 //   2. our own store:   ~/.gptimage/auth.json   (written by `login.js`)
-//   3. codex fallback:  ~/.codex/auth.json          (if you already ran codex login)
+//   3. codex fallback:  $CODEX_HOME/auth.json (or ~/.codex/auth.json)
 //
 // When an access token is expired we refresh it in place, writing the rotated
 // tokens back to whichever store they came from — so the Codex CLI keeps working
@@ -26,7 +26,7 @@ const JWT_CLAIM_PATH = "https://api.openai.com/auth";
 const EXPIRY_MARGIN_MS = 60_000;
 
 export const OUR_STORE = path.join(os.homedir(), ".gptimage", "auth.json");
-export const CODEX_STORE = path.join(os.homedir(), ".codex", "auth.json");
+export const CODEX_STORE = path.join(process.env.CODEX_HOME || path.join(os.homedir(), ".codex"), "auth.json");
 
 // ---------------------------------------------------------------------------
 // JWT helpers (decode only — we never verify signatures, the server does that)
