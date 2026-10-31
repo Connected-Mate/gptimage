@@ -1,0 +1,25 @@
+hoi4-imagegen-mcp
+Copyright (c) 2026 klimPaskov and hoi4-imagegen-mcp contributors
+Released under the MIT License (see LICENSE).
+
+This project is a derivative work of gptimage by Connected-Mate:
+
+  Connected-Mate/gptimage  https://github.com/Connected-Mate/gptimage
+  Copyright (c) 2026 Alex-Connected-Mate
+  MIT License, pinned at commit dfb4948b6877b5b7febf73e1342fcfacd862a1ed
+
+The upstream copyright notice and permission notice are preserved in LICENSE.
+UPSTREAM.md maps each upstream file to its replacement. The upstream JavaScript
+source is in this repository's git history, not in its working tree. The files in
+crates/provider-chatgpt-login port upstream's src/auth.js, src/login.js and
+src/codex.js to Rust and carry a header saying so.
+
+Not covered by this license:
+
+  * Hearts of Iron IV and its artwork belong to Paradox Interactive. This tool reads
+    file headers of an installed game for calibration and never copies game files.
+    Sending Paradox art to an image provider as a reference is a per-project opt-in.
+  * Images produced with a provider are subject to that provider's terms. This
+    project makes no statement about the rights in generated art.
+  * Third-party Rust crates keep their own licenses (MIT or Apache-2.0 in the default
+    dependency graph).

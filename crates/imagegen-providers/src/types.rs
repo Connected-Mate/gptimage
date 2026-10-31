@@ -104,6 +104,8 @@ pub enum CostModel {
     },
     /// No provider fee (local or self-hosted).
     Free,
+    /// Billed against a subscription's plan quota; no per-image price and no usage report.
+    PlanQuota,
 }
 
 /// One model's reviewed facts.

@@ -1,0 +1,21 @@
+[package]
+name = "provider-chatgpt-login"
+description = "OPT-IN, UNOFFICIAL, personal-use image provider that signs in with a ChatGPT account and calls an undocumented backend. Not a default workspace member; never part of a default or hosted build."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[dependencies]
+base64.workspace = true
+getrandom = "0.4"
+imagegen-core.workspace = true
+imagegen-providers.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
