@@ -1,0 +1,21 @@
+[package]
+name = "imagegen-providers"
+description = "Image provider trait and adapters (OpenAI, Gemini, fal, ComfyUI) for hoi4-imagegen-mcp. Keys come from environment variables only."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[dependencies]
+base64.workspace = true
+imagegen-core.workspace = true
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+ureq.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

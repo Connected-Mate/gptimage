@@ -1,0 +1,79 @@
+{
+  "id": "fal",
+  "display_name": "fal.ai (queue API)",
+  "doc_url": "https://fal.ai/docs/model-apis/model-endpoints/queue",
+  "retrieved": "2026-10-31",
+  "env_vars": ["FAL_KEY"],
+  "hosts": ["queue.fal.run", "fal.run", ".fal.media", ".fal.run"],
+  "terms_note": "fal tags models 'commercial use' without license text; check each model's license before shipping its output. Prices are per megapixel or per image as listed on fal's pricing pages on 2026-10-31. Size and reference limits below are conservative and were not read from each model's schema.",
+  "models": [
+    {
+      "id": "fal-ai/flux-2",
+      "status": { "state": "current" },
+      "recommended": true,
+      "max_refs": 4,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "arbitrary", "multiple": 16, "min_pixels": 262144, "max_pixels": 4194304, "max_edge": 2048, "max_ratio": 4.0 },
+      "cost": { "kind": "per_megapixel", "first": 0.012, "additional": 0.012 },
+      "async_job": true,
+      "supports_edit": true,
+      "edit_model": "fal-ai/flux-2/edit",
+      "notes": "$0.012 per processed megapixel. Cheapest general model offered here."
+    },
+    {
+      "id": "fal-ai/flux-2-pro",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 8,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "arbitrary", "multiple": 16, "min_pixels": 262144, "max_pixels": 4194304, "max_edge": 2048, "max_ratio": 4.0 },
+      "cost": { "kind": "per_megapixel", "first": 0.03, "additional": 0.015 },
+      "async_job": true,
+      "supports_edit": true,
+      "edit_model": "fal-ai/flux-2-pro/edit",
+      "notes": "First output megapixel $0.03, each additional input or output megapixel $0.015."
+    },
+    {
+      "id": "fal-ai/flux/schnell",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 0,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "arbitrary", "multiple": 16, "min_pixels": 262144, "max_pixels": 4194304, "max_edge": 2048, "max_ratio": 4.0 },
+      "cost": { "kind": "per_megapixel", "first": 0.003, "additional": 0.003 },
+      "async_job": true,
+      "supports_edit": false,
+      "notes": "$0.003 per megapixel. Text to image only."
+    },
+    {
+      "id": "fal-ai/flux/dev",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 0,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "arbitrary", "multiple": 16, "min_pixels": 262144, "max_pixels": 4194304, "max_edge": 2048, "max_ratio": 4.0 },
+      "cost": { "kind": "per_megapixel", "first": 0.025, "additional": 0.025 },
+      "async_job": true,
+      "supports_edit": false,
+      "notes": "$0.025 per megapixel. Text to image only. The dev weights have a non-commercial license: check before shipping output."
+    },
+    {
+      "id": "fal-ai/nano-banana",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 10,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "aspect_tiers", "ratios": ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9"], "tier": "1K" },
+      "cost": { "kind": "per_image", "usd_by_quality": [["default", 0.0398]] },
+      "async_job": true,
+      "supports_edit": true,
+      "edit_model": "fal-ai/nano-banana/edit",
+      "notes": "$0.0398 per image."
+    }
+  ]
+}

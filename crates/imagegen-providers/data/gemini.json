@@ -1,0 +1,71 @@
+{
+  "id": "gemini",
+  "display_name": "Google Gemini API (image models)",
+  "doc_url": "https://ai.google.dev/gemini-api/docs/image-generation",
+  "retrieved": "2026-10-31",
+  "env_vars": ["GEMINI_API_KEY", "GOOGLE_API_KEY"],
+  "hosts": ["generativelanguage.googleapis.com"],
+  "terms_note": "Google states it does not claim ownership of generated content and that the user is responsible for its use; outputs carry a SynthID watermark. Imagen models are shut down and are not offered.",
+  "models": [
+    {
+      "id": "gemini-nano-banana-2.1",
+      "status": { "state": "current" },
+      "recommended": true,
+      "max_refs": 10,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "aspect_tiers", "ratios": ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9"], "tier": "1K" },
+      "cost": { "kind": "per_image", "usd_by_quality": [["default", 0.0336]] },
+      "async_job": false,
+      "notes": "Recommended Gemini image model. $0.0336 at 1K. No native transparency: the pipeline proves alpha from pixels or uses a matte workflow."
+    },
+    {
+      "id": "gemini-3.1-flash-image",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 10,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "aspect_tiers", "ratios": ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9"], "tier": "1K" },
+      "cost": { "kind": "per_image", "usd_by_quality": [["default", 0.067]] },
+      "async_job": false,
+      "notes": "$0.067 at 1K."
+    },
+    {
+      "id": "gemini-3.1-flash-lite-image",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 14,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "aspect_tiers", "ratios": ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9"], "tier": "1K" },
+      "cost": { "kind": "per_image", "usd_by_quality": [["default", 0.0336]] },
+      "async_job": false,
+      "notes": "1K only. $0.0336."
+    },
+    {
+      "id": "gemini-3-pro-image",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 6,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "aspect_tiers", "ratios": ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9"], "tier": "1K" },
+      "cost": { "kind": "per_image", "usd_by_quality": [["default", 0.134]] },
+      "async_job": false,
+      "notes": "$0.134 at 1K and 2K."
+    },
+    {
+      "id": "gemini-2.5-flash-image",
+      "status": { "state": "deprecated", "shutdown": "2027-03-15" },
+      "recommended": false,
+      "max_refs": 3,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "aspect_tiers", "ratios": ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9"], "tier": "1K" },
+      "cost": { "kind": "unpublished_proxy", "proxy_usd_by_quality": [["default", 0.0336]], "proxy_of": "gemini-nano-banana-2.1 (no price was retrieved for this deprecated model)" },
+      "async_job": false,
+      "notes": "Deprecated; shuts down 2027-03-15. The reference limit is a conservative guess."
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "id": "openai",
+  "display_name": "OpenAI Images API",
+  "doc_url": "https://developers.openai.com/api/docs/guides/image-generation/",
+  "retrieved": "2026-10-31",
+  "env_vars": ["OPENAI_API_KEY"],
+  "hosts": ["api.openai.com"],
+  "terms_note": "Output ownership and permitted use are set by OpenAI's terms; the primary terms pages could not be fetched on 2026-10-31, so nothing is promised here. Check Paradox's and Steam's rules for AI-generated mod assets before publishing.",
+  "models": [
+    {
+      "id": "gpt-image-2.5-flare",
+      "status": { "state": "current" },
+      "recommended": true,
+      "max_refs": 16,
+      "mask": true,
+      "alpha": "ga",
+      "sizes": { "kind": "arbitrary", "multiple": 16, "min_pixels": 655360, "max_pixels": 8294400, "max_edge": 3840, "max_ratio": 3.0 },
+      "cost": { "kind": "unpublished_proxy", "proxy_usd_by_quality": [["low", 0.006], ["medium", 0.053], ["high", 0.211]], "proxy_of": "gpt-image-2" },
+      "async_job": false,
+      "notes": "Fast, everyday model. Native transparent background is generally available. The per-image price is not published for the 2.5 models; the gpt-image-2 row is the planning proxy until a recorded call reports usage."
+    },
+    {
+      "id": "gpt-image-2.5-sunburst",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 16,
+      "mask": true,
+      "alpha": "ga",
+      "sizes": { "kind": "arbitrary", "multiple": 16, "min_pixels": 655360, "max_pixels": 8294400, "max_edge": 3840, "max_ratio": 3.0 },
+      "cost": { "kind": "unpublished_proxy", "proxy_usd_by_quality": [["low", 0.006], ["medium", 0.053], ["high", 0.211]], "proxy_of": "gpt-image-2" },
+      "async_job": false,
+      "notes": "Editing precision; the API default for edits. Same price caveat as flare."
+    },
+    {
+      "id": "gpt-image-2",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 16,
+      "mask": true,
+      "alpha": "preview",
+      "sizes": { "kind": "arbitrary", "multiple": 16, "min_pixels": 655360, "max_pixels": 8294400, "max_edge": 3840, "max_ratio": 3.0 },
+      "cost": { "kind": "per_image", "usd_by_quality": [["low", 0.006], ["medium", 0.053], ["high", 0.211]] },
+      "async_job": false,
+      "notes": "Transparent background is documented as a preview. Prices are for 1024x1024 from the vendor guide table."
+    },
+    {
+      "id": "gpt-image-1.5",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 16,
+      "mask": true,
+      "alpha": "none",
+      "sizes": { "kind": "fixed", "sizes": [[1024, 1024], [1536, 1024], [1024, 1536]] },
+      "cost": { "kind": "per_image", "usd_by_quality": [["low", 0.009], ["medium", 0.034], ["high", 0.133]] },
+      "async_job": false,
+      "notes": "Older model with fixed sizes. Native alpha is not documented on the pages read, so transparency is proven from pixels."
+    },
+    {
+      "id": "gpt-image-1-mini",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 16,
+      "mask": true,
+      "alpha": "none",
+      "sizes": { "kind": "fixed", "sizes": [[1024, 1024], [1536, 1024], [1024, 1536]] },
+      "cost": { "kind": "per_image", "usd_by_quality": [["low", 0.005], ["medium", 0.011]] },
+      "async_job": false,
+      "notes": "Cheapest older tier."
+    },
+    {
+      "id": "gpt-image-1",
+      "status": { "state": "retired", "on": "2026-10-23" },
+      "recommended": false,
+      "max_refs": 16,
+      "mask": true,
+      "alpha": "none",
+      "sizes": { "kind": "fixed", "sizes": [[1024, 1024], [1536, 1024], [1024, 1536]] },
+      "cost": { "kind": "per_image", "usd_by_quality": [] },
+      "async_job": false,
+      "notes": "Shut down on 2026-10-23. Requests are refused before they are sent. No price is kept for a retired model."
+    }
+  ]
+}
