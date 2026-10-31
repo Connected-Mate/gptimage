@@ -29,6 +29,7 @@ fn cargo() -> Command {
     c
 }
 
+/// `features` are written `package/feature`, which works in a virtual workspace without relying on `-p` feature selection.
 fn tree(package: &str, features: &[&str]) -> String {
     let mut cmd = cargo();
     cmd.args(["tree", "--offline", "--locked", "-e", "normal", "--prefix", "none", "-p", package]);
@@ -61,9 +62,9 @@ fn no_default_crate_depends_on_the_plugin() {
 
 #[test]
 fn the_feature_pulls_it_in_proving_the_check_can_see_it() {
-    let t = tree("imagegen-mcp", &["unofficial-chatgpt-login"]);
+    let t = tree("imagegen-mcp", &["imagegen-mcp/unofficial-chatgpt-login"]);
     assert!(t.contains(PLUGIN), "positive control failed: cargo tree does not show the plugin even with the feature on:\n{t}");
-    let t = tree("imagegen-cli", &["unofficial-chatgpt-login"]);
+    let t = tree("imagegen-cli", &["imagegen-cli/unofficial-chatgpt-login"]);
     assert!(t.contains(PLUGIN));
 }
 
