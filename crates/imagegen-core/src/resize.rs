@@ -1,0 +1,213 @@
+//! Deterministic Lanczos3 resampling in premultiplied alpha.
+//!
+//! Determinism matters: the same candidate must give the same installed bytes on Windows, macOS and
+//! Linux. The kernel therefore uses a hand-written sine built from additions and multiplications
+//! (IEEE-754 basic operations are exact across platforms), not the platform's `sin`.
+
+use crate::error::{Error, Result};
+use crate::pixels::Rgba;
+
+const PI: f64 = std::f64::consts::PI;
+
+/// Sine from range reduction plus a Taylor series; identical on every platform.
+fn det_sin(x: f64) -> f64 {
+    let two_pi = 2.0 * PI;
+    let mut r = x - two_pi * (x / two_pi).round();
+    if r > PI {
+        r -= two_pi;
+    } else if r < -PI {
+        r += two_pi;
+    }
+    let r2 = r * r;
+    let mut term = r;
+    let mut sum = r;
+    let mut n = 1.0;
+    for _ in 0..13 {
+        term *= -r2 / ((n + 1.0) * (n + 2.0));
+        sum += term;
+        n += 2.0;
+    }
+    sum
+}
+
+fn lanczos3(x: f64) -> f64 {
+    let x = x.abs();
+    if x < 1e-12 {
+        1.0
+    } else if x >= 3.0 {
+        0.0
+    } else {
+        let px = PI * x;
+        3.0 * det_sin(px) * det_sin(px / 3.0) / (px * px)
+    }
+}
+
+struct Taps {
+    start: Vec<i64>,
+    weights: Vec<Vec<f64>>,
+}
+
+fn taps(src_len: u32, dst_len: u32) -> Taps {
+    let scale = f64::from(src_len) / f64::from(dst_len);
+    let filter_scale = scale.max(1.0);
+    let support = 3.0 * filter_scale;
+    let mut start = Vec::with_capacity(dst_len as usize);
+    let mut weights = Vec::with_capacity(dst_len as usize);
+    for d in 0..dst_len {
+        let center = (f64::from(d) + 0.5) * scale;
+        let lo = (center - support).floor() as i64;
+        let hi = (center + support).ceil() as i64;
+        let mut w = Vec::new();
+        let mut sum = 0.0;
+        for i in lo..hi {
+            let weight = lanczos3((i as f64 + 0.5 - center) / filter_scale);
+            w.push(weight);
+            sum += weight;
+        }
+        if sum.abs() < 1e-12 {
+            sum = 1.0;
+        }
+        for weight in &mut w {
+            *weight /= sum;
+        }
+        start.push(lo);
+        weights.push(w);
+    }
+    Taps { start, weights }
+}
+
+#[inline]
+fn clamp_index(i: i64, len: u32) -> usize {
+    i.clamp(0, i64::from(len) - 1) as usize
+}
+
+/// Resize with Lanczos3. Colour is filtered in premultiplied space so transparent pixels never bleed
+/// their (meaningless) RGB into the result.
+pub fn resize_lanczos3(src: &Rgba, new_w: u32, new_h: u32) -> Result<Rgba> {
+    if new_w == 0 || new_h == 0 || new_w > 16384 || new_h > 16384 {
+        return Err(Error::Image(format!("cannot resize to {new_w}x{new_h}")));
+    }
+    if src.width == new_w && src.height == new_h {
+        return Ok(src.clone());
+    }
+    let (sw, sh) = (src.width as usize, src.height as usize);
+    // premultiplied f32 planes: r, g, b, a in 0..=1
+    let mut pre = vec![0f64; sw * sh * 4];
+    for (i, p) in src.data.chunks_exact(4).enumerate() {
+        let a = f64::from(p[3]) / 255.0;
+        pre[i * 4] = f64::from(p[0]) / 255.0 * a;
+        pre[i * 4 + 1] = f64::from(p[1]) / 255.0 * a;
+        pre[i * 4 + 2] = f64::from(p[2]) / 255.0 * a;
+        pre[i * 4 + 3] = a;
+    }
+    // horizontal pass
+    let tx = taps(src.width, new_w);
+    let nw = new_w as usize;
+    let mut mid = vec![0f64; nw * sh * 4];
+    for y in 0..sh {
+        for dx in 0..nw {
+            let lo = tx.start[dx];
+            let mut acc = [0f64; 4];
+            for (k, w) in tx.weights[dx].iter().enumerate() {
+                let sx = clamp_index(lo + k as i64, src.width);
+                let o = (y * sw + sx) * 4;
+                for c in 0..4 {
+                    acc[c] += pre[o + c] * w;
+                }
+            }
+            let o = (y * nw + dx) * 4;
+            mid[o..o + 4].copy_from_slice(&acc);
+        }
+    }
+    // vertical pass
+    let ty = taps(src.height, new_h);
+    let nh = new_h as usize;
+    let mut out = Rgba::new(new_w, new_h);
+    for dy in 0..nh {
+        let lo = ty.start[dy];
+        for dx in 0..nw {
+            let mut acc = [0f64; 4];
+            for (k, w) in ty.weights[dy].iter().enumerate() {
+                let sy = clamp_index(lo + k as i64, src.height);
+                let o = (sy * nw + dx) * 4;
+                for c in 0..4 {
+                    acc[c] += mid[o + c] * w;
+                }
+            }
+            let a = acc[3].clamp(0.0, 1.0);
+            let a8 = (a * 255.0).round();
+            let o = (dy * nw + dx) * 4;
+            if a8 <= 0.0 {
+                out.data[o..o + 4].copy_from_slice(&[0, 0, 0, 0]);
+            } else {
+                for c in 0..3 {
+                    out.data[o + c] = ((acc[c] / a).clamp(0.0, 1.0) * 255.0).round() as u8;
+                }
+                out.data[o + 3] = a8 as u8;
+            }
+        }
+    }
+    Ok(out)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn det_sin_matches_std_closely() {
+        for i in -400..400 {
+            let x = f64::from(i) * 0.0173;
+            assert!((det_sin(x) - x.sin()).abs() < 1e-9, "x={x}");
+        }
+    }
+
+    #[test]
+    fn identity_and_flat_colour_are_preserved() {
+        let flat = Rgba::filled(20, 10, [90, 120, 200, 255]);
+        let same = resize_lanczos3(&flat, 20, 10).unwrap();
+        assert_eq!(same, flat);
+        let down = resize_lanczos3(&flat, 7, 5).unwrap();
+        assert!(down.data.chunks_exact(4).all(|p| p == [90, 120, 200, 255]));
+        let up = resize_lanczos3(&flat, 41, 23).unwrap();
+        assert!(up.data.chunks_exact(4).all(|p| p == [90, 120, 200, 255]));
+    }
+
+    #[test]
+    fn transparent_pixels_do_not_bleed_colour() {
+        // left half opaque red, right half transparent with green RGB that must not leak
+        let mut img = Rgba::new(8, 2);
+        for y in 0..2 {
+            for x in 0..4 {
+                img.set_px(x, y, [255, 0, 0, 255]);
+            }
+            for x in 4..8 {
+                img.set_px(x, y, [0, 255, 0, 0]);
+            }
+        }
+        let small = resize_lanczos3(&img, 4, 1).unwrap();
+        for x in 0..4 {
+            let p = small.px(x, 0);
+            if p[3] > 0 {
+                assert!(p[1] < 8, "green leaked into pixel {x}: {p:?}");
+            }
+        }
+        assert_eq!(small.px(0, 0), [255, 0, 0, 255]);
+        assert_eq!(small.px(3, 0)[3], 0);
+    }
+
+    #[test]
+    fn deterministic_across_calls() {
+        let mut img = Rgba::new(31, 17);
+        for y in 0..17 {
+            for x in 0..31 {
+                img.set_px(x, y, [(x * 8) as u8, (y * 14) as u8, ((x * y) % 256) as u8, 255 - (x * 3) as u8]);
+            }
+        }
+        let a = resize_lanczos3(&img, 13, 9).unwrap();
+        let b = resize_lanczos3(&img, 13, 9).unwrap();
+        assert_eq!(a, b);
+        assert_eq!(a.pixels_sha256(), b.pixels_sha256());
+        assert!(resize_lanczos3(&img, 0, 4).is_err());
+    }
+}

@@ -1,0 +1,37 @@
+//! HOI4 asset logic with no network and no secrets.
+//!
+//! Categories and profiles, the deterministic processing chain, validation, uncompressed A8R8G8B8 DDS and
+//! 32-bit TGA writers, naming, never-overwritten versioned outputs, plans, a hash-chained provenance ledger and
+//! the install gate. Providers live in `imagegen-providers`; the tool surface lives in `imagegen-mcp`.
+//!
+//! Derived in intent from Connected-Mate/gptimage (MIT); the code is a Rust rewrite. See `UPSTREAM.md`.
+
+#![forbid(unsafe_code)]
+
+pub mod builtin;
+pub mod calibrate;
+pub mod category;
+pub mod config;
+pub mod dds;
+pub mod error;
+pub mod export;
+pub mod fsio;
+pub mod gate;
+pub mod hashing;
+pub mod ledger;
+pub mod naming;
+pub mod pixels;
+pub mod plan;
+pub mod process;
+pub mod profile;
+pub mod records;
+pub mod refs;
+pub mod resize;
+pub mod sprite;
+pub mod style;
+pub mod tga;
+pub mod validate;
+
+pub use category::{Automation, Category};
+pub use error::{Error, Result, RetryClass};
+pub use pixels::Rgba;
