@@ -27,6 +27,7 @@ pub mod profile;
 pub mod records;
 pub mod refs;
 pub mod resize;
+pub mod rubric;
 pub mod sprite;
 pub mod style;
 pub mod tga;

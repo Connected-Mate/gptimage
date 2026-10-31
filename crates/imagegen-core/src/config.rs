@@ -149,15 +149,18 @@ impl Config {
     }
 }
 
-/// Locate the installed game folder: `HOI4_GAME_DIR`, then the config, then the usual Steam locations.
+/// Locate the installed game folder. An explicit setting (`HOI4_GAME_DIR`, then `game_dir` in the config) is the
+/// only candidate when present: if it points nowhere the answer is "not found", never a silent fallback to a
+/// different install. With no setting, the usual Steam locations are tried.
 pub fn find_game_dir(config: &Config, env: &dyn EnvSource) -> Option<PathBuf> {
-    let mut candidates: Vec<PathBuf> = Vec::new();
+    let valid = |p: &PathBuf| p.join("interface").is_dir() || p.join("gfx").is_dir();
     if let Some(v) = env.get("HOI4_GAME_DIR") {
-        candidates.push(PathBuf::from(v));
+        return Some(PathBuf::from(v)).filter(valid);
     }
     if let Some(v) = &config.game_dir {
-        candidates.push(PathBuf::from(v));
+        return Some(PathBuf::from(v)).filter(valid);
     }
+    let mut candidates: Vec<PathBuf> = Vec::new();
     if cfg!(windows) {
         for base in ["C:/Program Files (x86)/Steam", "C:/Program Files/Steam"] {
             candidates.push(PathBuf::from(base).join("steamapps/common/Hearts of Iron IV"));
@@ -169,7 +172,7 @@ pub fn find_game_dir(config: &Config, env: &dyn EnvSource) -> Option<PathBuf> {
         candidates.push(home.join(".steam/steam/steamapps/common/Hearts of Iron IV"));
         candidates.push(home.join(".local/share/Steam/steamapps/common/Hearts of Iron IV"));
     }
-    candidates.into_iter().find(|p| p.join("interface").is_dir() || p.join("gfx").is_dir())
+    candidates.into_iter().find(valid)
 }
 
 /// Read `rawVersion` from `launcher-settings.json`.
@@ -253,8 +256,11 @@ margin = 2
         let found = find_game_dir(&Config::default(), &env).unwrap();
         assert_eq!(found, dir.path());
         assert_eq!(game_version(&found).as_deref(), Some("1.19.3.0"));
+        // an explicit setting that points nowhere is "not found", not a fallback to another install
         let missing = MapEnv::from_pairs(&[("HOI4_GAME_DIR", "/definitely/not/here")]);
-        // may still find a real install on a developer machine; it must never return the missing path
-        assert_ne!(find_game_dir(&Config::default(), &missing), Some(PathBuf::from("/definitely/not/here")));
+        assert_eq!(find_game_dir(&Config::default(), &missing), None);
+        let cfg = Config::parse("game_dir = \"/also/not/here\"
+").unwrap();
+        assert_eq!(find_game_dir(&cfg, &MapEnv::default()), None);
     }
 }

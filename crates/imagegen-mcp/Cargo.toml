@@ -1,0 +1,39 @@
+[package]
+name = "imagegen-mcp"
+description = "MCP stdio server and shared operations for HOI4 graphical assets: plan, generate, edit, process, validate, preview, review, install, ledger."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[lib]
+name = "imagegen_mcp"
+path = "src/lib.rs"
+
+[[bin]]
+name = "hoi4-imagegen-mcp"
+path = "src/main.rs"
+
+[features]
+default = []
+# Opt-in, local-only, personal-use provider that talks to an undocumented backend. Off by default, never part of
+# a default or hosted build (decision D-12). Enabling it also needs a config flag, an environment
+# acknowledgement and local stdio mode; see docs/unofficial-chatgpt-login.md.
+unofficial-chatgpt-login = ["dep:provider-chatgpt-login"]
+
+[dependencies]
+base64.workspace = true
+clap.workspace = true
+imagegen-core.workspace = true
+imagegen-providers.workspace = true
+provider-chatgpt-login = { workspace = true, optional = true }
+rmcp.workspace = true
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

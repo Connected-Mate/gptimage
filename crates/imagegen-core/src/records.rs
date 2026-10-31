@@ -18,7 +18,9 @@ pub mod kind {
     pub const EDITED: &str = "edited";
     /// An existing image was imported as a candidate.
     pub const IMPORTED: &str = "imported";
-    /// A provider job was submitted (asynchronous providers) or is about to be.
+    /// A paid call is about to be made. Written before the call, so a crash leaves evidence.
+    pub const JOB_INTENT: &str = "job_intent";
+    /// An asynchronous provider accepted a job and returned its reference.
     pub const JOB_SUBMITTED: &str = "job_submitted";
     /// A provider job ended.
     pub const JOB_ENDED: &str = "job_ended";
@@ -86,9 +88,19 @@ pub struct CandidateRecord {
     pub candidate_id: String,
     /// `feature.asset`
     pub asset_id: String,
+    /// Category.
+    pub category: crate::category::Category,
+    /// Feature folder name.
+    pub feature_slug: String,
+    /// Asset name.
+    pub asset: String,
+    /// Profile in force when the candidate was made.
+    pub profile: ProfileRef,
+    /// Effective canvas per frame (the profile's, or the explicit one for custom categories).
+    pub canvas: [u32; 2],
     /// Version number.
     pub version: u32,
-    /// Project-relative path of the raw PNG.
+    /// Project-relative path of the raw image.
     pub path: String,
     /// SHA-256 of the file.
     pub sha256: String,
@@ -137,6 +149,8 @@ pub struct ProcessedRecord {
     pub asset_id: String,
     /// Run number for this source.
     pub run: u32,
+    /// Effective canvas per frame.
+    pub canvas: [u32; 2],
     /// Project-relative path of the processed PNG.
     pub path: String,
     /// SHA-256 of the file.
