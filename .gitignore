@@ -1,4 +1,6 @@
+/target/
+/.work/
+*.log
+.DS_Store
 node_modules/
 test-output/
-.DS_Store
-*.log
