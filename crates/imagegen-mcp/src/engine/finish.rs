@@ -128,7 +128,7 @@ impl Engine {
     }
 
     /// Whether the face model can be found (a plan warns when it cannot).
-    pub(crate) fn face_model_available(&self) -> bool {
+    pub fn face_model_available(&self) -> bool {
         self.yunet_path().is_some()
     }
 

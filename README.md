@@ -21,7 +21,7 @@ status -> families -> icon | picture | portrait | flag | unit | interface (plan,
 | `hoi4.image_icon`, `_picture`, `_portrait`, `_flag`, `_unit`, `_interface` | One tool per group of families, each with a **required `family`** whose schema enum lists only that group. Without `approve`: a free plan (prompt, references, provider, model, size, **cost estimate with its basis**, output paths, approvals needed) and a `plan_id`. With `approve: true` and an `idempotency_key`: plan and generate in one call |
 | `hoi4.image_generate` | Runs a stored plan: one paid call per variant, stored unchanged as a versioned candidate. `idempotency_key` makes a retry free |
 | `hoi4.image_edit` | Refines a candidate with an instruction, an optional mask and extra references |
-| `hoi4.image_process` | The family's deterministic chain: trim, fit with margin, crop, Lanczos resize, defringe, grayscale, flatten for opaque families. Also imports art made elsewhere, with a required family: another family's size (`GFX-FAMILY-MISMATCH`) and pixels already installed for another family (`GFX-FAMILY-REUSE`) are refused, and icons are never enlarged beyond 1.25 times. Refuses to invent transparency |
+| `hoi4.image_process` | Runs the family's own processing. The caller may add only the pre-steps `chroma_key`, `crop_to_aspect`, `defringe` and `trim_to_subject`; the family's finishing steps are always appended by the tool, recorded with a recipe id and version, and cannot be replaced, shortened or skipped (an empty step list or any other step is refused). Also imports art made elsewhere, with a required family (strip families may give one file per frame in `import.frames`): another family's size (`GFX-FAMILY-MISMATCH`) and pixels already installed for another family (`GFX-FAMILY-REUSE`) are refused, and icons are never enlarged beyond 1.25 times. Refuses to invent transparency |
 | `hoi4.image_validate` | The family's full check set, never fewer (size, alpha, opaque, ghosting, chroma fringe, margins, fill, fake checkerboard, frames, DDS/TGA layout), with stable finding codes. The record carries a check-set hash the install gate compares |
 | `hoi4.image_preview` | Contact sheet: native size and enlarged, on dark, light and checker backgrounds, beside the references |
 | `hoi4.image_review` | The visual review against the family's rubric. An approval returns the `approval_id` install needs |
@@ -32,11 +32,31 @@ status -> families -> icon | picture | portrait | flag | unit | interface (plan,
 ### Rules the tools enforce
 
 * **Documented APIs, keys from the environment only.** `OPENAI_API_KEY`, `GEMINI_API_KEY` (or `GOOGLE_API_KEY`), `FAL_KEY`, and optionally `COMFYUI_API_KEY`. A project file can choose models and endpoints but cannot send a key to a new host.
+* **Processing cannot be skipped.** Each family has a recipe (table below). Validation and the install gate read the processed record back and refuse an artifact whose recipe or required steps are missing.
 * **Transparency is proven from pixels**, never from the prompt. An opaque result cannot become a transparent icon, and a drawn checkerboard is rejected.
 * **Nothing is overwritten.** Candidates are `name-v1`, `name-v2`...; processed art is `-p1`, `-p2`...; an installed file is replaced only if this tool installed it and it is unchanged since.
 * **Everything stays inside the mod project.** No `..`, drive, UNC, stream, device-name, short-name or symlink escapes.
 * **Deterministic checks are not a style verdict.** Composition, style and readability at game size go to the review, recorded separately.
 * **Model ids retire quickly** (three in eight months). Ids, limits and prices live in dated tables under `crates/imagegen-providers/data/`; a retired model is refused before any request.
+
+### Processing chains
+
+A chain is the caller's optional pre-steps (`chroma_key`, `crop_to_aspect`, `defringe`, `trim_to_subject`) followed by the family's mandatory finishing. Imported art that already has its final size is accepted as it is, which the chain records as `conform`. Counters and the division emblem stay import-only (their second frame is different art); every other family is generated end to end.
+
+| Recipe | Families | Finishing (always runs) | Writes |
+|---|---|---|---|
+| `icon` | transparent icons, technology, modifier icon, GUI texture | trim, fit to the canvas with the profile margin, grayscale for special projects | one DDS |
+| `picture` | decision category and operation pictures, news, super event | flatten on black, cover-resize, grayscale for news | one DDS |
+| `report_card` v2 | `report_event` | flatten, then the report card (sepia, grain, tilt, soft shadow; seed from the candidate hash): 210x176 with transparent corners | one DDS with card alpha |
+| `selected_strip` | `faction_logo`, `agency_logo` | fit with a 10 pixel margin, then frame 2 as the selected state (cream stroke, dark-red glow, fitted to vanilla) | one two-frame DDS |
+| `disabled_strip` | `building` | fit, then frame 2 as the disabled state (colour mixed 45 percent toward grey) | one two-frame DDS |
+| `imported_art` | `counter_large`, `counter_small`, `division_emblem` | the exact strip (or `import.frames`) is accepted | one DDS |
+| `portrait` | the four portraits | flatten, then the face-detected head-and-shoulders crop to 156x210 (YuNet from the project, or `portrait_crop`) | one opaque DDS |
+| `advisor_card` | `advisor_card` | flatten, then the portrait is composited into the mod's advisor template with the alpha-coverage audit (fails closed) | one 65x67 DDS |
+| `achievement` | `achievement` | fit the subject to 64x64, then the grey state and the not-eligible state (grey plus the red cross) on the mod's template backgrounds | three DDS: `<key>`, `<key>_grey`, `<key>_not_eligible` |
+| `flag` | `flag` | flatten, then the 82x52, 41x26 and 10x7 ladder | three TGA, bottom-left origin |
+
+The templates and the face model come from the mod's own copy of the asset skill, found inside the project: `.claude/skills/*/assets/*/portraits/advisors/advisor_template.png`, `.../icons/achievements/template/` and `.claude/skills/*/tools/models/face_detection_yunet_2026may.onnx`. `[templates] dir` and `face_model` in `.hoi4-imagegen/config.toml` override the search. A missing template is a refusal that names the paths it looked for. Install writes every file of an asset (the companions, the `.gfx` text or the handoff note) in one batch and undoes it all if any step fails.
 
 ### Maintainer decisions built in
 

@@ -20,15 +20,15 @@ for each focus:
 
 ## 2. A national spirit set (idea pictures, 60x68)
 
-Same loop with `family: idea_spirit` on `hoi4.image_icon`. Concerns and manufacturers are `idea_concern` (64x64) and advisors are `advisor_card` (65x67, import-only): the size alone cannot make one into another. Use one style for the set and `variants: 3` to pick the best of three candidates per spirit. Install with `mode: register` when the mod has one `.gfx` file per feature.
+Same loop with `family: idea_spirit` on `hoi4.image_icon`. Concerns and manufacturers are `idea_concern` (64x64) and advisors are `advisor_card` (65x67, composited into the mod's advisor template by the chain): the size alone cannot make one into another. Use one style for the set and `variants: 3` to pick the best of three candidates per spirit. Install with `mode: register` when the mod has one `.gfx` file per feature.
 
 ## 3. A report and a news picture
 
-`hoi4.image_picture` with `family: report_event` (210x176) and `news_event` (397x153, converted to black and white by the chain). Opaque pictures: the chain flattens provider alpha and validation checks that no pixel is translucent. The kit's report-card tool applies the paper, sepia and tilt treatment afterwards; run it on the installed or processed file.
+`hoi4.image_picture` with `family: report_event` (210x176) and `news_event` (397x153, converted to black and white by the chain). Opaque pictures: the chain flattens provider alpha and validation checks that no pixel is translucent. The report card is the exception that proves the rule: `hoi4.image_process` always turns a report picture into the card (sepia, grain, tilt, soft shadow, 210x176 with transparent corners), so a report event is validated for transparent corners, not for opacity. Finished cards that already have the card alpha are accepted unchanged.
 
 ## 4. A flag set
 
-Import a finished 82x52 or larger design: `hoi4.image_process {import: {path, family: flag, feature_slug, asset: "IRP_fascism"}}`. Install writes `gfx/flags/IRP_fascism.tga`, `medium/` and `small/` as bottom-origin 32-bit TGAs; the smaller sizes are Lanczos copies of the first.
+Import a finished 82x52 or larger design: `hoi4.image_process {import: {path, family: flag, feature_slug, asset: "IRP_fascism"}}`. The chain makes the three sizes (`flag_ladder`), validation checks each, and install writes `gfx/flags/IRP_fascism.tga`, `medium/` and `small/` as bottom-origin 32-bit TGAs.
 
 ## 5. Refining a rejected candidate
 
