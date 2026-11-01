@@ -10,7 +10,7 @@ use imagegen_core::config::EnvSource;
 use imagegen_core::hashing::Clock;
 use imagegen_providers::transport::{send, HostPolicy, HttpTransport, UreqTransport};
 
-use crate::oauth::{self, account_id, authorize_url, bind_listener, exchange_request, expiry_ms, make_pkce, make_state, parse_tokens, wait_for_callback};
+use crate::oauth::{account_id, authorize_url, bind_listener, exchange_request, expiry_ms, make_pkce, make_state, parse_tokens, wait_for_callback};
 use crate::provider::describe;
 use crate::store::{default_path, CredentialStore, Credentials};
 use crate::{evaluate_gates, PluginMode, ACK_ENV, CALLBACK_PORT, HOSTS};

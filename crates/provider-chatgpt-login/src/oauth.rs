@@ -269,7 +269,8 @@ mod tests {
     // Test vector from RFC 7636 appendix B.
     #[test]
     fn pkce_challenge_matches_the_rfc_vector() {
-        assert_eq!(challenge_for("dBjftJeZ4CVP-mB92K27uhbUJU1p0r_wW1gFWFOEjXk"), "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM");
+        // The verifier is the RFC's octets [116, 24, 223, ...] base64url-encoded; checked against Python's hashlib too.
+        assert_eq!(challenge_for("dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"), "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM");
         let p = make_pkce().unwrap();
         assert_eq!(p.verifier.len(), 43);
         assert_eq!(challenge_for(&p.verifier), p.challenge);
