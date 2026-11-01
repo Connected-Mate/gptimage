@@ -12,7 +12,7 @@ All keys optional; each overrides the built-in default for that row.
 
 | Key | Meaning |
 |---|---|
-| `automation` | `generate`, `import_only` (another step builds the art: frame strips, cards) or `user_run_only` |
+| `automation` | `generate` (every family except the counters and the division emblem), `import_only` (a different tool makes the second frame) or `user_run_only` (a project may still set it) |
 | `background` | `transparent` or `opaque` |
 | `container` | `dds` (uncompressed A8R8G8B8, one mip) or `tga` |
 | `folder`, `prefix`, `alt_prefixes` | Final folder and file prefix with `{feature_slug}`, `{asset}` placeholders; other prefixes the game accepts (focus accepts `goal_`) |
@@ -24,6 +24,9 @@ All keys optional; each overrides the built-in default for that row.
 | `rubric` | Review rubric id (one per group: `icon_v1`, `picture_v1`, `portrait_v1`, `flag_v1`, `unit_v1`, `interface_v1`) |
 | `prompt` | `{rules, negative}` sentence lists; `{w}` and `{h}` are replaced by the canvas |
 | `grayscale` | Convert to black and white (news pictures) |
+| `source_canvas` | Size the model is asked for when it is not the canvas (the advisor card is made from a tall 156x210 portrait) |
+
+The processing recipe of a family (`icon`, `report_card`, `achievement`...) is not a profile key: it follows from the family and cannot be overridden, so a kit row cannot switch the finishing off. Templates and the face model are found inside the project (`.claude/skills/*/assets/*/`, `.claude/skills/*/tools/models/`) or through `[templates] dir` and `face_model` in `.hoi4-imagegen/config.toml`.
 
 ## Rows
 
