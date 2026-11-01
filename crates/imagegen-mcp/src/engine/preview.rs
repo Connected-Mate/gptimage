@@ -179,15 +179,17 @@ impl Engine {
         else {
             return Vec::new();
         };
-        load_refs(&self.fs, self.game_dir().as_deref(), &self.config.policy, &rec)
+        load_refs(&self.fs, self.game_dir().as_deref(), &rec)
     }
 }
 
-fn load_refs(fs: &ProjectFs, game: Option<&std::path::Path>, policy: &imagegen_core::config::PolicyConfig, rec: &CandidateRecord) -> Vec<Rgba> {
+/// References shown beside a candidate on its contact sheet. Paradox art is left out: the sheet is written into the
+/// mod, and the tool never copies vanilla art there.
+fn load_refs(fs: &ProjectFs, game: Option<&std::path::Path>, rec: &CandidateRecord) -> Vec<Rgba> {
     rec.references
         .iter()
-        .filter(|r| r.role != imagegen_core::refs::RefRole::EditTarget)
-        .filter_map(|r| load_reference(fs, game, policy, &ReferenceInput { path: r.path.clone(), role: r.role }).ok())
+        .filter(|r| r.role != imagegen_core::refs::RefRole::EditTarget && !r.origin.is_vanilla())
+        .filter_map(|r| load_reference(fs, game, &ReferenceInput { path: r.path.clone(), role: r.role }).ok())
         .filter_map(|l| decode(&l.png, None, DecodeLimits::default()).ok().map(|(i, _)| i))
         .collect()
 }

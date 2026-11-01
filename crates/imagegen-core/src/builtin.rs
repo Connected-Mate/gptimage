@@ -41,17 +41,17 @@ struct Row {
     source_canvas: Option<[u32; 2]>,
 }
 
-const ICON_CHECKS: &[&str] = &["size", "alpha", "opaque_canvas", "fringe", "margin", "fill", "checker", "dds"];
-const FOCUS_CHECKS: &[&str] = &["size", "alpha", "opaque_canvas", "fringe", "margin", "fill", "checker", "ghost", "dds"];
-const PICTURE_CHECKS: &[&str] = &["size", "checker", "opaque", "dds"];
-const CARD_CHECKS: &[&str] = &["size", "checker", "card_corners", "dds"];
-const ACHIEVEMENT_CHECKS: &[&str] = &["size", "checker", "near_opaque", "dds"];
-const ADVISOR_CHECKS: &[&str] = &["size", "alpha", "checker", "card_corners", "dds"];
-const PORTRAIT_CHECKS: &[&str] = &["size", "checker", "opaque", "dds"];
-const FLAG_CHECKS: &[&str] = &["size", "opaque", "tga"];
-const UNIT_CHECKS: &[&str] = &["size", "alpha", "frames", "dds"];
-const INTERFACE_CHECKS: &[&str] = &["size", "alpha", "dds"];
-const SUPER_CHECKS: &[&str] = &["size", "checker", "opaque", "dds"];
+const ICON_CHECKS: &[&str] = &["size", "alpha", "opaque_canvas", "fringe", "margin", "fill", "checker", "style", "dds"];
+const FOCUS_CHECKS: &[&str] = &["size", "alpha", "opaque_canvas", "fringe", "margin", "fill", "checker", "ghost", "style", "dds"];
+const PICTURE_CHECKS: &[&str] = &["size", "checker", "opaque", "style", "dds"];
+const CARD_CHECKS: &[&str] = &["size", "checker", "card_corners", "style", "dds"];
+const ACHIEVEMENT_CHECKS: &[&str] = &["size", "checker", "near_opaque", "style", "dds"];
+const ADVISOR_CHECKS: &[&str] = &["size", "alpha", "checker", "card_corners", "style", "dds"];
+const PORTRAIT_CHECKS: &[&str] = &["size", "checker", "opaque", "style", "dds"];
+const FLAG_CHECKS: &[&str] = &["size", "opaque", "style", "tga"];
+const UNIT_CHECKS: &[&str] = &["size", "alpha", "frames", "style", "dds"];
+const INTERFACE_CHECKS: &[&str] = &["size", "alpha", "style", "dds"];
+const SUPER_CHECKS: &[&str] = &["size", "checker", "opaque", "style", "dds"];
 
 const ICON_RULES: &[&str] = &[
     "One centred subject with a strong, simple silhouette that stays readable at {w}x{h} pixels.",

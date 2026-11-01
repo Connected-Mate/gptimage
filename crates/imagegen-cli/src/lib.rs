@@ -368,8 +368,7 @@ fn doctor_text(s: &Value) -> String {
         },
     ));
     t.push_str(&format!(
-        "Policy: vanilla art as references {}; per-call limit ${}\nChatGPT login ({}): {}\n",
-        if s["policy"]["allow_vanilla_references"] == json!(true) { "ALLOWED for this project" } else { "off (default)" },
+        "Policy: vanilla art as references is always allowed (D4 amended 2026-11-01); per-call limit ${}\nChatGPT login ({}): {}\n",
         s["policy"]["max_usd_per_call"],
         s["chatgpt_login"]["model"].as_str().unwrap_or("?"),
         s["chatgpt_login"]["state"].as_str().unwrap_or("?"),

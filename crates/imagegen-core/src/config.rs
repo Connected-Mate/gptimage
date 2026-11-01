@@ -58,9 +58,9 @@ impl EnvSource for MapEnv {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct PolicyConfig {
-    /// Decision D4: sending installed-game or kit-shelf (Paradox) art to a provider as a reference.
-    /// Off by default; opt-in per project.
-    pub allow_vanilla_references: bool,
+    /// Deprecated and ignored. Decision D4 was amended on 2026-11-01: vanilla art may always be sent to a provider
+    /// as a reference. The key is still accepted so existing files keep loading; `hoi4.image_status` says it has no effect.
+    pub allow_vanilla_references: Option<bool>,
     /// Categories this project never generates, whatever the provider (a project overlay, for
     /// example Chaos Redux never generates historical leaders).
     #[serde(alias = "forbidden_categories")]
@@ -71,7 +71,7 @@ pub struct PolicyConfig {
 
 impl Default for PolicyConfig {
     fn default() -> Self {
-        PolicyConfig { allow_vanilla_references: false, forbidden_families: Vec::new(), max_usd_per_call: 1.0 }
+        PolicyConfig { allow_vanilla_references: None, forbidden_families: Vec::new(), max_usd_per_call: 1.0 }
     }
 }
 
@@ -205,7 +205,7 @@ mod tests {
     #[test]
     fn defaults_are_safe() {
         let c = Config::default();
-        assert!(!c.policy.allow_vanilla_references, "D4: vanilla references are off by default");
+        assert_eq!(c.policy.allow_vanilla_references, None, "the deprecated D4 key is unset by default");
         assert!(c.policy.forbidden_families.is_empty());
         assert_eq!(c.policy.max_usd_per_call, 1.0);
     }
@@ -241,7 +241,7 @@ canvas = [94, 86]
 margin = 2
 "#;
         let c = Config::parse(text).unwrap();
-        assert!(c.policy.allow_vanilla_references);
+        assert_eq!(c.policy.allow_vanilla_references, Some(true), "still readable, but ignored");
         assert_eq!(c.policy.forbidden_families, vec![Family::LeaderPortrait]);
         assert_eq!(c.provider("openai").model.as_deref(), Some("gpt-image-2.5-flare"));
         assert_eq!(c.provider("comfyui").endpoint.as_deref(), Some("http://127.0.0.1:8188"));
@@ -263,10 +263,10 @@ margin = 2
     #[test]
     fn load_reads_the_file_or_defaults() {
         let dir = tempfile::tempdir().unwrap();
-        assert!(!Config::load(dir.path()).unwrap().policy.allow_vanilla_references);
+        assert_eq!(Config::load(dir.path()).unwrap().policy.allow_vanilla_references, None);
         std::fs::create_dir_all(dir.path().join(STATE_DIR)).unwrap();
         std::fs::write(dir.path().join(CONFIG_PATH), "[policy]\nallow_vanilla_references = true\n").unwrap();
-        assert!(Config::load(dir.path()).unwrap().policy.allow_vanilla_references);
+        assert_eq!(Config::load(dir.path()).unwrap().policy.allow_vanilla_references, Some(true));
         std::fs::write(dir.path().join(CONFIG_PATH), "[policy\n").unwrap();
         assert!(Config::load(dir.path()).is_err());
     }

@@ -58,7 +58,7 @@ impl ImageServer {
 
     #[tool(
         name = "hoi4.image_families",
-        description = "List every asset family or get one: group and tool, measured canvas and frames (vanilla 1.19.4.1 counts), accepted sizes, the mod's override of them, naming and folder, checks, review rubric questions, final file paths and the style sources that exist for it (style profiles and reference folders). With calibrate = true, compare the families with the installed game's file headers and return the proposed diff (nothing is written).",
+        description = "List every asset family or get one: group and tool, measured canvas and frames (vanilla 1.19.4.1 counts), accepted sizes, the mod's override of them, naming and folder, checks, review rubric questions, final file paths and the family's style sources: the tiers found with counts (pinned style, the mod's asset-folder copy, the mod's own assets, vanilla), the references a plan would send with the reason for each, the measured style statistics and the drift threshold. With calibrate = true, compare the families with the installed game's file headers and return the proposed diff (nothing is written).",
         annotations(read_only_hint = true, open_world_hint = false)
     )]
     async fn families(&self, Parameters(p): Parameters<FamiliesParams>) -> Result<CallToolResult, ErrorData> {
@@ -67,7 +67,7 @@ impl ImageServer {
 
     #[tool(
         name = "hoi4.image_references",
-        description = "Manage reference images and project style profiles: list, add (with role and rights note), approve, and list, get or save style profiles whose references are pinned by SHA-256. Paradox art (installed game or the kit's vanilla shelf) is refused unless the project opted in.",
+        description = "Manage reference images and project style profiles: list, add (with role and rights note), approve, and list, get or save style profiles whose references are pinned by SHA-256. Plans also pick style references automatically, mod first, then vanilla. Paradox art may be sent to a provider and its origin is recorded.",
         annotations(read_only_hint = false, destructive_hint = false, idempotent_hint = false, open_world_hint = false)
     )]
     async fn references(&self, Parameters(p): Parameters<ReferencesParams>) -> Result<CallToolResult, ErrorData> {
