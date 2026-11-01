@@ -92,11 +92,7 @@ pub fn decode(bytes: &[u8]) -> Result<Rgba> {
     let start = HEADER_LEN + info.id_len;
     let need = info.width as usize * info.height as usize * bpp;
     if bytes.len() < start + need {
-        return Err(Error::Image(format!(
-            "TGA holds {} bytes, its header needs at least {}",
-            bytes.len(),
-            start + need
-        )));
+        return Err(Error::Image(format!("TGA holds {} bytes, its header needs at least {}", bytes.len(), start + need)));
     }
     let mut img = Rgba::new(info.width, info.height);
     for row in 0..info.height {

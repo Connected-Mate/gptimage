@@ -6,8 +6,8 @@ use crate::error::{Error, Result};
 pub const MAX_NAME_LEN: usize = 48;
 
 const RESERVED: &[&str] = &[
-    "con", "prn", "aux", "nul", "com1", "com2", "com3", "com4", "com5", "com6", "com7", "com8", "com9", "lpt1",
-    "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9",
+    "con", "prn", "aux", "nul", "com1", "com2", "com3", "com4", "com5", "com6", "com7", "com8", "com9", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5",
+    "lpt6", "lpt7", "lpt8", "lpt9",
 ];
 
 /// True for Windows reserved device names (with or without extension).
@@ -43,9 +43,8 @@ pub fn validate_flag_name(value: &str) -> Result<()> {
         None => (value, None),
     };
     let tag_ok = tag.len() == 3 && tag.chars().all(|c| c.is_ascii_uppercase() || c.is_ascii_digit());
-    let rest_ok = rest
-        .map(|r| !r.is_empty() && r.len() <= 30 && r.chars().all(|c| c.is_ascii_lowercase() || c == '_') && !r.ends_with('_'))
-        .unwrap_or(true);
+    let rest_ok =
+        rest.map(|r| !r.is_empty() && r.len() <= 30 && r.chars().all(|c| c.is_ascii_lowercase() || c == '_') && !r.ends_with('_')).unwrap_or(true);
     if !tag_ok || !rest_ok {
         return Err(Error::Invalid(format!(
             "flag name '{value}' must be a three character country tag with an optional lowercase ideology suffix, such as GER or GER_fascism"
@@ -64,9 +63,7 @@ pub fn expand(pattern: &str, feature_slug: &str, asset: &str, prefix: &str) -> R
     while let Some(start) = rest.find('{') {
         out.push_str(&rest[..start]);
         let after = &rest[start + 1..];
-        let end = after
-            .find('}')
-            .ok_or_else(|| Error::Invalid(format!("unclosed placeholder in pattern '{pattern}'")))?;
+        let end = after.find('}').ok_or_else(|| Error::Invalid(format!("unclosed placeholder in pattern '{pattern}'")))?;
         match &after[..end] {
             "feature_slug" => out.push_str(feature_slug),
             "asset" => out.push_str(asset),
@@ -135,11 +132,7 @@ impl ArtifactId {
 pub fn highest_version<'a>(names: impl IntoIterator<Item = &'a str>, stem: &str, ext: &str) -> u32 {
     let prefix = format!("{stem}-v");
     let suffix = format!(".{ext}");
-    names
-        .into_iter()
-        .filter_map(|n| n.strip_prefix(&prefix)?.strip_suffix(&suffix)?.parse::<u32>().ok())
-        .max()
-        .unwrap_or(0)
+    names.into_iter().filter_map(|n| n.strip_prefix(&prefix)?.strip_suffix(&suffix)?.parse::<u32>().ok()).max().unwrap_or(0)
 }
 
 #[cfg(test)]

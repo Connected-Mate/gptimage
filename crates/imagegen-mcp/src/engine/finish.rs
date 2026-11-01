@@ -17,6 +17,7 @@ use imagegen_core::recipes::advisor::{advisor_card, AdvisorParams};
 use imagegen_core::recipes::flags::flag_ladder;
 use imagegen_core::recipes::pillow::alpha_composite;
 use imagegen_core::recipes::portrait::{extract_portrait, CropChoice, FaceBox, FaceDetector};
+use imagegen_core::recipes::strip::build_strip;
 use serde_json::{json, Value};
 
 use super::{EResult, Engine, EngineError};
@@ -133,7 +134,13 @@ impl Engine {
     }
 
     /// Run one finishing stage on the image the chain has produced so far.
-    pub(crate) fn run_finisher(&self, finisher: Finisher, img: &Rgba, portrait_crop: Option<[i64; 4]>) -> EResult<FinishOutput> {
+    pub(crate) fn run_finisher(
+        &self,
+        finisher: Finisher,
+        img: &Rgba,
+        portrait_crop: Option<[i64; 4]>,
+        second: Option<(&str, &Rgba)>,
+    ) -> EResult<FinishOutput> {
         match finisher {
             Finisher::AdvisorCard => {
                 let base =
@@ -210,6 +217,22 @@ impl Engine {
                     CropChoice::Manual => json!({"manual": true}),
                 };
                 Ok(FinishOutput { main: made.portrait, companions: vec![], detail: json!({"crop": made.crop, "choice": choice, "model": model}) })
+            }
+            Finisher::SecondFrame => {
+                let (second_id, second) = second.ok_or_else(|| {
+                    EngineError::refused(
+                        "second_frame_needed",
+                        "a building is a two-frame strip and vanilla shows the ruined landmark in frame 2, which cannot be derived from frame 1. Make it with hoi4.image_edit on this candidate (for example \"the same landmark in ruins, burning, same angle and framing\"), then process again with second_frame_candidate",
+                        RetryClass::Terminal,
+                    )
+                })?;
+                let strip = build_strip(&[img.clone(), second.clone()], (img.width, img.height))
+                    .map_err(|e| EngineError::invalid(format!("the two frames do not fit together: {e}")))?;
+                Ok(FinishOutput {
+                    main: strip,
+                    companions: vec![],
+                    detail: json!({"second_frame_candidate": second_id, "second_frame_sha256": second.pixels_sha256()}),
+                })
             }
             Finisher::FlagLadder => {
                 let ladder = flag_ladder(img)?;

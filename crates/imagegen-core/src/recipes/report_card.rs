@@ -15,8 +15,8 @@
 use crate::error::{Error, Result};
 use crate::pixels::Rgba;
 use crate::recipes::pillow::{
-    alpha_composite, alpha_plane, autocontrast_rgb, colorize_lut, enhance_brightness, enhance_contrast, gaussian_blur_plane, luma,
-    py_round, rotate_bicubic_expand, PyRandom,
+    alpha_composite, alpha_plane, autocontrast_rgb, colorize_lut, enhance_brightness, enhance_contrast, gaussian_blur_plane, luma, py_round,
+    rotate_bicubic_expand, PyRandom,
 };
 use crate::resize::resize_lanczos3;
 

@@ -225,9 +225,10 @@ impl Ledger {
 
     /// The generate, edit or import entry that used an idempotency key.
     pub fn find_idempotency(&self, key: &str) -> Result<Option<Entry>> {
-        Ok(self.entries()?.into_iter().find(|e| {
-            matches!(e.kind.as_str(), "generated" | "edited") && e.data.get("idempotency_key").and_then(Value::as_str) == Some(key)
-        }))
+        Ok(self
+            .entries()?
+            .into_iter()
+            .find(|e| matches!(e.kind.as_str(), "generated" | "edited") && e.data.get("idempotency_key").and_then(Value::as_str) == Some(key)))
     }
 
     /// Highest version number ever allocated for an asset (so a deleted file's number is not reused).
@@ -249,7 +250,9 @@ impl Ledger {
         for _ in 0..1000 {
             let parent = entries
                 .iter()
-                .find(|e| e.artifact_id.as_deref() == Some(cur.as_str()) && matches!(e.kind.as_str(), "generated" | "edited" | "imported" | "processed"))
+                .find(|e| {
+                    e.artifact_id.as_deref() == Some(cur.as_str()) && matches!(e.kind.as_str(), "generated" | "edited" | "imported" | "processed")
+                })
                 .and_then(|e| e.data.get("parent").or_else(|| e.data.get("source_id")))
                 .and_then(Value::as_str)
                 .map(str::to_string);

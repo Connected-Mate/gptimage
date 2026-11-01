@@ -124,10 +124,7 @@ fn post_body_and_headers_arrive_and_the_response_is_read() {
 
 #[test]
 fn redirects_are_returned_not_followed() {
-    let mock = Mock::start(vec![
-        http("302 Found", &["Location: http://127.0.0.1:1/never"], b""),
-        http("200 OK", &[], b"should not be fetched"),
-    ]);
+    let mock = Mock::start(vec![http("302 Found", &["Location: http://127.0.0.1:1/never"], b""), http("200 OK", &[], b"should not be fetched")]);
     let resp = send(&UreqTransport::new(), &loopback_policy(), &HttpRequest::get(mock.url("/start"))).unwrap();
     assert_eq!(resp.status, 302, "a redirect must reach the caller as a 3xx, which the adapters treat as an error");
     let seen = mock.finish();
@@ -160,9 +157,7 @@ fn a_refused_connection_is_reported_as_not_sent() {
         l.local_addr().unwrap().port()
     };
     let t = UreqTransport::new();
-    let err = t
-        .execute(&HttpRequest::get(format!("http://127.0.0.1:{port}/")), 1000, Duration::from_secs(5))
-        .unwrap_err();
+    let err = t.execute(&HttpRequest::get(format!("http://127.0.0.1:{port}/")), 1000, Duration::from_secs(5)).unwrap_err();
     assert!(matches!(err, TransportError::NotSent(_)), "{err:?}");
     // through `send`, a POST that was never sent is safe to repeat
     let mut req = HttpRequest::post_json(format!("http://127.0.0.1:{port}/"), &serde_json::json!({}));

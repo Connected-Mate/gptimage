@@ -5,7 +5,7 @@
 //! recorded with a recipe id and version so validation and the install gate can refuse an artifact that lacks it.
 //! See `imagegen_core::chain` for the table of recipes.
 
-use imagegen_core::chain::{self, recipe_of, Recipe};
+use imagegen_core::chain::{self, recipe_of, Finisher, Recipe};
 use imagegen_core::error::RetryClass;
 use imagegen_core::export;
 use imagegen_core::family::{Family, Group};
@@ -74,11 +74,18 @@ impl Engine {
         let plan = chain::plan_finishing(&profile, artifact.canvas, &prepared, imported, keyed, &artifact.recorded_sha256)?;
         let (mut main, finishing) = run_chain_limited(&prepared, &plan.ops, limit)?;
         records.extend(finishing);
+        if p.second_frame_candidate.is_some() && !plan.finishers.contains(&Finisher::SecondFrame) {
+            return Err(EngineError::invalid(format!("second_frame_candidate is for a generated building strip, not {}", profile.family)));
+        }
+        let second = match (&p.second_frame_candidate, plan.finishers.contains(&Finisher::SecondFrame)) {
+            (Some(id), true) => Some((id.clone(), self.second_frame(&artifact, id, &pre, limit)?)),
+            _ => None,
+        };
         let mut finishers: Vec<FinisherRecord> = Vec::new();
         let mut companions: Vec<(String, Rgba)> = Vec::new();
         for f in &plan.finishers {
             let input_sha256 = main.pixels_sha256();
-            let made = self.run_finisher(*f, &main, p.portrait_crop)?;
+            let made = self.run_finisher(*f, &main, p.portrait_crop, second.as_ref().map(|(id, img)| (id.as_str(), img)))?;
             finishers.push(FinisherRecord {
                 name: f.name().to_string(),
                 input_sha256,
@@ -292,6 +299,32 @@ impl Engine {
         };
         self.ledger.append(kind::IMPORTED, Some(&aid), Some(&rec.candidate_id), &rec)?;
         self.artifact(&rec.candidate_id)
+    }
+
+    /// Frame 2 of a landmark strip: another raw candidate of the same asset, fitted exactly like frame 1.
+    fn second_frame(&self, first: &Artifact, id: &str, pre: &[Op], limit: Option<f64>) -> EResult<Rgba> {
+        let second = self.artifact(id)?;
+        if second.processed || second.id == first.id || second.asset_id != first.asset_id || second.family != first.family {
+            return Err(EngineError::invalid(format!(
+                "second_frame_candidate must be another raw candidate of {} (for example from hoi4.image_edit), not {id}",
+                first.asset_id
+            )));
+        }
+        let (bytes, sha) = self.read_artifact(&second)?;
+        if sha != second.recorded_sha256 {
+            return Err(EngineError::refused(
+                "candidate_changed",
+                format!("{id} was modified after it was recorded"),
+                RetryClass::RefreshPreconditions,
+            ));
+        }
+        let (img, _) = decode(&bytes, Some(&second.path), DecodeLimits::default())?;
+        let profile = self.profile_of(&second)?.clone();
+        let (prepared, _) = run_chain_limited(&img, pre, limit)?;
+        let keyed = pre.iter().any(|o| matches!(o, Op::ChromaKey { .. }));
+        let plan = chain::plan_finishing(&profile, second.canvas, &prepared, false, keyed, &second.recorded_sha256)?;
+        let (fitted, _) = run_chain_limited(&prepared, &plan.ops, limit)?;
+        Ok(fitted)
     }
 }
 

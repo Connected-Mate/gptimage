@@ -105,11 +105,15 @@ pub fn status_error(status: u16, body: &[u8], secrets: &[String]) -> ProviderErr
 
 /// Check a request against a descriptor's model table before anything is sent.
 pub fn check_model<'a>(desc: &'a ProviderDescriptor, req: &ImageRequest) -> Result<&'a ModelInfo, ProviderError> {
-    let known = || desc.models.iter().filter(|m| !matches!(m.status, ModelStatus::Retired { .. })).map(|m| m.id.as_str()).collect::<Vec<_>>().join(", ");
+    let known =
+        || desc.models.iter().filter(|m| !matches!(m.status, ModelStatus::Retired { .. })).map(|m| m.id.as_str()).collect::<Vec<_>>().join(", ");
     let model = desc.model(&req.model).ok_or_else(|| {
         ProviderError::unsupported(format!(
             "'{}' is not in the {} model table (checked {}). Known models: {}",
-            req.model, desc.display_name, desc.retrieved, known()
+            req.model,
+            desc.display_name,
+            desc.retrieved,
+            known()
         ))
     })?;
     if let ModelStatus::Retired { on } = &model.status {
@@ -144,11 +148,7 @@ pub fn per_image_price(cost: &CostModel, quality: Option<&str>) -> Option<(f64, 
         _ => return None,
     };
     let want = quality.unwrap_or("default");
-    table
-        .iter()
-        .find(|(q, _)| q == want)
-        .or_else(|| table.iter().find(|(q, _)| q == "default"))
-        .map(|(q, p)| (*p, q.clone()))
+    table.iter().find(|(q, _)| q == want).or_else(|| table.iter().find(|(q, _)| q == "default")).map(|(q, p)| (*p, q.clone()))
 }
 
 /// Basis text with the table date.
@@ -231,7 +231,9 @@ mod tests {
         r.edit = Some(EditSpec { base_png: vec![1], mask_png: None });
         assert!(check_model(&fal, &r).is_err());
         let mut r = req("fal-ai/flux-2");
-        r.refs = (0..5).map(|_| crate::types::ProviderRef { role: imagegen_core::refs::RefRole::StyleAnchor, png: vec![], sha256: String::new() }).collect();
+        r.refs = (0..5)
+            .map(|_| crate::types::ProviderRef { role: imagegen_core::refs::RefRole::StyleAnchor, png: vec![], sha256: String::new() })
+            .collect();
         assert!(check_model(&fal, &r).unwrap_err().message.contains("at most 4"));
     }
 

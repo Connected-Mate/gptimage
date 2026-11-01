@@ -14,10 +14,7 @@ use imagegen_core::recipes::portrait::{extract_portrait, CropChoice, FaceDetecto
 fn kit() -> Option<PathBuf> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..");
     let candidates = [std::env::var("HOI4_KIT_DIR").ok().map(PathBuf::from), Some(root.join("agentic-hoi4-modding"))];
-    candidates
-        .into_iter()
-        .flatten()
-        .find(|p| p.join(".claude/skills/hoi4-feature-assets/tools/models/face_detection_yunet_2026may.onnx").is_file())
+    candidates.into_iter().flatten().find(|p| p.join(".claude/skills/hoi4-feature-assets/tools/models/face_detection_yunet_2026may.onnx").is_file())
 }
 
 fn skip(reason: &str) {

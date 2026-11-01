@@ -272,7 +272,9 @@ pub fn send(transport: &dyn HttpTransport, policy: &HostPolicy, req: &HttpReques
         return Err(ProviderError::new(ErrorKind::Blocked, RetryClass::Terminal, format!("destination blocked: {why}")));
     }
     transport.execute(req, policy.max_response_bytes, policy.timeout).map_err(|e| match e {
-        TransportError::NotSent(m) => ProviderError::new(ErrorKind::Transport, RetryClass::SafeSameInputs, format!("could not reach the provider: {m}")),
+        TransportError::NotSent(m) => {
+            ProviderError::new(ErrorKind::Transport, RetryClass::SafeSameInputs, format!("could not reach the provider: {m}"))
+        }
         TransportError::MaybeSent(m) => {
             let retry = if req.method == Method::Get { RetryClass::SafeSameInputs } else { RetryClass::ReconcileFirst };
             ProviderError::new(ErrorKind::Transport, retry, format!("the connection failed after the request may have been sent: {m}"))
@@ -331,20 +333,11 @@ impl HttpTransport for UreqTransport {
         };
         let mut resp = result.map_err(map_err)?;
         let status = resp.status().as_u16();
-        let headers = resp
-            .headers()
-            .iter()
-            .map(|(k, v)| (k.as_str().to_ascii_lowercase(), v.to_str().unwrap_or("").to_string()))
-            .collect();
-        let body = resp
-            .body_mut()
-            .with_config()
-            .limit(max_response_bytes as u64)
-            .read_to_vec()
-            .map_err(|e| match e {
-                ureq::Error::BodyExceedsLimit(_) => TransportError::TooLarge(max_response_bytes),
-                other => TransportError::MaybeSent(other.to_string()),
-            })?;
+        let headers = resp.headers().iter().map(|(k, v)| (k.as_str().to_ascii_lowercase(), v.to_str().unwrap_or("").to_string())).collect();
+        let body = resp.body_mut().with_config().limit(max_response_bytes as u64).read_to_vec().map_err(|e| match e {
+            ureq::Error::BodyExceedsLimit(_) => TransportError::TooLarge(max_response_bytes),
+            other => TransportError::MaybeSent(other.to_string()),
+        })?;
         Ok(HttpResponse { status, headers, body })
     }
 }
@@ -378,11 +371,8 @@ impl FixtureTransport {
     /// means the URL must end with the rest instead). The last queued response for a route is repeated once the
     /// queue runs down to one.
     pub fn respond(&self, method: Method, contains: &str, status: u16, headers: &[(&str, &str)], body: impl Into<Vec<u8>>) -> &Self {
-        let resp = HttpResponse {
-            status,
-            headers: headers.iter().map(|(k, v)| (k.to_ascii_lowercase(), v.to_string())).collect(),
-            body: body.into(),
-        };
+        let resp =
+            HttpResponse { status, headers: headers.iter().map(|(k, v)| (k.to_ascii_lowercase(), v.to_string())).collect(), body: body.into() };
         self.push(method, contains, Ok(resp));
         self
     }
@@ -494,7 +484,21 @@ mod tests {
 
     #[test]
     fn private_address_detection() {
-        for h in ["127.0.0.1", "10.1.2.3", "172.16.0.1", "192.168.1.1", "169.254.169.254", "100.64.0.1", "::1", "fd00::1", "fe80::1", "::ffff:10.0.0.1", "localhost", "a.localhost", "0.0.0.0"] {
+        for h in [
+            "127.0.0.1",
+            "10.1.2.3",
+            "172.16.0.1",
+            "192.168.1.1",
+            "169.254.169.254",
+            "100.64.0.1",
+            "::1",
+            "fd00::1",
+            "fe80::1",
+            "::ffff:10.0.0.1",
+            "localhost",
+            "a.localhost",
+            "0.0.0.0",
+        ] {
             assert!(is_private_host(h), "{h}");
         }
         for h in ["8.8.8.8", "api.openai.com", "2606:4700::1111", "100.63.0.1"] {

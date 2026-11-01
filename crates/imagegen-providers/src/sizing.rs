@@ -37,17 +37,16 @@ pub fn choose_size(rule: &SizeRule, canvas: [u32; 2]) -> Result<(u32, u32), Prov
             .min_by(|a, b| {
                 let da = (f64::from(a[0]) / f64::from(a[1]) / aspect).ln().abs();
                 let db = (f64::from(b[0]) / f64::from(b[1]) / aspect).ln().abs();
-                da.partial_cmp(&db).unwrap_or(std::cmp::Ordering::Equal).then((u64::from(a[0]) * u64::from(a[1])).cmp(&(u64::from(b[0]) * u64::from(b[1]))))
+                da.partial_cmp(&db)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+                    .then((u64::from(a[0]) * u64::from(a[1])).cmp(&(u64::from(b[0]) * u64::from(b[1]))))
             })
             .map(|s| (s[0], s[1]))
             .ok_or_else(|| ProviderError::unsupported("the model has no allowed sizes")),
         SizeRule::Arbitrary { multiple, min_pixels, max_pixels, max_edge, max_ratio } => {
             let m = (*multiple).max(1);
             if aspect > *max_ratio || aspect < 1.0 / *max_ratio {
-                return Err(ProviderError::unsupported(format!(
-                    "aspect {}:{} is outside the model's {max_ratio}:1 limit",
-                    canvas[0], canvas[1]
-                )));
+                return Err(ProviderError::unsupported(format!("aspect {}:{} is outside the model's {max_ratio}:1 limit", canvas[0], canvas[1])));
             }
             // walk the short edge up in steps of `multiple` until the pixel floor is met
             let landscape = aspect >= 1.0;
@@ -82,7 +81,21 @@ mod tests {
 
     #[test]
     fn arbitrary_sizes_meet_every_constraint_for_every_hoi4_canvas() {
-        let canvases = [[100, 88], [65, 67], [33, 32], [52, 40], [210, 176], [397, 153], [457, 328], [156, 210], [82, 52], [10, 7], [114, 101], [45, 45], [146, 54]];
+        let canvases = [
+            [100, 88],
+            [65, 67],
+            [33, 32],
+            [52, 40],
+            [210, 176],
+            [397, 153],
+            [457, 328],
+            [156, 210],
+            [82, 52],
+            [10, 7],
+            [114, 101],
+            [45, 45],
+            [146, 54],
+        ];
         for c in canvases {
             let (w, h) = choose_size(&gpt2(), c).unwrap_or_else(|e| panic!("{c:?}: {e}"));
             assert_eq!(w % 16, 0, "{c:?} -> {w}x{h}");

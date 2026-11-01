@@ -137,9 +137,7 @@ pub fn compute_portrait_crop(image_size: (u32, u32), face: FaceBox) -> Result<[u
     let t = py_round(top as f64 - fh as f64 * 0.9).clamp(0, height - crop_h);
     let crop = [l, t, l + crop_w, t + crop_h];
     if !(crop[0] <= left && crop[1] <= top && crop[2] >= left + fw && crop[3] >= top + fh) {
-        return Err(Error::Invalid(
-            "automatic head-and-shoulders crop would clip the detected face; provide an explicit crop rectangle".into(),
-        ));
+        return Err(Error::Invalid("automatic head-and-shoulders crop would clip the detected face; provide an explicit crop rectangle".into()));
     }
     Ok(crop.map(|v| v as u32))
 }

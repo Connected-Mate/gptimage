@@ -160,7 +160,6 @@ fn every_family_runs_its_own_finishing_without_being_asked() {
         ("report_event", "briefing", &photo, json!({}), vec!["flatten_on", "report_card"], vec![], vec![], [210, 176]),
         ("faction_logo", "pact", &subject, json!({}), vec!["fit_subject", "selected_frame"], vec![], vec![], [200, 100]),
         ("agency_logo", "bureau", &subject, json!({}), vec!["fit_subject", "selected_frame"], vec![], vec![], [234, 119]),
-        ("building", "castle", &subject, json!({}), vec!["fit_subject", "disabled_frame"], vec![], vec![], [128, 64]),
         ("flag", "IRP", &photo, json!({}), vec!["flatten_on"], vec!["flag_ladder"], vec!["medium", "small"], [82, 52]),
         (
             "achievement",
@@ -650,16 +649,32 @@ fn logos_and_buildings_build_their_own_second_frame() {
         }
     }
     assert!(frames[1].alpha_bbox(16).unwrap()[0] < b[0], "frame 2 reaches beyond the emblem");
-    // a building's second frame is the same shape, desaturated
+    // a building's second frame is the ruined landmark: vanilla draws it as separate art, so it is a second
+    // candidate of the same asset, and processing without it says how to make it
     let cand = generate(&h, "building", "castle", &synthetic_icon_png(), "k-strip-2");
-    let p = process(&h, &cand, json!({})).unwrap();
+    let e = process(&h, &cand, json!({})).unwrap_err();
+    assert_eq!(code(&e), "second_frame_needed");
+    assert!(e.message.contains("hoi4.image_edit"), "{}", e.message);
+    let ruined_png = {
+        let mut img = imagegen_core::pixels::decode(&synthetic_icon_png(), None, imagegen_core::pixels::DecodeLimits::default()).unwrap().0;
+        for p in img.data.chunks_exact_mut(4) {
+            p[0] /= 3;
+        }
+        imagegen_core::pixels::encode_png(&img).unwrap()
+    };
+    let ruined = generate(&h, "building", "castle", &ruined_png, "k-strip-3");
+    assert_ne!(ruined, cand);
+    let p = process(&h, &cand, json!({"second_frame_candidate": ruined})).unwrap();
     let strip = png_of(&h, p["path"].as_str().unwrap());
     let f = strip.split_frames(2).unwrap();
-    assert_eq!(f[0].alpha_bbox(16), f[1].alpha_bbox(16));
-    let sat = |img: &Rgba| {
-        img.data.chunks_exact(4).filter(|p| p[3] > 200).map(|p| u32::from(p[0].max(p[1]).max(p[2]) - p[0].min(p[1]).min(p[2]))).sum::<u32>()
-    };
-    assert!(sat(&f[1]) < sat(&f[0]) * 7 / 10, "frame 2 is desaturated");
+    assert_eq!(f[0].alpha_bbox(16), f[1].alpha_bbox(16), "both frames are fitted the same way");
+    assert_ne!(f[0], f[1]);
+    assert_eq!(h.validate(p["artifact_id"].as_str().unwrap())["status"], "pass");
+    // another asset's candidate cannot be frame 2, and a single-frame family takes no second frame
+    let other = generate(&h, "building", "tower", &ruined_png, "k-strip-4");
+    assert!(process(&h, &cand, json!({"second_frame_candidate": other})).unwrap_err().message.contains("another raw candidate"));
+    let focus = generate(&h, "focus", "wall", &synthetic_icon_png(), "k-strip-5");
+    assert!(process(&h, &focus, json!({"second_frame_candidate": ruined})).is_err());
     // a finished strip is accepted at its size and the acceptance is recorded
     put(&h, "incoming/strip.png", &strip);
     let p = h
@@ -673,7 +688,7 @@ fn logos_and_buildings_build_their_own_second_frame() {
         .unwrap();
     assert_eq!(names(&p, "steps"), vec!["conform"]);
     assert_eq!(p["chain"]["complete"], true);
-    assert_eq!(recipe_of(h.engine.profiles.for_family(Family::Building).unwrap()), Recipe::DisabledStrip);
+    assert_eq!(recipe_of(h.engine.profiles.for_family(Family::Building).unwrap()), Recipe::LandmarkStrip);
 }
 
 // ------------------------------------------------------------------ portraits

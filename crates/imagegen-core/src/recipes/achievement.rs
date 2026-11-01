@@ -133,15 +133,12 @@ pub fn achievement_triplet(
     check_state(grey, "grey state")?;
     check_state(not_eligible, "not-eligible state")?;
     if !allow_templated_sources {
-        let hits: Vec<&str> = [
-            ("completed", completed, &templates.completed),
-            ("grey", grey, &templates.grey),
-            ("not-eligible", not_eligible, &templates.grey),
-        ]
-        .into_iter()
-        .filter(|(_, img, tpl)| matches_template_border(img, tpl))
-        .map(|(label, _, _)| label)
-        .collect();
+        let hits: Vec<&str> =
+            [("completed", completed, &templates.completed), ("grey", grey, &templates.grey), ("not-eligible", not_eligible, &templates.grey)]
+                .into_iter()
+                .filter(|(_, img, tpl)| matches_template_border(img, tpl))
+                .map(|(label, _, _)| label)
+                .collect();
         if !hits.is_empty() {
             return Err(Error::Invalid(format!(
                 "source triplet appears already templated ({} state border matches the supplied template); \

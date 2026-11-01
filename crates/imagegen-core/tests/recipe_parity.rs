@@ -129,12 +129,7 @@ fn run_python(env: &Env, script: &str, work: &Path, extra: &[&str]) {
         .args(extra)
         .output()
         .expect("python starts");
-    assert!(
-        out.status.success(),
-        "python driver failed:\n{}\n{}",
-        String::from_utf8_lossy(&out.stdout),
-        String::from_utf8_lossy(&out.stderr)
-    );
+    assert!(out.status.success(), "python driver failed:\n{}\n{}", String::from_utf8_lossy(&out.stdout), String::from_utf8_lossy(&out.stderr));
 }
 
 fn read_rgba(path: &Path, w: u32, h: u32) -> Rgba {
@@ -297,10 +292,7 @@ fn report_card_matches_the_kit_python() {
         assert!(inner.max[..3].iter().all(|m| *m <= CARD_RGB_ERR_MAX), "{name}: max error {:?}", inner.max);
         // Whole-canvas alpha, shadow included. Only meaningful when the Python tool has the padded shadow.
         let all = diff(&ours, &theirs, |_| true);
-        eprintln!(
-            "report_card {name}: whole canvas alpha MAE {:.3}, max {} (python padded shadow: {python_padded})",
-            all.mae[3], all.max[3]
-        );
+        eprintln!("report_card {name}: whole canvas alpha MAE {:.3}, max {} (python padded shadow: {python_padded})", all.mae[3], all.max[3]);
         if python_padded {
             assert!(all.mae[3] <= CARD_ALPHA_MAE_MAX, "{name}: alpha MAE {}", all.mae[3]);
             assert!(all.max[3] <= CARD_ALPHA_ERR_MAX, "{name}: alpha max error {}", all.max[3]);
@@ -407,8 +399,7 @@ fn achievement_triplet_is_identical_to_the_kit_python() {
         return;
     }
     let (work, _guard) = workdir("achievement");
-    let templates =
-        load_templates_from_files(&tdir.join("achievement_template.png"), &tdir.join("achievement_template_grey.png"), true).unwrap();
+    let templates = load_templates_from_files(&tdir.join("achievement_template.png"), &tdir.join("achievement_template_grey.png"), true).unwrap();
     // Inner scenes that leave the 6 px ring transparent so the "already templated" guard does not fire, with
     // soft edges so the integer composite is exercised on partial alpha.
     let mut states = Vec::new();
@@ -497,10 +488,7 @@ fn advisor_card_matches_the_kit_python() {
     );
     assert!((f(&geom["rotation"]) - ours_geom.rotation).abs() < 1e-6, "opening rotation");
     assert!((f(&geom["size"][0]) - ours_geom.size.0).abs() < 1e-6 && (f(&geom["size"][1]) - ours_geom.size.1).abs() < 1e-6, "opening size");
-    assert!(
-        (f(&geom["center"][0]) - ours_geom.center.0).abs() < 1e-6 && (f(&geom["center"][1]) - ours_geom.center.1).abs() < 1e-6,
-        "opening centre"
-    );
+    assert!((f(&geom["center"][0]) - ours_geom.center.0).abs() < 1e-6 && (f(&geom["center"][1]) - ours_geom.center.1).abs() < 1e-6, "opening centre");
 
     for (name, src) in names.iter().zip(&sources) {
         let ours = advisor_card(src, &template, &AdvisorParams::default()).unwrap();
@@ -583,13 +571,7 @@ fn portrait_crop_and_resize_match_the_kit_python() {
                 let portrait = portrait_from_crop(&piece).unwrap();
                 let theirs = read_rgba(&work.join(format!("{name}.py.rgba")), 156, 210);
                 let d = diff(&portrait, &theirs, |_| true);
-                eprintln!(
-                    "portrait {name}: crop {crop:?} equal; MAE R {:.3} G {:.3} B {:.3}, max {:?}",
-                    d.mae[0],
-                    d.mae[1],
-                    d.mae[2],
-                    &d.max[..3]
-                );
+                eprintln!("portrait {name}: crop {crop:?} equal; MAE R {:.3} G {:.3} B {:.3}, max {:?}", d.mae[0], d.mae[1], d.mae[2], &d.max[..3]);
                 assert!(rgb_mae(&d) <= PORTRAIT_MAE_MAX, "{name}: MAE {:?}", d.mae);
                 assert!(d.max[..3].iter().all(|m| *m <= PORTRAIT_ERR_MAX), "{name}: max {:?}", d.max);
                 assert_eq!(d.max[3], 0, "{name}: portrait must be opaque");

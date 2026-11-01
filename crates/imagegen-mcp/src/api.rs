@@ -306,6 +306,10 @@ pub struct ProcessParams {
     /// Portrait families only: crop `[left, top, right, bottom]` in source pixels, used instead of face detection.
     #[serde(default)]
     pub portrait_crop: Option<[i64; 4]>,
+    /// `building` only: the candidate of the ruined state for frame 2 (vanilla landmark strips show the ruined building
+    /// there). Make it with `hoi4.image_edit` on the first candidate, for example "the same landmark in ruins, burning".
+    #[serde(default)]
+    pub second_frame_candidate: Option<String>,
 }
 
 /// `hoi4.image_validate`

@@ -41,8 +41,7 @@ fn tract_err(what: &str, e: impl std::fmt::Display) -> Error {
 impl YuNet {
     /// Load the ONNX model from bytes.
     pub fn from_onnx_bytes(bytes: &[u8]) -> Result<Self> {
-        let model =
-            tract_onnx::onnx().model_for_read(&mut std::io::Cursor::new(bytes)).map_err(|e| tract_err("could not load the model", e))?;
+        let model = tract_onnx::onnx().model_for_read(&mut std::io::Cursor::new(bytes)).map_err(|e| tract_err("could not load the model", e))?;
         Ok(YuNet { model })
     }
 

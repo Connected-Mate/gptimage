@@ -16,8 +16,7 @@ pub const SHINE_OVERLAY: &str = "gfx/interface/goals/shine_overlay.dds";
 pub const SHINE_EFFECT_FILE: &str = "gfx/FX/buttonstate.lua";
 
 fn check_token(label: &str, value: &str, allow_path: bool) -> Result<()> {
-    let ok = !value.is_empty()
-        && value.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-' || (allow_path && (c == '/' || c == '.')));
+    let ok = !value.is_empty() && value.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-' || (allow_path && (c == '/' || c == '.')));
     if !ok || value.contains("..") {
         return Err(Error::Invalid(format!("{label} {value:?} contains characters that do not belong in a .gfx name or path")));
     }
@@ -128,9 +127,8 @@ mod tests {
             }
         }
         let vanilla = tokens(&text[begin..end]);
-        let ours = tokens(
-            &focus_shine_block("GFX_goal_continuous_air_production", "gfx/interface/goals/goal_continuous_air_production.dds").unwrap(),
-        );
+        let ours =
+            tokens(&focus_shine_block("GFX_goal_continuous_air_production", "gfx/interface/goals/goal_continuous_air_production.dds").unwrap());
         assert_eq!(ours, vanilla, "our block differs from vanilla's");
     }
 }

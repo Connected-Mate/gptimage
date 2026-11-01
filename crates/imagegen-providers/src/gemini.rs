@@ -19,8 +19,7 @@ use crate::common::{b64, b64_decode, basis, check_model, descriptor_from, per_im
 use crate::sizing::nearest_ratio;
 use crate::transport::{send, HostPolicy, HttpRequest, HttpTransport};
 use crate::types::{
-    CallContext, CostEstimate, ErrorKind, Funding, ImageProvider, ImageRequest, ProviderDescriptor, ProviderError, ProviderOutput,
-    SizeRule,
+    CallContext, CostEstimate, ErrorKind, Funding, ImageProvider, ImageRequest, ProviderDescriptor, ProviderError, ProviderOutput, SizeRule,
 };
 
 /// Default API base.
@@ -88,8 +87,12 @@ impl GeminiProvider {
             return Err(status_error(resp.status, &resp.body, &secrets));
         }
         let malformed = |why: &str| {
-            ProviderError::new(ErrorKind::MalformedResponse, RetryClass::ReconcileFirst, format!("{why}. The request was accepted, so a charge may have been made"))
-                .with_status(200)
+            ProviderError::new(
+                ErrorKind::MalformedResponse,
+                RetryClass::ReconcileFirst,
+                format!("{why}. The request was accepted, so a charge may have been made"),
+            )
+            .with_status(200)
         };
         let v: Value = serde_json::from_slice(&resp.body).map_err(|e| malformed(&format!("the response is not valid JSON ({e})")))?;
         if let Some(status) = v.get("status").and_then(Value::as_str) {
@@ -273,7 +276,10 @@ mod tests {
         for (body, kind) in [
             (json!({"status": "failed", "errors": [{"code": "x", "message": "blocked by safety"}], "steps": []}), ErrorKind::ModerationBlocked),
             (json!({"status": "failed", "errors": [{"message": "internal"}], "steps": []}), ErrorKind::ServerError),
-            (json!({"status": "completed", "steps": [{"type": "model_output", "content": [{"type": "text", "text": "no image"}]}]}), ErrorKind::MalformedResponse),
+            (
+                json!({"status": "completed", "steps": [{"type": "model_output", "content": [{"type": "text", "text": "no image"}]}]}),
+                ErrorKind::MalformedResponse,
+            ),
         ] {
             let fixture = Arc::new(FixtureTransport::new());
             fixture.respond(Method::Post, "/interactions", 200, &[], serde_json::to_vec(&body).unwrap());

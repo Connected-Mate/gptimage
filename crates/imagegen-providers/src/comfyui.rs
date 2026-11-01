@@ -25,8 +25,8 @@ use crate::common::{sniff_mime, status_error, ApiKey};
 use crate::sizing::choose_size;
 use crate::transport::{is_loopback_host, parse_url, send, HostPolicy, HttpRequest, HttpTransport, Method};
 use crate::types::{
-    AlphaSupport, CallContext, CostEstimate, CostModel, ErrorKind, Funding, ImageProvider, ImageRequest, JobRef, ModelInfo,
-    ModelStatus, ProviderDescriptor, ProviderError, ProviderOutput, Reconciled, SizeRule, TABLES_RETRIEVED,
+    AlphaSupport, CallContext, CostEstimate, CostModel, ErrorKind, Funding, ImageProvider, ImageRequest, JobRef, ModelInfo, ModelStatus,
+    ProviderDescriptor, ProviderError, ProviderOutput, Reconciled, SizeRule, TABLES_RETRIEVED,
 };
 
 /// Where an input value goes in the workflow graph.
@@ -242,7 +242,10 @@ impl ComfyProvider {
         }
         let v: Value = serde_json::from_slice(&resp.body)
             .map_err(|e| ProviderError::new(ErrorKind::MalformedResponse, RetryClass::SafeSameInputs, format!("upload response is not JSON: {e}")))?;
-        let stored = v.get("name").and_then(Value::as_str).ok_or_else(|| ProviderError::new(ErrorKind::MalformedResponse, RetryClass::SafeSameInputs, "upload response has no name"))?;
+        let stored = v
+            .get("name")
+            .and_then(Value::as_str)
+            .ok_or_else(|| ProviderError::new(ErrorKind::MalformedResponse, RetryClass::SafeSameInputs, "upload response has no name"))?;
         Ok(match v.get("subfolder").and_then(Value::as_str) {
             Some(s) if !s.is_empty() => format!("{s}/{stored}"),
             _ => stored.to_string(),
@@ -328,16 +331,27 @@ impl ComfyProvider {
     fn collect(&self, job: &JobRef, entry: &Value) -> Result<ProviderOutput, ProviderError> {
         if entry.pointer("/status/status_str").and_then(Value::as_str) == Some("error") {
             let detail = entry.pointer("/status/messages").map(|m| m.to_string()).unwrap_or_default();
-            return Err(ProviderError::new(ErrorKind::ServerError, RetryClass::Terminal, format!("the workflow failed: {}", crate::transport::redact(&detail.chars().take(400).collect::<String>(), &self.secrets()))).with_job(job.clone()));
+            return Err(ProviderError::new(
+                ErrorKind::ServerError,
+                RetryClass::Terminal,
+                format!("the workflow failed: {}", crate::transport::redact(&detail.chars().take(400).collect::<String>(), &self.secrets())),
+            )
+            .with_job(job.clone()));
         }
-        let image = entry
-            .pointer(&format!("/outputs/{}/images/0", self.template.output_node))
-            .ok_or_else(|| ProviderError::new(ErrorKind::MalformedResponse, RetryClass::SafeSameInputs, format!("the job finished but node '{}' produced no image", self.template.output_node)).with_job(job.clone()))?;
+        let image = entry.pointer(&format!("/outputs/{}/images/0", self.template.output_node)).ok_or_else(|| {
+            ProviderError::new(
+                ErrorKind::MalformedResponse,
+                RetryClass::SafeSameInputs,
+                format!("the job finished but node '{}' produced no image", self.template.output_node),
+            )
+            .with_job(job.clone())
+        })?;
         let filename = image.get("filename").and_then(Value::as_str).unwrap_or("");
         let subfolder = image.get("subfolder").and_then(Value::as_str).unwrap_or("");
         let kind = image.get("type").and_then(Value::as_str).unwrap_or("output");
         if filename.is_empty() {
-            return Err(ProviderError::new(ErrorKind::MalformedResponse, RetryClass::SafeSameInputs, "the output image has no filename").with_job(job.clone()));
+            return Err(ProviderError::new(ErrorKind::MalformedResponse, RetryClass::SafeSameInputs, "the output image has no filename")
+                .with_job(job.clone()));
         }
         let path = format!("/view?filename={}&subfolder={}&type={}", pct(filename), pct(subfolder), pct(kind));
         let resp = send(&*self.transport, &self.policy, &self.with_key(HttpRequest::get(self.url(&path)))).map_err(|e| e.with_job(job.clone()))?;
@@ -376,8 +390,9 @@ impl ComfyProvider {
         if resp.status != 200 {
             return Err(status_error(resp.status, &resp.body, &self.secrets()));
         }
-        let v: Value = serde_json::from_slice(&resp.body)
-            .map_err(|e| ProviderError::new(ErrorKind::MalformedResponse, RetryClass::ReconcileFirst, format!("/prompt did not return JSON: {e}; a job may exist")))?;
+        let v: Value = serde_json::from_slice(&resp.body).map_err(|e| {
+            ProviderError::new(ErrorKind::MalformedResponse, RetryClass::ReconcileFirst, format!("/prompt did not return JSON: {e}; a job may exist"))
+        })?;
         if let Some(errs) = v.get("node_errors").and_then(Value::as_object) {
             if !errs.is_empty() {
                 return Err(ProviderError::new(
@@ -390,7 +405,9 @@ impl ComfyProvider {
         let id = v
             .get("prompt_id")
             .and_then(Value::as_str)
-            .ok_or_else(|| ProviderError::new(ErrorKind::MalformedResponse, RetryClass::ReconcileFirst, "/prompt returned no prompt_id; a job may exist"))?
+            .ok_or_else(|| {
+                ProviderError::new(ErrorKind::MalformedResponse, RetryClass::ReconcileFirst, "/prompt returned no prompt_id; a job may exist")
+            })?
             .to_string();
         let job = self.job_for(id.clone());
         ctx.notify(&job);
@@ -405,7 +422,12 @@ impl ComfyProvider {
             }
             ctx.sleeper.sleep(self.poll_interval);
         }
-        Err(ProviderError::new(ErrorKind::Transport, RetryClass::ReconcileFirst, "the workflow is still running after the polling budget; reconcile it by id").with_job(job))
+        Err(ProviderError::new(
+            ErrorKind::Transport,
+            RetryClass::ReconcileFirst,
+            "the workflow is still running after the polling budget; reconcile it by id",
+        )
+        .with_job(job))
     }
 }
 
@@ -470,7 +492,10 @@ pub fn multipart(parts: &[Part<'_>]) -> (String, Vec<u8>) {
                 body.extend_from_slice(format!("Content-Disposition: form-data; name=\"{name}\"\r\n\r\n{value}\r\n").as_bytes());
             }
             Part::File { name, filename, content_type, bytes } => {
-                body.extend_from_slice(format!("Content-Disposition: form-data; name=\"{name}\"; filename=\"{filename}\"\r\nContent-Type: {content_type}\r\n\r\n").as_bytes());
+                body.extend_from_slice(
+                    format!("Content-Disposition: form-data; name=\"{name}\"; filename=\"{filename}\"\r\nContent-Type: {content_type}\r\n\r\n")
+                        .as_bytes(),
+                );
                 body.extend_from_slice(bytes);
                 body.extend_from_slice(b"\r\n");
             }
@@ -741,7 +766,13 @@ mod tests {
         let fixture2 = Arc::new(FixtureTransport::new());
         fixture2.respond(Method::Get, "/object_info/KSampler", 200, &[], r#"{"KSampler":{}}"#);
         fixture2.respond(Method::Get, "/object_info/SaveImage", 200, &[], r#"{"SaveImage":{}}"#);
-        fixture2.respond(Method::Post, "/prompt", 200, &[], r#"{"prompt_id":"pid-synthetic-1","number":1,"node_errors":{"3":{"errors":[{"message":"bad seed"}]}}}"#);
+        fixture2.respond(
+            Method::Post,
+            "/prompt",
+            200,
+            &[],
+            r#"{"prompt_id":"pid-synthetic-1","number":1,"node_errors":{"3":{"errors":[{"message":"bad seed"}]}}}"#,
+        );
         let p = provider(plain_template(), fixture2);
         let err = p.generate(&request(), &CallContext::new()).unwrap_err();
         assert_eq!(err.kind, ErrorKind::BadRequest);
@@ -809,14 +840,21 @@ mod tests {
         let fixture = Arc::new(FixtureTransport::new());
         server(&fixture);
         let cfg = ProviderConfig { endpoint: Some("http://192.168.1.20:8188".into()), ..Default::default() };
-        let p = ComfyProvider::new(&cfg, plain_template(), Some("comfy-secret-key".into()), fixture.clone()).unwrap().with_polling(Duration::from_millis(1), 3);
+        let p = ComfyProvider::new(&cfg, plain_template(), Some("comfy-secret-key".into()), fixture.clone())
+            .unwrap()
+            .with_polling(Duration::from_millis(1), 3);
         p.generate(&request(), &CallContext::new()).unwrap();
-        assert!(fixture.requests().iter().all(|r| !r.headers.iter().any(|(k, _)| k.eq_ignore_ascii_case("x-api-key"))), "no key over cleartext LAN http");
+        assert!(
+            fixture.requests().iter().all(|r| !r.headers.iter().any(|(k, _)| k.eq_ignore_ascii_case("x-api-key"))),
+            "no key over cleartext LAN http"
+        );
 
         let fixture = Arc::new(FixtureTransport::new());
         server(&fixture);
         let cfg = ProviderConfig { endpoint: Some("https://pod-8188.proxy.example".into()), ..Default::default() };
-        let p = ComfyProvider::new(&cfg, plain_template(), Some("comfy-secret-key".into()), fixture.clone()).unwrap().with_polling(Duration::from_millis(1), 3);
+        let p = ComfyProvider::new(&cfg, plain_template(), Some("comfy-secret-key".into()), fixture.clone())
+            .unwrap()
+            .with_polling(Duration::from_millis(1), 3);
         p.generate(&request(), &CallContext::new()).unwrap();
         assert!(fixture.requests().iter().all(|r| r.headers.iter().any(|(k, v)| k == "X-API-Key" && v == "comfy-secret-key")));
     }

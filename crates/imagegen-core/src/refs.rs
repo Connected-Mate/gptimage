@@ -136,15 +136,8 @@ pub fn check_vanilla_policy(origin: RefOrigin, policy: &PolicyConfig, what: &str
 }
 
 /// Turn raw bytes into a clean, capped PNG reference.
-pub fn clean_reference(
-    bytes: &[u8],
-    name_hint: &str,
-    display: &str,
-    role: RefRole,
-    origin: RefOrigin,
-) -> Result<LoadedRef> {
-    let (img, format) = decode(bytes, Some(name_hint), DecodeLimits::default())
-        .map_err(|e| Error::Image(format!("reference '{display}': {e}")))?;
+pub fn clean_reference(bytes: &[u8], name_hint: &str, display: &str, role: RefRole, origin: RefOrigin) -> Result<LoadedRef> {
+    let (img, format) = decode(bytes, Some(name_hint), DecodeLimits::default()).map_err(|e| Error::Image(format!("reference '{display}': {e}")))?;
     let mut notes = Vec::new();
     let lower = name_hint.to_ascii_lowercase();
     let expected_ext: &[&str] = match format {
@@ -184,12 +177,7 @@ pub fn clean_reference(
 /// Load a reference named by the caller.
 ///
 /// `game_dir` is the installed game folder, used only to recognise (and gate) absolute paths into it.
-pub fn load_reference(
-    fs: &ProjectFs,
-    game_dir: Option<&Path>,
-    policy: &PolicyConfig,
-    input: &ReferenceInput,
-) -> Result<LoadedRef> {
+pub fn load_reference(fs: &ProjectFs, game_dir: Option<&Path>, policy: &PolicyConfig, input: &ReferenceInput) -> Result<LoadedRef> {
     let raw = input.path.as_str();
     let as_path = Path::new(raw);
     if as_path.is_absolute() || raw.starts_with('/') || raw.starts_with('\\') {
@@ -207,9 +195,7 @@ pub fn load_reference(
                 return clean_reference(&bytes, &name, &display_path(&canon), input.role, RefOrigin::InstalledGame);
             }
         }
-        return Err(Error::PathRejected(format!(
-            "reference '{raw}' is outside the project; copy it into the project's references/ folder"
-        )));
+        return Err(Error::PathRejected(format!("reference '{raw}' is outside the project; copy it into the project's references/ folder")));
     }
     load_project_relative(fs, policy, raw, input.role)
 }
@@ -253,13 +239,9 @@ mod tests {
     fn project_png_is_loaded_and_cleaned() {
         let (_d, fs) = setup();
         fs.write_new("references/style.png", &png(32, 24)).unwrap();
-        let r = load_reference(
-            &fs,
-            None,
-            &PolicyConfig::default(),
-            &ReferenceInput { path: "references/style.png".into(), role: RefRole::StyleAnchor },
-        )
-        .unwrap();
+        let r =
+            load_reference(&fs, None, &PolicyConfig::default(), &ReferenceInput { path: "references/style.png".into(), role: RefRole::StyleAnchor })
+                .unwrap();
         assert_eq!((r.width, r.height), (32, 24));
         assert_eq!(r.origin, RefOrigin::Project);
         assert_eq!(r.source_format, "png");
@@ -348,13 +330,9 @@ mod tests {
     fn large_references_are_downscaled_and_caps_apply() {
         let (_d, fs) = setup();
         fs.write_new("references/big.png", &png(3000, 1500)).unwrap();
-        let r = load_reference(
-            &fs,
-            None,
-            &PolicyConfig::default(),
-            &ReferenceInput { path: "references/big.png".into(), role: RefRole::GeometryAnchor },
-        )
-        .unwrap();
+        let r =
+            load_reference(&fs, None, &PolicyConfig::default(), &ReferenceInput { path: "references/big.png".into(), role: RefRole::GeometryAnchor })
+                .unwrap();
         assert_eq!(r.width.max(r.height), MAX_REFERENCE_SIDE);
         assert!(r.notes.iter().any(|n| n.contains("downscaled")));
         let many: Vec<LoadedRef> = (0..9).map(|_| r.clone()).collect();

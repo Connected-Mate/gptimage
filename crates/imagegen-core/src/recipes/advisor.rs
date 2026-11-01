@@ -105,10 +105,7 @@ pub struct AdvisorCard {
 
 fn check_template(template: &Rgba) -> Result<()> {
     if (template.width, template.height) != CARD_SIZE {
-        return Err(Error::Invalid(format!(
-            "template must be {}x{}, got {}x{}",
-            CARD_SIZE.0, CARD_SIZE.1, template.width, template.height
-        )));
+        return Err(Error::Invalid(format!("template must be {}x{}, got {}x{}", CARD_SIZE.0, CARD_SIZE.1, template.width, template.height)));
     }
     Ok(())
 }
@@ -299,9 +296,7 @@ fn validate_opening_alignment(size: (f64, f64), offset: (f64, f64), rotation: f6
         )));
     }
     if offset.0.abs() > MAX_OPENING_CENTER_OFFSET || offset.1.abs() > MAX_OPENING_CENTER_OFFSET {
-        return Err(Error::Invalid(
-            "advisor portrait centre must stay aligned with the measured opening; canonical cards use a 0 0 offset".into(),
-        ));
+        return Err(Error::Invalid("advisor portrait centre must stay aligned with the measured opening; canonical cards use a 0 0 offset".into()));
     }
     if (size.0 - g.size.0).abs() > MAX_OPENING_SIZE_ERROR || (size.1 - g.size.1).abs() > MAX_OPENING_SIZE_ERROR {
         return Err(Error::Invalid(format!(

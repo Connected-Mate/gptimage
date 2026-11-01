@@ -16,7 +16,7 @@
 //! | `picture` v1 | opaque pictures, news, super event | `flatten_on`, `cover_resize` or `conform`, `grayscale` for news |
 //! | `report_card` v2 | report event | `report_card` or `conform` (an imported finished card) |
 //! | `selected_strip` v1 | faction logo, agency logo | `fit_subject`, `selected_frame` (or one `conform` for an imported finished strip) |
-//! | `disabled_strip` v1 | building | `fit_subject`, `disabled_frame` (or one `conform`) |
+//! | `landmark_strip` v1 | building | `fit_subject`, `second_frame`: the ruined state, a second candidate of the same asset (or one `conform`) |
 //! | `imported_art` v1 | counters, division emblem | `conform` to the exact strip |
 //! | `portrait` v1 | the four portraits | `flatten_on`, `extract_portrait` (or `conform` for a finished 156x210) |
 //! | `advisor_card` v1 | advisor card | `advisor_card` (or `conform` for a finished 65x67 card) |
@@ -77,8 +77,8 @@ pub enum Recipe {
     ReportCard,
     /// Two frames, the second selected.
     SelectedStrip,
-    /// Two frames, the second disabled.
-    DisabledStrip,
+    /// Two frames: the landmark, then its ruined state (a second candidate of the same asset), as vanilla does.
+    LandmarkStrip,
     /// Art made elsewhere, taken at its exact size.
     ImportedArt,
     /// Portraits.
@@ -99,7 +99,7 @@ impl Recipe {
             Recipe::Picture => "picture",
             Recipe::ReportCard => "report_card",
             Recipe::SelectedStrip => "selected_strip",
-            Recipe::DisabledStrip => "disabled_strip",
+            Recipe::LandmarkStrip => "landmark_strip",
             Recipe::ImportedArt => "imported_art",
             Recipe::Portrait => "portrait",
             Recipe::AdvisorCard => "advisor_card",
@@ -131,7 +131,7 @@ pub fn recipe_of(profile: &Profile) -> Recipe {
     match profile.family {
         Family::ReportEvent => Recipe::ReportCard,
         Family::FactionLogo | Family::AgencyLogo => Recipe::SelectedStrip,
-        Family::Building => Recipe::DisabledStrip,
+        Family::Building => Recipe::LandmarkStrip,
         Family::CounterLarge | Family::CounterSmall | Family::DivisionEmblem => Recipe::ImportedArt,
         Family::LeaderPortrait | Family::CommanderPortrait | Family::OperativePortrait | Family::ScientistPortrait => Recipe::Portrait,
         Family::AdvisorCard => Recipe::AdvisorCard,
@@ -153,6 +153,8 @@ pub enum Finisher {
     ExtractPortrait,
     /// The three flag sizes.
     FlagLadder,
+    /// The second frame of a landmark strip from a second candidate (the ruined state), fitted the same way.
+    SecondFrame,
 }
 
 impl Finisher {
@@ -163,6 +165,7 @@ impl Finisher {
             Finisher::AchievementTriplet => "achievement_triplet",
             Finisher::ExtractPortrait => "extract_portrait",
             Finisher::FlagLadder => "flag_ladder",
+            Finisher::SecondFrame => "second_frame",
         }
     }
 }
@@ -259,13 +262,19 @@ pub fn plan_finishing(profile: &Profile, canvas: [u32; 2], img: &Rgba, imported:
                 ops.push(Op::ReportCard { seed: seed_from_sha(candidate_sha256) });
             }
         }
-        Recipe::SelectedStrip | Recipe::DisabledStrip => {
+        Recipe::SelectedStrip | Recipe::LandmarkStrip => {
             let accepted_strip = size[0].is_multiple_of(frames) && accepted_single([size[0] / frames, size[1]]);
             if imported && accepted_strip {
                 ops.push(Op::Conform { width: size[0], height: size[1] });
             } else {
                 ops = transparent_icon_ops(img, canvas, keyed, profile.margin)?;
-                ops.push(if recipe == Recipe::SelectedStrip { Op::SelectedFrame { frames } } else { Op::DisabledFrame { frames } });
+                if recipe == Recipe::SelectedStrip {
+                    ops.push(Op::SelectedFrame { frames });
+                } else {
+                    // vanilla landmark strips show the ruined building in frame 2: different art, so it comes from a
+                    // second candidate of the same asset (usually hoi4.image_edit of the first)
+                    finishers.push(Finisher::SecondFrame);
+                }
             }
         }
         Recipe::ImportedArt => {
@@ -318,7 +327,7 @@ pub fn required_stages(profile: &Profile) -> Vec<Vec<&'static str>> {
         Recipe::Picture => vec![vec!["flatten_on"], vec!["cover_resize", "conform"]],
         Recipe::ReportCard => vec![vec!["report_card", "conform"]],
         Recipe::SelectedStrip => vec![vec!["fit_subject", "conform"], vec!["selected_frame", "conform"]],
-        Recipe::DisabledStrip => vec![vec!["fit_subject", "conform"], vec!["disabled_frame", "conform"]],
+        Recipe::LandmarkStrip => vec![vec!["fit_subject", "conform"], vec!["second_frame", "conform"]],
         Recipe::ImportedArt => vec![vec!["conform"]],
         Recipe::Portrait => vec![vec!["flatten_on"], vec!["extract_portrait", "conform"]],
         Recipe::AdvisorCard => vec![vec!["advisor_card", "conform"]],
