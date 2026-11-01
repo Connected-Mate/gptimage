@@ -11,7 +11,8 @@ use serde::{Deserialize, Serialize};
 use crate::error::{Error, RetryClass};
 use crate::family::Family;
 use crate::ledger::Entry;
-use crate::records::{kind, ReviewedRecord, ValidatedRecord, Verdict};
+use crate::profile::Profile;
+use crate::records::{kind, ProcessedRecord, ReviewedRecord, ValidatedRecord, Verdict};
 use crate::validate::Status;
 
 /// A recorded hash compared with the hash found now.
@@ -62,6 +63,7 @@ impl GateReport {
             "install_gate_hash_changed" => "install_gate_hash_changed",
             "install_gate_checks_incomplete" => "install_gate_checks_incomplete",
             "install_gate_family_mismatch" => "install_gate_family_mismatch",
+            "install_gate_chain_incomplete" => "install_gate_chain_incomplete",
             _ => "install_gate_plan_changed",
         };
         let all: Vec<String> = self.failures.iter().map(|f| format!("{}: {}", f.code, f.message)).collect();
@@ -74,12 +76,21 @@ fn payload<T: serde::de::DeserializeOwned>(e: &Entry) -> Option<T> {
 }
 
 /// What the gate expects the records to say about the artifact.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct GateExpect {
     /// The artifact's own family. Every validation and review must have been made as this family.
     pub family: Family,
     /// `validate::check_set_hash` of the family's full check set now.
     pub check_set_hash: String,
+    /// The family's profile now. Its recipe says which processing stages the record must show.
+    pub profile: Profile,
+}
+
+impl GateExpect {
+    /// Expectations for a profile.
+    pub fn for_profile(profile: &Profile) -> Self {
+        GateExpect { family: profile.family, check_set_hash: crate::validate::check_set_hash(&profile.imagegen.checks), profile: profile.clone() }
+    }
 }
 
 /// Evaluate the gate for one artifact.
@@ -129,6 +140,19 @@ pub fn evaluate(
             fail("install_gate_validation_failed", format!("the last validation failed with {} error(s); fix them and validate again", v.errors))
         }
         Some(_) => {}
+    }
+
+    // 1b. the processing chain: only an artifact that went through its family's whole recipe can be installed
+    match entries.iter().find(|e| e.kind == kind::PROCESSED && e.artifact_id.as_deref() == Some(artifact_id)).and_then(payload::<ProcessedRecord>) {
+        None => fail(
+            "install_gate_chain_incomplete",
+            format!("{artifact_id} is not a processed artifact; run hoi4.image_process, which runs the family's processing, and install its result"),
+        ),
+        Some(rec) => {
+            for problem in crate::chain::audit(&rec, &expect.profile) {
+                fail("install_gate_chain_incomplete", problem);
+            }
+        }
     }
 
     // 2. review under the presented approval id
@@ -203,8 +227,40 @@ mod tests {
         crate::profile::ProfileSet::builtin().for_family(Family::Focus).unwrap().imagegen.checks.clone()
     }
 
+    fn focus_profile() -> Profile {
+        crate::profile::ProfileSet::builtin().for_family(Family::Focus).unwrap().clone()
+    }
+
     fn gate_expect() -> GateExpect {
-        GateExpect { family: Family::Focus, check_set_hash: crate::validate::check_set_hash(&full_set()) }
+        GateExpect::for_profile(&focus_profile())
+    }
+
+    /// A processed record with the focus recipe's whole chain.
+    fn processed(complete: bool) -> ProcessedRecord {
+        use crate::chain::Recipe;
+        use crate::process::{Op, StepRecord};
+        let step =
+            |op: Op, i: &str, o: &str| StepRecord { op, input_sha256: i.into(), output_sha256: o.into(), output_size: [100, 88], engine: "t".into() };
+        let mut steps = vec![step(Op::TrimToSubject { min_alpha: 16 }, "src", "t")];
+        if complete {
+            steps.push(step(Op::FitSubject { width: 100, height: 88, margin: 2, min_alpha: 16 }, "t", "out"));
+        }
+        ProcessedRecord {
+            artifact_id: ART.into(),
+            source_id: "f.a-v1".into(),
+            asset_id: "f.a".into(),
+            family: Family::Focus,
+            run: 1,
+            canvas: [100, 88],
+            path: "p.png".into(),
+            sha256: "aaa".into(),
+            pixels_sha256: if complete { "out".into() } else { "t".into() },
+            size: [100, 88],
+            steps,
+            profile: profile(),
+            recipe: Some(crate::records::RecipeRecord { id: Recipe::Icon.id().into(), version: Recipe::Icon.version(), finishers: vec![] }),
+            companions: vec![],
+        }
     }
 
     fn validated(sha: &str, status: Status) -> ValidatedRecord {
@@ -239,6 +295,7 @@ mod tests {
     fn entries(f: impl FnOnce(&Ledger)) -> Vec<Entry> {
         let dir = tempfile::tempdir().unwrap();
         let l = Ledger::new(ProjectFs::new(dir.path()).unwrap(), Arc::new(FixedClock(0)));
+        l.append(kind::PROCESSED, Some("f.a"), Some(ART), processed(true)).unwrap();
         f(&l);
         l.entries().unwrap()
     }
@@ -264,6 +321,26 @@ mod tests {
         let empty = entries(|_| {});
         let r = evaluate(&empty, ART, "aaa", "apr-1", &[], &gate_expect());
         assert_eq!(codes(&r), vec!["install_gate_validation_missing", "install_gate_review_missing"]);
+
+        // never processed at all, or processed without the family's fit step: the chain closes the gate
+        let approved = |l: &Ledger| {
+            l.append(kind::VALIDATED, None, Some(ART), validated("aaa", Status::Pass)).unwrap();
+            l.append(kind::REVIEWED, None, Some(ART), reviewed("aaa", Verdict::Approved, Some("apr-1"))).unwrap();
+        };
+        let dir = tempfile::tempdir().unwrap();
+        let raw = Ledger::new(ProjectFs::new(dir.path()).unwrap(), Arc::new(FixedClock(0)));
+        approved(&raw);
+        let r = evaluate(&raw.entries().unwrap(), ART, "aaa", "apr-1", &[], &gate_expect());
+        assert_eq!(codes(&r), vec!["install_gate_chain_incomplete"]);
+        assert!(r.failures[0].message.contains("not a processed artifact"));
+        let dir = tempfile::tempdir().unwrap();
+        let short = Ledger::new(ProjectFs::new(dir.path()).unwrap(), Arc::new(FixedClock(0)));
+        short.append(kind::PROCESSED, Some("f.a"), Some(ART), processed(false)).unwrap();
+        approved(&short);
+        let r = evaluate(&short.entries().unwrap(), ART, "aaa", "apr-1", &[], &gate_expect());
+        assert!(codes(&r).contains(&"install_gate_chain_incomplete"), "{r:?}");
+        assert!(r.failures.iter().any(|f| f.message.contains("fit_subject")), "{r:?}");
+        assert_eq!(r.into_result().unwrap_err().code(), "install_gate_chain_incomplete");
 
         let failed = entries(|l| {
             l.append(kind::VALIDATED, None, Some(ART), validated("aaa", Status::Fail)).unwrap();

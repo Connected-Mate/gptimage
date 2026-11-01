@@ -103,6 +103,19 @@ pub struct DefaultsConfig {
     pub provider: Option<String>,
 }
 
+/// Where the engine-level recipes find the Paradox-derived templates the mod's copy of the asset skill ships.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct TemplatesConfig {
+    /// Project-relative folder that holds `portraits/advisors/advisor_template.png` and
+    /// `icons/achievements/template/`. Without it the first `.claude/skills/*/assets/*/` folder that has them is used
+    /// (the kit names its folder `vanilla_reference`, Chaos Redux `gfx_references`).
+    pub dir: Option<String>,
+    /// Project-relative path of the YuNet face detector model. Without it the first
+    /// `.claude/skills/*/tools/models/face_detection_yunet_2026may.onnx` is used.
+    pub face_model: Option<String>,
+}
+
 /// The parsed config file.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
@@ -113,6 +126,8 @@ pub struct Config {
     pub kit_profiles: Option<String>,
     /// Policy.
     pub policy: PolicyConfig,
+    /// Template and model locations.
+    pub templates: TemplatesConfig,
     /// Defaults.
     pub defaults: DefaultsConfig,
     /// Provider settings by provider id.
@@ -209,6 +224,10 @@ max_usd_per_call = 0.25
 [defaults]
 provider = "comfyui"
 
+[templates]
+dir = ".claude/skills/hoi4-feature-assets/assets/gfx_references"
+face_model = "models/yunet.onnx"
+
 [providers.openai]
 model = "gpt-image-2.5-flare"
 quality = "low"
@@ -228,6 +247,9 @@ margin = 2
         assert_eq!(c.provider("comfyui").endpoint.as_deref(), Some("http://127.0.0.1:8188"));
         assert_eq!(c.profiles["focus"].canvas, Some([94, 86]));
         assert_eq!(c.defaults.provider.as_deref(), Some("comfyui"));
+        assert_eq!(c.templates.dir.as_deref(), Some(".claude/skills/hoi4-feature-assets/assets/gfx_references"));
+        assert_eq!(c.templates.face_model.as_deref(), Some("models/yunet.onnx"));
+        assert!(Config::default().templates.dir.is_none());
     }
 
     #[test]
@@ -235,6 +257,7 @@ margin = 2
         assert!(Config::parse("[policy]\nallow_vanilla_reference = true\n").is_err());
         assert!(Config::parse("[policy]\nforbidden_families = [\"not_a_family\"]\n").is_err());
         assert!(Config::parse("surprise = 1\n").is_err());
+        assert!(Config::parse("[templates]\ndirectory = \"x\"\n").is_err());
     }
 
     #[test]

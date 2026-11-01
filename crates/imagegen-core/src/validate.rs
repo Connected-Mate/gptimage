@@ -122,7 +122,26 @@ pub struct Options {
 }
 
 /// Every check id this crate knows.
-pub const ALL_CHECKS: &[&str] = &["size", "alpha", "opaque_canvas", "opaque", "fringe", "margin", "fill", "checker", "ghost", "frames", "dds", "tga"];
+pub const ALL_CHECKS: &[&str] = &[
+    "size",
+    "alpha",
+    "opaque_canvas",
+    "opaque",
+    "near_opaque",
+    "card_corners",
+    "fringe",
+    "margin",
+    "fill",
+    "checker",
+    "ghost",
+    "frames",
+    "dds",
+    "tga",
+];
+
+/// Alpha every pixel of a template-backed picture (the achievement icons) must reach. Vanilla's templates sit at
+/// 254 and 255.
+pub const NEAR_OPAQUE_MIN_ALPHA: u8 = 250;
 
 /// Hash of a check set (order does not matter). The install gate compares the hash recorded with a validation
 /// against the full set of the artifact's family, so a validation that skipped a check cannot open it.
@@ -337,6 +356,39 @@ pub fn validate_image(img: &Rgba, profile: &Profile, checks: &[String], opts: &O
                 None,
                 json!({"translucent_pixels": translucent}),
             ));
+        }
+    }
+
+    if wants("near_opaque") {
+        run.push("near_opaque".into());
+        let thin = img.data.chunks_exact(4).filter(|p| p[3] < NEAR_OPAQUE_MIN_ALPHA).count();
+        if thin > 0 {
+            findings.push(Finding::new(
+                "GFX-ALPHA-IN-OPAQUE",
+                Level::Error,
+                format!("{thin} pixels have alpha below {NEAR_OPAQUE_MIN_ALPHA}, but this family is a picture on a template that is opaque to within one level"),
+                None,
+                json!({"thin_pixels": thin, "minimum": NEAR_OPAQUE_MIN_ALPHA}),
+            ));
+        }
+    }
+
+    if wants("card_corners") {
+        run.push("card_corners".into());
+        for (i, f) in frame_imgs.iter().enumerate() {
+            let s = frame_stats(f);
+            if s.alpha_max == 0 {
+                continue;
+            }
+            if s.corner_alpha.iter().any(|a| *a != 0) {
+                findings.push(Finding::new(
+                    "GFX-CARD-CORNERS",
+                    Level::Error,
+                    "a card has fully transparent corners and this one has an opaque or partly opaque corner, so the card treatment did not run or the art is not a card".into(),
+                    Some(i as u32 + 1),
+                    json!({"corner_alpha": s.corner_alpha}),
+                ));
+            }
         }
     }
 
@@ -701,6 +753,33 @@ mod tests {
             }
         }
         img
+    }
+
+    #[test]
+    fn card_corners_and_near_opaque_are_their_own_checks() {
+        let set = crate::profile::ProfileSet::builtin();
+        let report = set.for_family(crate::family::Family::ReportEvent).unwrap();
+        let checks = report.imagegen.checks.clone();
+        let mut card = Rgba::filled(210, 176, [90, 80, 70, 255]);
+        for (x, y) in [(0, 0), (209, 0), (0, 175), (209, 175)] {
+            card.set_px(x, y, [0, 0, 0, 0]);
+        }
+        let ok = validate_image(&card, report, &checks, &Options::default());
+        assert_eq!(ok.status, Status::Pass, "{:?}", ok.findings);
+        assert!(ok.checks_run.iter().any(|c| c == "card_corners"));
+        // an opaque picture is not a card
+        let flat = validate_image(&Rgba::filled(210, 176, [90, 80, 70, 255]), report, &checks, &Options::default());
+        assert!(flat.findings.iter().any(|f| f.code == "GFX-CARD-CORNERS"), "{:?}", flat.findings);
+        // and a card is not asked to be opaque
+        assert!(!ok.findings.iter().any(|f| f.code == "GFX-ALPHA-IN-OPAQUE"));
+
+        let ach = set.for_family(crate::family::Family::Achievement).unwrap();
+        let near = validate_image(&Rgba::filled(64, 64, [20, 20, 20, 254]), ach, &ach.imagegen.checks, &Options::default());
+        assert_eq!(near.status, Status::Pass, "alpha 254 is the templates' own alpha: {:?}", near.findings);
+        let mut thin = Rgba::filled(64, 64, [20, 20, 20, 255]);
+        thin.set_px(3, 3, [20, 20, 20, 90]);
+        let bad = validate_image(&thin, ach, &ach.imagegen.checks, &Options::default());
+        assert!(bad.findings.iter().any(|f| f.code == "GFX-ALPHA-IN-OPAQUE" && f.level == Level::Error));
     }
 
     #[test]

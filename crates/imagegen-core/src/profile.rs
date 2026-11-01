@@ -127,6 +127,10 @@ pub struct ImagegenSpec {
     /// True when the art must be converted to black and white (news pictures).
     #[serde(default)]
     pub grayscale: bool,
+    /// Size the model is asked for when it differs from the asset's canvas (an advisor card is made from a tall
+    /// portrait, not from a 65x67 picture).
+    #[serde(default)]
+    pub source_canvas: Option<[u32; 2]>,
 }
 
 /// The vanilla measurement a default was built from.
@@ -231,6 +235,8 @@ pub struct ImagegenOverride {
     pub prompt: Option<PromptSpec>,
     /// Grayscale flag.
     pub grayscale: Option<bool>,
+    /// Size the model is asked for.
+    pub source_canvas: Option<[u32; 2]>,
 }
 
 /// A kit row or a project override: geometry plus an optional `imagegen` object. Unknown keys are ignored,
@@ -422,6 +428,12 @@ fn merge_imagegen(dst: &mut ImagegenSpec, src: &ImagegenOverride, changed: &mut 
     set!(rubric, "rubric");
     set!(prompt, "prompt");
     set!(grayscale, "grayscale");
+    if let Some(v) = src.source_canvas {
+        if dst.source_canvas != Some(v) {
+            changed.push("imagegen.source_canvas".to_string());
+        }
+        dst.source_canvas = Some(v);
+    }
 }
 
 #[cfg(test)]
