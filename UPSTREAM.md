@@ -28,7 +28,7 @@
 
 ## What is not carried over, and why
 
-* The upstream default is an impersonation of the OpenAI Codex CLI against an undocumented endpoint. Here the defaults are documented APIs with API keys. The upstream route survives only as the opt-in plugin, with its risks written down in `docs/unofficial-chatgpt-login.md`.
+* The upstream default is an impersonation of the OpenAI Codex CLI against an undocumented endpoint. Here the defaults are documented APIs with API keys. The upstream route survives only as the opt-in plugin, with its risks written down in `docs/chatgpt-login.md`.
 * Upstream writes wherever the caller points it. This project writes only inside the mod project, never overwrites, and records provenance.
 * Upstream has no tests. This workspace tests every layer that can run without a paid call.
 

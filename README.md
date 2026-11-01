@@ -102,7 +102,7 @@ docs/                       provider notes, the plugin's terms and risks, test l
 
 ## The opt-in ChatGPT login
 
-The upstream project's route signs in with a ChatGPT account and calls an **undocumented** backend while presenting itself as the Codex CLI. It can break or be blocked without notice, may not be covered by OpenAI's terms, and heavy use can risk account restrictions. It is therefore **not** in default builds, **not** a default workspace member, and never part of hosted HOI4 Factory. It needs all of: a source build with `--features unofficial-chatgpt-login`, `[providers.chatgpt_login] enabled = true` in the project config, `HOI4_IMAGEGEN_ACCEPT_UNOFFICIAL=1` in your own environment, and local stdio or CLI mode. A test proves a default build contains none of it. Read [docs/unofficial-chatgpt-login.md](docs/unofficial-chatgpt-login.md) first.
+The upstream project's route signs in with a ChatGPT account and calls an **undocumented** backend while presenting itself as the Codex CLI. It can break or be blocked without notice, may not be covered by OpenAI's terms, and heavy use can risk account restrictions. It is therefore **not** in default builds, **not** a default workspace member, and never part of hosted HOI4 Factory. It needs all of: a source build with `--features unofficial-chatgpt-login`, `[providers.chatgpt_login] enabled = true` in the project config, `HOI4_IMAGEGEN_ACCEPT_UNOFFICIAL=1` in your own environment, and local stdio or CLI mode. A test proves a default build contains none of it. Read [docs/chatgpt-login.md](docs/chatgpt-login.md) first.
 
 ## Status and limits
 
