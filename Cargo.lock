@@ -537,6 +537,16 @@ dependencies = [
 [[package]]
 name = "imagegen-cli"
 version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "clap",
+ "imagegen-core",
+ "imagegen-mcp",
+ "imagegen-providers",
+ "provider-chatgpt-login",
+ "serde_json",
+ "tempfile",
+]
 
 [[package]]
 name = "imagegen-core"
@@ -747,6 +757,16 @@ dependencies = [
 [[package]]
 name = "provider-chatgpt-login"
 version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "getrandom 0.4.3",
+ "imagegen-core",
+ "imagegen-providers",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tempfile",
+]
 
 [[package]]
 name = "pxfm"
