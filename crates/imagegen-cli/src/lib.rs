@@ -1,7 +1,7 @@
 //! `hoi4-imagegen`: the command-line twin of the MCP server.
 //!
 //! Every command calls the same [`imagegen_mcp::Engine`] operation the matching `hoi4.image_*` tool calls, so
-//! a command and its tool can never drift apart. `call` reaches all thirteen operations with JSON parameters;
+//! a command and its tool can never drift apart. `call` reaches every operation with JSON parameters;
 //! the first-class commands (`doctor`, `calibrate`, `plan`, `generate`, `validate`, `install`) add readable output.
 //!
 //! Exit codes: 0 success, 1 a finding or a refused operation, 2 usage or an unreadable project.
@@ -50,6 +50,8 @@ pub enum Command {
     Validate(ValidateArgs),
     /// Install an approved artifact.
     Install(InstallArgs),
+    /// Trace the sprites and textures the mod uses to their families and report reuse, missing and mis-sized art. Read only.
+    Audit(AuditArgs),
     /// Run any hoi4.image_* operation with JSON parameters (a string, or @file).
     Call {
         /// Tool name, for example hoi4.image_process.
@@ -145,6 +147,20 @@ pub struct ValidateArgs {
     pub canvas: Option<String>,
 }
 
+/// `audit` arguments.
+#[derive(Args, Debug)]
+pub struct AuditArgs {
+    /// Allowlist JSON inside the project (default .hoi4-imagegen/audit-allowlist.json when it exists).
+    #[arg(long)]
+    pub allowlist: Option<String>,
+    /// Only this family. Repeatable.
+    #[arg(long = "family")]
+    pub families: Vec<String>,
+    /// Findings listed per code.
+    #[arg(long)]
+    pub limit: Option<u32>,
+}
+
 /// `install` arguments.
 #[derive(Args, Debug)]
 pub struct InstallArgs {
@@ -207,6 +223,7 @@ pub fn dispatch(engine: &Engine, tool: &str, params: Value) -> Result<Value, Eng
         "hoi4.image_preview" => engine.preview(serde_json::from_value(params).map_err(bad)?),
         "hoi4.image_review" => engine.review(serde_json::from_value(params).map_err(bad)?),
         "hoi4.image_install" => engine.install(serde_json::from_value(params).map_err(bad)?),
+        "hoi4.image_audit" => engine.audit(serde_json::from_value(params).map_err(bad)?),
         "hoi4.image_ledger" => engine.ledger_query(serde_json::from_value(params).map_err(bad)?),
         "hoi4.image_cancel" => engine.cancel(serde_json::from_value(params).map_err(bad)?),
         other => Err(EngineError::invalid(format!("unknown tool '{other}'; the tools are {}", imagegen_mcp::server::TOOL_NAMES.join(", ")))),
@@ -289,6 +306,15 @@ pub fn execute(engine: &Engine, cli: &Cli, out: &mut dyn Write) -> i32 {
             0,
             None,
         )),
+        Command::Audit(a) => {
+            let v = dispatch(
+                engine,
+                "hoi4.image_audit",
+                json!({"allowlist": a.allowlist, "families": if a.families.is_empty() { Value::Null } else { json!(a.families) }, "limit": a.limit}),
+            )?;
+            let text = audit_text(&v);
+            Ok((v, 0, Some(text)))
+        }
         Command::Call { tool, params } => {
             let parsed = match params {
                 None => Value::Null,
@@ -441,6 +467,52 @@ fn plan_text(p: &Value) -> String {
         t.push_str(&format!("  warning: {}\n", w.as_str().unwrap_or("")));
     }
     t.push_str("\nNext: hoi4-imagegen generate --plan-id <id> --key <your key>\n");
+    t
+}
+
+fn audit_text(v: &Value) -> String {
+    let s = &v["summary"];
+    let mut t = format!(
+        "Audit of {}\n  game {}\n  {} sprites ({} definitions), {} traced uses, {} textures resolved, {} missing\n",
+        v["project_root"].as_str().unwrap_or("?"),
+        v["game_dir"].as_str().unwrap_or("not found"),
+        s["sprites_indexed"],
+        s["definitions"],
+        s["uses"],
+        s["textures_resolved"],
+        s["textures_missing"],
+    );
+    if !v["allowlist"].is_null() {
+        t.push_str(&format!("  allowlist {}\n", v["allowlist"]["path"].as_str().unwrap_or("?")));
+    }
+    t.push_str("\nUses per family:\n");
+    for (family, c) in v["uses_by_family"].as_object().into_iter().flatten() {
+        t.push_str(&format!(
+            "  {:<26} {:>6} uses  {} defined  {} undefined  {} direct  {} texture missing\n",
+            family, c["uses"], c["defined"], c["undefined"], c["direct_texture"], c["texture_missing"]
+        ));
+    }
+    t.push_str("\nFindings:\n");
+    for (code, g) in v["findings"].as_object().into_iter().flatten() {
+        t.push_str(&format!("  {:<26} {:>6} ({})\n", code, g["count"], g["severity"].as_str().unwrap_or("?")));
+    }
+    for (code, g) in v["findings"].as_object().into_iter().flatten() {
+        let list = g["findings"].as_array().cloned().unwrap_or_default();
+        if list.is_empty() {
+            continue;
+        }
+        t.push_str(&format!("\n{code} ({} of {} listed)\n", g["shown"], g["count"]));
+        for f in list.iter().take(10) {
+            t.push_str(&format!("  {}\n", f["message"].as_str().unwrap_or("")));
+        }
+    }
+    t.push_str(&format!(
+        "\nFull detail: add --json. Checked {} textures for canvas and {} report cards for corners.",
+        v["canvas_checked"], v["alpha_checked"]
+    ));
+    for n in v["notes"].as_array().into_iter().flatten() {
+        t.push_str(&format!("\nnote: {}", n.as_str().unwrap_or("")));
+    }
     t
 }
 

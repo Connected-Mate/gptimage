@@ -1,4 +1,4 @@
-//! The operations behind the thirteen tools. The MCP server and the CLI both call this, so a tool and its
+//! The operations behind the tools. The MCP server and the CLI both call this, so a tool and its
 //! command-line twin can never drift apart.
 
 use std::collections::HashMap;
@@ -17,6 +17,7 @@ use imagegen_providers::types::{CancelToken, JobRef, ProviderError, Sleeper};
 use imagegen_providers::{ErrorKind, HttpTransport, ProviderRegistry};
 use serde_json::Value;
 
+pub mod audit;
 pub mod autostyle;
 pub mod finish;
 pub mod generate;

@@ -363,7 +363,7 @@ pub enum InstallMode {
     /// Write the sprite snippet into `gfx_handoff.md` and leave `.gfx` files to the main agent (kit default).
     #[default]
     Handoff,
-    /// Insert the sprite entries into the suggested `.gfx` file (text-level; comments and layout are kept).
+    /// Insert the sprite entries into the suggested `.gfx` file with the lossless parser (comments, layout, line endings and encoding are kept).
     Register,
 }
 
@@ -428,4 +428,22 @@ pub struct CancelParams {
     /// For a job left behind by a crashed run: ask the provider what became of it and store the image if it finished.
     #[serde(default)]
     pub reconcile: Option<bool>,
+}
+
+/// `hoi4.image_audit`
+#[derive(Debug, Clone, Default, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct AuditParams {
+    /// Project-relative path of an allowlist JSON file that records intentional reuse. Default:
+    /// `.hoi4-imagegen/audit-allowlist.json` when it exists. The file is
+    /// `{"aliases": [{"sprite" or "texture": ..., "families": [...], "reason": ...}], "no_shine": [sprite names],
+    /// "missing_textures": [sprite names or texture paths]}`.
+    #[serde(default)]
+    pub allowlist: Option<String>,
+    /// Only report these families (ids as in `hoi4.image_families`). Default: all.
+    #[serde(default)]
+    pub families: Option<Vec<Family>>,
+    /// Findings listed per code (default 25, at most 5000; a reuse finding lists at most 100 uses and reports uses_total). Counts are always complete.
+    #[serde(default)]
+    pub limit: Option<u32>,
 }
