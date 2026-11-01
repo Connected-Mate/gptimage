@@ -121,9 +121,29 @@ pub fn non_max_suppression(mut candidates: Vec<Detection>, threshold: f64) -> Ve
     kept
 }
 
+/// Longest side YuNet sees. Its anchors are sized for faces up to a few hundred pixels, so a face that fills a
+/// large provider portrait (about 1080x1456) is missed at full size and found with a score above 0.93 once the image
+/// is scaled to this. Images at or below it are detected unchanged, as the kit's Python tool does.
+pub const DETECT_MAX_SIDE: u32 = 640;
+
 impl FaceDetector for YuNet {
     fn detect(&self, image: &Rgba) -> Result<Vec<FaceBox>> {
-        let boxes: Vec<FaceBox> = self.detections(image)?.into_iter().map(|d| d.bbox).collect();
+        let longest = image.width.max(image.height);
+        let boxes: Vec<FaceBox> = if longest > DETECT_MAX_SIDE {
+            let f = f64::from(DETECT_MAX_SIDE) / f64::from(longest);
+            let (w, h) = (((f64::from(image.width) * f).round() as u32).max(1), ((f64::from(image.height) * f).round() as u32).max(1));
+            let small = crate::resize::resize_lanczos3(image, w, h)?;
+            let (sx, sy) = (f64::from(image.width) / f64::from(w), f64::from(image.height) / f64::from(h));
+            self.detections(&small)?
+                .into_iter()
+                .map(|d| {
+                    let (x, y, bw, bh) = d.bbox;
+                    ((x as f64 * sx) as i64, (y as f64 * sy) as i64, (bw as f64 * sx) as i64, (bh as f64 * sy) as i64)
+                })
+                .collect()
+        } else {
+            self.detections(image)?.into_iter().map(|d| d.bbox).collect()
+        };
         Ok(deduplicate_faces(&boxes))
     }
 }

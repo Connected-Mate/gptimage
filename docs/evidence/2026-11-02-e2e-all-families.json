@@ -1,0 +1,2101 @@
+{
+ "about": "W5 end-to-end run of every hoi4-imagegen family into the test mod hoi4-imagegen-mcp/.work/e2e-mod (git-ignored), on the maintainer's own ChatGPT login (Windows 11). Copied from the hash-chained ledger; no token or account identifier is included.",
+ "date": "2026-11-01/02 (UTC 22:15-23:35)",
+ "game": "Hearts of Iron IV 1.19.4.1",
+ "binary": "hoi4-imagegen release build of branch w5/login",
+ "login_route": {
+  "responses": 40,
+  "outer_model": "gpt-6-luna at high effort in 40 of 40",
+  "image_tool_model": "gpt-image-2-codex",
+  "image_quality_reported": {
+   "medium": 32,
+   "low": 7
+  },
+  "moderation_refusals": 1,
+  "tokens_total": 118919,
+  "spend": "plan quota only, no money"
+ },
+ "families": [
+  {
+   "asset_id": "w5e2e.mobile_doctrine"
+  },
+  {
+   "asset_id": "w5e2e.hold_the_line",
+   "candidates": [
+    {
+     "id": "w5e2e.hold_the_line-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1254x1254; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one square"
+    }
+   ],
+   "family": "achievement",
+   "processed": "w5e2e.hold_the_line-v1-p1",
+   "recipe": {
+    "finishers": [
+     {
+      "detail": {
+       "completed_template_sha256": "248db006611eb3942550c43df83802aa6fb24761035fc928b5d34586c0c4c5ba",
+       "grey_source": "grayscale of the subject layer",
+       "grey_template_sha256": "70e073694c1a7d9fe40c63b1eb2e987a8a45b3ffd15ccf789eeaa5b843b90022",
+       "not_eligible_source": "the grey source with overlay.png composited on top at exact alignment",
+       "overlay_sha256": "89bc80c6ac975bf6f1ff000ff3070b20c337bfb8b8ae966ae35a5540c004d6dd",
+       "pinned_hashes_match": {
+        "completed": true,
+        "grey": true,
+        "overlay": true
+       },
+       "templates": ".claude/skills/hoi4-feature-assets/assets/vanilla_reference"
+      },
+      "input_sha256": "868d7f854a9794000d12cb71670a2d8ecc4b6b22263495245460e4f4d74908e8",
+      "name": "achievement_triplet",
+      "output_sha256": "3ff31e062e0a861e94ad131993f3c9db5816f85d278150ecdf677b9fa790ff94"
+     }
+    ],
+    "id": "achievement",
+    "version": 1
+   },
+   "steps": [
+    {
+     "erosion": 1,
+     "op": "defringe"
+    },
+    {
+     "min_alpha": 16,
+     "op": "trim_to_subject"
+    },
+    {
+     "height": 64,
+     "margin": 2,
+     "min_alpha": 16,
+     "op": "fit_subject",
+     "width": 64
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "handoff",
+    "files": [
+     "gfx/achievements/hold_the_line.dds",
+     "gfx/achievements/hold_the_line_grey.dds",
+     "gfx/achievements/hold_the_line_not_eligible.dds"
+    ],
+    "sprites": []
+   }
+  },
+  {
+   "asset_id": "w5e2e.chief_engineer",
+   "candidates": [
+    {
+     "id": "w5e2e.chief_engineer-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1024x1536; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one portra"
+    }
+   ],
+   "family": "advisor_card",
+   "processed": "w5e2e.chief_engineer-v1-p2",
+   "recipe": {
+    "finishers": [
+     {
+      "detail": {
+       "alpha_coverage": {
+        "exterior_leak": 0,
+        "inner_edge_gap": 0,
+        "opening_gap": 0
+       },
+       "opening": {
+        "center": [
+         24.761510279191295,
+         30.645146882359736
+        ],
+        "rotation": -4.76,
+        "size": [
+         30.47740601501429,
+         45.094508332105534
+        ]
+       },
+       "template": ".claude/skills/hoi4-feature-assets/assets/vanilla_reference/portraits/advisors/advisor_template.png",
+       "template_sha256": "8f594ef62afba6fdec58de66a80609350dcfe884320b11e6cb6220f1a0e19f58"
+      },
+      "input_sha256": "1ec981477077d1c1830814f110b5b279837773f87c3c9607daf8f8c3f11bbb3a",
+      "name": "advisor_card",
+      "output_sha256": "95192b3f4b94f86e39c988adba7bddfef4a6746dee116b42fa438b90c299e4da"
+     }
+    ],
+    "id": "advisor_card",
+    "version": 1
+   },
+   "steps": [
+    {
+     "background": [
+      0,
+      0,
+      0
+     ],
+     "op": "flatten_on"
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/ideas/w5e2e/advisors/idea_chief_engineer.dds"
+    ],
+    "sprites": [
+     "GFX_idea_chief_engineer"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.state_security",
+   "candidates": [
+    {
+     "id": "w5e2e.state_security-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1254x1254; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one standa"
+    }
+   ],
+   "family": "agency_logo",
+   "processed": "w5e2e.state_security-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "selected_strip",
+    "version": 1
+   },
+   "steps": [
+    {
+     "erosion": 1,
+     "op": "defringe"
+    },
+    {
+     "min_alpha": 16,
+     "op": "trim_to_subject"
+    },
+    {
+     "height": 119,
+     "margin": 2,
+     "min_alpha": 16,
+     "op": "fit_subject",
+     "width": 117
+    },
+    {
+     "frames": 2,
+     "op": "selected_frame"
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/operatives/agencies/w5e2e/agency_logo_state_security.dds"
+    ],
+    "sprites": [
+     "GFX_intelligence_agency_logo_state_security"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.codebreakers",
+   "candidates": [
+    {
+     "id": "w5e2e.codebreakers-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1254x1254; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one square"
+    }
+   ],
+   "family": "agency_upgrade",
+   "processed": "w5e2e.codebreakers-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "icon",
+    "version": 1
+   },
+   "steps": [
+    {
+     "erosion": 1,
+     "op": "defringe"
+    },
+    {
+     "min_alpha": 16,
+     "op": "trim_to_subject"
+    },
+    {
+     "height": 68,
+     "margin": 2,
+     "min_alpha": 16,
+     "op": "fit_subject",
+     "width": 68
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/operatives/icons/w5e2e/agency_codebreakers.dds"
+    ],
+    "sprites": [
+     "GFX_agency_codebreakers"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.reformists",
+   "candidates": [
+    {
+     "id": "w5e2e.reformists-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1172x1342; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one standa"
+    }
+   ],
+   "family": "bop_side",
+   "processed": "w5e2e.reformists-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "icon",
+    "version": 1
+   },
+   "steps": [
+    {
+     "erosion": 1,
+     "op": "defringe"
+    },
+    {
+     "min_alpha": 16,
+     "op": "trim_to_subject"
+    },
+    {
+     "height": 88,
+     "margin": 2,
+     "min_alpha": 16,
+     "op": "fit_subject",
+     "width": 72
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/bop/w5e2e/bop_reformists.dds"
+    ],
+    "sprites": [
+     "GFX_bop_reformists"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.citadel",
+   "candidates": [
+    {
+     "id": "w5e2e.citadel-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1254x1254; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one Hearts"
+    },
+    {
+     "id": "w5e2e.citadel-v2",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "edit: The same citadel from the same angle and framing, now in ruins: collapsed towers, broken walls, smoke and small fires, transparent background; ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-co"
+    }
+   ],
+   "family": "building",
+   "processed": "w5e2e.citadel-v1-p1",
+   "recipe": {
+    "finishers": [
+     {
+      "detail": {
+       "second_frame_candidate": "w5e2e.citadel-v2",
+       "second_frame_sha256": "46cc63f24af0b7be9b5ecdd193b779849b9f8eea3e76f5df221171d8b3584a07"
+      },
+      "input_sha256": "7a2749f47f7df00c611401c605cbc517507e43f1731c80df6e76ce685ecebd62",
+      "name": "second_frame",
+      "output_sha256": "a0c9526352a570e6be8a506959a70c188e516719986a02f1c5d1169f87400379"
+     }
+    ],
+    "id": "landmark_strip",
+    "version": 1
+   },
+   "steps": [
+    {
+     "erosion": 1,
+     "op": "defringe"
+    },
+    {
+     "min_alpha": 16,
+     "op": "trim_to_subject"
+    },
+    {
+     "height": 64,
+     "margin": 2,
+     "min_alpha": 16,
+     "op": "fit_subject",
+     "width": 64
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/buildings/w5e2e/building_citadel.dds"
+    ],
+    "sprites": [
+     "GFX_building_citadel"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.general_koval",
+   "candidates": [
+    {
+     "id": "w5e2e.general_koval-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1080x1456; image quality: low; image background: opaque; image output_format: png; revised prompt: Create exactly one fictional Hear"
+    }
+   ],
+   "family": "commander_portrait",
+   "processed": "w5e2e.general_koval-v1-p1",
+   "recipe": {
+    "finishers": [
+     {
+      "detail": {
+       "choice": {
+        "detected_face": [
+         247,
+         386,
+         541,
+         659
+        ]
+       },
+       "crop": [
+        0,
+        0,
+        1080,
+        1454
+       ],
+       "model": {
+        "path": ".claude/skills/hoi4-feature-assets/tools/models/face_detection_yunet_2026may.onnx",
+        "sha256": "ebafce4e3c118d6554634be5c27ab333b4c047a9a8c3faf1d7cf93101c22f0f0"
+       }
+      },
+      "input_sha256": "031d208bc161822cbadc4bf319b1badde0ba08d114655e213c9380798e98ffde",
+      "name": "extract_portrait",
+      "output_sha256": "90970ef049e3faaaf690f377ac7f174721f178382b5f0f1daec54439167496f0"
+     }
+    ],
+    "id": "portrait",
+    "version": 1
+   },
+   "steps": [
+    {
+     "background": [
+      0,
+      0,
+      0
+     ],
+     "op": "flatten_on"
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/leaders/w5e2e/commanders/portrait_general_koval.dds"
+    ],
+    "sprites": [
+     "GFX_portrait_general_koval"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.winter_specialist",
+   "candidates": [
+    {
+     "id": "w5e2e.winter_specialist-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1047x1502; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one square"
+    }
+   ],
+   "family": "commander_trait",
+   "processed": "w5e2e.winter_specialist-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "icon",
+    "version": 1
+   },
+   "steps": [
+    {
+     "erosion": 1,
+     "op": "defringe"
+    },
+    {
+     "min_alpha": 16,
+     "op": "trim_to_subject"
+    },
+    {
+     "height": 33,
+     "margin": 1,
+     "min_alpha": 16,
+     "op": "fit_subject",
+     "width": 23
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/traits/w5e2e/trait_winter_specialist.dds"
+    ],
+    "sprites": [
+     "GFX_trait_winter_specialist"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.w5_pioneers",
+   "imported_from": "imported as 2 frame files: incoming/cl_f1.png (9acaaa2c5897), incoming/cl_f2.png (3da38a4382db)",
+   "family": "counter_large",
+   "processed": "w5e2e.w5_pioneers-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "imported_art",
+    "version": 1
+   },
+   "steps": [
+    {
+     "height": 42,
+     "op": "conform",
+     "width": 152
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/counters/divisions_large/w5e2e/unit_w5_pioneers.dds"
+    ],
+    "sprites": [
+     "GFX_unit_w5_pioneers_icon"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.w5_heli",
+   "imported_from": "imported as 2 frame files: incoming/cs_f1.png (6652458cd0db), incoming/cs_f2.png (fd28a50f9fff)",
+   "family": "counter_small",
+   "processed": "w5e2e.w5_heli-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "imported_art",
+    "version": 1
+   },
+   "steps": [
+    {
+     "height": 12,
+     "op": "conform",
+     "width": 60
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/counters/divisions_small/w5e2e/unit_w5_heli.dds"
+    ],
+    "sprites": [
+     "GFX_unit_w5_heli_icon_small"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.requisition_grain",
+   "candidates": [
+    {
+     "id": "w5e2e.requisition_grain-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1254x1254; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one square"
+    }
+   ],
+   "family": "decision",
+   "processed": "w5e2e.requisition_grain-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "icon",
+    "version": 1
+   },
+   "steps": [
+    {
+     "erosion": 1,
+     "op": "defringe"
+    },
+    {
+     "min_alpha": 16,
+     "op": "trim_to_subject"
+    },
+    {
+     "height": 32,
+     "margin": 1,
+     "min_alpha": 16,
+     "op": "fit_subject",
+     "width": 33
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/decisions/w5e2e/decision_requisition_grain.dds"
+    ],
+    "sprites": [
+     "GFX_decision_requisition_grain"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.home_front",
+   "candidates": [
+    {
+     "id": "w5e2e.home_front-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1430x1100; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one square"
+    }
+   ],
+   "family": "decision_category_icon",
+   "processed": "w5e2e.home_front-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "icon",
+    "version": 1
+   },
+   "steps": [
+    {
+     "erosion": 1,
+     "op": "defringe"
+    },
+    {
+     "min_alpha": 16,
+     "op": "trim_to_subject"
+    },
+    {
+     "height": 40,
+     "margin": 3,
+     "min_alpha": 16,
+     "op": "fit_subject",
+     "width": 52
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/decisions/w5e2e/category_icons/decision_category_home_front.dds"
+    ],
+    "sprites": [
+     "GFX_decision_category_home_front"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.industrial_drive",
+   "candidates": [
+    {
+     "id": "w5e2e.industrial_drive-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1333x1180; image quality: medium; image background: opaque; image output_format: png; revised prompt: Create exactly one finished He"
+    }
+   ],
+   "family": "decision_category_picture",
+   "processed": "w5e2e.industrial_drive-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "picture",
+    "version": 1
+   },
+   "steps": [
+    {
+     "background": [
+      0,
+      0,
+      0
+     ],
+     "op": "flatten_on"
+    },
+    {
+     "height": 101,
+     "op": "cover_resize",
+     "width": 114
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/decisions/w5e2e/category_pictures/decision_cat_industrial_drive.dds"
+    ],
+    "sprites": [
+     "GFX_decision_cat_industrial_drive"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.w5_emblem",
+   "imported_from": "imported from incoming/emblem.png",
+   "family": "division_emblem",
+   "processed": "w5e2e.w5_emblem-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "imported_art",
+    "version": 1
+   },
+   "steps": [
+    {
+     "height": 42,
+     "op": "conform",
+     "width": 76
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/counters/division_templates_large/w5e2e/custom_w5_emblem.dds"
+    ],
+    "sprites": [
+     "GFX_div_custom_w5_emblem"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.deep_battle",
+   "candidates": [
+    {
+     "id": "w5e2e.deep_battle-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1254x1254; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one square"
+    }
+   ],
+   "family": "doctrine",
+   "processed": "w5e2e.deep_battle-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "icon",
+    "version": 1
+   },
+   "steps": [
+    {
+     "erosion": 1,
+     "op": "defringe"
+    },
+    {
+     "min_alpha": 16,
+     "op": "trim_to_subject"
+    },
+    {
+     "height": 64,
+     "margin": 2,
+     "min_alpha": 16,
+     "op": "fit_subject",
+     "width": 64
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/doctrines/w5e2e/doctrine_deep_battle.dds"
+    ],
+    "sprites": [
+     "GFX_doctrine_deep_battle"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.iron_pact",
+   "candidates": [
+    {
+     "id": "w5e2e.iron_pact-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1254x1254; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one standa"
+    }
+   ],
+   "family": "faction_logo",
+   "processed": "w5e2e.iron_pact-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "selected_strip",
+    "version": 1
+   },
+   "steps": [
+    {
+     "erosion": 1,
+     "op": "defringe"
+    },
+    {
+     "min_alpha": 16,
+     "op": "trim_to_subject"
+    },
+    {
+     "height": 100,
+     "margin": 2,
+     "min_alpha": 16,
+     "op": "fit_subject",
+     "width": 100
+    },
+    {
+     "frames": 2,
+     "op": "selected_frame"
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/factions/faction_logos/w5e2e/faction_iron_pact.dds"
+    ],
+    "sprites": [
+     "GFX_faction_iron_pact"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.WFE",
+   "candidates": [
+    {
+     "id": "w5e2e.WFE-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1774x887; image quality: low; image background: opaque; image output_format: png; revised prompt: Create exactly one flat, clean Hea"
+    }
+   ],
+   "family": "flag",
+   "processed": "w5e2e.WFE-v1-p2",
+   "recipe": {
+    "finishers": [
+     {
+      "detail": {
+       "origin": "bottom-left TGA at install",
+       "sizes": [
+        "82x52",
+        "41x26",
+        "10x7"
+       ]
+      },
+      "input_sha256": "3a6d4b23d02efdc7307ea7b808d7186ac6e2ec7997f5b83475bcc437adcd29b2",
+      "name": "flag_ladder",
+      "output_sha256": "76f29938dd38121c4b23db9c7528aab5c019331a1a7ba2a330f921e39a2abfa7"
+     }
+    ],
+    "id": "flag",
+    "version": 1
+   },
+   "steps": [
+    {
+     "background": [
+      0,
+      0,
+      0
+     ],
+     "op": "flatten_on"
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "handoff",
+    "files": [
+     "gfx/flags/WFE.tga",
+     "gfx/flags/medium/WFE.tga",
+     "gfx/flags/small/WFE.tga"
+    ],
+    "sprites": []
+   }
+  },
+  {
+   "asset_id": "w5e2e.iron_wall",
+   "candidates": [
+    {
+     "id": "w5e2e.iron_wall-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1340x1174; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one Hearts"
+    }
+   ],
+   "family": "focus",
+   "processed": "w5e2e.iron_wall-v1-p2",
+   "recipe": {
+    "finishers": [],
+    "id": "icon",
+    "version": 1
+   },
+   "steps": [
+    {
+     "erosion": 1,
+     "op": "defringe"
+    },
+    {
+     "min_alpha": 16,
+     "op": "trim_to_subject"
+    },
+    {
+     "height": 88,
+     "margin": 2,
+     "min_alpha": 16,
+     "op": "fit_subject",
+     "width": 100
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/goals/w5e2e/focus_iron_wall.dds"
+    ],
+    "sprites": [
+     "GFX_focus_iron_wall",
+     "GFX_focus_iron_wall_shine"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.w5e2e_panel_bg",
+   "candidates": [
+    {
+     "id": "w5e2e.w5e2e_panel_bg-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1536x1024; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one standa"
+    }
+   ],
+   "family": "gui_texture",
+   "processed": "w5e2e.w5e2e_panel_bg-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "icon",
+    "version": 1
+   },
+   "steps": [
+    {
+     "min_alpha": 16,
+     "op": "trim_to_subject"
+    },
+    {
+     "height": 200,
+     "margin": 0,
+     "min_alpha": 16,
+     "op": "fit_subject",
+     "width": 300
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/w5e2e/gui_w5e2e_panel_bg.dds"
+    ],
+    "sprites": [
+     "GFX_gui_w5e2e_panel_bg"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.steelworks",
+   "candidates": [
+    {
+     "id": "w5e2e.steelworks-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1254x1254; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one square"
+    }
+   ],
+   "family": "idea_concern",
+   "processed": "w5e2e.steelworks-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "icon",
+    "version": 1
+   },
+   "steps": [
+    {
+     "erosion": 1,
+     "op": "defringe"
+    },
+    {
+     "min_alpha": 16,
+     "op": "trim_to_subject"
+    },
+    {
+     "height": 64,
+     "margin": 1,
+     "min_alpha": 16,
+     "op": "fit_subject",
+     "width": 64
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/ideas/w5e2e/concerns/idea_steelworks.dds"
+    ],
+    "sprites": [
+     "GFX_idea_steelworks"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.war_economy",
+   "candidates": [
+    {
+     "id": "w5e2e.war_economy-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1178x1335; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one square"
+    }
+   ],
+   "family": "idea_spirit",
+   "processed": "w5e2e.war_economy-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "icon",
+    "version": 1
+   },
+   "steps": [
+    {
+     "erosion": 1,
+     "op": "defringe"
+    },
+    {
+     "min_alpha": 16,
+     "op": "trim_to_subject"
+    },
+    {
+     "height": 68,
+     "margin": 1,
+     "min_alpha": 16,
+     "op": "fit_subject",
+     "width": 60
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/ideas/w5e2e/idea_war_economy.dds"
+    ],
+    "sprites": [
+     "GFX_idea_war_economy"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.marshal_novak",
+   "candidates": [
+    {
+     "id": "w5e2e.marshal_novak-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1080x1456; image quality: low; image background: opaque; image output_format: png; revised prompt: Create exactly one original ficti"
+    }
+   ],
+   "family": "leader_portrait",
+   "processed": "w5e2e.marshal_novak-v1-p1",
+   "recipe": {
+    "finishers": [
+     {
+      "detail": {
+       "choice": {
+        "detected_face": [
+         236,
+         250,
+         563,
+         762
+        ]
+       },
+       "crop": [
+        0,
+        0,
+        1080,
+        1454
+       ],
+       "model": {
+        "path": ".claude/skills/hoi4-feature-assets/tools/models/face_detection_yunet_2026may.onnx",
+        "sha256": "ebafce4e3c118d6554634be5c27ab333b4c047a9a8c3faf1d7cf93101c22f0f0"
+       }
+      },
+      "input_sha256": "69369ae1bd41c4b4a7387744f370862a92a214f8db20586e25d05289ea095f3a",
+      "name": "extract_portrait",
+      "output_sha256": "71af75917f522477d2b541d4c0d6eb009e6e98393027e52bbcb7f7e3a4b915b6"
+     }
+    ],
+    "id": "portrait",
+    "version": 1
+   },
+   "steps": [
+    {
+     "background": [
+      0,
+      0,
+      0
+     ],
+     "op": "flatten_on"
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/leaders/w5e2e/portrait_marshal_novak.dds"
+    ],
+    "sprites": [
+     "GFX_portrait_marshal_novak"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.defence_cross",
+   "candidates": [
+    {
+     "id": "w5e2e.defence_cross-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 948x1659; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one standal"
+    }
+   ],
+   "family": "medal",
+   "processed": "w5e2e.defence_cross-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "icon",
+    "version": 1
+   },
+   "steps": [
+    {
+     "erosion": 1,
+     "op": "defringe"
+    },
+    {
+     "min_alpha": 16,
+     "op": "trim_to_subject"
+    },
+    {
+     "height": 28,
+     "margin": 1,
+     "min_alpha": 16,
+     "op": "fit_subject",
+     "width": 16
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/medals/w5e2e/medal_icon_defence_cross.dds"
+    ],
+    "sprites": [
+     "GFX_medal_icon_defence_cross"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.tank_design_bureau",
+   "candidates": [
+    {
+     "id": "w5e2e.tank_design_bureau-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1254x1254; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one square"
+    }
+   ],
+   "family": "mio_department",
+   "processed": "w5e2e.tank_design_bureau-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "icon",
+    "version": 1
+   },
+   "steps": [
+    {
+     "erosion": 1,
+     "op": "defringe"
+    },
+    {
+     "min_alpha": 16,
+     "op": "trim_to_subject"
+    },
+    {
+     "height": 48,
+     "margin": 2,
+     "min_alpha": 16,
+     "op": "fit_subject",
+     "width": 48
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/military_industrial_organization/department_icons/w5e2e/mio_department_tank_design_bureau.dds"
+    ],
+    "sprites": [
+     "GFX_mio_department_tank_design_bureau"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.mass_production",
+   "candidates": [
+    {
+     "id": "w5e2e.mass_production-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1254x1254; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one square"
+    }
+   ],
+   "family": "mio_policy",
+   "processed": "w5e2e.mass_production-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "icon",
+    "version": 1
+   },
+   "steps": [
+    {
+     "erosion": 1,
+     "op": "defringe"
+    },
+    {
+     "min_alpha": 16,
+     "op": "trim_to_subject"
+    },
+    {
+     "height": 60,
+     "margin": 2,
+     "min_alpha": 16,
+     "op": "fit_subject",
+     "width": 60
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/military_industrial_organization/policy_icons/w5e2e/mio_policy_mass_production.dds"
+    ],
+    "sprites": [
+     "GFX_mio_policy_mass_production"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.sloped_armour",
+   "candidates": [
+    {
+     "id": "w5e2e.sloped_armour-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1254x1254; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one square"
+    }
+   ],
+   "family": "mio_trait",
+   "processed": "w5e2e.sloped_armour-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "icon",
+    "version": 1
+   },
+   "steps": [
+    {
+     "erosion": 1,
+     "op": "defringe"
+    },
+    {
+     "min_alpha": 16,
+     "op": "trim_to_subject"
+    },
+    {
+     "height": 48,
+     "margin": 2,
+     "min_alpha": 16,
+     "op": "fit_subject",
+     "width": 48
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/military_industrial_organization/trait_icons/w5e2e/mio_trait_sloped_armour.dds"
+    ],
+    "sprites": [
+     "GFX_mio_trait_sloped_armour"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.supply_bonus",
+   "candidates": [
+    {
+     "id": "w5e2e.supply_bonus-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1536x1024; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one standa"
+    }
+   ],
+   "family": "modifier_stat_icon",
+   "processed": "w5e2e.supply_bonus-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "icon",
+    "version": 1
+   },
+   "steps": [
+    {
+     "min_alpha": 16,
+     "op": "trim_to_subject"
+    },
+    {
+     "height": 20,
+     "margin": 0,
+     "min_alpha": 16,
+     "op": "fit_subject",
+     "width": 30
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/modifiers/w5e2e/modifier_supply_bonus.dds"
+    ],
+    "sprites": [
+     "GFX_modifier_supply_bonus"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.peace_conference",
+   "candidates": [
+    {
+     "id": "w5e2e.peace_conference-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 2020x778; image quality: medium; image background: opaque; image output_format: png; revised prompt: Create exactly one historically"
+    }
+   ],
+   "family": "news_event",
+   "processed": "w5e2e.peace_conference-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "picture",
+    "version": 1
+   },
+   "steps": [
+    {
+     "background": [
+      0,
+      0,
+      0
+     ],
+     "op": "flatten_on"
+    },
+    {
+     "height": 153,
+     "op": "cover_resize",
+     "width": 397
+    },
+    {
+     "op": "grayscale"
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/event_pictures/w5e2e/news_event_peace_conference.dds"
+    ],
+    "sprites": [
+     "GFX_news_event_peace_conference"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.combined_arms",
+   "candidates": [
+    {
+     "id": "w5e2e.combined_arms-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1254x1254; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one square"
+    }
+   ],
+   "family": "officer_corps_spirit",
+   "processed": "w5e2e.combined_arms-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "icon",
+    "version": 1
+   },
+   "steps": [
+    {
+     "erosion": 1,
+     "op": "defringe"
+    },
+    {
+     "min_alpha": 16,
+     "op": "trim_to_subject"
+    },
+    {
+     "height": 45,
+     "margin": 1,
+     "min_alpha": 16,
+     "op": "fit_subject",
+     "width": 45
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/officer_corp/spirits/w5e2e/spirit_combined_arms.dds"
+    ],
+    "sprites": [
+     "GFX_idea_combined_arms"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.steal_plans",
+   "candidates": [
+    {
+     "id": "w5e2e.steal_plans-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1254x1254; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one square"
+    }
+   ],
+   "family": "operation_icon",
+   "processed": "w5e2e.steal_plans-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "icon",
+    "version": 1
+   },
+   "steps": [
+    {
+     "erosion": 1,
+     "op": "defringe"
+    },
+    {
+     "min_alpha": 16,
+     "op": "trim_to_subject"
+    },
+    {
+     "height": 58,
+     "margin": 2,
+     "min_alpha": 16,
+     "op": "fit_subject",
+     "width": 59
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/operations/w5e2e/icons/phase_steal_plans.dds"
+    ],
+    "sprites": [
+     "GFX_phase_steal_plans"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.harbour_sabotage",
+   "candidates": [
+    {
+     "id": "w5e2e.harbour_sabotage-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1369x1149; image quality: low; image background: opaque; image output_format: png; revised prompt: Create exactly one complete Heart"
+    }
+   ],
+   "family": "operation_picture",
+   "processed": "w5e2e.harbour_sabotage-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "picture",
+    "version": 1
+   },
+   "steps": [
+    {
+     "background": [
+      0,
+      0,
+      0
+     ],
+     "op": "flatten_on"
+    },
+    {
+     "height": 176,
+     "op": "cover_resize",
+     "width": 210
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/operations/w5e2e/pictures/operations_harbour_sabotage.dds"
+    ],
+    "sprites": [
+     "GFX_operations_harbour_sabotage"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.agent_vesna",
+   "candidates": [
+    {
+     "id": "w5e2e.agent_vesna-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1080x1456; image quality: low; image background: opaque; image output_format: png; revised prompt: Create exactly one vertical 156:2"
+    }
+   ],
+   "family": "operative_portrait",
+   "processed": "w5e2e.agent_vesna-v1-p1",
+   "recipe": {
+    "finishers": [
+     {
+      "detail": {
+       "choice": {
+        "detected_face": [
+         308,
+         349,
+         374,
+         505
+        ]
+       },
+       "crop": [
+        0,
+        0,
+        1080,
+        1454
+       ],
+       "model": {
+        "path": ".claude/skills/hoi4-feature-assets/tools/models/face_detection_yunet_2026may.onnx",
+        "sha256": "ebafce4e3c118d6554634be5c27ab333b4c047a9a8c3faf1d7cf93101c22f0f0"
+       }
+      },
+      "input_sha256": "52fe7fcd02efac6b9dc0e108561385e6d0938ec60822736ac236af4de2c67487",
+      "name": "extract_portrait",
+      "output_sha256": "3dfa8d6a2a4aa2dbbaa0c6115e9a0049a2189d0e1f2d8f27902cc7ed8802dc68"
+     }
+    ],
+    "id": "portrait",
+    "version": 1
+   },
+   "steps": [
+    {
+     "background": [
+      0,
+      0,
+      0
+     ],
+     "op": "flatten_on"
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/leaders/w5e2e/operatives/portrait_agent_vesna.dds"
+    ],
+    "sprites": [
+     "GFX_portrait_agent_vesna"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.stubborn",
+   "candidates": [
+    {
+     "id": "w5e2e.stubborn-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1024x1536; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one isolat"
+    }
+   ],
+   "family": "personal_trait",
+   "processed": "w5e2e.stubborn-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "icon",
+    "version": 1
+   },
+   "steps": [
+    {
+     "min_alpha": 16,
+     "op": "trim_to_subject"
+    },
+    {
+     "height": 33,
+     "margin": 1,
+     "min_alpha": 16,
+     "op": "fit_subject",
+     "width": 23
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/traits/w5e2e/personal/trait_stubborn.dds"
+    ],
+    "sprites": [
+     "GFX_trait_stubborn"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.night_bombing",
+   "candidates": [
+    {
+     "id": "w5e2e.night_bombing-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1254x1254; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one square"
+    }
+   ],
+   "family": "raid",
+   "processed": "w5e2e.night_bombing-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "icon",
+    "version": 1
+   },
+   "steps": [
+    {
+     "erosion": 1,
+     "op": "defringe"
+    },
+    {
+     "min_alpha": 16,
+     "op": "trim_to_subject"
+    },
+    {
+     "height": 32,
+     "margin": 1,
+     "min_alpha": 16,
+     "op": "fit_subject",
+     "width": 32
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/military_raids/w5e2e/raid_night_bombing.dds"
+    ],
+    "sprites": [
+     "GFX_raid_night_bombing"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.border_patrol",
+   "candidates": [
+    {
+     "id": "w5e2e.border_patrol-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1368x1149; image quality: low; image background: opaque; image output_format: png; revised prompt: Create exactly one image: a docum"
+    }
+   ],
+   "family": "report_event",
+   "processed": "w5e2e.border_patrol-v1-p2",
+   "recipe": {
+    "finishers": [],
+    "id": "report_card",
+    "version": 2
+   },
+   "steps": [
+    {
+     "background": [
+      0,
+      0,
+      0
+     ],
+     "op": "flatten_on"
+    },
+    {
+     "op": "report_card",
+     "seed": 3825275316
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/event_pictures/w5e2e/report_event_border_patrol.dds"
+    ],
+    "sprites": [
+     "GFX_report_event_border_patrol"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.dr_halberg",
+   "candidates": [
+    {
+     "id": "w5e2e.dr_halberg-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1081x1455; image quality: low; image background: opaque; image output_format: png; revised prompt: Create exactly one polished Heart"
+    }
+   ],
+   "family": "scientist_portrait",
+   "processed": "w5e2e.dr_halberg-v1-p1",
+   "recipe": {
+    "finishers": [
+     {
+      "detail": {
+       "choice": {
+        "detected_face": [
+         234,
+         250,
+         553,
+         770
+        ]
+       },
+       "crop": [
+        0,
+        0,
+        1081,
+        1455
+       ],
+       "model": {
+        "path": ".claude/skills/hoi4-feature-assets/tools/models/face_detection_yunet_2026may.onnx",
+        "sha256": "ebafce4e3c118d6554634be5c27ab333b4c047a9a8c3faf1d7cf93101c22f0f0"
+       }
+      },
+      "input_sha256": "2672d602e64349cc843cec0e0c448c3a05bf47ae091d3b9a1320d0d5b5de7bfa",
+      "name": "extract_portrait",
+      "output_sha256": "1a41110233850ae6a39401c8565f1ac935832dc334bd358c691cabd0e2f9dffd"
+     }
+    ],
+    "id": "portrait",
+    "version": 1
+   },
+   "steps": [
+    {
+     "background": [
+      0,
+      0,
+      0
+     ],
+     "op": "flatten_on"
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/leaders/w5e2e/scientists/portrait_dr_halberg.dds"
+    ],
+    "sprites": [
+     "GFX_portrait_dr_halberg"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.rocket_program",
+   "candidates": [
+    {
+     "id": "w5e2e.rocket_program-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1607x979; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one Hearts "
+    }
+   ],
+   "family": "special_project_icon",
+   "processed": "w5e2e.rocket_program-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "icon",
+    "version": 1
+   },
+   "steps": [
+    {
+     "erosion": 1,
+     "op": "defringe"
+    },
+    {
+     "min_alpha": 16,
+     "op": "trim_to_subject"
+    },
+    {
+     "height": 98,
+     "margin": 3,
+     "min_alpha": 16,
+     "op": "fit_subject",
+     "width": 161
+    },
+    {
+     "op": "grayscale"
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/special_project/project_icons/w5e2e/sp_rocket_program.dds"
+    ],
+    "sprites": [
+     "GFX_sp_rocket_program"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.fortified_zone",
+   "candidates": [
+    {
+     "id": "w5e2e.fortified_zone-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1254x1254; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one square"
+    }
+   ],
+   "family": "state_modifier",
+   "processed": "w5e2e.fortified_zone-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "icon",
+    "version": 1
+   },
+   "steps": [
+    {
+     "erosion": 1,
+     "op": "defringe"
+    },
+    {
+     "min_alpha": 16,
+     "op": "trim_to_subject"
+    },
+    {
+     "height": 32,
+     "margin": 1,
+     "min_alpha": 16,
+     "op": "fit_subject",
+     "width": 32
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/state_modifiers/w5e2e/modifiers_fortified_zone.dds"
+    ],
+    "sprites": [
+     "GFX_modifiers_fortified_zone"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.armistice",
+   "candidates": [
+    {
+     "id": "w5e2e.armistice-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 1480x1062; image quality: medium; image background: opaque; image output_format: png; revised prompt: Create exactly one complete ed"
+    }
+   ],
+   "family": "super_event",
+   "processed": "w5e2e.armistice-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "picture",
+    "version": 1
+   },
+   "steps": [
+    {
+     "background": [
+      0,
+      0,
+      0
+     ],
+     "op": "flatten_on"
+    },
+    {
+     "height": 328,
+     "op": "cover_resize",
+     "width": 457
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/super_events/w5e2e/super_event_armistice.dds"
+    ],
+    "sprites": [
+     "GFX_super_event_armistice"
+    ]
+   }
+  },
+  {
+   "asset_id": "w5e2e.heavy_tank_1940",
+   "candidates": [
+    {
+     "id": "w5e2e.heavy_tank_1940-v1",
+     "model": "gpt-6-luna",
+     "provider": "chatgpt_login",
+     "note": "ran on gpt-6-luna at high reasoning effort, as reported by the backend; usage is not reported; image tool model (chosen by the backend): gpt-image-2-codex; image size: 2061x763; image quality: medium; image background: transparent; image output_format: png; revised prompt: Create exactly one isolate"
+    }
+   ],
+   "family": "technology",
+   "processed": "w5e2e.heavy_tank_1940-v1-p1",
+   "recipe": {
+    "finishers": [],
+    "id": "icon",
+    "version": 1
+   },
+   "steps": [
+    {
+     "erosion": 1,
+     "op": "defringe"
+    },
+    {
+     "min_alpha": 16,
+     "op": "trim_to_subject"
+    },
+    {
+     "height": 54,
+     "margin": 2,
+     "min_alpha": 16,
+     "op": "fit_subject",
+     "width": 146
+    }
+   ],
+   "finishers": [],
+   "validation": "pass",
+   "review": {
+    "verdict": "approved",
+    "reviewer": "claude-w5-session (agent)"
+   },
+   "installed": {
+    "mode": "register",
+    "files": [
+     "gfx/interface/technologies/w5e2e/heavy_tank_1940.dds"
+    ],
+    "sprites": [
+     "GFX_heavy_tank_1940_medium"
+    ]
+   }
+  }
+ ]
+}
