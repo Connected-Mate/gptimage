@@ -35,7 +35,11 @@ impl Engine {
             } else if looks_like_artifact(target) {
                 results.push(self.validate_artifact(target, &p)?);
             } else {
-                return Err(EngineError::new("not_found", format!("'{target}' is neither a file in the project nor an artifact id"), RetryClass::Terminal));
+                return Err(EngineError::new(
+                    "not_found",
+                    format!("'{target}' is neither a file in the project nor an artifact id"),
+                    RetryClass::Terminal,
+                ));
             }
         }
         let failed = results.iter().filter(|r| r["status"] == "fail").count();
@@ -78,7 +82,14 @@ impl Engine {
         let canvas = if profile.canvas == [0, 0] { p.canvas } else { None };
         let (status, mut findings, extra) = run_checks(&bytes, rel, profile, &checks, canvas);
         // installed art should be in the ledger
-        let installed_by_us = self.ledger.entries()?.iter().any(|e| e.kind == kind::INSTALLED && e.data.get("files").and_then(Value::as_array).map(|f| f.iter().any(|x| x.get("path").and_then(Value::as_str) == Some(rel))).unwrap_or(false));
+        let installed_by_us = self.ledger.entries()?.iter().any(|e| {
+            e.kind == kind::INSTALLED
+                && e.data
+                    .get("files")
+                    .and_then(Value::as_array)
+                    .map(|f| f.iter().any(|x| x.get("path").and_then(Value::as_str) == Some(rel)))
+                    .unwrap_or(false)
+        });
         if !installed_by_us && rel.starts_with("gfx/") {
             findings.push(Finding {
                 code: "GFX-PROVENANCE-MISSING".into(),
@@ -114,7 +125,8 @@ impl Engine {
             notes["file_changed_since_recorded"] = json!(true);
         }
         if !artifact.processed {
-            notes["note"] = json!("This is a raw candidate. It is expected to fail the size check until hoi4.image_process has fitted it to the canvas.");
+            notes["note"] =
+                json!("This is a raw candidate. It is expected to fail the size check until hoi4.image_process has fitted it to the canvas.");
         }
         if self.profile_ref(profile).hash != artifact.profile.hash {
             notes["profile_changed_since_made"] = json!(true);
@@ -171,7 +183,16 @@ fn run_checks(bytes: &[u8], name: &str, profile: &Profile, checks: &[String], ca
 }
 
 #[allow(clippy::too_many_arguments)]
-fn result_json(target: &str, path: &str, sha: &str, status: Status, findings: &[Finding], checks: &[String], profile: &Profile, extra: &Value) -> Value {
+fn result_json(
+    target: &str,
+    path: &str,
+    sha: &str,
+    status: Status,
+    findings: &[Finding],
+    checks: &[String],
+    profile: &Profile,
+    extra: &Value,
+) -> Value {
     let errors = findings.iter().filter(|f| f.level == Level::Error).count();
     let warnings = findings.iter().filter(|f| f.level == Level::Warning).count();
     let mut v = json!({

@@ -247,7 +247,11 @@ pub fn build_prompt(
 /// Aspect ratio of a canvas reduced to lowest terms, as `w:h`.
 pub fn aspect_of(canvas: [u32; 2]) -> String {
     fn gcd(a: u32, b: u32) -> u32 {
-        if b == 0 { a } else { gcd(b, a % b) }
+        if b == 0 {
+            a
+        } else {
+            gcd(b, a % b)
+        }
     }
     let g = gcd(canvas[0].max(1), canvas[1].max(1));
     format!("{}:{}", canvas[0] / g, canvas[1] / g)
@@ -294,7 +298,14 @@ mod tests {
             references: vec![],
             style: None,
             style_sha256: None,
-            estimate: PlanEstimate { usd_per_call: 0.006, calls: 1, usd: 0.006, basis: "test".into(), usage_unknown: false, funding: "user_key".into() },
+            estimate: PlanEstimate {
+                usd_per_call: 0.006,
+                calls: 1,
+                usd: 0.006,
+                basis: "test".into(),
+                usage_unknown: false,
+                funding: "user_key".into(),
+            },
             paths: PlanPaths {
                 candidate_dir: "docs/assets/iron/source_png".into(),
                 processed_dir: "docs/assets/iron/processed_png".into(),
@@ -382,7 +393,28 @@ mod tests {
         assert!(p.text.contains("1. style anchor"));
         assert!(p.text.contains("neon colours") && p.text.contains("a drawn checkerboard pattern"));
         assert_eq!(p.sha256, sha256_hex(p.text.as_bytes()));
-        assert_eq!(p, build_prompt(prof, [100, 88], "a steel gate", Some(&style), &[LoadedRef { path: "references/a.png".into(), role: RefRole::StyleAnchor, origin: RefOrigin::Project, source_sha256: "s".into(), source_format: "png".into(), sha256: "x".into(), width: 1, height: 1, notes: vec![], png: vec![] }], true));
+        assert_eq!(
+            p,
+            build_prompt(
+                prof,
+                [100, 88],
+                "a steel gate",
+                Some(&style),
+                &[LoadedRef {
+                    path: "references/a.png".into(),
+                    role: RefRole::StyleAnchor,
+                    origin: RefOrigin::Project,
+                    source_sha256: "s".into(),
+                    source_format: "png".into(),
+                    sha256: "x".into(),
+                    width: 1,
+                    height: 1,
+                    notes: vec![],
+                    png: vec![]
+                }],
+                true
+            )
+        );
     }
 
     #[test]

@@ -1,7 +1,7 @@
 //! Final paths, sprite names and file bytes for an installed asset.
 
-use crate::family::Family;
 use crate::error::{Error, Result};
+use crate::family::Family;
 use crate::naming::{expand, validate_flag_name, validate_snake};
 use crate::pixels::Rgba;
 use crate::profile::{Container, Profile};
@@ -75,7 +75,7 @@ pub fn sprite_entries(profile: &Profile, feature_slug: &str, asset: &str, files:
     let main = files.first().ok_or_else(|| Error::Invalid("no final files".into()))?;
     let prefix = resolved_prefix(profile, feature_slug, asset)?;
     let name = expand(&spec.name, feature_slug, asset, &prefix)?;
-    let gfx_file = format!("{}", expand(&spec.gfx_file, feature_slug, asset, &prefix)?);
+    let gfx_file = expand(&spec.gfx_file, feature_slug, asset, &prefix)?;
     let mut entries = vec![if profile.frames > 1 { framed_sprite(&name, &main.rel, profile.frames) } else { plain_sprite(&name, &main.rel) }];
     for companion in &spec.companions {
         match companion.as_str() {

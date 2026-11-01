@@ -549,10 +549,8 @@ fn flag_sets_install_three_tga_sizes() {
     let p = h
         .engine
         .process(
-            serde_json::from_value(
-                json!({"import": {"path": "incoming/flag.png", "family": "flag", "feature_slug": "iron_pact", "asset": "IRP"}}),
-            )
-            .unwrap(),
+            serde_json::from_value(json!({"import": {"path": "incoming/flag.png", "family": "flag", "feature_slug": "iron_pact", "asset": "IRP"}}))
+                .unwrap(),
         )
         .unwrap();
     let id = p["artifact_id"].as_str().unwrap().to_string();

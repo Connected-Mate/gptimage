@@ -13,8 +13,8 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::family::{Automation, Family};
 use crate::error::{Error, Result};
+use crate::family::{Automation, Family};
 use crate::hashing::{canonical_hash, sha256_hex};
 
 /// Where a profile's geometry came from.
@@ -294,15 +294,14 @@ impl ProfileSet {
                 let bytes = crate::fsio::read_limited(path, 4 * 1024 * 1024)?;
                 set.kit_sha256 = Some(sha256_hex(&bytes));
                 set.kit_path = Some(crate::fsio::display_path(path));
-                let doc: Value = serde_json::from_slice(&bytes)
-                    .map_err(|e| Error::Config(format!("{} is not valid JSON: {e}", path.display())))?;
+                let doc: Value = serde_json::from_slice(&bytes).map_err(|e| Error::Config(format!("{} is not valid JSON: {e}", path.display())))?;
                 let rows = doc
                     .get("profiles")
                     .and_then(Value::as_object)
                     .ok_or_else(|| Error::Config(format!("{} has no 'profiles' object", path.display())))?;
                 for (name, row) in rows {
-                    let parsed: RowOverride = serde_json::from_value(row.clone())
-                        .map_err(|e| Error::Config(format!("profiles.json row '{name}': {e}")))?;
+                    let parsed: RowOverride =
+                        serde_json::from_value(row.clone()).map_err(|e| Error::Config(format!("profiles.json row '{name}': {e}")))?;
                     set.apply(name, &parsed, ProfileOrigin::Kit)?;
                 }
             } else {

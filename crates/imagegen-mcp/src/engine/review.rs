@@ -57,15 +57,25 @@ impl Engine {
                     ))
                 }
                 Some(_) => {
-                    return Err(EngineError::refused("review_needs_validation", "the last validation failed; fix the findings and validate again before approving", RetryClass::RefreshPreconditions))
+                    return Err(EngineError::refused(
+                        "review_needs_validation",
+                        "the last validation failed; fix the findings and validate again before approving",
+                        RetryClass::RefreshPreconditions,
+                    ))
                 }
                 None => {
-                    return Err(EngineError::refused("review_needs_validation", "this artifact has not been validated; run hoi4.image_validate first", RetryClass::RefreshPreconditions))
+                    return Err(EngineError::refused(
+                        "review_needs_validation",
+                        "this artifact has not been validated; run hoi4.image_validate first",
+                        RetryClass::RefreshPreconditions,
+                    ))
                 }
             }
-            let previewed = entries
-                .iter()
-                .any(|e| e.kind == kind::PREVIEWED && e.artifact_id.as_deref() == Some(artifact.id.as_str()) && e.data.get("sha256").and_then(Value::as_str) == Some(sha.as_str()));
+            let previewed = entries.iter().any(|e| {
+                e.kind == kind::PREVIEWED
+                    && e.artifact_id.as_deref() == Some(artifact.id.as_str())
+                    && e.data.get("sha256").and_then(Value::as_str) == Some(sha.as_str())
+            });
             if !previewed {
                 return Err(EngineError::refused(
                     "review_needs_preview",
@@ -87,10 +97,8 @@ impl Engine {
                 .with_details(json!({"rubric": rubric_id, "questions": questions})));
             }
             let next_seq = entries.len() + 1;
-            approval_id = Some(format!(
-                "apr-{}",
-                &sha256_hex(format!("{}|{}|{}|{}|{}", artifact.id, sha, reviewer, self.now(), next_seq).as_bytes())[..16]
-            ));
+            approval_id =
+                Some(format!("apr-{}", &sha256_hex(format!("{}|{}|{}|{}|{}", artifact.id, sha, reviewer, self.now(), next_seq).as_bytes())[..16]));
         }
 
         let record = ReviewedRecord {

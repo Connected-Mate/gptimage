@@ -38,9 +38,23 @@ const SURVEYS: &[Survey] = &[
     Survey { profile: "report_event", folder: "gfx/event_pictures", prefix: Some("report_event"), ext: "dds", recursive: false, mixed: false },
     Survey { profile: "news_event", folder: "gfx/event_pictures", prefix: Some("news_event"), ext: "dds", recursive: false, mixed: false },
     Survey { profile: "flag", folder: "gfx/flags", prefix: None, ext: "tga", recursive: false, mixed: false },
-    Survey { profile: "mio_department", folder: "gfx/interface/military_industrial_organization/department_icons", prefix: None, ext: "dds", recursive: false, mixed: false },
+    Survey {
+        profile: "mio_department",
+        folder: "gfx/interface/military_industrial_organization/department_icons",
+        prefix: None,
+        ext: "dds",
+        recursive: false,
+        mixed: false,
+    },
     Survey { profile: "agency_logo", folder: "gfx/interface/operatives/agencies", prefix: None, ext: "dds", recursive: false, mixed: false },
-    Survey { profile: "officer_corps_spirit", folder: "gfx/interface/officer_corp/spirits", prefix: None, ext: "dds", recursive: false, mixed: false },
+    Survey {
+        profile: "officer_corps_spirit",
+        folder: "gfx/interface/officer_corp/spirits",
+        prefix: None,
+        ext: "dds",
+        recursive: false,
+        mixed: false,
+    },
     Survey { profile: "leader_portrait", folder: "gfx/leaders", prefix: None, ext: "dds", recursive: true, mixed: false },
     Survey { profile: "achievement", folder: "gfx/achievements", prefix: None, ext: "dds", recursive: false, mixed: false },
     Survey { profile: "counter_large", folder: "gfx/interface/counters/divisions_large", prefix: None, ext: "dds", recursive: false, mixed: false },
@@ -195,12 +209,7 @@ pub fn calibrate(game_dir: &Path, set: &ProfileSet) -> Result<CalibrationReport>
         });
     }
     let not_surveyed = set.all().filter(|p| !surveyed.contains(&p.id)).map(|p| p.id.clone()).collect();
-    Ok(CalibrationReport {
-        game_dir: crate::fsio::display_path(game_dir),
-        game_version: game_version(game_dir),
-        rows,
-        not_surveyed,
-    })
+    Ok(CalibrationReport { game_dir: crate::fsio::display_path(game_dir), game_version: game_version(game_dir), rows, not_surveyed })
 }
 
 #[cfg(test)]

@@ -140,9 +140,7 @@ pub const UPSCALE_CODE: &str = "GFX-UPSCALE-LIMIT";
 /// The enlargement factor a step would apply to `img` (above 1 enlarges), when it scales at all.
 pub fn upscale_factor(img: &Rgba, op: &Op) -> Option<f64> {
     match op {
-        Op::Resize { width, height } => {
-            Some((f64::from(*width) / f64::from(img.width)).max(f64::from(*height) / f64::from(img.height)))
-        }
+        Op::Resize { width, height } => Some((f64::from(*width) / f64::from(img.width)).max(f64::from(*height) / f64::from(img.height))),
         Op::CoverResize { width, height } => {
             let c = crop_to_aspect(img, *width, *height).ok()?;
             Some((f64::from(*width) / f64::from(c.width)).max(f64::from(*height) / f64::from(c.height)))
@@ -325,11 +323,7 @@ pub fn defringe(img: &Rgba, erosion: u32, spill_mask: Option<&[bool]>) -> Result
     // boundary band: not inside a 2-pixel erosion of (alpha >= 240)
     let solid: Vec<bool> = (0..n).map(|i| alpha(i) >= 240).collect();
     let inner = erode_cross(&solid, w, h, 2);
-    let rim: Vec<bool> = (0..n)
-        .map(|i| {
-            alpha_out[i] < 255 || (alpha_out[i] > 0 && is_chroma(px(i), 40) && !inner[i]) || spill(i)
-        })
-        .collect();
+    let rim: Vec<bool> = (0..n).map(|i| alpha_out[i] < 255 || (alpha_out[i] > 0 && is_chroma(px(i), 40) && !inner[i]) || spill(i)).collect();
 
     let nearest = nearest_core(&core, w, h);
     let mut out = img.clone();
@@ -497,10 +491,7 @@ mod tests {
     #[test]
     fn chain_records_hashes_and_is_deterministic() {
         let img = disc(120);
-        let ops = vec![
-            Op::TrimToSubject { min_alpha: 16 },
-            Op::FitSubject { width: 65, height: 67, margin: 2, min_alpha: 16 },
-        ];
+        let ops = vec![Op::TrimToSubject { min_alpha: 16 }, Op::FitSubject { width: 65, height: 67, margin: 2, min_alpha: 16 }];
         let (a, rec_a) = run_chain(&img, &ops).unwrap();
         let (b, rec_b) = run_chain(&img, &ops).unwrap();
         assert_eq!(a, b);

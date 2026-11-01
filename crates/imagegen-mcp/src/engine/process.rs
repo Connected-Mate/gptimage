@@ -2,15 +2,15 @@
 
 use imagegen_core::error::RetryClass;
 use imagegen_core::export;
+use imagegen_core::family::{Family, Group};
 use imagegen_core::hashing::sha256_hex;
+use imagegen_core::lock;
 use imagegen_core::naming::{self, asset_id, candidate_id, processed_id};
 use imagegen_core::pixels::{decode, encode_png, DecodeLimits, Rgba, SourceFormat};
-use imagegen_core::family::{Family, Group};
-use imagegen_core::lock;
 use imagegen_core::process::{edge_stats, run_chain_limited, Op, ICON_MAX_UPSCALE};
-use imagegen_core::reuse;
 use imagegen_core::profile::{Background, Profile};
 use imagegen_core::records::{kind, CandidateRecord, CostRecord, ProcessedRecord};
+use imagegen_core::reuse;
 use imagegen_core::validate::{validate_image, Options};
 use serde_json::{json, Value};
 
@@ -26,7 +26,10 @@ impl Engine {
             (Some(id), None) => {
                 let a = self.artifact(id)?;
                 if a.processed {
-                    return Err(EngineError::invalid(format!("{id} is already a processed artifact; process its source candidate {} again to try other steps", a.root_id)));
+                    return Err(EngineError::invalid(format!(
+                        "{id} is already a processed artifact; process its source candidate {} again to try other steps",
+                        a.root_id
+                    )));
                 }
                 let imported = a.provider == "import";
                 (a, imported)
@@ -54,7 +57,11 @@ impl Engine {
         let slug = &artifact.feature_slug;
         let dir = format!("docs/assets/{slug}/processed_png");
         let entries = self.ledger.entries()?;
-        let mut run = entries.iter().filter(|e| e.kind == kind::PROCESSED && e.data.get("source_id").and_then(Value::as_str) == Some(artifact.id.as_str())).count() as u32 + 1;
+        let mut run = entries
+            .iter()
+            .filter(|e| e.kind == kind::PROCESSED && e.data.get("source_id").and_then(Value::as_str) == Some(artifact.id.as_str()))
+            .count() as u32
+            + 1;
         let parsed = naming::ArtifactId::parse(&artifact.id)?;
         let (written_rel, run) = loop {
             let rel = format!("{dir}/{}-v{}-p{run}.png", artifact.asset, parsed.version);
@@ -123,7 +130,11 @@ impl Engine {
         } else {
             // finished art of an accepted size keeps that size; anything else is fitted to the family's canvas
             let frame = [img.width / frames, img.height];
-            if img.width % frames == 0 && profile.accepted.contains(&frame) { frame } else { profile.canvas }
+            if img.width % frames == 0 && profile.accepted.contains(&frame) {
+                frame
+            } else {
+                profile.canvas
+            }
         };
         let ext = match format {
             SourceFormat::Png => "png",
@@ -159,7 +170,14 @@ impl Engine {
             idempotency_key: None,
             prompt_sha256: String::new(),
             references: vec![],
-            cost: CostRecord { estimated_usd: 0.0, reserved_usd: 0.0, actual_usd: Some(0.0), usage_unknown: false, funding: "local".into(), basis: "imported file, no provider call".into() },
+            cost: CostRecord {
+                estimated_usd: 0.0,
+                reserved_usd: 0.0,
+                actual_usd: Some(0.0),
+                usage_unknown: false,
+                funding: "local".into(),
+                basis: "imported file, no provider call".into(),
+            },
             parent: None,
             provider_request_id: None,
             usage: None,
@@ -278,7 +296,10 @@ mod tests {
         assert_eq!(steps, vec![Op::FlattenOn { background: [0, 0, 0] }, Op::CoverResize { width: 397, height: 153 }, Op::Grayscale]);
         let report = prof(Family::ReportEvent);
         assert_eq!(default_chain(&report, report.canvas, &Rgba::filled(10, 10, [9, 9, 9, 255]), false).unwrap().len(), 2);
-        assert!(default_chain(&report, report.canvas, &Rgba::filled(210, 176, [9, 9, 9, 255]), true).unwrap().is_empty(), "an imported report card keeps its card alpha");
+        assert!(
+            default_chain(&report, report.canvas, &Rgba::filled(210, 176, [9, 9, 9, 255]), true).unwrap().is_empty(),
+            "an imported report card keeps its card alpha"
+        );
     }
 
     #[test]

@@ -32,12 +32,14 @@ pub fn plain_sprite(name: &str, texture_path: &str) -> SpriteEntry {
 pub fn framed_sprite(name: &str, texture_path: &str, frames: u32) -> SpriteEntry {
     SpriteEntry {
         name: name.to_string(),
-        text: format!("	spriteType = {{
+        text: format!(
+            "	spriteType = {{
 		name = \"{name}\"
 		texturefile = \"{texture_path}\"
 		noOfFrames = {frames}
 	}}
-"),
+"
+        ),
         caveat: String::new(),
     }
 }
@@ -159,8 +161,7 @@ pub fn register(existing: Option<&str>, entries: &[SpriteEntry]) -> Result<Strin
             return Err(Error::Exists(format!("sprite {} is already defined in the target .gfx file", e.name)));
         }
     }
-    let close = last_sprite_block_close(text)
-        .ok_or_else(|| Error::Invalid("the target .gfx file has no spriteTypes block to add to".into()))?;
+    let close = last_sprite_block_close(text).ok_or_else(|| Error::Invalid("the target .gfx file has no spriteTypes block to add to".into()))?;
     let crlf = text.contains("\r\n");
     let mut insert = String::new();
     // make sure the new entries start on their own line

@@ -185,11 +185,17 @@ pub fn dispatch(engine: &Engine, tool: &str, params: Value) -> Result<Value, Eng
         "hoi4.image_status" => Ok(engine.status()),
         "hoi4.image_families" => engine.families_info(serde_json::from_value(params).map_err(bad)?),
         "hoi4.image_icon" => group(engine, params, bad, |p: imagegen_mcp::api::IconRequest| (imagegen_mcp::api::IconRequest::GROUP, p.into_parts())),
-        "hoi4.image_picture" => group(engine, params, bad, |p: imagegen_mcp::api::PictureRequest| (imagegen_mcp::api::PictureRequest::GROUP, p.into_parts())),
-        "hoi4.image_portrait" => group(engine, params, bad, |p: imagegen_mcp::api::PortraitRequest| (imagegen_mcp::api::PortraitRequest::GROUP, p.into_parts())),
+        "hoi4.image_picture" => {
+            group(engine, params, bad, |p: imagegen_mcp::api::PictureRequest| (imagegen_mcp::api::PictureRequest::GROUP, p.into_parts()))
+        }
+        "hoi4.image_portrait" => {
+            group(engine, params, bad, |p: imagegen_mcp::api::PortraitRequest| (imagegen_mcp::api::PortraitRequest::GROUP, p.into_parts()))
+        }
         "hoi4.image_flag" => group(engine, params, bad, |p: imagegen_mcp::api::FlagRequest| (imagegen_mcp::api::FlagRequest::GROUP, p.into_parts())),
         "hoi4.image_unit" => group(engine, params, bad, |p: imagegen_mcp::api::UnitRequest| (imagegen_mcp::api::UnitRequest::GROUP, p.into_parts())),
-        "hoi4.image_interface" => group(engine, params, bad, |p: imagegen_mcp::api::InterfaceRequest| (imagegen_mcp::api::InterfaceRequest::GROUP, p.into_parts())),
+        "hoi4.image_interface" => {
+            group(engine, params, bad, |p: imagegen_mcp::api::InterfaceRequest| (imagegen_mcp::api::InterfaceRequest::GROUP, p.into_parts()))
+        }
         "hoi4.image_references" => engine.references(serde_json::from_value(params).map_err(bad)?),
         "hoi4.image_generate" => engine.generate(serde_json::from_value(params).map_err(bad)?),
         "hoi4.image_edit" => engine.edit(serde_json::from_value(params).map_err(bad)?),

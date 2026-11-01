@@ -12,9 +12,7 @@ use imagegen_core::naming::{candidate_id, ArtifactId};
 use imagegen_core::pixels::{decode, encode_png, DecodeLimits, SourceFormat};
 use imagegen_core::records::{kind, CandidateRecord, CostRecord, ProfileRef, RefSummary};
 use imagegen_core::refs::{self, RefRole, ReferenceInput};
-use imagegen_providers::types::{
-    CallContext, EditSpec, ImageProvider, ImageRequest, JobRef, JobSink, ProviderOutput, ProviderRef, Reconciled,
-};
+use imagegen_providers::types::{CallContext, EditSpec, ImageProvider, ImageRequest, JobRef, JobSink, ProviderOutput, ProviderRef, Reconciled};
 use serde_json::{json, Value};
 
 use crate::api::{CancelParams, EditParams, GenerateParams};
@@ -69,13 +67,17 @@ impl Engine {
                 RetryClass::RefreshPreconditions,
             ));
         }
-        let provider = self.registry.get(&plan.provider).ok_or_else(|| EngineError::new("provider_not_found", format!("provider '{}' is not available", plan.provider), RetryClass::Terminal))?;
+        let provider = self
+            .registry
+            .get(&plan.provider)
+            .ok_or_else(|| EngineError::new("provider_not_found", format!("provider '{}' is not available", plan.provider), RetryClass::Terminal))?;
 
         // references must still be what the plan hashed
         let game = self.game_dir();
         let mut provider_refs = Vec::new();
         for r in &plan.references {
-            let loaded = refs::load_reference(&self.fs, game.as_deref(), &self.config.policy, &ReferenceInput { path: r.path.clone(), role: r.role })?;
+            let loaded =
+                refs::load_reference(&self.fs, game.as_deref(), &self.config.policy, &ReferenceInput { path: r.path.clone(), role: r.role })?;
             if loaded.sha256 != r.sha256 {
                 return Err(EngineError::refused(
                     "reference_changed",
@@ -186,7 +188,10 @@ impl Engine {
             })
             .ok_or_else(|| EngineError::invalid("name a provider for this edit"))?;
         self.check_family_policy(&profile, &provider_id)?;
-        let provider = self.registry.get(&provider_id).ok_or_else(|| EngineError::new("provider_not_found", format!("provider '{provider_id}' is not available"), RetryClass::Terminal))?;
+        let provider = self
+            .registry
+            .get(&provider_id)
+            .ok_or_else(|| EngineError::new("provider_not_found", format!("provider '{provider_id}' is not available"), RetryClass::Terminal))?;
         let model = p.model.clone().unwrap_or_else(|| provider.default_model(true));
         let quality = p.quality.clone().or_else(|| self.config.provider(&provider_id).quality);
 
@@ -201,7 +206,10 @@ impl Engine {
                 let raw = self.fs.read(m, 24 * 1024 * 1024)?;
                 let (img, _) = decode(&raw, Some(m), DecodeLimits::default())?;
                 if img.width != base_img.width || img.height != base_img.height {
-                    return Err(EngineError::invalid(format!("the mask is {}x{} but the image is {}x{}; they must match", img.width, img.height, base_img.width, base_img.height)));
+                    return Err(EngineError::invalid(format!(
+                        "the mask is {}x{} but the image is {}x{}; they must match",
+                        img.width, img.height, base_img.width, base_img.height
+                    )));
                 }
                 Some(encode_png(&img)?)
             }
@@ -239,7 +247,12 @@ impl Engine {
         let est = provider.estimate(&request)?;
         // lineage: the edit keeps the original plan, so the install gate still checks it
         let root_plan = self.root_plan(&artifact.root_id)?;
-        let mut references: Vec<RefSummary> = vec![RefSummary { path: artifact.path.clone(), role: RefRole::EditTarget, origin: refs::RefOrigin::PreviousCandidate, sha256: sha.clone() }];
+        let mut references: Vec<RefSummary> = vec![RefSummary {
+            path: artifact.path.clone(),
+            role: RefRole::EditTarget,
+            origin: refs::RefOrigin::PreviousCandidate,
+            sha256: sha.clone(),
+        }];
         references.extend(loaded.iter().map(|r| RefSummary { path: r.path.clone(), role: r.role, origin: r.origin, sha256: r.sha256.clone() }));
         let spec = CallSpec {
             template: CandidateRecord {
@@ -287,7 +300,9 @@ impl Engine {
             editing: true,
         };
         let (record, replayed) = self.execute(&*provider, spec)?;
-        Ok(json!({"candidates": [candidate_json(&record, replayed, &self.fs)], "next": "Process the new candidate, then validate, preview, review and install."}))
+        Ok(
+            json!({"candidates": [candidate_json(&record, replayed, &self.fs)], "next": "Process the new candidate, then validate, preview, review and install."}),
+        )
     }
 
     /// Plan id and hash of the root candidate's plan, if it came from one.
@@ -317,11 +332,15 @@ impl Engine {
         template.request_hash = request_hash.clone();
 
         if let Some(prev) = self.ledger.find_idempotency(&idempotency_key)? {
-            let rec: CandidateRecord = serde_json::from_value(prev.data.clone()).map_err(|e| EngineError::new("ledger_error", e.to_string(), RetryClass::Terminal))?;
+            let rec: CandidateRecord =
+                serde_json::from_value(prev.data.clone()).map_err(|e| EngineError::new("ledger_error", e.to_string(), RetryClass::Terminal))?;
             if rec.request_hash != request_hash {
                 return Err(EngineError::refused(
                     "idempotency_key_reused",
-                    format!("the key '{idempotency_key}' was used for a different request (candidate {}). Use a new key for a new request", rec.candidate_id),
+                    format!(
+                        "the key '{idempotency_key}' was used for a different request (candidate {}). Use a new key for a new request",
+                        rec.candidate_id
+                    ),
                     RetryClass::Terminal,
                 ));
             }
@@ -359,7 +378,10 @@ impl Engine {
 
         let job_id = job_id_for(&idempotency_key, &template.asset_id);
         let cancel = imagegen_providers::CancelToken::new();
-        self.jobs.insert(&job_id, ActiveJob { cancel: cancel.clone(), provider: provider_id.clone(), idempotency_key: idempotency_key.clone(), remote: None });
+        self.jobs.insert(
+            &job_id,
+            ActiveJob { cancel: cancel.clone(), provider: provider_id.clone(), idempotency_key: idempotency_key.clone(), remote: None },
+        );
         let intent = json!({
             "job_id": job_id, "provider": provider_id, "model": request.model, "asset_id": template.asset_id,
             "idempotency_key": idempotency_key, "request_hash": request_hash, "estimated_usd": usd_per_call,
@@ -374,7 +396,12 @@ impl Engine {
         let ctx = CallContext {
             cancel,
             sleeper: self.sleeper.clone(),
-            jobs: Some(Arc::new(LedgerSink { engine_ledger: self.ledger.clone(), jobs: self.jobs.clone(), job_id: job_id.clone(), asset_id: template.asset_id.clone() })),
+            jobs: Some(Arc::new(LedgerSink {
+                engine_ledger: self.ledger.clone(),
+                jobs: self.jobs.clone(),
+                job_id: job_id.clone(),
+                asset_id: template.asset_id.clone(),
+            })),
         };
         let result = if editing { provider.edit(&request, &ctx) } else { provider.generate(&request, &ctx) };
         self.jobs.remove(&job_id);
@@ -393,7 +420,12 @@ impl Engine {
         };
         match self.finish_candidate(template, &out, &candidate_dir, &prompts_dir, &request.prompt, editing) {
             Ok(rec) => {
-                let _ = self.ledger.append(kind::JOB_ENDED, Some(&rec.asset_id), Some(&rec.candidate_id), json!({"job_id": job_id, "outcome": "completed", "candidate_id": rec.candidate_id}));
+                let _ = self.ledger.append(
+                    kind::JOB_ENDED,
+                    Some(&rec.asset_id),
+                    Some(&rec.candidate_id),
+                    json!({"job_id": job_id, "outcome": "completed", "candidate_id": rec.candidate_id}),
+                );
                 Ok((rec, false))
             }
             Err(e) => {
@@ -404,9 +436,22 @@ impl Engine {
     }
 
     /// Store a provider output as the next candidate version and record it.
-    fn finish_candidate(&self, mut rec: CandidateRecord, out: &ProviderOutput, candidate_dir: &str, prompts_dir: &str, prompt_text: &str, editing: bool) -> EResult<CandidateRecord> {
-        let (img, format) = decode(&out.image, None, DecodeLimits::default())
-            .map_err(|e| EngineError::new("provider_bad_image", format!("the provider returned an image that cannot be read: {e}. The call may have been charged"), RetryClass::ReconcileFirst))?;
+    fn finish_candidate(
+        &self,
+        mut rec: CandidateRecord,
+        out: &ProviderOutput,
+        candidate_dir: &str,
+        prompts_dir: &str,
+        prompt_text: &str,
+        editing: bool,
+    ) -> EResult<CandidateRecord> {
+        let (img, format) = decode(&out.image, None, DecodeLimits::default()).map_err(|e| {
+            EngineError::new(
+                "provider_bad_image",
+                format!("the provider returned an image that cannot be read: {e}. The call may have been charged"),
+                RetryClass::ReconcileFirst,
+            )
+        })?;
         let ext = match format {
             SourceFormat::Png => "png",
             SourceFormat::Jpeg => "jpg",
@@ -456,7 +501,8 @@ impl Engine {
     /// An intent for this key with no matching end entry.
     fn unfinished_for_key(&self, key: &str) -> EResult<Option<String>> {
         let entries = self.ledger.entries()?;
-        let ended: Vec<&str> = entries.iter().filter(|e| e.kind == kind::JOB_ENDED).filter_map(|e| e.data.get("job_id").and_then(Value::as_str)).collect();
+        let ended: Vec<&str> =
+            entries.iter().filter(|e| e.kind == kind::JOB_ENDED).filter_map(|e| e.data.get("job_id").and_then(Value::as_str)).collect();
         Ok(entries
             .iter()
             .filter(|e| e.kind == kind::JOB_INTENT && e.data.get("idempotency_key").and_then(Value::as_str) == Some(key))
@@ -479,14 +525,16 @@ impl Engine {
         }
         // not running here: look for an unfinished job in the ledger
         let entries = self.ledger.entries()?;
-        let ended: Vec<&str> = entries.iter().filter(|e| e.kind == kind::JOB_ENDED).filter_map(|e| e.data.get("job_id").and_then(Value::as_str)).collect();
+        let ended: Vec<&str> =
+            entries.iter().filter(|e| e.kind == kind::JOB_ENDED).filter_map(|e| e.data.get("job_id").and_then(Value::as_str)).collect();
         let intent = entries
             .iter()
             .filter(|e| e.kind == kind::JOB_INTENT)
             .filter(|e| {
                 let id = e.data.get("job_id").and_then(Value::as_str);
                 let key = e.data.get("idempotency_key").and_then(Value::as_str);
-                (p.job_id.as_deref().is_some() && id == p.job_id.as_deref()) || (p.idempotency_key.as_deref().is_some() && key == p.idempotency_key.as_deref())
+                (p.job_id.as_deref().is_some() && id == p.job_id.as_deref())
+                    || (p.idempotency_key.as_deref().is_some() && key == p.idempotency_key.as_deref())
             })
             .last()
             .ok_or_else(|| EngineError::new("not_found", "no running or recorded job matches", RetryClass::Terminal))?;
@@ -506,7 +554,9 @@ impl Engine {
                 "note": "This job used a synchronous provider, which has no job id to ask about. Whether the request was charged is unknown: check the provider's usage page, then use a new idempotency key if you want to try again."
             }));
         };
-        let provider = self.registry.get(&remote.provider).ok_or_else(|| EngineError::new("provider_not_found", format!("provider '{}' is not available", remote.provider), RetryClass::Terminal))?;
+        let provider = self.registry.get(&remote.provider).ok_or_else(|| {
+            EngineError::new("provider_not_found", format!("provider '{}' is not available", remote.provider), RetryClass::Terminal)
+        })?;
         let ctx = CallContext::new();
         let asset_id = intent.data.get("asset_id").and_then(Value::as_str).map(str::to_string);
         if p.reconcile.unwrap_or(false) {
@@ -521,12 +571,24 @@ impl Engine {
                     let mut tpl = tpl;
                     tpl.note = Some("recovered by reconciling the provider job after an interrupted run".into());
                     let rec = self.finish_candidate(tpl, &out, &dir, &pdir, &prompt, editing)?;
-                    let _ = self.ledger.append(kind::JOB_ENDED, asset_id.as_deref(), Some(&rec.candidate_id), json!({"job_id": job_id, "outcome": "recovered", "candidate_id": rec.candidate_id}));
+                    let _ = self.ledger.append(
+                        kind::JOB_ENDED,
+                        asset_id.as_deref(),
+                        Some(&rec.candidate_id),
+                        json!({"job_id": job_id, "outcome": "recovered", "candidate_id": rec.candidate_id}),
+                    );
                     Ok(json!({"job_id": job_id, "status": "recovered", "candidate": candidate_json(&rec, false, &self.fs)}))
                 }
-                Reconciled::Pending => Ok(json!({"job_id": job_id, "status": "pending", "note": "the provider is still working on it; reconcile again later"})),
+                Reconciled::Pending => {
+                    Ok(json!({"job_id": job_id, "status": "pending", "note": "the provider is still working on it; reconcile again later"}))
+                }
                 Reconciled::Failed(why) => {
-                    let _ = self.ledger.append(kind::JOB_ENDED, asset_id.as_deref(), None, json!({"job_id": job_id, "outcome": "failed", "message": why}));
+                    let _ = self.ledger.append(
+                        kind::JOB_ENDED,
+                        asset_id.as_deref(),
+                        None,
+                        json!({"job_id": job_id, "outcome": "failed", "message": why}),
+                    );
                     Ok(json!({"job_id": job_id, "status": "failed", "message": why}))
                 }
                 Reconciled::Unknown => Ok(json!({"job_id": job_id, "status": "unknown_outcome", "note": "the provider cannot say"})),

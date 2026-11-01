@@ -83,7 +83,8 @@ fn not_signed_in_the_next_configured_provider_is_used_and_none_means_a_sign_in_h
 #[test]
 fn the_login_route_refuses_any_other_model() {
     let (_d, e) = open("", RunMode::LocalStdio, true, &[]);
-    let mut p = serde_json::json!({"family": "focus", "feature_slug": "f", "asset": "a", "brief": "x", "provider": "chatgpt_login", "model": "gpt-6-astra"});
+    let mut p =
+        serde_json::json!({"family": "focus", "feature_slug": "f", "asset": "a", "brief": "x", "provider": "chatgpt_login", "model": "gpt-6-astra"});
     let r = e.plan(serde_json::from_value(p.clone()).unwrap());
     assert!(r.is_err(), "a different model must be refused at plan time");
     p["model"] = "gpt-6-luna".into();

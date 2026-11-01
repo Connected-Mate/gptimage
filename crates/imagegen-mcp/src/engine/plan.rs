@@ -1,14 +1,14 @@
 //! `hoi4.image_plan`: a dry run that costs nothing and fixes everything a generation will use.
 
-use imagegen_core::family::{Family, Group};
-use imagegen_core::reuse;
 use imagegen_core::error::RetryClass;
 use imagegen_core::export;
+use imagegen_core::family::{Family, Group};
 use imagegen_core::naming::{self, asset_id};
 use imagegen_core::plan::{aspect_of, build_prompt, plan_path, GenerationPlan, Plan, PlanEstimate, PlanPaths, PlanRequest};
 use imagegen_core::profile::Background;
 use imagegen_core::records::{kind, RefSummary};
 use imagegen_core::refs::{self, LoadedRef, RefRole, ReferenceInput};
+use imagegen_core::reuse;
 use imagegen_core::style;
 use imagegen_providers::types::{AlphaSupport, ImageRequest, ModelStatus};
 use serde_json::json;
@@ -99,7 +99,13 @@ impl Engine {
         // a reference that is the candidate itself must not be another family's installed art
         for r in loaded.iter().filter(|r| r.role == RefRole::EditTarget) {
             let (img, _) = imagegen_core::pixels::decode(&r.png, None, imagegen_core::pixels::DecodeLimits::default())?;
-            reuse::ensure_no_cross_family_reuse(&self.fs, &self.profiles, req.family, &reuse::pixel_hash(&img), &format!("the edit target {}", r.path))?;
+            reuse::ensure_no_cross_family_reuse(
+                &self.fs,
+                &self.profiles,
+                req.family,
+                &reuse::pixel_hash(&img),
+                &format!("the edit target {}", r.path),
+            )?;
         }
 
         let model_id = req
@@ -289,8 +295,13 @@ impl Engine {
                 "next": "Nothing was spent. Call this tool again with approve = true and an idempotency_key to generate, or pass the plan_id to hoi4.image_generate."
             }));
         }
-        let key = follow.idempotency_key.clone().filter(|k| !k.trim().is_empty()).ok_or_else(|| EngineError::invalid("approve = true needs an idempotency_key"))?;
-        let generation = self.generate(GenerateParams { plan_id: plan.plan_id.clone(), idempotency_key: key, approve_cost: Some(follow.approve_cost) })?;
+        let key = follow
+            .idempotency_key
+            .clone()
+            .filter(|k| !k.trim().is_empty())
+            .ok_or_else(|| EngineError::invalid("approve = true needs an idempotency_key"))?;
+        let generation =
+            self.generate(GenerateParams { plan_id: plan.plan_id.clone(), idempotency_key: key, approve_cost: Some(follow.approve_cost) })?;
         Ok(json!({"generated": true, "plan_id": plan.plan_id, "plan": plan_json, "generation": generation}))
     }
 

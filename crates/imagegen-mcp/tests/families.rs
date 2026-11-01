@@ -207,7 +207,15 @@ fn opaque_families_never_keep_provider_alpha() {
     // the synthetic provider image is transparent with a soft subject: a picture must come out fully opaque
     for (tool, family, asset) in [("picture", "news_event", "n1"), ("picture", "decision_category_picture", "d1")] {
         let id = make(&h, tool, family, asset, &format!("k-{asset}"));
-        let artifact = h.engine.ledger.entries().unwrap().into_iter().rev().find(|e| e.kind == kind::PROCESSED && e.artifact_id.as_deref() == Some(id.as_str())).unwrap();
+        let artifact = h
+            .engine
+            .ledger
+            .entries()
+            .unwrap()
+            .into_iter()
+            .rev()
+            .find(|e| e.kind == kind::PROCESSED && e.artifact_id.as_deref() == Some(id.as_str()))
+            .unwrap();
         let path = artifact.data["path"].as_str().unwrap();
         let (img, _) = decode(&h.read(path), None, DecodeLimits::default()).unwrap();
         assert!(img.data.chunks_exact(4).all(|p| p[3] == 255), "{family} output has translucent pixels");
@@ -231,7 +239,10 @@ fn opaque_families_never_keep_provider_alpha() {
     });
     std::fs::create_dir_all(h.root().join("gfx/event_pictures/f")).unwrap();
     std::fs::write(h.root().join("gfx/event_pictures/f/news_event_x.dds"), bytes).unwrap();
-    let v = h.engine.validate(serde_json::from_value(json!({"targets": ["gfx/event_pictures/f/news_event_x.dds"], "family": "news_event"})).unwrap()).unwrap();
+    let v = h
+        .engine
+        .validate(serde_json::from_value(json!({"targets": ["gfx/event_pictures/f/news_event_x.dds"], "family": "news_event"})).unwrap())
+        .unwrap();
     let codes: Vec<&str> = v["results"][0]["findings"].as_array().unwrap().iter().map(|f| f["code"].as_str().unwrap()).collect();
     assert!(codes.contains(&"GFX-ALPHA-IN-OPAQUE"), "{codes:?}");
 }
@@ -247,10 +258,8 @@ fn validation_cannot_skip_checks_and_the_gate_notices_a_short_check_set() {
     let approval = approve_with(&h, &id, "icon_v1");
     // the recorded validation carries the hash of the family's full check set
     let want = check_set_hash(&imagegen_core::profile::ProfileSet::builtin().for_family(Family::Decision).unwrap().imagegen.checks);
-    let recorded: ValidatedRecord = serde_json::from_value(
-        h.engine.ledger.entries().unwrap().into_iter().rev().find(|e| e.kind == kind::VALIDATED).unwrap().data,
-    )
-    .unwrap();
+    let recorded: ValidatedRecord =
+        serde_json::from_value(h.engine.ledger.entries().unwrap().into_iter().rev().find(|e| e.kind == kind::VALIDATED).unwrap().data).unwrap();
     assert_eq!(recorded.check_set_hash, want);
     assert_eq!(recorded.family, Family::Decision);
 
@@ -262,7 +271,8 @@ fn validation_cannot_skip_checks_and_the_gate_notices_a_short_check_set() {
     let e = h.install(&id, &approval, json!({})).unwrap_err();
     assert_eq!(code(&e), "install_gate_checks_incomplete", "{e}");
     // and review will not approve on top of it either
-    let answers: serde_json::Map<String, Value> = imagegen_core::rubric::questions("icon_v1").iter().map(|(k, _)| (k.to_string(), json!(true))).collect();
+    let answers: serde_json::Map<String, Value> =
+        imagegen_core::rubric::questions("icon_v1").iter().map(|(k, _)| (k.to_string(), json!(true))).collect();
     let e = h
         .engine
         .review(serde_json::from_value(json!({"target": id, "verdict": "approved", "reviewer": "t", "answers": answers})).unwrap())
@@ -296,13 +306,20 @@ fn every_group_tool_refuses_a_family_of_another_group_at_runtime() {
     }
     assert_eq!(tried, 6 * 40 - 40);
     // the right group works without spending
-    let (req, follow) = serde_json::from_value::<IconRequest>(json!({"family": "focus", "feature_slug": "f", "asset": "a", "brief": "x", "provider": "openai"})).unwrap().into_parts();
+    let (req, follow) =
+        serde_json::from_value::<IconRequest>(json!({"family": "focus", "feature_slug": "f", "asset": "a", "brief": "x", "provider": "openai"}))
+            .unwrap()
+            .into_parts();
     let out = h.engine.group_request(Group::Icon, req, follow).unwrap();
     assert_eq!(out["generated"], false);
     assert!(out["plan_id"].as_str().unwrap().starts_with("plan-"));
     assert!(h.fixture.requests().is_empty(), "a plan costs nothing");
     // approve without a key is a refused request, not a spend
-    let (req, follow) = serde_json::from_value::<IconRequest>(json!({"family": "focus", "feature_slug": "f", "asset": "a", "brief": "x", "provider": "openai", "approve": true})).unwrap().into_parts();
+    let (req, follow) = serde_json::from_value::<IconRequest>(
+        json!({"family": "focus", "feature_slug": "f", "asset": "a", "brief": "x", "provider": "openai", "approve": true}),
+    )
+    .unwrap()
+    .into_parts();
     assert_eq!(code(&h.engine.group_request(Group::Icon, req, follow).unwrap_err()), "invalid_argument");
 }
 
@@ -351,7 +368,8 @@ fn the_families_tool_reports_measured_specs_and_style_sources() {
     assert_eq!(f["style_sources"]["reference_dirs"][0]["dir"], "references/idea_spirit");
     assert!(f["mod_override"]["overridden"].as_array().unwrap().is_empty());
     // a mod's own profile row shows up as the override
-    let h2 = common::harness("[defaults]\nprovider = \"openai\"\n[profiles.focus]\ncanvas = [94, 86]\n", &[("OPENAI_API_KEY", "sk-test-synthetic-000")]);
+    let h2 =
+        common::harness("[defaults]\nprovider = \"openai\"\n[profiles.focus]\ncanvas = [94, 86]\n", &[("OPENAI_API_KEY", "sk-test-synthetic-000")]);
     let f = h2.engine.families_info(serde_json::from_value(json!({"family": "focus"})).unwrap()).unwrap();
     assert_eq!(f["family"]["canvas"], json!([94, 86]));
     assert_eq!(f["family"]["mod_override"]["differs_from_vanilla"], true);

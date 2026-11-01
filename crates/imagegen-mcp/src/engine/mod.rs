@@ -5,9 +5,9 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
-use imagegen_core::family::{Automation, Family};
 use imagegen_core::config::{Config, EnvSource};
 use imagegen_core::error::{Error as CoreError, RetryClass};
+use imagegen_core::family::{Automation, Family};
 use imagegen_core::fsio::ProjectFs;
 use imagegen_core::hashing::{sha256_hex, Clock};
 use imagegen_core::ledger::Ledger;
@@ -340,9 +340,18 @@ impl Engine {
             .and_then(|e| serde_json::from_value::<ProcessedRecord>(e.data.clone()).ok())
         {
             let root_id = imagegen_core::naming::ArtifactId::parse(&p.source_id)?.raw_id();
-            let root = find_candidate(&root_id).ok_or_else(|| EngineError::new("ledger_error", format!("the root candidate {root_id} of {id} is missing from the ledger"), RetryClass::Terminal))?;
+            let root = find_candidate(&root_id).ok_or_else(|| {
+                EngineError::new("ledger_error", format!("the root candidate {root_id} of {id} is missing from the ledger"), RetryClass::Terminal)
+            })?;
             if root.family != p.family || p.profile.id != p.family.as_str() {
-                return Err(EngineError::refused("GFX-FAMILY-MISMATCH", format!("the records of {id} disagree about its family ({} against {}); an asset keeps the family it was planned as", root.family, p.family), RetryClass::Terminal));
+                return Err(EngineError::refused(
+                    "GFX-FAMILY-MISMATCH",
+                    format!(
+                        "the records of {id} disagree about its family ({} against {}); an asset keeps the family it was planned as",
+                        root.family, p.family
+                    ),
+                    RetryClass::Terminal,
+                ));
             }
             return Ok(Artifact {
                 id: id.to_string(),
@@ -361,7 +370,11 @@ impl Engine {
         }
         if let Some(c) = find_candidate(id) {
             if c.profile.id != c.family.as_str() {
-                return Err(EngineError::refused("GFX-FAMILY-MISMATCH", format!("candidate {id} is a {} but was recorded against profile {}", c.family, c.profile.id), RetryClass::Terminal));
+                return Err(EngineError::refused(
+                    "GFX-FAMILY-MISMATCH",
+                    format!("candidate {id} is a {} but was recorded against profile {}", c.family, c.profile.id),
+                    RetryClass::Terminal,
+                ));
             }
             return Ok(Artifact {
                 id: id.to_string(),

@@ -89,16 +89,20 @@ pub struct GateExpect {
 /// * `current_sha256` is the hash of that artifact's file now.
 /// * `approval_id` is what the caller presents.
 /// * `checks` are the lineage hash comparisons the caller computed from the files on disk.
-pub fn evaluate(entries: &[Entry], artifact_id: &str, current_sha256: &str, approval_id: &str, checks: &[HashCheck], expect: &GateExpect) -> GateReport {
+pub fn evaluate(
+    entries: &[Entry],
+    artifact_id: &str,
+    current_sha256: &str,
+    approval_id: &str,
+    checks: &[HashCheck],
+    expect: &GateExpect,
+) -> GateReport {
     let mut failures = Vec::new();
     let mut fail = |code: &str, message: String| failures.push(GateFailure { code: code.to_string(), message });
 
     // 1. validation of this exact file
-    let validations: Vec<ValidatedRecord> = entries
-        .iter()
-        .filter(|e| e.kind == kind::VALIDATED && e.artifact_id.as_deref() == Some(artifact_id))
-        .filter_map(payload)
-        .collect();
+    let validations: Vec<ValidatedRecord> =
+        entries.iter().filter(|e| e.kind == kind::VALIDATED && e.artifact_id.as_deref() == Some(artifact_id)).filter_map(payload).collect();
     match validations.last() {
         None => fail("install_gate_validation_missing", format!("{artifact_id} has not been validated; run hoi4.image_validate on it")),
         Some(v) if v.sha256 != current_sha256 => fail(
@@ -107,7 +111,10 @@ pub fn evaluate(entries: &[Entry], artifact_id: &str, current_sha256: &str, appr
         ),
         Some(v) if v.family != expect.family => fail(
             "install_gate_family_mismatch",
-            format!("the last validation ran as {} but this artifact is a {}; an asset can only be validated as its own family", v.family, expect.family),
+            format!(
+                "the last validation ran as {} but this artifact is a {}; an asset can only be validated as its own family",
+                v.family, expect.family
+            ),
         ),
         Some(v) if v.check_set_hash != expect.check_set_hash => fail(
             "install_gate_checks_incomplete",
@@ -118,19 +125,15 @@ pub fn evaluate(entries: &[Entry], artifact_id: &str, current_sha256: &str, appr
                 short(&expect.check_set_hash)
             ),
         ),
-        Some(v) if v.status != Status::Pass => fail(
-            "install_gate_validation_failed",
-            format!("the last validation failed with {} error(s); fix them and validate again", v.errors),
-        ),
+        Some(v) if v.status != Status::Pass => {
+            fail("install_gate_validation_failed", format!("the last validation failed with {} error(s); fix them and validate again", v.errors))
+        }
         Some(_) => {}
     }
 
     // 2. review under the presented approval id
-    let reviews: Vec<ReviewedRecord> = entries
-        .iter()
-        .filter(|e| e.kind == kind::REVIEWED && e.artifact_id.as_deref() == Some(artifact_id))
-        .filter_map(payload)
-        .collect();
+    let reviews: Vec<ReviewedRecord> =
+        entries.iter().filter(|e| e.kind == kind::REVIEWED && e.artifact_id.as_deref() == Some(artifact_id)).filter_map(payload).collect();
     if reviews.is_empty() {
         fail("install_gate_review_missing", format!("{artifact_id} has no recorded visual review; run hoi4.image_review"));
     } else if let Some(r) = reviews.iter().rev().find(|r| r.approval_id.as_deref() == Some(approval_id)) {
@@ -144,7 +147,11 @@ pub fn evaluate(entries: &[Entry], artifact_id: &str, current_sha256: &str, appr
         } else if r.sha256 != current_sha256 {
             fail(
                 "install_gate_hash_changed",
-                format!("the approved file hashed to {}, it now hashes to {}; the approval no longer applies", short(&r.sha256), short(current_sha256)),
+                format!(
+                    "the approved file hashed to {}, it now hashes to {}; the approval no longer applies",
+                    short(&r.sha256),
+                    short(current_sha256)
+                ),
             );
         } else if let Some(latest) = reviews.last() {
             // a later rejection of the same file withdraws the approval
@@ -179,9 +186,9 @@ fn short(hash: &str) -> &str {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ledger::Ledger;
     use crate::fsio::ProjectFs;
     use crate::hashing::FixedClock;
+    use crate::ledger::Ledger;
     use crate::records::{ProfileRef, ValidatedRecord};
     use serde_json::json;
     use std::sync::Arc;
@@ -301,7 +308,8 @@ mod tests {
             l.append(kind::VALIDATED, None, Some(ART), validated("aaa", Status::Pass)).unwrap();
             l.append(kind::REVIEWED, None, Some(ART), reviewed("aaa", Verdict::Approved, Some("apr-1"))).unwrap();
         });
-        let changed = HashCheck { what: "raw candidate".into(), code: "install_gate_hash_changed".into(), recorded: "r1".into(), found: Some("r2".into()) };
+        let changed =
+            HashCheck { what: "raw candidate".into(), code: "install_gate_hash_changed".into(), recorded: "r1".into(), found: Some("r2".into()) };
         let gone = HashCheck { what: "plan".into(), code: "install_gate_plan_changed".into(), recorded: "p1".into(), found: None };
         let r = evaluate(&e, ART, "aaa", "apr-1", &[changed, gone], &gate_expect());
         assert_eq!(codes(&r), vec!["install_gate_hash_changed", "install_gate_plan_changed"]);

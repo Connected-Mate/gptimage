@@ -7,8 +7,8 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use crate::family::Family;
 use crate::error::{Error, Result};
+use crate::family::Family;
 use crate::fsio::ProjectFs;
 use crate::hashing::sha256_hex;
 use crate::naming::validate_snake;
@@ -103,7 +103,10 @@ impl StyleProfile {
             if now != r.sha256 {
                 return Err(Error::refused(
                     "style_reference_changed",
-                    format!("reference {} no longer matches the hash recorded when the style '{}' was approved; re-approve the style", r.path, self.name),
+                    format!(
+                        "reference {} no longer matches the hash recorded when the style '{}' was approved; re-approve the style",
+                        r.path, self.name
+                    ),
                     crate::error::RetryClass::RefreshPreconditions,
                 ));
             }
@@ -135,11 +138,7 @@ pub fn load(fs: &ProjectFs, name: &str) -> Result<StyleProfile> {
 
 /// Names of the saved styles.
 pub fn list(fs: &ProjectFs) -> Result<Vec<String>> {
-    let mut names: Vec<String> = fs
-        .list_names(STYLE_DIR)?
-        .into_iter()
-        .filter_map(|n| n.strip_suffix(".json").map(str::to_string))
-        .collect();
+    let mut names: Vec<String> = fs.list_names(STYLE_DIR)?.into_iter().filter_map(|n| n.strip_suffix(".json").map(str::to_string)).collect();
     names.sort();
     Ok(names)
 }

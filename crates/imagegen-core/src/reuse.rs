@@ -131,12 +131,7 @@ pub fn ensure_no_cross_family_reuse(project: &ProjectFs, profiles: &ProfileSet, 
 /// Folder patterns of every family that owns a folder of its own. `gui_texture` is left out: its folder is a
 /// catch-all under `gfx/interface/` that would claim every other family's textures.
 fn folder_layout(profiles: &ProfileSet) -> Vec<(Family, Vec<Vec<String>>)> {
-    Family::ALL
-        .iter()
-        .copied()
-        .filter(|f| *f != Family::GuiTexture)
-        .filter_map(|f| profiles.for_family(f).map(|p| (f, folder_patterns(p))))
-        .collect()
+    Family::ALL.iter().copied().filter(|f| *f != Family::GuiTexture).filter_map(|f| profiles.for_family(f).map(|p| (f, folder_patterns(p)))).collect()
 }
 
 /// Folder pattern as path segments (`{feature_slug}` stays a wildcard segment).
@@ -190,7 +185,11 @@ fn attribute(layout: &[(Family, Vec<Vec<String>>)], rel: &str) -> Option<Family>
     let top = scored.iter().map(|(s, _)| *s).max()?;
     let mut winners = scored.iter().filter(|(s, _)| *s == top).map(|(_, f)| *f);
     let first = winners.next()?;
-    if winners.next().is_some() { None } else { Some(first) }
+    if winners.next().is_some() {
+        None
+    } else {
+        Some(first)
+    }
 }
 
 fn walk(project: &ProjectFs, dir: &str, depth: usize, visit: &mut dyn FnMut(&str) -> bool) -> Result<bool> {
@@ -256,7 +255,12 @@ mod tests {
             target: "f.a-v1-p1".into(),
             family: Family::IdeaSpirit,
             mode: "handoff".into(),
-            files: vec![InstalledFile { path: "gfx/interface/ideas/f/idea_a.dds".into(), sha256: "x".into(), pixels_sha256: pixel_hash(&img), container: "dds".into() }],
+            files: vec![InstalledFile {
+                path: "gfx/interface/ideas/f/idea_a.dds".into(),
+                sha256: "x".into(),
+                pixels_sha256: pixel_hash(&img),
+                container: "dds".into(),
+            }],
             sprites: vec![],
             gfx_file: None,
             replaced: vec![],

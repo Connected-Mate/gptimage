@@ -10,8 +10,8 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-use crate::family::Family;
 use crate::error::{Error, Result};
+use crate::family::Family;
 use crate::profile::RowOverride;
 
 /// Relative path of the state folder inside a project.
@@ -260,8 +260,11 @@ margin = 2
         // an explicit setting that points nowhere is "not found", not a fallback to another install
         let missing = MapEnv::from_pairs(&[("HOI4_GAME_DIR", "/definitely/not/here")]);
         assert_eq!(find_game_dir(&Config::default(), &missing), None);
-        let cfg = Config::parse("game_dir = \"/also/not/here\"
-").unwrap();
+        let cfg = Config::parse(
+            "game_dir = \"/also/not/here\"
+",
+        )
+        .unwrap();
         assert_eq!(find_game_dir(&cfg, &MapEnv::default()), None);
     }
 }

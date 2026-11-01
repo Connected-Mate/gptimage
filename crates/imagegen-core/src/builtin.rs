@@ -67,13 +67,10 @@ const GRAY_ICON_RULES: &[&str] = &[
     "Real transparent background: no backdrop, no frame, no border.",
     "Leave a small empty margin around the subject.",
 ];
-const ICON_NEGATIVE: &[&str] =
-    &["text", "letters or numbers", "watermark or signature", "a drawn checkerboard pattern", "a frame or border"];
+const ICON_NEGATIVE: &[&str] = &["text", "letters or numbers", "watermark or signature", "a drawn checkerboard pattern", "a frame or border"];
 
-const PICTURE_RULES: &[&str] = &[
-    "A complete scene that fills the whole frame, composed for a {w}x{h} crop.",
-    "Period illustration look, painterly, with natural film grain.",
-];
+const PICTURE_RULES: &[&str] =
+    &["A complete scene that fills the whole frame, composed for a {w}x{h} crop.", "Period illustration look, painterly, with natural film grain."];
 const REPORT_RULES: &[&str] = &[
     "A documentary-style scene that fills the whole frame, composed for a {w}x{h} crop.",
     "The report-card treatment (sepia, grain, paper border, tilt, shadow) is applied afterwards, so do not draw a border.",

@@ -253,7 +253,12 @@ fn handshake_lists_exactly_eighteen_tools_with_stable_schemas() {
     let mut seen: Vec<String> = Vec::new();
     for g in imagegen_core::Group::ALL {
         let t = tools.iter().find(|t| t["name"] == g.tool_name()).unwrap_or_else(|| panic!("{} is not listed", g.tool_name()));
-        let listed: Vec<&str> = t["inputSchema"]["properties"]["family"]["enum"].as_array().unwrap_or_else(|| panic!("{}: no family enum", g.tool_name())).iter().map(|v| v.as_str().unwrap()).collect();
+        let listed: Vec<&str> = t["inputSchema"]["properties"]["family"]["enum"]
+            .as_array()
+            .unwrap_or_else(|| panic!("{}: no family enum", g.tool_name()))
+            .iter()
+            .map(|v| v.as_str().unwrap())
+            .collect();
         assert_eq!(listed, g.family_ids(), "{}", g.tool_name());
         assert!(t["inputSchema"]["required"].as_array().unwrap().iter().any(|r| r == "family"), "{}: family must be required", g.tool_name());
         seen.extend(listed.iter().map(|s| s.to_string()));
@@ -265,7 +270,9 @@ fn handshake_lists_exactly_eighteen_tools_with_stable_schemas() {
         assert!(tools.iter().all(|t| t["name"] != gone), "{gone} was replaced");
     }
     // validate has no way to skip checks and artifacts take no family in review or install
-    let props = |n: &str| tools.iter().find(|t| t["name"] == n).unwrap()["inputSchema"]["properties"].as_object().unwrap().keys().cloned().collect::<Vec<_>>();
+    let props = |n: &str| {
+        tools.iter().find(|t| t["name"] == n).unwrap()["inputSchema"]["properties"].as_object().unwrap().keys().cloned().collect::<Vec<_>>()
+    };
     assert!(!props("hoi4.image_validate").contains(&"checks".to_string()) && !props("hoi4.image_validate").contains(&"profile".to_string()));
     for n in ["hoi4.image_review", "hoi4.image_install"] {
         assert!(!props(n).iter().any(|k| k == "family" || k == "profile"), "{n}");
@@ -337,10 +344,8 @@ fn the_whole_loop_runs_over_stdio() {
     let mut c = Client::start(dir.path(), mock.port);
     c.initialize();
 
-    let plan = c.ok(
-        "hoi4.image_icon",
-        json!({"family": "focus", "feature_slug": "iron_pact", "asset": "steel_gate", "brief": "a riveted steel gate"}),
-    );
+    let plan =
+        c.ok("hoi4.image_icon", json!({"family": "focus", "feature_slug": "iron_pact", "asset": "steel_gate", "brief": "a riveted steel gate"}));
     assert_eq!(plan["generated"], false);
     assert_eq!(plan["plan"]["model"], "gpt-image-2.5-flare");
     let plan_id = plan["plan_id"].as_str().unwrap().to_string();
@@ -451,7 +456,12 @@ fn a_group_tool_refuses_another_groups_family_over_the_wire() {
     let mut c = Client::start(dir.path(), mock.port);
     c.initialize();
     let base = json!({"feature_slug": "f", "asset": "a", "brief": "x"});
-    for (tool, family) in [("hoi4.image_icon", "report_event"), ("hoi4.image_picture", "focus"), ("hoi4.image_flag", "decision"), ("hoi4.image_unit", "leader_portrait")] {
+    for (tool, family) in [
+        ("hoi4.image_icon", "report_event"),
+        ("hoi4.image_picture", "focus"),
+        ("hoi4.image_flag", "decision"),
+        ("hoi4.image_unit", "leader_portrait"),
+    ] {
         let mut args = base.clone();
         args["family"] = json!(family);
         let r = c.request("tools/call", json!({"name": tool, "arguments": args}));

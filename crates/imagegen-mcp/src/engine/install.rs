@@ -63,7 +63,12 @@ impl Engine {
                     .ok()
                     .and_then(|b| serde_json::from_slice::<Plan>(&b).ok())
                     .map(|pl| pl.compute_hash());
-                checks.push(HashCheck { what: format!("plan {plan_id}"), code: "install_gate_plan_changed".into(), recorded: plan_hash.clone(), found });
+                checks.push(HashCheck {
+                    what: format!("plan {plan_id}"),
+                    code: "install_gate_plan_changed".into(),
+                    recorded: plan_hash.clone(),
+                    found,
+                });
             }
         }
         let report = gate::evaluate(&entries, &artifact.id, &sha, &p.approval_id, &checks, &self.gate_expect(artifact.family)?);
@@ -78,7 +83,13 @@ impl Engine {
 
         // ---- what will be written
         let (img, _) = decode(&bytes, Some(&artifact.path), DecodeLimits::default())?;
-        imagegen_core::reuse::ensure_no_cross_family_reuse(&self.fs, &self.profiles, artifact.family, &imagegen_core::reuse::pixel_hash(&img), &format!("{}", artifact.id))?;
+        imagegen_core::reuse::ensure_no_cross_family_reuse(
+            &self.fs,
+            &self.profiles,
+            artifact.family,
+            &imagegen_core::reuse::pixel_hash(&img),
+            &artifact.id,
+        )?;
         let frames = profile.frames.max(1);
         let base = [artifact.canvas[0] * frames, artifact.canvas[1]];
         let files = export::final_files(&profile, artifact.canvas, &artifact.feature_slug, &artifact.asset)?;
@@ -87,7 +98,11 @@ impl Engine {
             let data = export::export_bytes(&img, f, base)?;
             let back = export::decode_exported(&data, f.container)?;
             if f.canvas == base && back.pixels_sha256() != img.pixels_sha256() {
-                return Err(EngineError::new("export_round_trip_failed", format!("{} did not decode to the same pixels it was made from; nothing was written", f.rel), RetryClass::Terminal));
+                return Err(EngineError::new(
+                    "export_round_trip_failed",
+                    format!("{} did not decode to the same pixels it was made from; nothing was written", f.rel),
+                    RetryClass::Terminal,
+                ));
             }
             encoded.push((f.clone(), data));
         }
@@ -126,7 +141,10 @@ impl Engine {
         if !conflicts.is_empty() {
             return Err(EngineError::new(
                 "final_path_exists",
-                format!("these files already exist: {}. Choose another asset name, or pass on_exists = replace for files this tool installed earlier", conflicts.join(", ")),
+                format!(
+                    "these files already exist: {}. Choose another asset name, or pass on_exists = replace for files this tool installed earlier",
+                    conflicts.join(", ")
+                ),
                 RetryClass::RefreshPreconditions,
             ));
         }
@@ -138,7 +156,14 @@ impl Engine {
             let Some((gfx_file, entries_)) = &sprites else {
                 return Err(EngineError::invalid(format!("{} has no .gfx sprite; use mode handoff", profile.family)));
             };
-            let existing = if self.fs.exists(gfx_file) { Some(String::from_utf8(self.fs.read(gfx_file, 8 * 1024 * 1024)?).map_err(|_| EngineError::invalid(format!("{gfx_file} is not UTF-8")))?) } else { None };
+            let existing = if self.fs.exists(gfx_file) {
+                Some(
+                    String::from_utf8(self.fs.read(gfx_file, 8 * 1024 * 1024)?)
+                        .map_err(|_| EngineError::invalid(format!("{gfx_file} is not UTF-8")))?,
+                )
+            } else {
+                None
+            };
             let new_text = sprite::register(existing.as_deref(), entries_)?;
             gfx_write = Some((gfx_file.clone(), new_text, existing.map(|t| sha256_hex(t.as_bytes()))));
         }
@@ -149,20 +174,33 @@ impl Engine {
         let write_all = || -> EResult<()> { Ok(()) };
         let _ = write_all;
         for (f, data) in &encoded {
-            let result = if replaced.iter().any(|r| r.path == f.rel) { self.fs.replace(&f.rel, data) } else { self.fs.write_new(&f.rel, data).map(|p| {
-                created.push(f.rel.clone());
-                p
-            }) };
+            let result = if replaced.iter().any(|r| r.path == f.rel) {
+                self.fs.replace(&f.rel, data)
+            } else {
+                self.fs.write_new(&f.rel, data).map(|p| {
+                    created.push(f.rel.clone());
+                    p
+                })
+            };
             if let Err(e) = result {
                 for rel in &created {
                     if let Ok(path) = self.fs.resolve(rel) {
                         let _ = std::fs::remove_file(path);
                     }
                 }
-                return Err(EngineError::new("install_write_failed", format!("{e}. Files written by this call were removed"), RetryClass::SafeSameInputs));
+                return Err(EngineError::new(
+                    "install_write_failed",
+                    format!("{e}. Files written by this call were removed"),
+                    RetryClass::SafeSameInputs,
+                ));
             }
             let decoded = export::decode_exported(data, f.container)?;
-            written.push(InstalledFile { path: f.rel.clone(), sha256: sha256_hex(data), pixels_sha256: decoded.pixels_sha256(), container: f.container.ext().to_string() });
+            written.push(InstalledFile {
+                path: f.rel.clone(),
+                sha256: sha256_hex(data),
+                pixels_sha256: decoded.pixels_sha256(),
+                container: f.container.ext().to_string(),
+            });
         }
         let mut sprite_names = Vec::new();
         let mut gfx_file_out = None;
@@ -182,8 +220,18 @@ impl Engine {
                     if profile.differs_from_vanilla() {
                         notes.push("the canvas differs from the vanilla-measured default; see hoi4.image_families".into());
                     }
-                    let block = sprite::handoff_block(&artifact.asset_id, &written.iter().map(|w| w.path.clone()).collect::<Vec<_>>(), gfx_file, entries_, &notes);
-                    let existing = if self.fs.exists(&handoff) { String::from_utf8_lossy(&self.fs.read(&handoff, 4 * 1024 * 1024)?).to_string() } else { String::from("# GFX handoff\n\nSprite definitions for the main agent to add. Asset workers do not edit .gfx files.\n\n") };
+                    let block = sprite::handoff_block(
+                        &artifact.asset_id,
+                        &written.iter().map(|w| w.path.clone()).collect::<Vec<_>>(),
+                        gfx_file,
+                        entries_,
+                        &notes,
+                    );
+                    let existing = if self.fs.exists(&handoff) {
+                        String::from_utf8_lossy(&self.fs.read(&handoff, 4 * 1024 * 1024)?).to_string()
+                    } else {
+                        String::from("# GFX handoff\n\nSprite definitions for the main agent to add. Asset workers do not edit .gfx files.\n\n")
+                    };
                     self.fs.replace(&handoff, format!("{existing}{block}").as_bytes())?;
                 }
             }

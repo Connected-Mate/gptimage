@@ -4,7 +4,7 @@ use imagegen_core::family::{Family, Group};
 use imagegen_core::plan::PlanRequest;
 use imagegen_core::process::Op;
 use imagegen_core::records::Verdict;
-use imagegen_core::refs::{ReferenceInput, RefRole};
+use imagegen_core::refs::{RefRole, ReferenceInput};
 use imagegen_core::style::StyleProfile;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};

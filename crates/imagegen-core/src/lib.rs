@@ -28,14 +28,14 @@ pub mod process;
 pub mod profile;
 pub mod records;
 pub mod refs;
-pub mod reuse;
 pub mod resize;
+pub mod reuse;
 pub mod rubric;
 pub mod sprite;
 pub mod style;
 pub mod tga;
 pub mod validate;
 
-pub use family::{Automation, Family, Group};
 pub use error::{Error, Result, RetryClass};
+pub use family::{Automation, Family, Group};
 pub use pixels::Rgba;
