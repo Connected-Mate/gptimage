@@ -187,19 +187,13 @@ impl Engine {
             sprite_names = entries_.iter().map(|e| e.name.clone()).collect();
             gfx_file_out = Some(gfx_file.clone());
             if p.mode == InstallMode::Register {
-                let existing = if self.fs.exists(gfx_file) {
-                    Some(
-                        String::from_utf8(self.fs.read(gfx_file, 8 * 1024 * 1024)?)
-                            .map_err(|_| EngineError::invalid(format!("{gfx_file} is not UTF-8")))?,
-                    )
-                } else {
-                    None
-                };
-                let new_text = sprite::register(existing.as_deref(), entries_)?;
+                // the file is edited as bytes with the lossless parser: UTF-8, UTF-8 with a BOM and Windows-1252 all keep their encoding
+                let existing = if self.fs.exists(gfx_file) { Some(self.fs.read(gfx_file, 8 * 1024 * 1024)?) } else { None };
+                let new_bytes = sprite::register_bytes(existing.as_deref(), entries_)?;
                 if let Some(prev) = &existing {
-                    replaced.push(ReplacedFile { path: gfx_file.clone(), previous_sha256: sha256_hex(prev.as_bytes()) });
+                    replaced.push(ReplacedFile { path: gfx_file.clone(), previous_sha256: sha256_hex(prev) });
                 }
-                batch.push(PendingWrite { rel: gfx_file.clone(), bytes: new_text.into_bytes(), replace: existing.is_some() });
+                batch.push(PendingWrite { rel: gfx_file.clone(), bytes: new_bytes, replace: existing.is_some() });
             } else {
                 let handoff = format!("docs/assets/{}/gfx_handoff.md", artifact.feature_slug);
                 let mut notes = vec![format!("approved under {} (sha256 {})", p.approval_id, &sha[..12])];

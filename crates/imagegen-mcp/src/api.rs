@@ -363,7 +363,7 @@ pub enum InstallMode {
     /// Write the sprite snippet into `gfx_handoff.md` and leave `.gfx` files to the main agent (kit default).
     #[default]
     Handoff,
-    /// Insert the sprite entries into the suggested `.gfx` file (text-level; comments and layout are kept).
+    /// Insert the sprite entries into the suggested `.gfx` file with the lossless parser (comments, layout, line endings and encoding are kept).
     Register,
 }
 
