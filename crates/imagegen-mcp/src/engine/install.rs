@@ -176,6 +176,12 @@ impl Engine {
 
         // ---- sprites
         let sprites = export::sprite_entries(&profile, &artifact.feature_slug, &artifact.asset, &files)?;
+        // the mod's own trace: a sprite name or texture the mod already uses for another family is refused (GFX-FAMILY-REUSE)
+        let allowlist = self.audit_allowlist(None)?;
+        let new_names: Vec<String> = sprites.as_ref().map(|(_, e)| e.iter().map(|x| x.name.clone()).collect()).unwrap_or_default();
+        let new_textures: Vec<String> = files.iter().map(|f| f.rel.clone()).collect();
+        let trace_guard =
+            imagegen_core::audit::ensure_no_trace_reuse(self.fs.root(), allowlist.as_deref(), artifact.family, &new_names, &new_textures)?;
         // every file of the install goes into one batch: the images, and the `.gfx` text or the handoff note
         let mut batch: Vec<PendingWrite> = encoded
             .iter()
@@ -252,6 +258,10 @@ impl Engine {
             "sprite": {"names": sprite_names, "gfx_file": gfx_file_out, "snippet": snippet, "mode": record.mode,
                        "caveats": sprites.as_ref().map(|(_, e)| e.iter().map(|x| x.caveat.clone()).filter(|c| !c.is_empty()).collect::<Vec<_>>()).unwrap_or_default()},
             "replaced": replaced,
+            "reuse_trace": match &trace_guard {
+                imagegen_core::audit::TraceGuard::Checked => json!("checked"),
+                imagegen_core::audit::TraceGuard::Skipped(why) => json!(format!("skipped: {why}")),
+            },
             "record_path": record_path,
             "next": "Wire the sprite name where the game uses it (the handoff note has the snippet), then verify in game. In-game behaviour is user-operated evidence this tool cannot produce."
         }))

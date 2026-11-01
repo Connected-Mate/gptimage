@@ -429,3 +429,21 @@ pub struct CancelParams {
     #[serde(default)]
     pub reconcile: Option<bool>,
 }
+
+/// `hoi4.image_audit`
+#[derive(Debug, Clone, Default, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct AuditParams {
+    /// Project-relative path of an allowlist JSON file that records intentional reuse. Default:
+    /// `.hoi4-imagegen/audit-allowlist.json` when it exists. The file is
+    /// `{"aliases": [{"sprite" or "texture": ..., "families": [...], "reason": ...}], "no_shine": [sprite names],
+    /// "missing_textures": [sprite names or texture paths]}`.
+    #[serde(default)]
+    pub allowlist: Option<String>,
+    /// Only report these families (ids as in `hoi4.image_families`). Default: all.
+    #[serde(default)]
+    pub families: Option<Vec<Family>>,
+    /// Findings listed per code (default 50, at most 5000). Counts are always complete.
+    #[serde(default)]
+    pub limit: Option<u32>,
+}

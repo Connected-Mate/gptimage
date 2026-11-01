@@ -231,7 +231,7 @@ fn golden_path() -> std::path::PathBuf {
 }
 
 #[test]
-fn handshake_lists_exactly_eighteen_tools_with_stable_schemas() {
+fn handshake_lists_exactly_nineteen_tools_with_stable_schemas() {
     let mock = MockOpenAi::start(Duration::from_millis(0));
     let dir = project(mock.port);
     let mut c = Client::start(dir.path(), mock.port);
@@ -247,7 +247,7 @@ fn handshake_lists_exactly_eighteen_tools_with_stable_schemas() {
     let mut want: Vec<&str> = imagegen_mcp::server::TOOL_NAMES.to_vec();
     want.sort_unstable();
     assert_eq!(names, want);
-    assert_eq!(tools.len(), 18);
+    assert_eq!(tools.len(), 19);
 
     // each generation tool's schema lists exactly the families of its group, and nothing else
     let mut seen: Vec<String> = Vec::new();
@@ -292,6 +292,11 @@ fn handshake_lists_exactly_eighteen_tools_with_stable_schemas() {
     }
     assert_eq!(tools.iter().find(|t| t["name"] == "hoi4.image_status").unwrap()["annotations"]["readOnlyHint"], true);
     assert_eq!(tools.iter().find(|t| t["name"] == "hoi4.image_install").unwrap()["annotations"]["destructiveHint"], true);
+    // the audit only reads the mod and the game
+    let audit = tools.iter().find(|t| t["name"] == "hoi4.image_audit").unwrap();
+    assert_eq!(audit["annotations"]["readOnlyHint"], true);
+    assert_eq!(audit["annotations"]["destructiveHint"], false);
+    assert!(props("hoi4.image_audit").iter().all(|k| ["allowlist", "families", "limit"].contains(&k.as_str())));
 
     // golden schema hashes: a change here is a change to the tool contract and must be deliberate
     let golden = golden_path();
