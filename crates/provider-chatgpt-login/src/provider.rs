@@ -72,7 +72,7 @@ impl ChatGptLoginProvider {
                 async_job: false,
                 supports_edit: true,
                 edit_model: None,
-                notes: "Fixed to gpt-6-luna at high reasoning effort (maintainer decision); the backend must echo both or the image is refused. No mask, no documented alpha (transparency is proven from pixels), no usage report.".into(),
+                notes: "Fixed to gpt-6-luna at high reasoning effort (maintainer decision); the backend must echo both or the image is refused. The backend's own image tool chooses its model, quality and size, so this route cannot force image quality; what it chose is recorded per image. No mask, no documented alpha (transparency is proven from pixels), no usage report.".into(),
             }],
             terms_note: "Presents itself as the Codex CLI to a backend OpenAI does not document for other tools; may break or be blocked without notice; account consequences are yours. Local only: never hosted, never shared.".into(),
         };
@@ -184,6 +184,9 @@ impl ChatGptLoginProvider {
         let (model, effort) = verify_model(&outcome)?;
         let mut notes = vec![format!("ran on {model} at {effort} reasoning effort, as reported by the backend; usage is not reported")];
         if let Some(meta) = outcome.image_meta.as_object() {
+            if let Some(m) = &outcome.image_tool_model {
+                notes.push(format!("image tool model (chosen by the backend): {m}"));
+            }
             for k in ["size", "quality", "background", "output_format"] {
                 if let Some(v) = meta.get(k).and_then(Value::as_str) {
                     notes.push(format!("image {k}: {v}"));
@@ -232,6 +235,8 @@ pub struct SseOutcome {
     pub image_meta: Value,
     /// `response.usage`, when present.
     pub usage: Option<Value>,
+    /// The model of the backend's hosted image tool, as listed in `response.tools` (it renders the pixels).
+    pub image_tool_model: Option<String>,
 }
 
 /// Read a response stream: the first image result, plus the model and effort the backend reports in its response
@@ -260,6 +265,15 @@ pub fn parse_sse(stream: &str) -> Result<SseOutcome, String> {
             }
             if let Some(u) = r.get("usage").filter(|u| !u.is_null()) {
                 out.usage = Some(u.clone());
+            }
+            if let Some(m) = r
+                .get("tools")
+                .and_then(Value::as_array)
+                .and_then(|t| t.iter().find(|x| x["type"] == "image_generation"))
+                .and_then(|x| x.get("model"))
+                .and_then(Value::as_str)
+            {
+                out.image_tool_model = Some(m.to_string());
             }
         }
         match v.get("type").and_then(Value::as_str) {

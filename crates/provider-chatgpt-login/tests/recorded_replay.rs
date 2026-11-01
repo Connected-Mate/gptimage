@@ -69,6 +69,8 @@ fn the_recorded_response_yields_its_real_image_and_proves_luna_at_high_effort() 
     assert_eq!(out.model_echo.as_deref(), Some("gpt-6-luna"));
     assert!(out.notes[0].contains("gpt-6-luna at high reasoning effort"), "{:?}", out.notes);
     assert!(out.notes.iter().any(|n| n == "image background: transparent"), "{:?}", out.notes);
+    assert!(out.notes.iter().any(|n| n == "image tool model (chosen by the backend): gpt-image-2-codex"), "{:?}", out.notes);
+    assert!(out.notes.iter().any(|n| n == "image quality: medium"), "the backend chose medium although high was asked: {:?}", out.notes);
     assert!(out.notes.iter().any(|n| n.starts_with("revised prompt:")));
     assert_eq!(out.provider_request_id.as_deref(), Some("resp_recorded"));
     let usage = out.usage.expect("the backend reported usage");
@@ -129,7 +131,13 @@ fn rejected_tokens_and_rate_limits_are_reported_plainly() {
 #[test]
 fn an_expired_token_is_refreshed_before_the_recorded_call() {
     let (_d, f, p) = replay(200, RECORDED.to_string(), Some(1_000));
-    f.respond(Method::Post, "/oauth/token", 200, &[], br#"{"access_token":"access-synthetic-2","refresh_token":"refresh-synthetic-2","expires_in":3600}"#.to_vec());
+    f.respond(
+        Method::Post,
+        "/oauth/token",
+        200,
+        &[],
+        br#"{"access_token":"access-synthetic-2","refresh_token":"refresh-synthetic-2","expires_in":3600}"#.to_vec(),
+    );
     p.generate(&request(), &CallContext::new()).unwrap();
     let urls: Vec<String> = f.requests().iter().map(|r| r.url.clone()).collect();
     assert!(urls[0].ends_with("/oauth/token") && urls[1].ends_with(BACKEND_PATH), "{urls:?}");
