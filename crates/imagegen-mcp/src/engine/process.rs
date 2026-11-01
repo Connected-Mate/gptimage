@@ -115,8 +115,8 @@ impl Engine {
         }
         let bytes = self.fs.read(&spec.path, 32 * 1024 * 1024)?;
         let (img, format) = decode(&bytes, Some(&spec.path), DecodeLimits::default())?;
-        lock::check_native_size(&self.profiles, spec.family, [img.width, img.height])?;
         reuse::ensure_no_cross_family_reuse(&self.fs, &self.profiles, spec.family, &reuse::pixel_hash(&img), &format!("the image {}", spec.path))?;
+        lock::check_native_size(&self.profiles, spec.family, [img.width, img.height])?;
         let frames = profile.frames.max(1);
         let canvas = if profile.needs_mod_canvas() {
             canvas_override.ok_or_else(|| EngineError::invalid(format!("{} has no fixed canvas: pass canvas [width, height]", spec.family)))?
@@ -275,15 +275,16 @@ mod tests {
     fn pictures_cover_resize_and_news_goes_grayscale() {
         let news = prof(Family::NewsEvent);
         let steps = default_chain(&news, news.canvas, &Rgba::filled(800, 600, [9, 9, 9, 255]), false).unwrap();
-        assert_eq!(steps, vec![Op::CoverResize { width: 397, height: 153 }, Op::Grayscale]);
+        assert_eq!(steps, vec![Op::FlattenOn { background: [0, 0, 0] }, Op::CoverResize { width: 397, height: 153 }, Op::Grayscale]);
         let report = prof(Family::ReportEvent);
-        assert_eq!(default_chain(&report, report.canvas, &Rgba::filled(10, 10, [9, 9, 9, 255]), false).unwrap().len(), 1);
+        assert_eq!(default_chain(&report, report.canvas, &Rgba::filled(10, 10, [9, 9, 9, 255]), false).unwrap().len(), 2);
+        assert!(default_chain(&report, report.canvas, &Rgba::filled(210, 176, [9, 9, 9, 255]), true).unwrap().is_empty(), "an imported report card keeps its card alpha");
     }
 
     #[test]
     fn finished_imports_are_left_alone_and_frame_strips_need_finished_art() {
         let idea = prof(Family::IdeaSpirit);
-        let finished = blob().crop(0, 0, 65, 67).unwrap();
+        let finished = blob().crop(0, 0, 60, 68).unwrap();
         assert!(default_chain(&idea, idea.canvas, &finished, true).unwrap().is_empty());
         assert!(!default_chain(&idea, idea.canvas, &finished, false).unwrap().is_empty(), "generated art is always fitted");
         let counter = prof(Family::CounterLarge);
