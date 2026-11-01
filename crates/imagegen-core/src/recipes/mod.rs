@@ -12,6 +12,7 @@
 //! | Portrait source crop 156x210 | `extract_portrait_source_crop.py` | [`portrait`], `face` (feature `face-detect`) |
 //! | Flag ladder 82x52, 41x26, 10x7 | Rust only | [`flags`] |
 //! | Focus `_shine` registration block | Rust only | [`focus_shine`] |
+//! | Selected and disabled frame 2 | Rust only, fitted to vanilla | [`frames`] |
 //! | Horizontal frame strips | Rust only | [`strip`] |
 //! | Flatten on colour | Rust only | [`flatten`] |
 //!
@@ -23,6 +24,7 @@ pub mod advisor;
 pub mod face;
 pub mod flags;
 pub mod flatten;
+pub mod frames;
 pub mod focus_shine;
 pub mod pillow;
 pub mod portrait;

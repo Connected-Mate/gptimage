@@ -12,11 +12,12 @@ use imagegen_core::fsio::ProjectFs;
 use imagegen_core::hashing::{sha256_hex, Clock};
 use imagegen_core::ledger::Ledger;
 use imagegen_core::profile::{Profile, ProfileSet};
-use imagegen_core::records::{kind, CandidateRecord, ProcessedRecord, ProfileRef};
+use imagegen_core::records::{kind, CandidateRecord, CompanionRecord, ProcessedRecord, ProfileRef};
 use imagegen_providers::types::{CancelToken, JobRef, ProviderError, Sleeper};
 use imagegen_providers::{ErrorKind, HttpTransport, ProviderRegistry};
 use serde_json::Value;
 
+pub mod finish;
 pub mod generate;
 pub mod install;
 pub mod misc;
@@ -239,8 +240,7 @@ impl Engine {
 
     /// What the install gate expects of the records of an artifact.
     pub(crate) fn gate_expect(&self, family: Family) -> EResult<imagegen_core::gate::GateExpect> {
-        let p = self.family_profile(family)?;
-        Ok(imagegen_core::gate::GateExpect { family, check_set_hash: imagegen_core::validate::check_set_hash(&p.imagegen.checks) })
+        Ok(imagegen_core::gate::GateExpect::for_profile(self.family_profile(family)?))
     }
 
     pub(crate) fn profile_ref(&self, p: &Profile) -> ProfileRef {
@@ -320,6 +320,15 @@ pub struct Artifact {
     pub root_id: String,
     /// Provider that made the root candidate (`import` for imports).
     pub provider: String,
+    /// The record of a processed artifact (its recipe and companions).
+    pub record: Option<ProcessedRecord>,
+}
+
+impl Artifact {
+    /// Companion images installed with the artifact.
+    pub fn companions(&self) -> &[CompanionRecord] {
+        self.record.as_ref().map(|r| r.companions.as_slice()).unwrap_or(&[])
+    }
 }
 
 impl Engine {
@@ -353,19 +362,21 @@ impl Engine {
                     RetryClass::Terminal,
                 ));
             }
+            let recorded = imagegen_core::chain::bundle_sha256(&p.sha256, &p.companions);
             return Ok(Artifact {
                 id: id.to_string(),
                 processed: true,
-                asset_id: p.asset_id,
-                path: p.path,
-                recorded_sha256: p.sha256,
+                asset_id: p.asset_id.clone(),
+                path: p.path.clone(),
+                recorded_sha256: recorded,
                 family: p.family,
                 feature_slug: root.feature_slug,
                 asset: root.asset,
-                profile: p.profile,
+                profile: p.profile.clone(),
                 canvas: p.canvas,
                 root_id,
                 provider: root.provider,
+                record: Some(p),
             });
         }
         if let Some(c) = find_candidate(id) {
@@ -389,15 +400,39 @@ impl Engine {
                 canvas: c.canvas,
                 root_id: id.to_string(),
                 provider: c.provider,
+                record: None,
             });
         }
         Err(EngineError::new("not_found", format!("no candidate or processed artifact '{id}' in the ledger"), RetryClass::Terminal))
     }
 
-    /// Read an artifact's file and hash it.
+    /// Read an artifact's file and hash it. With companions the hash covers the main file and every companion
+    /// ([`imagegen_core::chain::bundle_sha256`]), so a validation, a review or an approval of "the file" is of all
+    /// the files an install will write.
     pub(crate) fn read_artifact(&self, a: &Artifact) -> EResult<(Vec<u8>, String)> {
         let bytes = self.fs.read(&a.path, 64 * 1024 * 1024)?;
-        let sha = sha256_hex(&bytes);
+        if a.companions().is_empty() {
+            let sha = sha256_hex(&bytes);
+            return Ok((bytes, sha));
+        }
+        let mut found: Vec<CompanionRecord> = Vec::new();
+        for c in a.companions() {
+            let data = self.fs.read(&c.path, 64 * 1024 * 1024).map_err(|e| match e {
+                CoreError::NotFound(_) => EngineError::refused(
+                    "companion_missing",
+                    format!("{} is missing: it belongs to {} ({}). Restore it or process the source candidate again", c.path, a.id, c.key),
+                    RetryClass::RefreshPreconditions,
+                ),
+                other => other.into(),
+            })?;
+            found.push(CompanionRecord { sha256: sha256_hex(&data), ..c.clone() });
+        }
+        let sha = imagegen_core::chain::bundle_sha256(&sha256_hex(&bytes), &found);
         Ok((bytes, sha))
+    }
+
+    /// The companion images of an artifact with their bytes.
+    pub(crate) fn read_companions(&self, a: &Artifact) -> EResult<Vec<(CompanionRecord, Vec<u8>)>> {
+        a.companions().iter().map(|c| Ok((c.clone(), self.fs.read(&c.path, 64 * 1024 * 1024)?))).collect()
     }
 }

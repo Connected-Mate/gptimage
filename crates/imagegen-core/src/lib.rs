@@ -9,6 +9,7 @@
 #![forbid(unsafe_code)]
 
 pub mod builtin;
+pub mod chain;
 pub mod calibrate;
 pub mod config;
 pub mod dds;

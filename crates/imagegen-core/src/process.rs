@@ -79,6 +79,54 @@ pub enum Op {
         /// Background R, G, B.
         background: [u8; 3],
     },
+    /// Accept the image only when it is exactly `width` x `height` and change nothing. This is the finishing
+    /// step of finished art that was imported at its final size: the size requirement is still recorded and
+    /// enforced, the pixels are not touched.
+    Conform {
+        /// Required width.
+        width: u32,
+        /// Required height.
+        height: u32,
+    },
+    /// The report-event card (sepia, grain, tilt, soft shadow) on a transparent 210x176 canvas, from a picture of
+    /// any size. The grain seed is derived from the candidate's SHA-256, so a candidate always gives one card.
+    ReportCard {
+        /// Grain seed.
+        seed: i64,
+    },
+    /// Two-frame strip: the fitted icon, then the same icon with the selected-state stroke and glow
+    /// (faction and agency logos).
+    SelectedFrame {
+        /// Frames in the strip; two.
+        frames: u32,
+    },
+    /// Two-frame strip: the fitted icon, then the same icon with its colour mixed 45 percent toward luminance
+    /// (building icons).
+    DisabledFrame {
+        /// Frames in the strip; two.
+        frames: u32,
+    },
+}
+
+impl Op {
+    /// The snake_case name of the operation (the `op` tag).
+    pub fn name(&self) -> &'static str {
+        match self {
+            Op::CropToAspect { .. } => "crop_to_aspect",
+            Op::TrimToSubject { .. } => "trim_to_subject",
+            Op::FitSubject { .. } => "fit_subject",
+            Op::Resize { .. } => "resize",
+            Op::CoverResize { .. } => "cover_resize",
+            Op::Defringe { .. } => "defringe",
+            Op::ChromaKey { .. } => "chroma_key",
+            Op::Grayscale => "grayscale",
+            Op::FlattenOn { .. } => "flatten_on",
+            Op::Conform { .. } => "conform",
+            Op::ReportCard { .. } => "report_card",
+            Op::SelectedFrame { .. } => "selected_frame",
+            Op::DisabledFrame { .. } => "disabled_frame",
+        }
+    }
 }
 
 fn default_min_alpha() -> u8 {
@@ -107,7 +155,7 @@ pub struct StepRecord {
 }
 
 /// Version string of the processing code recorded with every step.
-pub const ENGINE_VERSION: &str = concat!("imagegen-core/", env!("CARGO_PKG_VERSION"), "/process-1");
+pub const ENGINE_VERSION: &str = concat!("imagegen-core/", env!("CARGO_PKG_VERSION"), "/process-2");
 
 /// Apply one operation.
 pub fn apply(img: &Rgba, op: &Op) -> Result<Rgba> {
@@ -127,6 +175,20 @@ pub fn apply(img: &Rgba, op: &Op) -> Result<Rgba> {
         Op::ChromaKey { key, tolerance } => Ok(chroma_key(img, *key, *tolerance)),
         Op::Grayscale => Ok(grayscale(img)),
         Op::FlattenOn { background } => Ok(flatten_on(img, *background)),
+        Op::Conform { width, height } => {
+            if (img.width, img.height) != (*width, *height) {
+                return Err(Error::Invalid(format!(
+                    "the art is {}x{} but must be exactly {width}x{height} to be accepted as it is",
+                    img.width, img.height
+                )));
+            }
+            Ok(img.clone())
+        }
+        Op::ReportCard { seed } => {
+            crate::recipes::report_card::report_card(img, &crate::recipes::report_card::ReportCardParams { seed: *seed, ..Default::default() })
+        }
+        Op::SelectedFrame { frames } => crate::recipes::frames::selected_strip(img, *frames),
+        Op::DisabledFrame { frames } => crate::recipes::frames::disabled_strip(img, *frames),
     }
 }
 
@@ -526,6 +588,56 @@ mod tests {
         let f = apply(&img, &Op::FlattenOn { background: [0, 0, 255] }).unwrap();
         assert_eq!(f.px(0, 0)[3], 255);
         assert!(f.px(0, 0)[0] > 120 && f.px(0, 0)[2] > 100);
+    }
+
+    #[test]
+    fn conform_accepts_the_exact_size_and_changes_nothing() {
+        let img = Rgba::filled(6, 4, [1, 2, 3, 200]);
+        assert_eq!(apply(&img, &Op::Conform { width: 6, height: 4 }).unwrap(), img);
+        assert!(apply(&img, &Op::Conform { width: 6, height: 5 }).is_err());
+        let (out, rec) = run_chain(&img, &[Op::Conform { width: 6, height: 4 }]).unwrap();
+        assert_eq!(out, img);
+        assert_eq!(rec[0].input_sha256, rec[0].output_sha256, "a conform step leaves the pixels alone");
+    }
+
+    #[test]
+    fn report_card_op_is_deterministic_seeded_and_has_transparent_corners() {
+        let mut photo = Rgba::new(300, 200);
+        for y in 0..200 {
+            for x in 0..300 {
+                photo.set_px(x, y, [(x % 251) as u8, (y % 241) as u8, ((x * y) % 239) as u8, 255]);
+            }
+        }
+        let a = apply(&photo, &Op::ReportCard { seed: 7 }).unwrap();
+        assert_eq!((a.width, a.height), (210, 176));
+        assert_eq!(a, apply(&photo, &Op::ReportCard { seed: 7 }).unwrap());
+        assert_ne!(a, apply(&photo, &Op::ReportCard { seed: 8 }).unwrap(), "the seed changes the grain");
+        let (w, h) = (a.width - 1, a.height - 1);
+        assert_eq!([a.alpha(0, 0), a.alpha(w, 0), a.alpha(0, h), a.alpha(w, h)], [0, 0, 0, 0]);
+        assert_eq!(a.alpha(105, 88), 255);
+        // the op serialises with the snake_case tag
+        assert_eq!(serde_json::to_value(Op::ReportCard { seed: 7 }).unwrap(), serde_json::json!({"op": "report_card", "seed": 7}));
+    }
+
+    #[test]
+    fn frame_ops_build_two_frame_strips_and_serialise_like_the_others() {
+        let icon = disc(64);
+        let sel = apply(&icon, &Op::SelectedFrame { frames: 2 }).unwrap();
+        assert_eq!((sel.width, sel.height), (128, 64));
+        assert_eq!(sel.split_frames(2).unwrap()[0], icon);
+        let dis = apply(&icon, &Op::DisabledFrame { frames: 2 }).unwrap();
+        assert_eq!((dis.width, dis.height), (128, 64));
+        assert_ne!(dis.split_frames(2).unwrap()[1], icon);
+        assert!(apply(&icon, &Op::SelectedFrame { frames: 3 }).is_err());
+        let v = serde_json::to_value(Op::DisabledFrame { frames: 2 }).unwrap();
+        assert_eq!(v, serde_json::json!({"op": "disabled_frame", "frames": 2}));
+        assert_eq!(serde_json::from_value::<Op>(serde_json::json!({"op": "selected_frame", "frames": 2})).unwrap(), Op::SelectedFrame { frames: 2 });
+        assert!(serde_json::from_value::<Op>(serde_json::json!({"op": "selected_frame", "frames": 2, "x": 1})).is_err());
+        for op in [Op::Conform { width: 1, height: 1 }, Op::ReportCard { seed: 1 }, Op::SelectedFrame { frames: 2 }, Op::DisabledFrame { frames: 2 }]
+        {
+            let tag = serde_json::to_value(&op).unwrap()["op"].as_str().unwrap().to_string();
+            assert_eq!(tag, op.name(), "name() is the serde tag");
+        }
     }
 
     #[test]

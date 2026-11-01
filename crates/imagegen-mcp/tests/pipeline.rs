@@ -249,12 +249,17 @@ fn policy_gates_follow_the_maintainer_decisions() {
         )
     };
     assert_eq!(code(&plan("idea_spirit", "a").unwrap_err()), "family_forbidden_by_project");
-    assert_eq!(code(&plan("advisor_card", "a").unwrap_err()), "family_import_only");
-    assert_eq!(
-        code(&plan("leader_portrait", "a").unwrap_err()),
-        "family_user_run_only",
-        "D3: only a configured ComfyUI endpoint may make user-run categories"
-    );
+    // every family is generated end to end except the three whose second frame is different art
+    assert_eq!(code(&plan("counter_large", "a").unwrap_err()), "family_import_only");
+    assert_eq!(code(&plan("division_emblem", "a").unwrap_err()), "family_import_only");
+    // the advisor card needs the mod's frame template: refused before anything is spent, naming the paths it looked for
+    let e = plan("advisor_card", "a").unwrap_err();
+    assert_eq!(code(&e), "templates_missing");
+    assert!(e.message.contains("advisor_template.png") && e.message.contains(".claude/skills/*/assets/*"), "{}", e.message);
+    // portraits are generated now, with a likeness warning instead of a refusal
+    let p = plan("leader_portrait", "a").unwrap();
+    assert!(p.warnings.iter().any(|w| w.contains("real people")), "{:?}", p.warnings);
+    assert!(plan("focus", "a").unwrap().warnings.iter().all(|w| !w.contains("real people")));
     assert!(plan("focus", "a").is_ok());
     assert_eq!(code(&plan("gui_texture", "a").unwrap_err()), "invalid_argument", "gui_texture needs a mod-defined canvas");
     assert!(h
@@ -329,7 +334,7 @@ fn transparency_is_proven_from_pixels_never_assumed() {
     let e = h.engine.process(serde_json::from_value(json!({"candidate_id": id})).unwrap()).unwrap_err();
     assert_eq!(code(&e), "no_transparency_in_source");
 
-    // explicit steps may key a flat background, and the result is still validated
+    // pre-steps may key a flat background, and the result is still validated
     let mut flat = Rgba::filled(928, 816, [255, 0, 255, 255]);
     for y in 200..600 {
         for x in 200..600 {
@@ -340,9 +345,11 @@ fn transparency_is_proven_from_pixels_never_assumed() {
     let plan2 = h.plan_focus("keyed_gate");
     let g = h.engine.generate(serde_json::from_value(json!({"plan_id": plan2["plan_id"], "idempotency_key": "k-key"})).unwrap()).unwrap();
     let cid = g["candidates"][0]["candidate_id"].as_str().unwrap();
-    let steps = json!([{"op": "chroma_key", "key": [255, 0, 255], "tolerance": 10}, {"op": "trim_to_subject"}, {"op": "fit_subject", "width": 100, "height": 88, "margin": 2}]);
-    let p = h.engine.process(serde_json::from_value(json!({"candidate_id": cid, "steps": steps})).unwrap()).unwrap();
+    let steps = json!([{"op": "chroma_key", "key": [255, 0, 255], "tolerance": 10}]);
+    let p = h.engine.process(serde_json::from_value(json!({"candidate_id": cid, "pre_steps": steps})).unwrap()).unwrap();
     assert_eq!(p["quick_check"]["status"], "pass", "{:#}", p["quick_check"]);
+    let ops: Vec<&str> = p["steps"].as_array().unwrap().iter().map(|s| s["op"]["op"].as_str().unwrap()).collect();
+    assert_eq!(ops, vec!["chroma_key", "trim_to_subject", "fit_subject"], "the pre-step, then the family's own processing");
 }
 
 #[test]
@@ -507,7 +514,7 @@ fn finished_art_from_another_tool_can_be_imported_validated_and_installed() {
     let mut art = Rgba::new(65, 67);
     for y in 0..67 {
         for x in 0..65 {
-            let corner = (x < 3 && y < 3) || (x > 61 && y > 63);
+            let corner = (x < 3 || x > 61) && (y < 3 || y > 63);
             art.set_px(x, y, if corner { [0, 0, 0, 0] } else { [(x * 3) as u8, (y * 3) as u8, 120, 255] });
         }
     }
@@ -523,7 +530,9 @@ fn finished_art_from_another_tool_can_be_imported_validated_and_installed() {
         )
         .unwrap();
     let id = p["artifact_id"].as_str().unwrap().to_string();
-    assert_eq!(p["steps"], json!([]), "finished art of the right size is not re-fitted");
+    let ops: Vec<&str> = p["steps"].as_array().unwrap().iter().map(|s| s["op"]["op"].as_str().unwrap()).collect();
+    assert_eq!(ops, vec!["conform"], "finished art of the right size is accepted as it is, and the acceptance is recorded");
+    assert_eq!(art.pixels_sha256(), p["pixels_sha256"], "no pixel changed");
     assert_eq!(h.validate(&id)["status"], "pass");
     h.preview(&id);
     let approval = h.approve(&id, "portrait_v1")["approval_id"].as_str().unwrap().to_string();

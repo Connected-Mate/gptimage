@@ -8,9 +8,10 @@ use std::collections::HashMap;
 
 use imagegen_core::error::RetryClass;
 use imagegen_core::export::{self, FinalFile};
+use imagegen_core::fsio::PendingWrite;
 use imagegen_core::gate::{self, HashCheck};
 use imagegen_core::hashing::sha256_hex;
-use imagegen_core::pixels::{decode, DecodeLimits};
+use imagegen_core::pixels::{decode, DecodeLimits, Rgba};
 use imagegen_core::plan::Plan;
 use imagegen_core::records::{kind, CandidateRecord, InstalledFile, InstalledRecord, ReplacedFile, ValidatedRecord};
 use imagegen_core::sprite;
@@ -90,20 +91,44 @@ impl Engine {
             &imagegen_core::reuse::pixel_hash(&img),
             &artifact.id,
         )?;
-        let frames = profile.frames.max(1);
-        let base = [artifact.canvas[0] * frames, artifact.canvas[1]];
+        // the images each final file is made from: the main art, and the companions (achievement states, flag sizes)
+        let mut companion_imgs: HashMap<String, Rgba> = HashMap::new();
+        for (c, data) in self.read_companions(&artifact)? {
+            let (ci, _) = decode(&data, Some(&c.path), DecodeLimits::default())?;
+            companion_imgs.insert(c.key.clone(), ci);
+        }
         let files = export::final_files(&profile, artifact.canvas, &artifact.feature_slug, &artifact.asset)?;
         let mut encoded: Vec<(FinalFile, Vec<u8>)> = Vec::new();
+        let mut written: Vec<InstalledFile> = Vec::new();
         for f in &files {
-            let data = export::export_bytes(&img, f, base)?;
+            let source = match f.variant.as_deref() {
+                None | Some("normal") => &img,
+                Some(key) => companion_imgs.get(key).ok_or_else(|| {
+                    EngineError::refused(
+                        "companion_missing",
+                        format!(
+                            "{} needs the {key} image of {}, and the processed record has none. Process the source candidate again",
+                            f.rel, artifact.id
+                        ),
+                        RetryClass::RefreshPreconditions,
+                    )
+                })?,
+            };
+            let data = export::export_bytes(source, f, [source.width, source.height])?;
             let back = export::decode_exported(&data, f.container)?;
-            if f.canvas == base && back.pixels_sha256() != img.pixels_sha256() {
+            if back.pixels_sha256() != source.pixels_sha256() {
                 return Err(EngineError::new(
                     "export_round_trip_failed",
                     format!("{} did not decode to the same pixels it was made from; nothing was written", f.rel),
                     RetryClass::Terminal,
                 ));
             }
+            written.push(InstalledFile {
+                path: f.rel.clone(),
+                sha256: sha256_hex(&data),
+                pixels_sha256: back.pixels_sha256(),
+                container: f.container.ext().to_string(),
+            });
             encoded.push((f.clone(), data));
         }
 
@@ -151,91 +176,59 @@ impl Engine {
 
         // ---- sprites
         let sprites = export::sprite_entries(&profile, &artifact.feature_slug, &artifact.asset, &files)?;
-        let mut gfx_write: Option<(String, String, Option<String>)> = None; // (rel, new text, previous sha)
-        if p.mode == InstallMode::Register {
-            let Some((gfx_file, entries_)) = &sprites else {
-                return Err(EngineError::invalid(format!("{} has no .gfx sprite; use mode handoff", profile.family)));
-            };
-            let existing = if self.fs.exists(gfx_file) {
-                Some(
-                    String::from_utf8(self.fs.read(gfx_file, 8 * 1024 * 1024)?)
-                        .map_err(|_| EngineError::invalid(format!("{gfx_file} is not UTF-8")))?,
-                )
-            } else {
-                None
-            };
-            let new_text = sprite::register(existing.as_deref(), entries_)?;
-            gfx_write = Some((gfx_file.clone(), new_text, existing.map(|t| sha256_hex(t.as_bytes()))));
-        }
-
-        // ---- write everything, or roll the new files back
-        let mut created: Vec<String> = Vec::new();
-        let mut written: Vec<InstalledFile> = Vec::new();
-        let write_all = || -> EResult<()> { Ok(()) };
-        let _ = write_all;
-        for (f, data) in &encoded {
-            let result = if replaced.iter().any(|r| r.path == f.rel) {
-                self.fs.replace(&f.rel, data)
-            } else {
-                self.fs.write_new(&f.rel, data).map(|p| {
-                    created.push(f.rel.clone());
-                    p
-                })
-            };
-            if let Err(e) = result {
-                for rel in &created {
-                    if let Ok(path) = self.fs.resolve(rel) {
-                        let _ = std::fs::remove_file(path);
-                    }
-                }
-                return Err(EngineError::new(
-                    "install_write_failed",
-                    format!("{e}. Files written by this call were removed"),
-                    RetryClass::SafeSameInputs,
-                ));
-            }
-            let decoded = export::decode_exported(data, f.container)?;
-            written.push(InstalledFile {
-                path: f.rel.clone(),
-                sha256: sha256_hex(data),
-                pixels_sha256: decoded.pixels_sha256(),
-                container: f.container.ext().to_string(),
-            });
-        }
+        // every file of the install goes into one batch: the images, and the `.gfx` text or the handoff note
+        let mut batch: Vec<PendingWrite> = encoded
+            .iter()
+            .map(|(f, data)| PendingWrite { rel: f.rel.clone(), bytes: data.clone(), replace: replaced.iter().any(|r| r.path == f.rel) })
+            .collect();
         let mut sprite_names = Vec::new();
         let mut gfx_file_out = None;
         if let Some((gfx_file, entries_)) = &sprites {
             sprite_names = entries_.iter().map(|e| e.name.clone()).collect();
             gfx_file_out = Some(gfx_file.clone());
-            match &gfx_write {
-                Some((rel, text, prev)) => {
-                    self.fs.replace(rel, text.as_bytes())?;
-                    if let Some(prev) = prev {
-                        replaced.push(ReplacedFile { path: rel.clone(), previous_sha256: prev.clone() });
-                    }
+            if p.mode == InstallMode::Register {
+                let existing = if self.fs.exists(gfx_file) {
+                    Some(
+                        String::from_utf8(self.fs.read(gfx_file, 8 * 1024 * 1024)?)
+                            .map_err(|_| EngineError::invalid(format!("{gfx_file} is not UTF-8")))?,
+                    )
+                } else {
+                    None
+                };
+                let new_text = sprite::register(existing.as_deref(), entries_)?;
+                if let Some(prev) = &existing {
+                    replaced.push(ReplacedFile { path: gfx_file.clone(), previous_sha256: sha256_hex(prev.as_bytes()) });
                 }
-                None => {
-                    let handoff = format!("docs/assets/{}/gfx_handoff.md", artifact.feature_slug);
-                    let mut notes = vec![format!("approved under {} (sha256 {})", p.approval_id, &sha[..12])];
-                    if profile.differs_from_vanilla() {
-                        notes.push("the canvas differs from the vanilla-measured default; see hoi4.image_families".into());
-                    }
-                    let block = sprite::handoff_block(
-                        &artifact.asset_id,
-                        &written.iter().map(|w| w.path.clone()).collect::<Vec<_>>(),
-                        gfx_file,
-                        entries_,
-                        &notes,
-                    );
-                    let existing = if self.fs.exists(&handoff) {
-                        String::from_utf8_lossy(&self.fs.read(&handoff, 4 * 1024 * 1024)?).to_string()
-                    } else {
-                        String::from("# GFX handoff\n\nSprite definitions for the main agent to add. Asset workers do not edit .gfx files.\n\n")
-                    };
-                    self.fs.replace(&handoff, format!("{existing}{block}").as_bytes())?;
+                batch.push(PendingWrite { rel: gfx_file.clone(), bytes: new_text.into_bytes(), replace: existing.is_some() });
+            } else {
+                let handoff = format!("docs/assets/{}/gfx_handoff.md", artifact.feature_slug);
+                let mut notes = vec![format!("approved under {} (sha256 {})", p.approval_id, &sha[..12])];
+                if profile.differs_from_vanilla() {
+                    notes.push("the canvas differs from the vanilla-measured default; see hoi4.image_families".into());
                 }
+                let block = sprite::handoff_block(
+                    &artifact.asset_id,
+                    &written.iter().map(|w| w.path.clone()).collect::<Vec<_>>(),
+                    gfx_file,
+                    entries_,
+                    &notes,
+                );
+                let handoff_exists = self.fs.exists(&handoff);
+                let existing = if handoff_exists {
+                    String::from_utf8_lossy(&self.fs.read(&handoff, 4 * 1024 * 1024)?).to_string()
+                } else {
+                    String::from("# GFX handoff\n\nSprite definitions for the main agent to add. Asset workers do not edit .gfx files.\n\n")
+                };
+                batch.push(PendingWrite { rel: handoff, bytes: format!("{existing}{block}").into_bytes(), replace: handoff_exists });
             }
+        } else if p.mode == InstallMode::Register {
+            return Err(EngineError::invalid(format!("{} has no .gfx sprite; use mode handoff", profile.family)));
         }
+
+        // ---- write everything or nothing: temp files first, then all renames, undone together if anything fails
+        let committed = self.fs.write_batch(&batch).map_err(|e| {
+            EngineError::new("install_write_failed", format!("{e}. Nothing was left written by this call"), RetryClass::SafeSameInputs)
+        })?;
 
         let record = InstalledRecord {
             target: artifact.id.clone(),
@@ -250,7 +243,11 @@ impl Engine {
             replaced: replaced.clone(),
             approval_id: p.approval_id.clone(),
         };
-        self.ledger.append(kind::INSTALLED, Some(&artifact.asset_id), Some(&artifact.id), &record)?;
+        if let Err(e) = self.ledger.append(kind::INSTALLED, Some(&artifact.asset_id), Some(&artifact.id), &record) {
+            committed.rollback();
+            return Err(EngineError::from(e));
+        }
+        committed.finish();
         let record_path = self.write_asset_record(&artifact.asset_id, &artifact.family.to_string(), &record)?;
 
         let snippet = sprites.as_ref().map(|(_, e)| sprite::new_file(e));

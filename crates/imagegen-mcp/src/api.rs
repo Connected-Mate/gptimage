@@ -269,8 +269,13 @@ pub struct EditParams {
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct ImportSpec {
-    /// Project-relative path of the image.
-    pub path: String,
+    /// Project-relative path of the image. Give this or `frames`.
+    #[serde(default)]
+    pub path: Option<String>,
+    /// For a family that is a strip of frames (counters, logos, buildings): one project-relative file per frame, in order.
+    /// Each must be exactly one accepted frame size. They are joined into the strip. Instead of `path`.
+    #[serde(default)]
+    pub frames: Option<Vec<String>>,
     /// The family it is for. A size of another family is refused (GFX-FAMILY-MISMATCH), and so are the pixels of an asset already installed for another family (GFX-FAMILY-REUSE).
     pub family: Family,
     /// Feature folder name.
@@ -289,12 +294,18 @@ pub struct ProcessParams {
     /// Or import an existing image (art made by another tool, or by hand) and process that.
     #[serde(default)]
     pub import: Option<ImportSpec>,
-    /// Explicit steps. Omit for the family's default chain.
-    #[serde(default)]
-    pub steps: Option<Vec<Op>>,
+    /// Optional pre-steps that prepare the source: only `chroma_key`, `crop_to_aspect`, `defringe` and `trim_to_subject`
+    /// are accepted. They run first. The family's own processing (fit, flatten, report card, frame strip, advisor card,
+    /// achievement states, portrait crop, flag sizes...) always runs after them and cannot be replaced, skipped or
+    /// shortened: any other step, or an empty list, is refused. Omit for no pre-steps.
+    #[serde(default, alias = "steps")]
+    pub pre_steps: Option<Vec<Op>>,
     /// Canvas for families that have none.
     #[serde(default)]
     pub canvas: Option<[u32; 2]>,
+    /// Portrait families only: crop `[left, top, right, bottom]` in source pixels, used instead of face detection.
+    #[serde(default)]
+    pub portrait_crop: Option<[i64; 4]>,
 }
 
 /// `hoi4.image_validate`

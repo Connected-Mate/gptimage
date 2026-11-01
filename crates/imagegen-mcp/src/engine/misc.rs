@@ -117,6 +117,7 @@ impl Engine {
                 "accepted": prof.accepted,
                 "margin": prof.margin,
                 "automation": prof.imagegen.automation,
+                "recipe": {"id": imagegen_core::chain::recipe_of(prof).id(), "version": imagegen_core::chain::recipe_of(prof).version()},
                 "background": prof.imagegen.background,
                 "container": prof.imagegen.container,
                 "needs_mod_canvas": prof.needs_mod_canvas(),
@@ -129,6 +130,8 @@ impl Engine {
                     "entries": entries,
                     "distribution": entries.first().map(|id| measured.distribution(id).into_iter().map(|(s, n)| json!({"size": s, "files": n})).collect::<Vec<_>>()),
                 });
+                v["required_stages"] = json!(imagegen_core::chain::required_stages(prof));
+                v["pre_steps_allowed"] = json!(imagegen_core::chain::PRE_STEP_OPS);
                 v["checks"] = json!(prof.imagegen.checks);
                 v["check_set_hash"] = json!(imagegen_core::validate::check_set_hash(&prof.imagegen.checks));
                 v["rubric"] = json!(prof.imagegen.rubric);

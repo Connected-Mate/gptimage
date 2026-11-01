@@ -119,8 +119,31 @@ impl Engine {
         // the full check set of the family always runs: there is no way to ask for fewer
         let checks = profile.imagegen.checks.clone();
         let canvas = if profile.canvas == [0, 0] { Some(artifact.canvas) } else { None };
-        let (status, findings, extra) = run_checks(&bytes, &artifact.path, profile, &checks, canvas);
+        let (_, mut findings, extra) = run_checks(&bytes, &artifact.path, profile, &checks, canvas);
         let mut notes = extra;
+        // the family's processing must be on record: a processed artifact whose chain lacks a required stage fails
+        if let Some(rec) = &artifact.record {
+            for problem in imagegen_core::chain::audit(rec, profile) {
+                findings.push(Finding {
+                    code: "GFX-CHAIN-INCOMPLETE".into(),
+                    level: Level::Error,
+                    message: problem,
+                    frame: None,
+                    evidence: json!({"recipe": rec.recipe.as_ref().map(|r| json!({"id": r.id, "version": r.version}))}),
+                });
+            }
+            // every companion image (achievement states, flag sizes) is checked as the family, at its own size
+            for c in &rec.companions {
+                let data = self.fs.read(&c.path, 64 * 1024 * 1024)?;
+                let (_, more, _) = run_checks(&data, &c.path, profile, &checks, Some(c.size));
+                findings.extend(more.into_iter().map(|mut f| {
+                    f.message = format!("[{}] {}", c.key, f.message);
+                    f
+                }));
+            }
+            notes["companions"] = json!(rec.companions.iter().map(|c| json!({"key": c.key, "path": c.path, "size": c.size})).collect::<Vec<_>>());
+        }
+        let status = if findings.iter().any(|f| f.level == Level::Error) { Status::Fail } else { Status::Pass };
         if sha != artifact.recorded_sha256 {
             notes["file_changed_since_recorded"] = json!(true);
         }

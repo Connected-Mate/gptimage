@@ -131,6 +131,9 @@ pub struct Plan {
     pub profile: ProfileRef,
     /// Canvas per frame.
     pub canvas: [u32; 2],
+    /// Size the model is asked for when it is not the canvas (an advisor card is made from a tall portrait).
+    #[serde(default)]
+    pub source_canvas: Option<[u32; 2]>,
     /// Frames in the strip.
     pub frames: u32,
     /// Provider id.
@@ -289,6 +292,7 @@ mod tests {
             asset_id: "iron.wall".into(),
             profile: ProfileRef { id: "focus".into(), hash: "h".into(), kit_sha256: None },
             canvas: [100, 88],
+            source_canvas: None,
             frames: 1,
             provider: "openai".into(),
             model: "gpt-image-2.5-flare".into(),

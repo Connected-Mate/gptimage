@@ -60,12 +60,19 @@ pub fn final_files(profile: &Profile, canvas: [u32; 2], feature_slug: &str, asse
             .collect();
     }
     let folder = expand(&profile.imagegen.folder, feature_slug, asset, &prefix)?;
-    Ok(vec![FinalFile {
-        rel: format!("{}/{prefix}{asset}.{ext}", folder.trim_end_matches('/')),
-        variant: None,
-        canvas: strip,
-        container: profile.imagegen.container,
-    }])
+    let folder = folder.trim_end_matches('/');
+    let mut files =
+        vec![FinalFile { rel: format!("{folder}/{prefix}{asset}.{ext}"), variant: None, canvas: strip, container: profile.imagegen.container }];
+    // companions the recipe makes next to the main file (the achievement states): same folder, suffixed name
+    for key in crate::chain::recipe_of(profile).companion_keys().iter().filter(|k| k.starts_with('_')) {
+        files.push(FinalFile {
+            rel: format!("{folder}/{prefix}{asset}{key}.{ext}"),
+            variant: Some((*key).to_string()),
+            canvas: strip,
+            container: profile.imagegen.container,
+        });
+    }
+    Ok(files)
 }
 
 /// Sprite entries and the suggested `.gfx` file (project-relative, under `interface/`).
@@ -79,7 +86,7 @@ pub fn sprite_entries(profile: &Profile, feature_slug: &str, asset: &str, files:
     let mut entries = vec![if profile.frames > 1 { framed_sprite(&name, &main.rel, profile.frames) } else { plain_sprite(&name, &main.rel) }];
     for companion in &spec.companions {
         match companion.as_str() {
-            "shine" => entries.push(shine_sprite(&name, &main.rel)),
+            "shine" => entries.push(shine_sprite(&name, &main.rel)?),
             other => return Err(Error::Config(format!("unknown sprite companion '{other}'"))),
         }
     }
@@ -140,6 +147,8 @@ mod tests {
         let names: Vec<_> = entries.iter().map(|e| e.name.as_str()).collect();
         assert_eq!(names, vec!["GFX_focus_steel_will", "GFX_focus_steel_will_shine"]);
         assert!(entries[0].text.contains("gfx/interface/goals/iron_pact/focus_steel_will.dds"));
+        assert!(entries[1].text.contains("animationrotationoffset = { x = 0.0 y = 0.0 }"), "the vanilla-exact shine block");
+        assert_eq!(entries[1].text.matches("animation = {").count(), 2);
     }
 
     #[test]
@@ -164,6 +173,12 @@ mod tests {
         let prof = p(Family::Achievement);
         let files = final_files(&prof, prof.canvas, "iron_pact", "hold_the_line").unwrap();
         assert_eq!(files[0].rel, "gfx/achievements/hold_the_line.dds");
+        let rels: Vec<_> = files.iter().map(|f| f.rel.as_str()).collect();
+        assert_eq!(
+            rels,
+            vec!["gfx/achievements/hold_the_line.dds", "gfx/achievements/hold_the_line_grey.dds", "gfx/achievements/hold_the_line_not_eligible.dds"]
+        );
+        assert_eq!(files[1].variant.as_deref(), Some("_grey"));
         assert!(sprite_entries(&prof, "iron_pact", "hold_the_line", &files).unwrap().is_none());
     }
 

@@ -45,25 +45,17 @@ pub fn framed_sprite(name: &str, texture_path: &str, frames: u32) -> SpriteEntry
 }
 
 /// The `_shine` companion every vanilla focus icon has (3,122 shine sprites against 3,131 goal sprites in
-/// 1.19.3.0). The pattern is copied from what the survey saw; whether a mod focus without it logs an error
-/// has not been tested in game.
-pub fn shine_sprite(icon_name: &str, texture_path: &str) -> SpriteEntry {
-    let name = format!("{icon_name}_shine");
-    let anim = |rotation: &str| {
-        format!(
-            "\t\tanimation = {{\n\t\t\tanimationmaskfile = \"{texture_path}\"\n\t\t\tanimationtexturefile = \"gfx/interface/goals/shine_overlay.dds\"\n\t\t\tanimationrotation = {rotation}\n\t\t\tanimationlooping = no\n\t\t\tanimationtime = 0.75\n\t\t\tanimationdelay = 0\n\t\t\tanimationblendmode = \"add\"\n\t\t\tanimationtype = \"scrolling\"\n\t\t\tanimationtexturescale = {{ x = 1.0 y = 1.0 }}\n\t\t}}\n"
-        )
-    };
-    let text = format!(
-        "\tspriteType = {{\n\t\tname = \"{name}\"\n\t\ttexturefile = \"{texture_path}\"\n\t\teffectFile = \"gfx/FX/buttonstate.lua\"\n{}{}\t\tlegacy_lazy_load = no\n\t}}\n",
-        anim("-90.0"),
-        anim("90.0"),
-    );
-    SpriteEntry {
-        name,
+/// 1.19.3.0). The block is the recipe's vanilla-exact one ([`crate::recipes::focus_shine::focus_shine_block`],
+/// which a test compares token for token with the installed game's `goals_shine.gfx`), including the
+/// `animationrotationoffset` field an earlier version of this function left out. Whether a mod focus without
+/// the companion logs an error has not been tested in game.
+pub fn shine_sprite(icon_name: &str, texture_path: &str) -> Result<SpriteEntry> {
+    let text = crate::recipes::focus_shine::focus_shine_block(icon_name, texture_path)?;
+    Ok(SpriteEntry {
+        name: format!("{icon_name}_shine"),
         text,
-        caveat: "Shine pattern observed in vanilla 1.19.3.0 headers and .gfx text; game behaviour without it is untested.".into(),
-    }
+        caveat: "Shine block copied field for field from vanilla 1.19.4.1 goals_shine.gfx; game behaviour without it is untested.".into(),
+    })
 }
 
 /// A complete new `.gfx` file.
@@ -216,13 +208,14 @@ mod tests {
     fn plain_and_shine_snippets_have_the_documented_shape() {
         let p = plain_sprite("GFX_goal_wall", TEX);
         assert!(p.text.contains("name = \"GFX_goal_wall\"") && p.text.contains(&format!("texturefile = \"{TEX}\"")));
-        let s = shine_sprite("GFX_goal_wall", TEX);
+        let s = shine_sprite("GFX_goal_wall", TEX).unwrap();
         assert_eq!(s.name, "GFX_goal_wall_shine");
         assert_eq!(s.text.matches("animation = {").count(), 2);
         assert!(s.text.contains("effectFile = \"gfx/FX/buttonstate.lua\""));
         assert!(s.text.contains("animationrotation = -90.0") && s.text.contains("animationrotation = 90.0"));
         assert!(s.text.contains("animationtime = 0.75") && s.text.contains("animationblendmode = \"add\""));
         assert!(s.text.contains("legacy_lazy_load = no"));
+        assert!(s.text.contains("animationrotationoffset = { x = 0.0 y = 0.0 }"));
         assert!(s.caveat.contains("untested"));
         assert_eq!(s.text.matches('{').count(), s.text.matches('}').count());
     }
@@ -277,7 +270,7 @@ mod tests {
 
     #[test]
     fn handoff_mentions_caveats() {
-        let e = vec![plain_sprite("GFX_a", "gfx/a.dds"), shine_sprite("GFX_a", "gfx/a.dds")];
+        let e = vec![plain_sprite("GFX_a", "gfx/a.dds"), shine_sprite("GFX_a", "gfx/a.dds").unwrap()];
         let h = handoff_block("f.a", &["gfx/a.dds".into()], "interface/f_goals.gfx", &e, &["check it".into()]);
         assert!(h.contains("## f.a") && h.contains("interface/f_goals.gfx") && h.contains("untested") && h.contains("check it"));
     }

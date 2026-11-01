@@ -37,12 +37,16 @@ struct Row {
     rules: &'static [&'static str],
     negative: &'static [&'static str],
     grayscale: bool,
+    /// Size the model is asked for when it is not the canvas.
+    source_canvas: Option<[u32; 2]>,
 }
 
 const ICON_CHECKS: &[&str] = &["size", "alpha", "opaque_canvas", "fringe", "margin", "fill", "checker", "dds"];
 const FOCUS_CHECKS: &[&str] = &["size", "alpha", "opaque_canvas", "fringe", "margin", "fill", "checker", "ghost", "dds"];
 const PICTURE_CHECKS: &[&str] = &["size", "checker", "opaque", "dds"];
-const CARD_CHECKS: &[&str] = &["size", "checker", "dds"];
+const CARD_CHECKS: &[&str] = &["size", "checker", "card_corners", "dds"];
+const ACHIEVEMENT_CHECKS: &[&str] = &["size", "checker", "near_opaque", "dds"];
+const ADVISOR_CHECKS: &[&str] = &["size", "alpha", "checker", "card_corners", "dds"];
 const PORTRAIT_CHECKS: &[&str] = &["size", "checker", "opaque", "dds"];
 const FLAG_CHECKS: &[&str] = &["size", "opaque", "tga"];
 const UNIT_CHECKS: &[&str] = &["size", "alpha", "frames", "dds"];
@@ -73,7 +77,18 @@ const PICTURE_RULES: &[&str] =
     &["A complete scene that fills the whole frame, composed for a {w}x{h} crop.", "Period illustration look, painterly, with natural film grain."];
 const REPORT_RULES: &[&str] = &[
     "A documentary-style scene that fills the whole frame, composed for a {w}x{h} crop.",
-    "The report-card treatment (sepia, grain, paper border, tilt, shadow) is applied afterwards, so do not draw a border.",
+    "The report-card treatment (sepia, grain, tilt, shadow) is applied afterwards by the tool, so do not draw a border, a shadow or a tilt.",
+];
+const ACHIEVEMENT_RULES: &[&str] = &[
+    "One original subject, centred, compact and readable at {w}x{h} pixels, with strong contrast and a simple silhouette.",
+    "Real transparent background: no achievement frame, no square background, no red cross, no plate behind the subject.",
+    "Painterly, slightly aged texture in the style of Hearts of Iron IV interface art.",
+];
+const ACHIEVEMENT_NEGATIVE: &[&str] =
+    &["text", "letters or numbers", "watermark or signature", "a drawn checkerboard pattern", "a frame or border", "a red cross"];
+const ADVISOR_RULES: &[&str] = &[
+    "A head-and-shoulders portrait of one person in the painterly style of Hearts of Iron IV advisor portraits, face and shoulders centred, composed for a tall crop.",
+    "Period-appropriate clothing and a plain, slightly textured backdrop. The card frame is added afterwards by the tool, so do not draw a frame or border.",
 ];
 const NEWS_RULES: &[&str] = &[
     "A black and white press photograph that fills the whole frame, composed for a wide {w}x{h} crop.",
@@ -84,6 +99,10 @@ const PICTURE_NEGATIVE: &[&str] = &["text, captions or headlines", "watermark or
 const PORTRAIT_RULES: &[&str] = &[
     "A head-and-shoulders portrait in the painterly style of Hearts of Iron IV portraits, composed for a tall {w}x{h} crop.",
     "Period-appropriate clothing and a plain, slightly textured backdrop.",
+];
+const FRAME_STRIP_RULES: &[&str] = &[
+    "One centred emblem with a strong silhouette that reads at {w}x{h} pixels, drawn in the style of Hearts of Iron IV faction and interface art.",
+    "Real transparent background: no backdrop, no frame, no plate. Leave clear space around the emblem: the tool adds the second frame (its highlight or its disabled look) itself.",
 ];
 const FLAG_RULES: &[&str] = &[
     "A flat national flag design with simple shapes that stay readable at 82x52 pixels and at 10x7 pixels.",
@@ -118,6 +137,7 @@ fn base(family: Family, canvas: [u32; 2], accepted: &'static [[u32; 2]], folder:
         rules: ICON_RULES,
         negative: ICON_NEGATIVE,
         grayscale: false,
+        source_canvas: None,
     };
     match family.group() {
         Group::Icon => {}
@@ -131,7 +151,6 @@ fn base(family: Family, canvas: [u32; 2], accepted: &'static [[u32; 2]], folder:
         Group::Portrait => {
             row.background = Background::Opaque;
             row.margin = 0;
-            row.automation = Automation::UserRunOnly;
             row.checks = PORTRAIT_CHECKS;
             row.rules = PORTRAIT_RULES;
             row.negative = PICTURE_NEGATIVE;
@@ -258,7 +277,7 @@ fn rows() -> Vec<Row> {
             accepted: &[[210, 176], [209, 176]],
             rules: REPORT_RULES,
             checks: CARD_CHECKS,
-            note: "Vanilla report cards have transparent corners and a soft shadow (532 of 600 use one of four alpha masks). The pixels measured as transparent, but the card treatment (rotation, tone, shadow) is applied to a full picture by a later recipe, so this row stays opaque until that recipe runs and does not check for opacity.",
+            note: "Vanilla report cards have transparent corners and a soft shadow (532 of 600 use one of four alpha masks). The model draws an opaque picture; the report_card step (tone, grain, tilt, shadow) always turns it into a card with transparent corners, so the installed art has card alpha and is checked for transparent corners, never for opacity.",
             ..base(ReportEvent, [210, 176], &[[210, 176], [209, 176]], "gfx/event_pictures/{feature_slug}", "report_event_", "interface/{feature_slug}_eventpictures.gfx")
         },
         Row {
@@ -286,16 +305,20 @@ fn rows() -> Vec<Row> {
             ..base(Technology, [146, 54], &[[146, 54], [131, 52]], "gfx/interface/technologies/{feature_slug}", "", "interface/{feature_slug}_technologies.gfx")
         },
         Row {
-            automation: Automation::ImportOnly,
+            background: Background::Transparent,
+            margin: 2,
             sprite: None,
             companion_files: &["_grey", "_not_eligible"],
-            note: "Achievements are not registered in any .gfx: the engine loads gfx/achievements/<key>.dds plus the _grey and _not_eligible variants by name, so there is no feature folder. The triplet recipe is a separate step, so this family is import-only until it exists.",
+            checks: ACHIEVEMENT_CHECKS,
+            rules: ACHIEVEMENT_RULES,
+            negative: ACHIEVEMENT_NEGATIVE,
+            note: "Achievements are not registered in any .gfx: the engine loads gfx/achievements/<key>.dds plus the _grey and _not_eligible variants by name, so there is no feature folder. The model draws one transparent subject layer; the tool fits it to 64x64, derives the grey state (grayscale), the not-eligible state (grey with the red cross) and puts the kit's template backgrounds beneath all three. Installed art has alpha 254 or 255 because the templates do.",
             ..base(Achievement, [64, 64], &[[64, 64]], "gfx/achievements", "", "")
         },
         // ---- portrait group
         Row {
             companion_files: &["_small"],
-            note: "Real people: only a ComfyUI endpoint the maintainer configured may generate (decision D3). Vanilla has a _small companion for some portraits.",
+            note: "Real people are the user's responsibility: the plan warns about likeness. Vanilla has a _small companion for some portraits, which this tool does not make.",
             ..base(LeaderPortrait, [156, 210], &[[156, 210]], "gfx/leaders/{feature_slug}", "portrait_", "interface/{feature_slug}_leader_portraits.gfx")
         },
         Row {
@@ -314,13 +337,14 @@ fn rows() -> Vec<Row> {
             ..base(ScientistPortrait, [156, 210], &[[156, 210]], "gfx/leaders/{feature_slug}/scientists", "portrait_", "interface/{feature_slug}_scientist_portraits.gfx")
         },
         Row {
-            background: Background::Transparent,
-            automation: Automation::ImportOnly,
+            background: Background::Opaque,
             margin: 0,
-            checks: UNIT_CHECKS,
+            checks: ADVISOR_CHECKS,
+            rules: ADVISOR_RULES,
+            source_canvas: Some([156, 210]),
             frames: 1,
             sprite: Some(("interface/{feature_slug}_ideas.gfx", "GFX_idea_{asset}", &[])),
-            note: "The card is built from an approved portrait by a recipe (template composite), not generated, so it is import-only. 65x67 with rounded transparent corners; named GFX_idea_<token> like ideas.",
+            note: "The model draws a head-and-shoulders portrait; the tool composites it into the kit's advisor frame template (65x67 with transparent corners). The card has transparent corners although the source is opaque. Named GFX_idea_<token> like ideas.",
             ..base(AdvisorCard, [65, 67], &[[65, 67]], "gfx/interface/ideas/{feature_slug}/advisors", "idea_", "")
         },
         // ---- flag
@@ -348,19 +372,26 @@ fn rows() -> Vec<Row> {
             ..base(DivisionEmblem, [76, 42], &[[76, 42]], "gfx/interface/counters/division_templates_large/{feature_slug}", "custom_", "")
         },
         Row {
+            automation: Automation::Generate,
+            rules: FRAME_STRIP_RULES,
             sprite: Some(("interface/buildings/{feature_slug}_landmarks.gfx", "GFX_{prefix}{asset}", &[])),
-            note: "Landmark buildings are two frames: a 64x64 frame (128x64 strip) or a 32x32 frame (64x32 strip).",
+            note: "Landmark buildings are two frames: a 64x64 frame (128x64 strip) or a 32x32 frame (64x32 strip). The tool makes frame 2 as a disabled look (colour mixed 45 percent toward grey). Vanilla landmark strips use frame 2 for a ruined state, which no recipe can derive, so frame 2 is this tool's convention, not a measured vanilla look.",
             ..base(Building, [64, 64], &[[64, 64], [32, 32]], "gfx/interface/buildings/{feature_slug}", "building_", "")
         },
         Row {
+            automation: Automation::Generate,
+            rules: FRAME_STRIP_RULES,
+            margin: 10,
             sprite: Some(("interface/factions/{feature_slug}_factions.gfx", "GFX_{prefix}{asset}", &[])),
-            note: "Two 100x100 frames (200x100 strip). The 32x32 single-frame small logo of the same folder is a separate sprite and is not accepted here.",
+            note: "Two 100x100 frames (200x100 strip). Frame 2 is the selected state (cream stroke and dark-red glow, fitted to 31 vanilla strips) which needs room around the emblem: vanilla frame 1 keeps a margin of 8 to 11 pixels, so the fit margin is 10. The 32x32 single-frame small logo of the same folder is a separate sprite and is not accepted here.",
             ..base(FactionLogo, [100, 100], &[[100, 100]], "gfx/interface/factions/faction_logos/{feature_slug}", "faction_", "")
         },
         Row {
-            margin: 2,
+            automation: Automation::Generate,
+            rules: FRAME_STRIP_RULES,
+            margin: 10,
             sprite: Some(("interface/{feature_slug}_agencies.gfx", "GFX_intelligence_agency_logo_{asset}", &[])),
-            note: "Two 117x119 frames (234x119 strip). 34 files are 233x119, which does not divide into two whole frames and is not accepted.",
+            note: "Two 117x119 frames (234x119 strip). Frame 2 is the selected state, measured on the 37 vanilla 234x119 strips with the same glow profile as the faction logos. 34 files are 233x119, which does not divide into two whole frames and is not accepted.",
             ..base(AgencyLogo, [117, 119], &[[117, 119]], "gfx/interface/operatives/agencies/{feature_slug}", "agency_logo_", "")
         },
         // ---- interface group
@@ -469,6 +500,7 @@ pub fn profiles() -> Vec<Profile> {
                         negative: r.negative.iter().map(|s| s.to_string()).collect(),
                     },
                     grayscale: r.grayscale,
+                    source_canvas: r.source_canvas,
                 },
             }
         })
@@ -575,8 +607,15 @@ mod tests {
         let meas = data();
         for (f, p) in by_family() {
             let Some(id) = m::entries_of(f).first() else { continue };
-            if matches!(f, Family::ReportEvent | Family::OperationPicture) {
+            // documented exceptions: `background` says what the model is asked to draw. The report card and the
+            // advisor card are made from an opaque picture and end with transparent corners; the achievement is
+            // drawn as a transparent subject and ends on an opaque template.
+            if matches!(f, Family::ReportEvent | Family::OperationPicture | Family::AdvisorCard) {
                 assert_eq!(p.imagegen.background, Background::Opaque, "{f}");
+                continue;
+            }
+            if f == Family::Achievement {
+                assert_eq!(p.imagegen.background, Background::Transparent, "{f}");
                 continue;
             }
             let class = meas.alpha_class(id).unwrap();
@@ -610,7 +649,7 @@ mod tests {
         assert_eq!(set[&Family::Focus].imagegen.sprite.as_ref().unwrap().companions, vec!["shine".to_string()]);
         assert_eq!(set[&Family::Focus].imagegen.alt_prefixes, vec!["goal_".to_string()]);
         let ach = &set[&Family::Achievement];
-        assert_eq!(ach.imagegen.background, Background::Opaque);
+        assert_eq!(ach.imagegen.background, Background::Transparent, "the model draws a transparent subject layer; the templates go beneath it");
         assert!(ach.imagegen.sprite.is_none());
         assert_eq!(ach.imagegen.folder, "gfx/achievements");
         assert_eq!(ach.imagegen.companion_files, vec!["_grey".to_string(), "_not_eligible".to_string()]);
@@ -638,28 +677,45 @@ mod tests {
 
     #[test]
     fn automation_follows_what_the_chain_can_do() {
+        // every family is generated end to end except the three whose second frame is different art
         for (f, p) in by_family() {
-            let a = p.imagegen.automation;
-            if p.frames > 1 {
-                assert_eq!(a, Automation::ImportOnly, "{f}: the chain cannot assemble frame strips");
-            }
-            if f.group() == Group::Portrait && f != Family::AdvisorCard {
-                assert_eq!(a, Automation::UserRunOnly, "{f}");
-            }
+            let want = if matches!(f, Family::CounterLarge | Family::CounterSmall | Family::DivisionEmblem) {
+                Automation::ImportOnly
+            } else {
+                Automation::Generate
+            };
+            assert_eq!(p.imagegen.automation, want, "{f}");
         }
         let set = by_family();
-        assert_eq!(set[&Family::AdvisorCard].imagegen.automation, Automation::ImportOnly);
-        assert_eq!(set[&Family::Flag].imagegen.automation, Automation::Generate);
-        assert_eq!(set[&Family::Focus].imagegen.automation, Automation::Generate);
-        assert_eq!(set[&Family::DivisionEmblem].imagegen.automation, Automation::ImportOnly);
+        for f in [
+            Family::AdvisorCard,
+            Family::Achievement,
+            Family::LeaderPortrait,
+            Family::CommanderPortrait,
+            Family::OperativePortrait,
+            Family::ScientistPortrait,
+        ] {
+            assert_eq!(set[&f].imagegen.automation, Automation::Generate, "{f}");
+        }
+        for f in [Family::FactionLogo, Family::AgencyLogo, Family::Building] {
+            assert_eq!(set[&f].imagegen.automation, Automation::Generate, "{f}: the chain builds the strip");
+            assert_eq!(set[&f].frames, 2);
+        }
+        assert_eq!(set[&Family::AdvisorCard].imagegen.source_canvas, Some([156, 210]), "the card is made from a tall portrait");
+        assert_eq!(set[&Family::AdvisorCard].imagegen.background, Background::Opaque);
+        assert_eq!(set[&Family::FactionLogo].margin, 10, "frame 2 needs room for the glow");
     }
 
     #[test]
     fn opaque_families_check_for_opacity_and_every_family_has_its_group_rubric() {
         for (f, p) in by_family() {
             assert_eq!(p.imagegen.rubric, format!("{}_v1", f.group().as_str()), "{f}");
-            if p.imagegen.background == Background::Opaque && f != Family::ReportEvent {
-                assert!(p.imagegen.checks.iter().any(|c| c == "opaque"), "{f} must check that no pixel is translucent");
+            if p.imagegen.background == Background::Opaque {
+                // cards keep transparent corners on purpose: they are checked for the corners instead of for opacity
+                let card = matches!(f, Family::ReportEvent | Family::AdvisorCard);
+                let want = if card { "card_corners" } else { "opaque" };
+                assert!(p.imagegen.checks.iter().any(|c| c == want), "{f} must check {want}");
+                assert_eq!(p.imagegen.checks.iter().any(|c| c == "opaque"), !card, "{f}");
             }
             assert!(p.imagegen.checks.iter().any(|c| c == "size"), "{f}");
         }
