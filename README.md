@@ -1,111 +1,52 @@
 # hoi4-imagegen-mcp
 
-An [MCP](https://modelcontextprotocol.io) server and command-line tool for making **Hearts of Iron IV graphical assets**: focus icons, idea and national spirit pictures, decision icons, technology icons, event pictures, flags and more. It plans a job and shows its cost, calls a documented image API, fits the result to the exact HOI4 canvas, checks it deterministically, lets a reviewer approve it, and installs a real DDS or TGA file with a sprite snippet and a provenance record.
+`hoi4-imagegen-mcp` makes Hearts of Iron IV image assets. It has two programs:
+
+* `hoi4-imagegen-mcp`, a Rust [MCP](https://modelcontextprotocol.io) stdio server for AI clients such as Claude Code and Codex.
+* `hoi4-imagegen`, a command-line tool that runs the same operations.
+
+It covers 40 asset families: focus icons, idea pictures, decision icons, technology pictures, event pictures, portraits, flags, counters, logos and more. For each asset it plans the job and shows the cost, calls an image provider, fits the result to the exact HOI4 canvas, runs the family's own processing, checks the file, lets a reviewer approve it and installs a real DDS or TGA file with a sprite snippet and a provenance record.
 
 It is a Rust rewrite of [Connected-Mate/gptimage](https://github.com/Connected-Mate/gptimage) (MIT). See [UPSTREAM.md](UPSTREAM.md) and [NOTICE](NOTICE).
 
-> **Status: phase one, local only.** Nothing here has made a real provider call. Provider code is tested against synthetic fixtures (labelled as such), the HTTP client against a loopback mock server, and the DDS writer for byte parity against the Agentic HOI4 Modding Kit's Python writer. Real-provider recordings and the in-game check are **unavailable** until there are provider keys with balance and a user-operated game session. See [Status and limits](#status-and-limits).
+Quick links: [how-to guide](docs/how-to.md), [ChatGPT login](docs/chatgpt-login.md), [rules and terms](docs/rules-and-terms.md), [kit integration](docs/kit-integration.md), [test layers](docs/testing.md), [recipes](examples/recipes.md).
 
-## The loop
+## What it does
 
 ```
-status -> families -> icon | picture | portrait | flag | unit | interface (plan, or plan + generate with approve)
-       -> process -> validate -> preview -> review -> install      edit (refine a candidate) and generate (run a stored plan) are shared
+status -> families -> icon | picture | portrait | flag | unit | interface   (free plan, or plan + generate with approve)
+       -> process -> validate -> preview -> review -> install
 ```
+
+* Every asset has a **family**. The family alone selects the canvas, frames, naming, references, processing and checks. An asset keeps its family from the plan to the install record.
+* The canvas sizes are measured from the installed game (HOI4 1.19.4.1), not guessed.
+* Processing cannot be skipped. Each family has a fixed chain that the tool appends itself.
+* Install is gated: validation passed, a review approved this exact file, and nothing changed since.
+* Nothing leaves the mod project and nothing is overwritten.
+
+## Tools
 
 | Tool | What it does |
 |---|---|
-| `hoi4.image_status` | Providers (key present or not, never the value), model tables with their date, game reference, profile source, ledger chain, plugin state |
-| `hoi4.image_families` | Every family (or one) with its group and tool, the vanilla-measured canvas and frames (1.19.4.1 counts), accepted sizes, the mod's override, naming, checks, review rubric, final paths and the style sources that exist for it. `calibrate` compares them with the installed game's file headers |
-| `hoi4.image_references` | Reference images with role and rights note (manual add and approve); project style profiles pinned by SHA-256. Style references are also chosen automatically, see below |
-| `hoi4.image_icon`, `_picture`, `_portrait`, `_flag`, `_unit`, `_interface` | One tool per group of families, each with a **required `family`** whose schema enum lists only that group. Without `approve`: a free plan (prompt, references, provider, model, size, **cost estimate with its basis**, output paths, approvals needed) and a `plan_id`. With `approve: true` and an `idempotency_key`: plan and generate in one call |
-| `hoi4.image_generate` | Runs a stored plan: one paid call per variant, stored unchanged as a versioned candidate. `idempotency_key` makes a retry free |
-| `hoi4.image_edit` | Refines a candidate with an instruction, an optional mask and extra references |
-| `hoi4.image_process` | Runs the family's own processing. The caller may add only the pre-steps `chroma_key`, `crop_to_aspect`, `defringe` and `trim_to_subject`; the family's finishing steps are always appended by the tool, recorded with a recipe id and version, and cannot be replaced, shortened or skipped (an empty step list or any other step is refused). Also imports art made elsewhere, with a required family (strip families may give one file per frame in `import.frames`): another family's size (`GFX-FAMILY-MISMATCH`) and pixels already installed for another family (`GFX-FAMILY-REUSE`) are refused, and icons are never enlarged beyond 1.25 times. Refuses to invent transparency |
-| `hoi4.image_validate` | The family's full check set, never fewer (size, alpha, opaque, ghosting, chroma fringe, margins, fill, fake checkerboard, frames, DDS/TGA layout), with stable finding codes. The record carries a check-set hash the install gate compares |
-| `hoi4.image_preview` | Contact sheet: native size and enlarged, on dark, light and checker backgrounds, beside the references |
-| `hoi4.image_review` | The visual review against the family's rubric. An approval returns the `approval_id` install needs |
-| `hoi4.image_install` | Writes the DDS/TGA and a sprite snippet. **Refuses unless validation passed, a review approved this exact file and the hashes are unchanged** |
-| `hoi4.image_ledger` | Which references, settings and outputs belong together; lineage; chain check |
-| `hoi4.image_cancel` | Cancels a running job, or reconciles one a crashed run left behind |
+| `hoi4.image_status` | Providers (key present or not, never the value), model tables with their date, game folder, profile source, ledger chain, ChatGPT-login state |
+| `hoi4.image_families` | The catalogue: every family (or one) with its group and tool, the vanilla-measured canvas and frames, accepted sizes, the mod's override, naming, checks, review rubric, final paths and the style sources that exist for it. `calibrate: true` compares the table with the installed game's file headers |
+| `hoi4.image_references` | Reference images with role and rights note, and project style profiles pinned by SHA-256 |
+| `hoi4.image_icon`, `hoi4.image_picture`, `hoi4.image_portrait`, `hoi4.image_flag`, `hoi4.image_unit`, `hoi4.image_interface` | One tool per group of families. Each has a **required `family`** whose schema enum lists only that group's families. Without `approve`: a free plan (prompt, references, provider, model, size, cost estimate with its basis, output paths) and a `plan_id`. With `approve: true` and an `idempotency_key`: plan and generate in one call |
+| `hoi4.image_generate` | Runs a stored plan. One provider call per variant. The same `idempotency_key` replays instead of paying again |
+| `hoi4.image_edit` | Refines a candidate with an instruction, an optional mask and extra references. Also makes the ruined second frame of a building |
+| `hoi4.image_process` | Runs the family's processing chain. Also imports art made elsewhere |
+| `hoi4.image_validate` | The family's full check set, with stable finding codes |
+| `hoi4.image_preview` | A contact sheet: native size and enlarged, on dark, light and checker backgrounds, beside the references |
+| `hoi4.image_review` | The visual review against the family's rubric. An approval returns the `approval_id` that install needs |
+| `hoi4.image_install` | Writes the DDS or TGA files and the sprite. Refuses unless the gate is open |
+| `hoi4.image_ledger` | Which references, settings and outputs belong together, lineage, and the chain check |
+| `hoi4.image_cancel` | Cancels a running job, or reconciles one that a crashed run left behind |
 
-### Rules the tools enforce
+That is 18 tools. A whole-mod audit tool, `hoi4.image_audit`, is **planned and does not exist yet**. Nothing here depends on it.
 
-* **Documented APIs, keys from the environment only.** `OPENAI_API_KEY`, `GEMINI_API_KEY` (or `GOOGLE_API_KEY`), `FAL_KEY`, and optionally `COMFYUI_API_KEY`. A project file can choose models and endpoints but cannot send a key to a new host.
-* **Processing cannot be skipped.** Each family has a recipe (table below). Validation and the install gate read the processed record back and refuse an artifact whose recipe or required steps are missing.
-* **Transparency is proven from pixels**, never from the prompt. An opaque result cannot become a transparent icon, and a drawn checkerboard is rejected.
-* **Nothing is overwritten.** Candidates are `name-v1`, `name-v2`...; processed art is `-p1`, `-p2`...; an installed file is replaced only if this tool installed it and it is unchanged since.
-* **Everything stays inside the mod project.** No `..`, drive, UNC, stream, device-name, short-name or symlink escapes.
-* **Deterministic checks are not a style verdict.** Composition, style and readability at game size go to the review, recorded separately.
-* **Model ids retire quickly** (three in eight months). Ids, limits and prices live in dated tables under `crates/imagegen-providers/data/`; a retired model is refused before any request.
+## Families
 
-### Processing chains
-
-A chain is the caller's optional pre-steps (`chroma_key`, `crop_to_aspect`, `defringe`, `trim_to_subject`) followed by the family's mandatory finishing. Imported art that already has its final size is accepted as it is, which the chain records as `conform`. Counters and the division emblem stay import-only (their second frame is different art); every other family is generated end to end.
-
-| Recipe | Families | Finishing (always runs) | Writes |
-|---|---|---|---|
-| `icon` | transparent icons, technology, modifier icon, GUI texture | trim, fit to the canvas with the profile margin, grayscale for special projects | one DDS |
-| `picture` | decision category and operation pictures, news, super event | flatten on black, cover-resize, grayscale for news | one DDS |
-| `report_card` v2 | `report_event` | flatten, then the report card (sepia, grain, tilt, soft shadow; seed from the candidate hash): 210x176 with transparent corners | one DDS with card alpha |
-| `selected_strip` | `faction_logo`, `agency_logo` | fit with a 10 pixel margin, then frame 2 as the selected state (cream stroke, dark-red glow, fitted to vanilla) | one two-frame DDS |
-| `disabled_strip` | `building` | fit, then frame 2 as the disabled state (colour mixed 45 percent toward grey) | one two-frame DDS |
-| `imported_art` | `counter_large`, `counter_small`, `division_emblem` | the exact strip (or `import.frames`) is accepted | one DDS |
-| `portrait` | the four portraits | flatten, then the face-detected head-and-shoulders crop to 156x210 (YuNet from the project, or `portrait_crop`) | one opaque DDS |
-| `advisor_card` | `advisor_card` | flatten, then the portrait is composited into the mod's advisor template with the alpha-coverage audit (fails closed) | one 65x67 DDS |
-| `achievement` | `achievement` | fit the subject to 64x64, then the grey state and the not-eligible state (grey plus the red cross) on the mod's template backgrounds | three DDS: `<key>`, `<key>_grey`, `<key>_not_eligible` |
-| `flag` | `flag` | flatten, then the 82x52, 41x26 and 10x7 ladder | three TGA, bottom-left origin |
-
-The templates and the face model come from the mod's own copy of the asset skill, found inside the project: `.claude/skills/*/assets/*/portraits/advisors/advisor_template.png`, `.../icons/achievements/template/` and `.claude/skills/*/tools/models/face_detection_yunet_2026may.onnx`. `[templates] dir` and `face_model` in `.hoi4-imagegen/config.toml` override the search. A missing template is a refusal that names the paths it looked for. Install writes every file of an asset (the companions, the `.gfx` text or the handoff note) in one batch and undoes it all if any step fails.
-
-### Maintainer decisions built in
-
-| | |
-|---|---|
-| D3 | A ComfyUI endpoint you configured may be used for any asset category, including user-run ones. It is a plain HTTP client; it never starts or stops pods |
-| D4 (amended 2026-11-01) | Paradox art (the installed game, a vanilla shelf) may always be sent to a provider as a reference when it helps match the style. There is no switch: `policy.allow_vanilla_references` is still read but ignored, and `hoi4.image_status` says so. The origin of every reference is recorded, and the tool never copies vanilla files into a mod |
-| D-12 | The ChatGPT-login route is a separate crate, off by default, local only, personal use. See below |
-
-## Install and run
-
-```sh
-cargo build --release          # produces target/release/hoi4-imagegen-mcp and hoi4-imagegen
-export OPENAI_API_KEY=...      # or GEMINI_API_KEY, FAL_KEY; keys are never stored in files
-hoi4-imagegen --project-root path/to/your/mod doctor
-```
-
-MCP client entry (no secrets in it):
-
-```json
-{ "mcpServers": { "hoi4_imagegen": { "command": "hoi4-imagegen-mcp", "args": ["--project-root", "."] } } }
-```
-
-Standard output carries only protocol messages. Project state lives in `.hoi4-imagegen/` (config, styles, plans, ledger, records); working files in `docs/assets/<feature>/` as the kit's asset skill describes.
-
-### Project config (`.hoi4-imagegen/config.toml`)
-
-```toml
-[defaults]
-provider = "openai"
-
-[policy]
-forbidden_families = []              # for example ["leader_portrait"]
-max_usd_per_call = 1.0
-
-[providers.openai]
-quality = "low"                      # the cheapest tier; raise it when review says so
-
-[providers.comfyui]                  # D3
-endpoint = "http://127.0.0.1:8188"
-workflow = ".hoi4-imagegen/comfyui/text_to_image.json"
-
-[profiles.focus]                     # per-project canvas override (a family id)
-canvas = [94, 86]
-```
-
-### Families
-
-There are 40 families in six groups. The family alone selects canvas, frames, naming, references, processing and validation, and an asset keeps its family from the plan to the install record: `process`, `validate`, `review` and `install` use the artifact's own family and take no family argument for it.
+There are 40 families in six groups. The group names the tool that plans them.
 
 | Tool | Families |
 |---|---|
@@ -114,52 +55,226 @@ There are 40 families in six groups. The family alone selects canvas, frames, na
 | `hoi4.image_portrait` | leader_portrait, commander_portrait, operative_portrait, scientist_portrait, advisor_card |
 | `hoi4.image_flag` | flag |
 | `hoi4.image_unit` | counter_large, counter_small, division_emblem, building, faction_logo, agency_logo |
-| `hoi4.image_interface` | modifier_stat_icon, gui_texture, super_event (the mod defines the canvas of the last two) |
+| `hoi4.image_interface` | modifier_stat_icon, gui_texture, super_event |
 
-### Automatic style references
+### Measured from the game
 
-A plan picks style references for the family on its own, **mod first** (maintainer decision of 2026-11-01), and reports each with its tier, reason, SHA-256 and whether it goes to the provider (`plan.style_sources`, also `hoi4.image_families { family }`):
+The built-in canvas, frames, accepted sizes and pixel class of every family come from the installed game, version 1.19.4.1. The data is in `crates/imagegen-core/data/vanilla-measurement.json`, made by `scripts/measure_families.py`. A unit test fails when a family stops matching it. Examples: focus 100x88, idea_spirit 60x68, advisor_card 65x67, decision 33x32, report_event 210x176, news_event 397x153, flags 82x52, 41x26 and 10x7.
 
-| Tier | Source | Example reason |
-|---|---|---|
-| 1 | The project's pinned style profile for the family (`.hoi4-imagegen/styles/`) | `pinned style 'mine': reference 1 of 3` |
-| 2 | The mod's copy of the asset skill's `assets/` shelf, `.claude/skills/*/assets/*/<shelf folder>/` (the kit's root is `vanilla_reference`, Chaos Redux's `gfx_references`). It holds vanilla art but is the mod's own copy | `mod asset folder copy: medoid 2 of 16 focus images (cluster of 6)` |
-| 3 | The mod's own installed assets: the family's texture folders plus the textures its `.gfx` files register under the family's sprite name pattern | `mod asset: medoid 3 of 214 idea_spirit images (cluster of 9)` |
-| 4 | Vanilla art from the installed game | `vanilla: medoid 1 of 742 report_event images (256 sampled evenly)` |
+A mod can override the canvas and naming in its own `.tools/gfx/profiles.json` (the kit's file) or in `.hoi4-imagegen/config.toml`. Without an override the vanilla size is used. `hoi4.image_families` shows the override next to the vanilla value, and `hoi4-imagegen calibrate` shows where a built-in value is not the dominant vanilla size. `gui_texture` and `super_event` have no vanilla texture to measure, so the mod defines their canvas.
 
-The first tier with at least 3 usable images is used. Files of the wrong size for the family (idea pictures share a folder with advisor and concern art) are dropped by header. Vanilla may always be sent to a provider; the tool never copies it into the mod, and the contact sheet leaves it out.
+### The family lock
 
-Selection is deterministic. Each candidate is measured: CIE Lab mean and spread, mean saturation, Sobel edge density, alpha coverage, dark-outline share on the alpha edge and a 6-bin hue histogram (16 numbers). They are standardised, candidates are ordered by content hash, and PAM k-medoids (greedy build, best-improvement swap, no random start) picks up to 4 images to send (the model's reference limit caps it) and up to 24 medoids for the statistics. At most 256 candidates are measured per tier (an even sample by path beyond that). The same image set gives the same choice in the same order, whatever the folder names are.
+A family never changes after the plan. `process`, `validate`, `review` and `install` use the artifact's own family and take no family argument for it.
 
-The statistics (palette, mean and spread of saturation and value, edge density, outline presence, alpha coverage, margin, subject span) become a short paragraph in the prompt, for example `Match vanilla Hearts of Iron IV national focus icon art: moderately muted, dark palette dominated by black, dark grey and brown; partial dark outline; ...`, after the style profile's own note when one applies.
+* An image whose size belongs to another family is refused: `GFX-FAMILY-MISMATCH`.
+* An image whose pixels are already installed for another family is refused: `GFX-FAMILY-REUSE`.
+* Each group tool refuses a family of another group, in its schema and at run time.
+* Icons are never enlarged by more than 1.25 times.
 
-**Style check.** `style` is part of every family's check set (so the check-set hash and the install gate treat it like the others). It measures the candidate the same way and warns with `GFX-STYLE-DRIFT` when its RMS z-score against the family's style distribution exceeds a threshold. It is a warning, never an error, and never blocks an install. Within the distribution it records the advisory `GFX-STYLE-MATCH`, so the stored validation carries the numbers either way. The threshold is the 95th percentile of the leave-one-out RMS z-scores of the distribution's own images, never below 1.75. Measured on the installed game (1.19.4.1), that percentile ran from 0.60 to 2.15 for 37 of the 38 families with vanilla art (median 1.53, large families 1.0 to 1.7; one 15-image family reached 6.7). `docs/testing.md` has the table.
+## Processing chains
 
-Canvas conventions come from the kit's `.tools/gfx/profiles.json` when it exists, over built-in defaults measured from HOI4 1.19.4.1 (`crates/imagegen-core/data/vanilla-measurement.json`, produced by `scripts/measure_families.py`; a unit test fails when a family stops matching it). Examples: focus 100x88, idea_spirit 60x68, advisor_card 65x67, decision 33x32, report_event 210x176, news_event 397x153, flags 82x52 / 41x26 / 10x7. Every value is overridable and `hoi4-imagegen calibrate` shows where one is not the dominant vanilla size. Style cannot be measured and stays a review matter.
+A chain is the caller's optional pre-steps followed by the family's mandatory finishing. The caller may add only `chroma_key`, `crop_to_aspect`, `defringe` and `trim_to_subject`, through `pre_steps` on `hoi4.image_process`. Any other step, or an empty list, is refused. The finishing is appended by the tool, recorded with a recipe id and version, and read back by validation and the install gate.
+
+| Recipe | Families | Finishing (always runs) | Writes |
+|---|---|---|---|
+| `icon` | transparent icons, technology, modifier_stat_icon, gui_texture | trim, fit to the canvas with the profile margin, grayscale where the family needs it. A focus icon also gets its `_shine` sprite entry at install | one DDS |
+| `picture` | decision and operation pictures, news, super_event | flatten on black, cover-resize, grayscale for news | one DDS |
+| `report_card` v2 | `report_event` | flatten, then the report card: sepia, grain, tilt and a soft shadow fitted to vanilla, 210x176 with transparent corners | one DDS |
+| `achievement` | `achievement` | fit the subject, then the grey state and the not-eligible state on the mod's template backgrounds | three DDS: `<key>`, `<key>_grey`, `<key>_not_eligible` |
+| `advisor_card` | `advisor_card` | flatten, then the portrait is composited into the mod's advisor template, with an alpha-coverage audit that fails closed | one 65x67 DDS |
+| `portrait` | the four portraits | flatten, then a head-and-shoulders crop to 156x210 found with YuNet face detection (pure-Rust `tract-onnx`, model from the mod's skill copy). `portrait_crop` sets the crop by hand | one opaque DDS |
+| `flag` | `flag` | flatten, then the 82x52, 41x26 and 10x7 ladder | three TGA, bottom-left origin |
+| `selected_strip` | `faction_logo`, `agency_logo` | fit with a margin, then frame 2 as the selected state | one two-frame DDS |
+| `landmark_strip` | `building` | fit, then frame 2 as the ruined landmark, made from a second candidate of the same asset (`hoi4.image_edit` on the first, passed as `second_frame_candidate`) | one two-frame DDS |
+| `imported_art` | `counter_large`, `counter_small`, `division_emblem` | import only: the exact strip, or one file per frame in `import.frames` | one DDS |
+
+Art that already has its final accepted size is taken as it is when imported, which the chain records as `conform`. Counters and division emblems are not generated, because their second frame is different art. Every other family is generated end to end.
+
+The advisor card, achievement and portrait chains need files from the mod's own copy of the asset skill, found inside the project:
+
+* `.claude/skills/*/assets/*/portraits/advisors/advisor_template.png`
+* `.claude/skills/*/assets/*/icons/achievements/template/`
+* `.claude/skills/*/tools/models/face_detection_yunet_2026may.onnx`
+
+`[templates] dir` and `face_model` in `.hoi4-imagegen/config.toml` override the search. A missing file is refused at plan time, before anything is spent, and the message lists the paths that were searched.
+
+## Style references
+
+A plan picks style references for the family on its own. The mod comes first and vanilla second. The tiers, in order:
+
+| Tier | Source |
+|---|---|
+| 1 | The project's pinned style profile for the family (`.hoi4-imagegen/styles/`) |
+| 2 | The mod's own copy of the asset skill's shelf, `.claude/skills/*/assets/*/<shelf folder>/`. It holds vanilla art but is the mod's copy |
+| 3 | The mod's own installed assets: the family's texture folders, plus textures its `.gfx` files register under the family's sprite pattern |
+| 4 | Vanilla art from the installed game |
+
+The first tier with at least 3 usable images is used. A pinned style is always sent, even with fewer images, but then gives no statistics. The plan reports every reference with its tier, reason, SHA-256 and whether it goes to the provider (`style_sources` in the plan, also in `hoi4.image_families`).
+
+Selection is deterministic. Each candidate is measured (colour, saturation, edge density, alpha, outline share, hue histogram), and a fixed k-medoids picks up to 4 images to send, within the model's reference limit. The same images give the same choice. The measured statistics also become a short style paragraph in the prompt.
+
+`style` is part of every family's check set. It warns with `GFX-STYLE-DRIFT` when a candidate is far from the family's style distribution. It is a warning, never an error, and never blocks an install.
+
+Vanilla references may always be sent to a provider (a maintainer decision of 2026-11-01), and the tool never copies a vanilla file into a mod. Vanilla art is also left out of the contact sheet.
+
+## Validation and install
+
+Install is the last step and the strictest.
+
+1. `hoi4.image_validate` runs the family's full check set, never fewer, with stable finding codes (size, alpha, margins, fill, ghosting, chroma fringe, fake checkerboard, frames, DDS or TGA layout, style). The record carries a hash of the check set.
+2. The gate compares that hash and audits the processing chain against the family's recipe. A record with a missing step is refused.
+3. `hoi4.image_preview` makes the contact sheet. `hoi4.image_review` answers the family's rubric. Agents may approve. The reviewer's name is recorded with the review.
+4. `hoi4.image_install` needs the `approval_id` of an approval of this exact file, and refuses if any hash changed since.
+5. The write is atomic: every file of an asset (companions, `.gfx` text or the handoff note) is written together and all are undone if one fails.
+
+`mode: handoff` (default) writes the sprite snippet into `docs/assets/<feature>/gfx_handoff.md` for the main agent to wire. `mode: register` inserts the entries into the suggested `.gfx` file as text, keeping comments and layout. Families without a sprite (achievements and flags) are loaded by the game from the file name, so both modes install the files alone. A final file is replaced only if this tool installed it and it is unchanged (`on_exists: replace`).
+
+Deterministic checks are not a style verdict. Composition and readability at game size go to the review. In-game appearance can only be checked by running the game, which this tool never does. It says "installed", not "verified in game".
+
+## Providers
+
+| Provider | Needs |
+|---|---|
+| ChatGPT login | `hoi4-imagegen login` once. Uses your own ChatGPT plan. No API key |
+| OpenAI API | `OPENAI_API_KEY` |
+| Google Gemini API | `GEMINI_API_KEY` or `GOOGLE_API_KEY` |
+| fal | `FAL_KEY` |
+| ComfyUI | an endpoint in the project config, and optionally `COMFYUI_API_KEY` |
+
+When a plan names no provider, the first ready one in this order is used: ChatGPT login, OpenAI, Gemini, fal, ComfyUI. A `provider` in the plan, a style profile or `[defaults]` in the project config wins.
+
+Keys come from the environment first. If a variable is not set, the tool reads the key HOI4 Mod Setup saved in the operating system credential store. A project file can choose models and endpoints but cannot send a key to a new host. Model ids retire quickly, so ids, limits and prices live in dated tables under `crates/imagegen-providers/data/`, and a retired model is refused before any request.
+
+### The ChatGPT login
+
+Once you have signed in, the ChatGPT login is the default provider on your machine. It ships in every build and needs no feature flag, config entry or environment variable. It is local only and is never registered in a hosted deployment.
+
+What to know before you use it:
+
+* It calls a ChatGPT backend that OpenAI does not document for other tools, and it presents itself as the Codex CLI. It can change or be blocked without notice. Heavy use counts against your plan, and the consequences are yours. The risk note is shown once at sign-in.
+* Every image runs on `gpt-6-luna` at high reasoning effort. The tool sends both and checks that the backend's response reports both. A response that reports something else, or nothing, is refused and the image is not used. There is no fallback and no override.
+* **The route cannot force image quality.** The pixels come from the backend's own image tool, reported as `gpt-image-2-codex`. The backend replaces the tool settings we send with `quality = auto` and `size = auto`, and chooses quality and size itself. One recorded probe returned a medium-quality 1337x1176 image. The ledger records what the backend reported for each image, so check the pixels in the preview.
+* A refusal by the provider's safety system is reported as a moderation block, with advice to change the brief or the references.
+* Spend is recorded as unknown, because there is no per-image price and no usage report.
+
+Details, the sign-in steps and the recorded evidence are in [docs/chatgpt-login.md](docs/chatgpt-login.md).
+
+## Install
+
+The releases are on GitHub: <https://github.com/klimPaskov/hoi4-imagegen-mcp/releases>. Version 0.2.0 has one archive per platform:
+
+| Platform | Archive |
+|---|---|
+| Windows x64 | `hoi4-imagegen-v0.2.0-x86_64-pc-windows-msvc.zip` |
+| macOS arm64 | `hoi4-imagegen-v0.2.0-aarch64-apple-darwin.tar.gz` |
+| macOS x64 | `hoi4-imagegen-v0.2.0-x86_64-apple-darwin.tar.gz` |
+| Linux x64 | `hoi4-imagegen-v0.2.0-x86_64-unknown-linux-gnu.tar.gz` |
+| Linux arm64 | `hoi4-imagegen-v0.2.0-aarch64-unknown-linux-gnu.tar.gz` |
+
+Each archive holds both programs, `LICENSE`, `NOTICE`, `README.md` and `UPSTREAM.md`. The release also has a `SHA256SUMS` file. The binaries are **unsigned**, so Windows SmartScreen and macOS Gatekeeper may warn. The archives and `SHA256SUMS` carry GitHub build attestations. To check a download:
+
+```sh
+sha256sum -c SHA256SUMS --ignore-missing
+gh attestation verify <archive> --repo klimPaskov/hoi4-imagegen-mcp
+```
+
+### With HOI4 Mod Setup
+
+[HOI4 Mod Setup](https://github.com/klimPaskov/HOI4-Mod-Setup) installs the release per project and writes the project-level MCP entries for your coding tools, under the server id `hoi4_imagegen`. It also offers the sign-in and keeps API keys in the credential store.
+
+### By hand
+
+Unpack the archive somewhere on your `PATH` (or note its full path), then check the setup:
+
+```sh
+hoi4-imagegen --project-root path/to/your/mod doctor
+```
+
+Add the server to the project's MCP config. Claude Code, `.mcp.json` in the mod folder:
+
+```json
+{
+  "mcpServers": {
+    "hoi4_imagegen": {
+      "command": "hoi4-imagegen-mcp",
+      "args": ["--project-root", "."]
+    }
+  }
+}
+```
+
+Codex, `.codex/config.toml` in the mod folder:
+
+```toml
+[mcp_servers.hoi4_imagegen]
+command = "hoi4-imagegen-mcp"
+args = ["--project-root", "."]
+```
+
+Use the full path in `command` if the binary is not on `PATH`. Put no secret in these files. Standard output carries only protocol messages, and anything meant for a person goes to standard error.
+
+To build from source, use Rust 1.88 or newer and run `cargo build --release`. The binaries are in `target/release/`.
+
+### Project config (`.hoi4-imagegen/config.toml`)
+
+```toml
+[defaults]
+provider = "openai"                  # optional; without it the provider order above applies
+
+[policy]
+forbidden_families = []              # for example ["leader_portrait"]
+max_usd_per_call = 1.0
+
+[providers.openai]
+quality = "low"                      # the cheapest tier; raise it when review says so
+
+[providers.comfyui]
+endpoint = "http://127.0.0.1:8188"
+workflow = ".hoi4-imagegen/comfyui/text_to_image.json"
+
+[profiles.focus]                     # per-project canvas override, keyed by family id
+canvas = [94, 86]
+```
+
+Project state lives in `.hoi4-imagegen/`: config, styles, plans, the ledger (`ledger.jsonl`) and records. Working files go in `docs/assets/<feature>/`, as the kit's asset skill describes.
+
+## Rules the tools enforce
+
+* **Documented APIs and keys outside the project.** No key is ever written into a project file.
+* **Transparency is proven from pixels**, never from the prompt. An opaque result cannot become a transparent icon, and a drawn checkerboard is rejected.
+* **Nothing is overwritten.** Candidates are `name-v1`, `name-v2`. Processed art is `-p1`, `-p2`. An installed file is replaced only if this tool installed it and it is unchanged.
+* **Everything stays inside the mod project.** No `..`, drive, UNC, stream, device-name, short-name or symlink escapes.
+
+## Rules and rights
+
+Read [docs/rules-and-terms.md](docs/rules-and-terms.md). It summarises what Paradox, Steam and the image providers say about AI-generated mod assets, and which parts could not be verified. The short version:
+
+* No ban on AI art in HOI4 mods was found, but the general rules apply: keep the mod free, do not infringe, and upload only what you have the right to upload.
+* **Disclosing** that a mod uses AI-generated art is recommended. The ledger records provider, model, date and prompt for every asset, and `hoi4.image_ledger` can list them for your mod description.
+* **Real people.** Portraits of real historical figures raise personal-rights questions, and the Steam warranty covers them. Providers may refuse such images. Prefer stylised or fictional portraits. The portrait tools warn about this, and a project can forbid a category with `forbidden_families`.
+* Assets must be new works in the vanilla style, not near-copies of Paradox art.
+
+## Status and limits
+
+* Verified by tests on Windows, macOS and Linux in CI: see [docs/testing.md](docs/testing.md). The test layers are labelled by evidence kind.
+* One signed-in ChatGPT-login probe was recorded on 2026-11-01. Its response is a recorded-real fixture, and faults are injected into it for tests. See [docs/evidence/](docs/evidence/).
+* **Not verified:** the in-game check, including whether a focus icon without a `_shine` sprite logs an error, because it needs a user-operated game session. Runs with real OpenAI, Gemini, fal and ComfyUI keys are also unavailable, because no key with balance was available.
+* The OpenAI 2.5 per-image price is unpublished, so its estimate uses the `gpt-image-2` row as a labelled proxy.
+* `register` mode edits `.gfx` files as text. A parser-based version waits for a shared Rust HOI4 engine.
+* The binaries are unsigned.
 
 ## Layout
 
 ```
-crates/imagegen-core        families, profiles, the family lock, processing, validation, DDS/TGA, naming, ledger. No network
-crates/imagegen-providers   one trait; OpenAI, Gemini, fal, ComfyUI; destination-checked HTTP
-crates/imagegen-mcp         the operations and the rmcp stdio server (binary hoi4-imagegen-mcp)
-crates/imagegen-cli         hoi4-imagegen: doctor, calibrate, plan, generate, validate, install, call
-crates/provider-chatgpt-login   OPT-IN plugin, not a default member, see below
-skill/hoi4-imagegen         the agent skill (under 8 KB)
-docs/                       provider notes, the plugin's terms and risks, test layers
+crates/imagegen-core            families, profiles, the family lock, chains, processing, validation, DDS and TGA, naming, ledger. No network
+crates/imagegen-providers       one trait; OpenAI, Gemini, fal, ComfyUI; destination-checked HTTP
+crates/provider-chatgpt-login   the ChatGPT-login provider (OAuth, credential store, backend client)
+crates/imagegen-mcp             the operations and the rmcp stdio server (binary hoi4-imagegen-mcp)
+crates/imagegen-cli             hoi4-imagegen: doctor, calibrate, families, plan, generate, validate, install, call, login, login-status, logout
+skill/hoi4-imagegen             the agent skill
+docs/                           how-to, provider notes, rules and terms, kit integration, test layers
 ```
-
-## The opt-in ChatGPT login
-
-The upstream project's route signs in with a ChatGPT account and calls an **undocumented** backend while presenting itself as the Codex CLI. It can break or be blocked without notice, may not be covered by OpenAI's terms, and heavy use can risk account restrictions. It is therefore **not** in default builds, **not** a default workspace member, and never part of hosted HOI4 Factory. It needs all of: a source build with `--features unofficial-chatgpt-login`, `[providers.chatgpt_login] enabled = true` in the project config, `HOI4_IMAGEGEN_ACCEPT_UNOFFICIAL=1` in your own environment, and local stdio or CLI mode. A test proves a default build contains none of it. Read [docs/chatgpt-login.md](docs/chatgpt-login.md) first.
-
-## Status and limits
-
-* Verified by running tests: see the test layers in [docs/testing.md](docs/testing.md).
-* **Unavailable, with the reason:** recordings of real provider responses (no API key with balance is known to exist), end-to-end runs with real providers, the in-game check including whether a focus without a `_shine` sprite logs an error (needs a user-operated game session), and macOS and Linux runs (this phase ran on Windows only).
-* The Gemini response envelope is read from the documented content schema; the docs show no raw image response. The OpenAI 2.5 per-image price is unpublished, so estimates use the `gpt-image-2` row as a labelled proxy until a recorded call reports usage.
-* Rights: Paradox's and Steam's rules on AI-generated mod assets and the providers' output terms were not researched. Nothing here promises anything about them.
-* `register` mode edits `.gfx` files as text (comments and layout are kept). A parser-based version waits for the shared Rust HOI4 engine.
 
 ## License
 
