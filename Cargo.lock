@@ -1064,6 +1064,7 @@ dependencies = [
  "clap",
  "imagegen-core",
  "imagegen-providers",
+ "keyring",
  "provider-chatgpt-login",
  "rmcp",
  "schemars",

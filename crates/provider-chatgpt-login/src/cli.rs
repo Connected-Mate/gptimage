@@ -29,6 +29,7 @@ pub fn run_with(action: &str, env: &dyn EnvSource, clock: &dyn Clock, accept_ris
     evaluate_gates(PluginMode::Cli)?;
     let store = CredentialStore::for_environment(env)?;
     match action {
+        "risk-note" => Ok(RISK_NOTE.to_string()),
         "status" => Ok(match store.load()? {
             Some(c) => format!("{}\nstored in: {}", describe(&c), store.location()),
             None => format!("not signed in (run `hoi4-imagegen login`; tokens would go to the {})", store.location()),

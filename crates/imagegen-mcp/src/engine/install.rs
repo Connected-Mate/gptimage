@@ -221,9 +221,9 @@ impl Engine {
                 };
                 batch.push(PendingWrite { rel: handoff, bytes: format!("{existing}{block}").into_bytes(), replace: handoff_exists });
             }
-        } else if p.mode == InstallMode::Register {
-            return Err(EngineError::invalid(format!("{} has no .gfx sprite; use mode handoff", profile.family)));
         }
+        // a family without a sprite (achievements, flags) is loaded by the game from its file name, so both modes
+        // install the files alone
 
         // ---- write everything or nothing: temp files first, then all renames, undone together if anything fails
         let committed = self.fs.write_batch(&batch).map_err(|e| {

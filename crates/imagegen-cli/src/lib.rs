@@ -65,6 +65,8 @@ pub enum Command {
     },
     /// Show whether you are signed in to ChatGPT. No project needed.
     LoginStatus,
+    /// Print the risk note that `login` shows, so a setup tool can show it and then run `login --accept-risk`.
+    LoginRiskNote,
     /// Sign out of ChatGPT and remove the stored tokens. No project needed.
     Logout,
     /// Same as `login`, `login-status` and `logout` (kept for version 0.1 scripts).
@@ -165,6 +167,7 @@ pub fn account_action(command: &Command) -> Option<(&str, bool)> {
     match command {
         Command::Login { accept_risk } => Some(("login", *accept_risk)),
         Command::LoginStatus => Some(("status", false)),
+        Command::LoginRiskNote => Some(("risk-note", false)),
         Command::Logout => Some(("logout", false)),
         Command::ChatgptLogin { action } => Some((action.as_str(), false)),
         _ => None,
@@ -299,7 +302,7 @@ pub fn execute(engine: &Engine, cli: &Cli, out: &mut dyn Write) -> i32 {
             };
             Ok((dispatch(engine, tool, parsed)?, 0, None))
         }
-        Command::Login { .. } | Command::LoginStatus | Command::Logout | Command::ChatgptLogin { .. } => {
+        Command::Login { .. } | Command::LoginStatus | Command::LoginRiskNote | Command::Logout | Command::ChatgptLogin { .. } => {
             let text = account(&cli.command, &*engine.env, &*engine.clock).map_err(EngineError::invalid)?;
             Ok((json!({"result": text}), 0, Some(text)))
         }

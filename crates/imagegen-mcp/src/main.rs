@@ -30,14 +30,19 @@ struct Args {
 #[tokio::main]
 async fn main() -> ExitCode {
     let args = Args::parse();
-    let engine =
-        match Engine::open(&args.project_root, Arc::new(ProcessEnv), Arc::new(UreqTransport::new()), Arc::new(SystemClock), RunMode::LocalStdio) {
-            Ok(e) => e,
-            Err(e) => {
-                eprintln!("hoi4-imagegen-mcp: cannot open the project at {}: {e}", args.project_root.display());
-                return ExitCode::from(2);
-            }
-        };
+    let engine = match Engine::open(
+        &args.project_root,
+        Arc::new(imagegen_mcp::keyenv::SetupKeyEnv::new(ProcessEnv)),
+        Arc::new(UreqTransport::new()),
+        Arc::new(SystemClock),
+        RunMode::LocalStdio,
+    ) {
+        Ok(e) => e,
+        Err(e) => {
+            eprintln!("hoi4-imagegen-mcp: cannot open the project at {}: {e}", args.project_root.display());
+            return ExitCode::from(2);
+        }
+    };
     let server = ImageServer::new(Arc::new(engine));
     let service = match server.serve(stdio()).await {
         Ok(s) => s,

@@ -30,3 +30,12 @@ tokio.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true
+
+[target.'cfg(windows)'.dependencies]
+keyring = { version = "3.6", default-features = false, features = ["windows-native"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+keyring = { version = "3.6", default-features = false, features = ["apple-native"] }
+
+[target.'cfg(all(unix, not(target_os = "macos")))'.dependencies]
+keyring = { version = "3.6", default-features = false, features = ["sync-secret-service", "crypto-rust", "vendored"] }

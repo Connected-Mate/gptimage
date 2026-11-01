@@ -25,7 +25,13 @@ fn main() -> ExitCode {
             }
         };
     }
-    let engine = match Engine::open(&cli.project_root, Arc::new(ProcessEnv), Arc::new(UreqTransport::new()), Arc::new(SystemClock), RunMode::Cli) {
+    let engine = match Engine::open(
+        &cli.project_root,
+        Arc::new(imagegen_mcp::keyenv::SetupKeyEnv::new(ProcessEnv)),
+        Arc::new(UreqTransport::new()),
+        Arc::new(SystemClock),
+        RunMode::Cli,
+    ) {
         Ok(e) => e,
         Err(e) => {
             eprintln!("hoi4-imagegen: cannot open the project at {}: {e}", cli.project_root.display());
