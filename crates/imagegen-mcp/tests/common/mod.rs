@@ -93,6 +93,9 @@ impl Harness {
     pub fn queue_generation(&self, png: &[u8]) {
         self.fixture.clear_route(Method::Post, "/v1/images/generations");
         self.fixture.respond(Method::Post, "/v1/images/generations", 200, &[("x-request-id", "req_synthetic")], openai_ok(png));
+        // a plan that found style references sends them, and OpenAI takes references on the edits endpoint
+        self.fixture.clear_route(Method::Post, "/v1/images/edits");
+        self.fixture.respond(Method::Post, "/v1/images/edits", 200, &[("x-request-id", "req_synthetic")], openai_ok(png));
     }
 
     pub fn queue_edit(&self, png: &[u8]) {

@@ -510,10 +510,9 @@ mod tests {
         let strip = plan_finishing(&logo, logo.canvas, &Rgba::new(200, 100), true, false, "").unwrap();
         assert_eq!(strip.ops, vec![Op::Conform { width: 200, height: 100 }]);
         let building = prof(Family::Building);
-        assert!(matches!(
-            plan_finishing(&building, building.canvas, &blob(), false, false, "").unwrap().ops.last().unwrap(),
-            Op::DisabledFrame { .. }
-        ));
+        let plan = plan_finishing(&building, building.canvas, &blob(), false, false, "").unwrap();
+        assert!(matches!(plan.ops.last().unwrap(), Op::FitSubject { .. }), "frame 1 is fitted by the chain");
+        assert_eq!(plan.finishers, vec![Finisher::SecondFrame], "frame 2 (the ruined landmark) comes from a second candidate");
         let counter = prof(Family::CounterLarge);
         assert_eq!(
             plan_finishing(&counter, counter.canvas, &Rgba::new(152, 42), true, false, "").unwrap().ops,

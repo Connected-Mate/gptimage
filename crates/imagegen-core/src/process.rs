@@ -387,7 +387,10 @@ pub fn defringe(img: &Rgba, erosion: u32, spill_mask: Option<&[bool]>) -> Result
     let inner = erode_cross(&solid, w, h, 2);
     let rim: Vec<bool> = (0..n).map(|i| alpha_out[i] < 255 || (alpha_out[i] > 0 && is_chroma(px(i), 40) && !inner[i]) || spill(i)).collect();
 
-    let nearest = nearest_core(&core, w, h);
+    // only rim pixels that stay visible need a colour: a fully transparent pixel never shows, and every later step
+    // resizes with premultiplied alpha
+    let want: Vec<bool> = (0..n).map(|i| rim[i] && alpha_out[i] > 0).collect();
+    let nearest = nearest_core(&core, w, h, &want);
     let mut out = img.clone();
     for i in 0..n {
         if rim[i] {
@@ -418,29 +421,63 @@ fn erode_cross(mask: &[bool], w: i64, h: i64, iterations: u32) -> Vec<bool> {
     cur
 }
 
-/// For every pixel, the index of the nearest core pixel by squared Euclidean distance (ties resolved by
-/// scan order so the result is deterministic). Brute force is fine at HOI4 icon sizes; large inputs are
-/// bounded by the decode limits and are processed once.
-fn nearest_core(core: &[bool], w: i64, h: i64) -> Vec<Option<usize>> {
-    let cores: Vec<(i64, i64, usize)> = (0..h)
-        .flat_map(|y| (0..w).map(move |x| (x, y)))
-        .filter(|(x, y)| core[(y * w + x) as usize])
-        .map(|(x, y)| (x, y, (y * w + x) as usize))
-        .collect();
+/// For each pixel where `want` is true, the index of the nearest core pixel by squared Euclidean distance, ties
+/// resolved by scan order (the lowest index), so the result is deterministic and equals a brute-force search.
+///
+/// The search grows square rings around the pixel until a core pixel is found at distance `d`, then finishes every
+/// ring that can still hold a pixel at distance `d` or less. Cost is about the squared distance to the nearest
+/// core pixel, so it stays fast on large provider images; the old brute force compared every pixel with every core
+/// pixel and took minutes on a 1340x1174 icon.
+fn nearest_core(core: &[bool], w: i64, h: i64, want: &[bool]) -> Vec<Option<usize>> {
     let mut out = vec![None; (w * h) as usize];
+    if !core.iter().any(|c| *c) {
+        return out;
+    }
+    let max_r = w.max(h);
     for y in 0..h {
         for x in 0..w {
+            let i = (y * w + x) as usize;
+            if !want[i] {
+                continue;
+            }
             let mut best: Option<(i64, usize)> = None;
-            for (cx, cy, idx) in &cores {
-                let d = (cx - x) * (cx - x) + (cy - y) * (cy - y);
-                if best.map(|(bd, _)| d < bd).unwrap_or(true) {
-                    best = Some((d, *idx));
-                    if d == 0 {
+            let mut r = 0i64;
+            while r <= max_r {
+                // stop once no pixel on ring r can be nearer than the best found (the closest point of ring r is r away)
+                if let Some((bd, _)) = best {
+                    if r * r > bd {
                         break;
                     }
                 }
+                let (x0, x1, y0, y1) = (x - r, x + r, y - r, y + r);
+                let mut visit = |cx: i64, cy: i64| {
+                    if cx < 0 || cy < 0 || cx >= w || cy >= h {
+                        return;
+                    }
+                    let idx = (cy * w + cx) as usize;
+                    if !core[idx] {
+                        return;
+                    }
+                    let d = (cx - x) * (cx - x) + (cy - y) * (cy - y);
+                    if best.map(|(bd, bi)| d < bd || (d == bd && idx < bi)).unwrap_or(true) {
+                        best = Some((d, idx));
+                    }
+                };
+                if r == 0 {
+                    visit(x, y);
+                } else {
+                    for cx in x0..=x1 {
+                        visit(cx, y0);
+                        visit(cx, y1);
+                    }
+                    for cy in (y0 + 1)..y1 {
+                        visit(x0, cy);
+                        visit(x1, cy);
+                    }
+                }
+                r += 1;
             }
-            out[(y * w + x) as usize] = best.map(|(_, i)| i);
+            out[i] = best.map(|(_, idx)| idx);
         }
     }
     out
@@ -502,6 +539,41 @@ fn flatten_on(img: &Rgba, bg: [u8; 3]) -> Rgba {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_ring_search_finds_exactly_what_a_brute_force_search_finds() {
+        // deterministic pseudo-random masks, including ties and sparse cores far from most pixels
+        let mut seed = 0x2545_f491_u64;
+        let mut next = || {
+            seed ^= seed << 13;
+            seed ^= seed >> 7;
+            seed ^= seed << 17;
+            seed
+        };
+        for (w, h, density) in [(17i64, 11i64, 3u64), (40, 23, 50), (31, 31, 400), (9, 40, 7)] {
+            let core: Vec<bool> = (0..w * h).map(|_| next() % density == 0).collect();
+            if !core.iter().any(|c| *c) {
+                continue;
+            }
+            let want = vec![true; (w * h) as usize];
+            let fast = nearest_core(&core, w, h, &want);
+            for y in 0..h {
+                for x in 0..w {
+                    let mut best: Option<(i64, usize)> = None;
+                    for cy in 0..h {
+                        for cx in 0..w {
+                            let idx = (cy * w + cx) as usize;
+                            let d = (cx - x) * (cx - x) + (cy - y) * (cy - y);
+                            if core[idx] && best.map(|(bd, _)| d < bd).unwrap_or(true) {
+                                best = Some((d, idx));
+                            }
+                        }
+                    }
+                    assert_eq!(fast[(y * w + x) as usize], best.map(|(_, i)| i), "{w}x{h} at {x},{y}");
+                }
+            }
+        }
+    }
 
     fn disc(size: u32) -> Rgba {
         let mut img = Rgba::new(size, size);
