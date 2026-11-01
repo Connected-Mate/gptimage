@@ -9,6 +9,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::error::{Error, RetryClass};
+use crate::family::Family;
 use crate::ledger::Entry;
 use crate::records::{kind, ReviewedRecord, ValidatedRecord, Verdict};
 use crate::validate::Status;
@@ -59,6 +60,8 @@ impl GateReport {
             "install_gate_review_not_approved" => "install_gate_review_not_approved",
             "install_gate_approval_mismatch" => "install_gate_approval_mismatch",
             "install_gate_hash_changed" => "install_gate_hash_changed",
+            "install_gate_checks_incomplete" => "install_gate_checks_incomplete",
+            "install_gate_family_mismatch" => "install_gate_family_mismatch",
             _ => "install_gate_plan_changed",
         };
         let all: Vec<String> = self.failures.iter().map(|f| format!("{}: {}", f.code, f.message)).collect();
@@ -70,6 +73,15 @@ fn payload<T: serde::de::DeserializeOwned>(e: &Entry) -> Option<T> {
     serde_json::from_value(e.data.clone()).ok()
 }
 
+/// What the gate expects the records to say about the artifact.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GateExpect {
+    /// The artifact's own family. Every validation and review must have been made as this family.
+    pub family: Family,
+    /// `validate::check_set_hash` of the family's full check set now.
+    pub check_set_hash: String,
+}
+
 /// Evaluate the gate for one artifact.
 ///
 /// * `entries` are all ledger entries.
@@ -77,7 +89,7 @@ fn payload<T: serde::de::DeserializeOwned>(e: &Entry) -> Option<T> {
 /// * `current_sha256` is the hash of that artifact's file now.
 /// * `approval_id` is what the caller presents.
 /// * `checks` are the lineage hash comparisons the caller computed from the files on disk.
-pub fn evaluate(entries: &[Entry], artifact_id: &str, current_sha256: &str, approval_id: &str, checks: &[HashCheck]) -> GateReport {
+pub fn evaluate(entries: &[Entry], artifact_id: &str, current_sha256: &str, approval_id: &str, checks: &[HashCheck], expect: &GateExpect) -> GateReport {
     let mut failures = Vec::new();
     let mut fail = |code: &str, message: String| failures.push(GateFailure { code: code.to_string(), message });
 
@@ -92,6 +104,19 @@ pub fn evaluate(entries: &[Entry], artifact_id: &str, current_sha256: &str, appr
         Some(v) if v.sha256 != current_sha256 => fail(
             "install_gate_validation_stale",
             format!("the last validation was of a different file ({}), the file now hashes to {}", short(&v.sha256), short(current_sha256)),
+        ),
+        Some(v) if v.family != expect.family => fail(
+            "install_gate_family_mismatch",
+            format!("the last validation ran as {} but this artifact is a {}; an asset can only be validated as its own family", v.family, expect.family),
+        ),
+        Some(v) if v.check_set_hash != expect.check_set_hash => fail(
+            "install_gate_checks_incomplete",
+            format!(
+                "the last validation did not run the full check set of {} (recorded {}, expected {}); validate again",
+                expect.family,
+                short(&v.check_set_hash),
+                short(&expect.check_set_hash)
+            ),
         ),
         Some(v) if v.status != Status::Pass => fail(
             "install_gate_validation_failed",
@@ -109,7 +134,12 @@ pub fn evaluate(entries: &[Entry], artifact_id: &str, current_sha256: &str, appr
     if reviews.is_empty() {
         fail("install_gate_review_missing", format!("{artifact_id} has no recorded visual review; run hoi4.image_review"));
     } else if let Some(r) = reviews.iter().rev().find(|r| r.approval_id.as_deref() == Some(approval_id)) {
-        if r.verdict != Verdict::Approved {
+        if r.family != expect.family {
+            fail(
+                "install_gate_family_mismatch",
+                format!("the review under approval {approval_id} was made as {} but this artifact is a {}", r.family, expect.family),
+            );
+        } else if r.verdict != Verdict::Approved {
             fail("install_gate_review_not_approved", format!("the review under approval {approval_id} is {:?}, not approved", r.verdict));
         } else if r.sha256 != current_sha256 {
             fail(
@@ -159,12 +189,22 @@ mod tests {
     const ART: &str = "f.a-v1-p1";
 
     fn profile() -> ProfileRef {
-        ProfileRef { id: "focus_icon".into(), hash: "h".into(), kit_sha256: None }
+        ProfileRef { id: "focus".into(), hash: "h".into(), kit_sha256: None }
+    }
+
+    fn full_set() -> Vec<String> {
+        crate::profile::ProfileSet::builtin().for_family(Family::Focus).unwrap().imagegen.checks.clone()
+    }
+
+    fn gate_expect() -> GateExpect {
+        GateExpect { family: Family::Focus, check_set_hash: crate::validate::check_set_hash(&full_set()) }
     }
 
     fn validated(sha: &str, status: Status) -> ValidatedRecord {
         ValidatedRecord {
             target: ART.into(),
+            family: Family::Focus,
+            check_set_hash: crate::validate::check_set_hash(&full_set()),
             sha256: sha.into(),
             status,
             errors: u32::from(status == Status::Fail),
@@ -178,10 +218,11 @@ mod tests {
     fn reviewed(sha: &str, verdict: Verdict, approval: Option<&str>) -> ReviewedRecord {
         ReviewedRecord {
             target: ART.into(),
+            family: Family::Focus,
             sha256: sha.into(),
             verdict,
             reviewer: "tester".into(),
-            rubric: "focus_icon_v1".into(),
+            rubric: "icon_v1".into(),
             answers: json!({}),
             notes: String::new(),
             approval_id: approval.map(str::to_string),
@@ -206,7 +247,7 @@ mod tests {
             l.append(kind::REVIEWED, Some("f.a"), Some(ART), reviewed("aaa", Verdict::Approved, Some("apr-1"))).unwrap();
         });
         let ok = HashCheck { what: "plan".into(), code: "install_gate_plan_changed".into(), recorded: "p".into(), found: Some("p".into()) };
-        let r = evaluate(&e, ART, "aaa", "apr-1", &[ok]);
+        let r = evaluate(&e, ART, "aaa", "apr-1", &[ok], &gate_expect());
         assert!(r.passed, "{r:?}");
         assert!(r.into_result().is_ok());
     }
@@ -214,31 +255,31 @@ mod tests {
     #[test]
     fn each_missing_piece_closes_the_gate_with_its_own_code() {
         let empty = entries(|_| {});
-        let r = evaluate(&empty, ART, "aaa", "apr-1", &[]);
+        let r = evaluate(&empty, ART, "aaa", "apr-1", &[], &gate_expect());
         assert_eq!(codes(&r), vec!["install_gate_validation_missing", "install_gate_review_missing"]);
 
         let failed = entries(|l| {
             l.append(kind::VALIDATED, None, Some(ART), validated("aaa", Status::Fail)).unwrap();
             l.append(kind::REVIEWED, None, Some(ART), reviewed("aaa", Verdict::Approved, Some("apr-1"))).unwrap();
         });
-        assert_eq!(codes(&evaluate(&failed, ART, "aaa", "apr-1", &[])), vec!["install_gate_validation_failed"]);
+        assert_eq!(codes(&evaluate(&failed, ART, "aaa", "apr-1", &[], &gate_expect())), vec!["install_gate_validation_failed"]);
 
         let no_review = entries(|l| {
             l.append(kind::VALIDATED, None, Some(ART), validated("aaa", Status::Pass)).unwrap();
         });
-        assert_eq!(codes(&evaluate(&no_review, ART, "aaa", "apr-1", &[])), vec!["install_gate_review_missing"]);
+        assert_eq!(codes(&evaluate(&no_review, ART, "aaa", "apr-1", &[], &gate_expect())), vec!["install_gate_review_missing"]);
 
         let rejected = entries(|l| {
             l.append(kind::VALIDATED, None, Some(ART), validated("aaa", Status::Pass)).unwrap();
             l.append(kind::REVIEWED, None, Some(ART), reviewed("aaa", Verdict::Rejected, Some("apr-1"))).unwrap();
         });
-        assert_eq!(codes(&evaluate(&rejected, ART, "aaa", "apr-1", &[])), vec!["install_gate_review_not_approved"]);
+        assert_eq!(codes(&evaluate(&rejected, ART, "aaa", "apr-1", &[], &gate_expect())), vec!["install_gate_review_not_approved"]);
 
         let wrong_id = entries(|l| {
             l.append(kind::VALIDATED, None, Some(ART), validated("aaa", Status::Pass)).unwrap();
             l.append(kind::REVIEWED, None, Some(ART), reviewed("aaa", Verdict::Approved, Some("apr-1"))).unwrap();
         });
-        assert_eq!(codes(&evaluate(&wrong_id, ART, "aaa", "apr-OTHER", &[])), vec!["install_gate_approval_mismatch"]);
+        assert_eq!(codes(&evaluate(&wrong_id, ART, "aaa", "apr-OTHER", &[], &gate_expect())), vec!["install_gate_approval_mismatch"]);
     }
 
     #[test]
@@ -247,7 +288,7 @@ mod tests {
             l.append(kind::VALIDATED, None, Some(ART), validated("aaa", Status::Pass)).unwrap();
             l.append(kind::REVIEWED, None, Some(ART), reviewed("aaa", Verdict::Approved, Some("apr-1"))).unwrap();
         });
-        let r = evaluate(&e, ART, "bbb", "apr-1", &[]);
+        let r = evaluate(&e, ART, "bbb", "apr-1", &[], &gate_expect());
         assert_eq!(codes(&r), vec!["install_gate_validation_stale", "install_gate_hash_changed"]);
         let err = r.into_result().unwrap_err();
         assert_eq!(err.code(), "install_gate_validation_stale");
@@ -262,7 +303,7 @@ mod tests {
         });
         let changed = HashCheck { what: "raw candidate".into(), code: "install_gate_hash_changed".into(), recorded: "r1".into(), found: Some("r2".into()) };
         let gone = HashCheck { what: "plan".into(), code: "install_gate_plan_changed".into(), recorded: "p1".into(), found: None };
-        let r = evaluate(&e, ART, "aaa", "apr-1", &[changed, gone]);
+        let r = evaluate(&e, ART, "aaa", "apr-1", &[changed, gone], &gate_expect());
         assert_eq!(codes(&r), vec!["install_gate_hash_changed", "install_gate_plan_changed"]);
     }
 
@@ -273,7 +314,7 @@ mod tests {
             l.append(kind::REVIEWED, None, Some(ART), reviewed("aaa", Verdict::Approved, Some("apr-1"))).unwrap();
             l.append(kind::REVIEWED, None, Some(ART), reviewed("aaa", Verdict::Rejected, None)).unwrap();
         });
-        let r = evaluate(&e, ART, "aaa", "apr-1", &[]);
+        let r = evaluate(&e, ART, "aaa", "apr-1", &[], &gate_expect());
         assert_eq!(codes(&r), vec!["install_gate_review_not_approved"]);
     }
 
@@ -285,7 +326,47 @@ mod tests {
             l.append(kind::VALIDATED, None, Some(ART), validated("bbb", Status::Pass)).unwrap();
         });
         // file is now "bbb": validated, but the approval was for "aaa"
-        let r = evaluate(&e, ART, "bbb", "apr-1", &[]);
+        let r = evaluate(&e, ART, "bbb", "apr-1", &[], &gate_expect());
         assert_eq!(codes(&r), vec!["install_gate_hash_changed"]);
+    }
+
+    #[test]
+    fn a_validation_that_skipped_checks_cannot_open_the_gate() {
+        let e = entries(|l| {
+            let mut v = validated("aaa", Status::Pass);
+            v.checks = vec!["size".into()];
+            v.check_set_hash = crate::validate::check_set_hash(&["size".to_string()]);
+            l.append(kind::VALIDATED, None, Some(ART), v).unwrap();
+            l.append(kind::REVIEWED, None, Some(ART), reviewed("aaa", Verdict::Approved, Some("apr-1"))).unwrap();
+        });
+        let r = evaluate(&e, ART, "aaa", "apr-1", &[], &gate_expect());
+        assert_eq!(codes(&r), vec!["install_gate_checks_incomplete"]);
+        assert_eq!(r.into_result().unwrap_err().code(), "install_gate_checks_incomplete");
+    }
+
+    #[test]
+    fn the_check_set_hash_ignores_order_and_duplicates_but_not_membership() {
+        let a = crate::validate::check_set_hash(&["size".into(), "alpha".into()]);
+        let b = crate::validate::check_set_hash(&["alpha".into(), "size".into(), "size".into()]);
+        assert_eq!(a, b);
+        assert_ne!(a, crate::validate::check_set_hash(&["size".into()]));
+    }
+
+    #[test]
+    fn a_validation_or_review_made_as_another_family_is_refused() {
+        let wrong_validation = entries(|l| {
+            let mut v = validated("aaa", Status::Pass);
+            v.family = Family::IdeaSpirit;
+            l.append(kind::VALIDATED, None, Some(ART), v).unwrap();
+            l.append(kind::REVIEWED, None, Some(ART), reviewed("aaa", Verdict::Approved, Some("apr-1"))).unwrap();
+        });
+        assert_eq!(codes(&evaluate(&wrong_validation, ART, "aaa", "apr-1", &[], &gate_expect())), vec!["install_gate_family_mismatch"]);
+        let wrong_review = entries(|l| {
+            l.append(kind::VALIDATED, None, Some(ART), validated("aaa", Status::Pass)).unwrap();
+            let mut r = reviewed("aaa", Verdict::Approved, Some("apr-1"));
+            r.family = Family::Decision;
+            l.append(kind::REVIEWED, None, Some(ART), r).unwrap();
+        });
+        assert_eq!(codes(&evaluate(&wrong_review, ART, "aaa", "apr-1", &[], &gate_expect())), vec!["install_gate_family_mismatch"]);
     }
 }

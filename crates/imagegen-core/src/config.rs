@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-use crate::category::Category;
+use crate::family::Family;
 use crate::error::{Error, Result};
 use crate::profile::RowOverride;
 
@@ -63,14 +63,15 @@ pub struct PolicyConfig {
     pub allow_vanilla_references: bool,
     /// Categories this project never generates, whatever the provider (a project overlay, for
     /// example Chaos Redux never generates historical leaders).
-    pub forbidden_categories: Vec<Category>,
+    #[serde(alias = "forbidden_categories")]
+    pub forbidden_families: Vec<Family>,
     /// A single provider call whose estimate exceeds this needs `approve_cost`.
     pub max_usd_per_call: f64,
 }
 
 impl Default for PolicyConfig {
     fn default() -> Self {
-        PolicyConfig { allow_vanilla_references: false, forbidden_categories: Vec::new(), max_usd_per_call: 1.0 }
+        PolicyConfig { allow_vanilla_references: false, forbidden_families: Vec::new(), max_usd_per_call: 1.0 }
     }
 }
 
@@ -190,7 +191,7 @@ mod tests {
     fn defaults_are_safe() {
         let c = Config::default();
         assert!(!c.policy.allow_vanilla_references, "D4: vanilla references are off by default");
-        assert!(c.policy.forbidden_categories.is_empty());
+        assert!(c.policy.forbidden_families.is_empty());
         assert_eq!(c.policy.max_usd_per_call, 1.0);
     }
 
@@ -202,7 +203,7 @@ kit_profiles = ".tools/gfx/profiles.json"
 
 [policy]
 allow_vanilla_references = true
-forbidden_categories = ["leader_portrait"]
+forbidden_families = ["leader_portrait"]
 max_usd_per_call = 0.25
 
 [defaults]
@@ -216,23 +217,23 @@ quality = "low"
 endpoint = "http://127.0.0.1:8188"
 workflow = ".hoi4-imagegen/comfyui/text_to_image.api.json"
 
-[profiles.focus_icon]
+[profiles.focus]
 canvas = [94, 86]
 margin = 2
 "#;
         let c = Config::parse(text).unwrap();
         assert!(c.policy.allow_vanilla_references);
-        assert_eq!(c.policy.forbidden_categories, vec![Category::LeaderPortrait]);
+        assert_eq!(c.policy.forbidden_families, vec![Family::LeaderPortrait]);
         assert_eq!(c.provider("openai").model.as_deref(), Some("gpt-image-2.5-flare"));
         assert_eq!(c.provider("comfyui").endpoint.as_deref(), Some("http://127.0.0.1:8188"));
-        assert_eq!(c.profiles["focus_icon"].canvas, Some([94, 86]));
+        assert_eq!(c.profiles["focus"].canvas, Some([94, 86]));
         assert_eq!(c.defaults.provider.as_deref(), Some("comfyui"));
     }
 
     #[test]
     fn typos_in_safety_keys_are_errors_not_silent() {
         assert!(Config::parse("[policy]\nallow_vanilla_reference = true\n").is_err());
-        assert!(Config::parse("[policy]\nforbidden_categories = [\"not_a_category\"]\n").is_err());
+        assert!(Config::parse("[policy]\nforbidden_families = [\"not_a_family\"]\n").is_err());
         assert!(Config::parse("surprise = 1\n").is_err());
     }
 

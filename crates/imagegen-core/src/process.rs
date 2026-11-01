@@ -130,11 +130,57 @@ pub fn apply(img: &Rgba, op: &Op) -> Result<Rgba> {
     }
 }
 
+/// Largest enlargement an icon family tolerates in a fit or resize step. A bigger factor invents detail an
+/// icon never had, which is what turns a small wrong-family image into a "valid" icon.
+pub const ICON_MAX_UPSCALE: f64 = 1.25;
+
+/// Error code of a refused enlargement.
+pub const UPSCALE_CODE: &str = "GFX-UPSCALE-LIMIT";
+
+/// The enlargement factor a step would apply to `img` (above 1 enlarges), when it scales at all.
+pub fn upscale_factor(img: &Rgba, op: &Op) -> Option<f64> {
+    match op {
+        Op::Resize { width, height } => {
+            Some((f64::from(*width) / f64::from(img.width)).max(f64::from(*height) / f64::from(img.height)))
+        }
+        Op::CoverResize { width, height } => {
+            let c = crop_to_aspect(img, *width, *height).ok()?;
+            Some((f64::from(*width) / f64::from(c.width)).max(f64::from(*height) / f64::from(c.height)))
+        }
+        Op::FitSubject { width, height, margin, min_alpha } => {
+            if *margin * 2 >= *width || *margin * 2 >= *height {
+                return None;
+            }
+            let b = img.alpha_bbox(*min_alpha)?;
+            let (sw, sh) = (f64::from(b[2] - b[0]), f64::from(b[3] - b[1]));
+            let (aw, ah) = (f64::from(*width - 2 * margin), f64::from(*height - 2 * margin));
+            Some((aw / sw).min(ah / sh))
+        }
+        _ => None,
+    }
+}
+
 /// Run a chain and record every step.
 pub fn run_chain(img: &Rgba, ops: &[Op]) -> Result<(Rgba, Vec<StepRecord>)> {
+    run_chain_limited(img, ops, None)
+}
+
+/// Run a chain and refuse any step that enlarges its input by more than `max_upscale`.
+pub fn run_chain_limited(img: &Rgba, ops: &[Op], max_upscale: Option<f64>) -> Result<(Rgba, Vec<StepRecord>)> {
     let mut current = img.clone();
     let mut records = Vec::with_capacity(ops.len());
     for op in ops {
+        if let (Some(limit), Some(factor)) = (max_upscale, upscale_factor(&current, op)) {
+            if factor > limit + 1e-9 {
+                return Err(Error::refused(
+                    UPSCALE_CODE,
+                    format!(
+                        "this step would enlarge the image {factor:.2} times, above the {limit:.2} times an icon family allows. Upscaling invents detail: bring a larger source or generate the asset"
+                    ),
+                    crate::error::RetryClass::Terminal,
+                ));
+            }
+        }
         let input_sha256 = sha256_hex(&current.data);
         let next = apply(&current, op)?;
         records.push(StepRecord {
@@ -513,5 +559,36 @@ mod tests {
         // errors on fully opaque or empty input
         assert!(apply(&Rgba::filled(4, 4, [1, 2, 3, 255]), &Op::Defringe { erosion: 1 }).is_err());
         assert!(apply(&Rgba::new(4, 4), &Op::Defringe { erosion: 1 }).is_err());
+    }
+}
+
+#[cfg(test)]
+mod upscale_tests {
+    use super::*;
+
+    fn blob(w: u32, h: u32) -> Rgba {
+        Rgba::filled(w, h, [10, 20, 30, 255])
+    }
+
+    #[test]
+    fn enlarging_beyond_the_limit_is_refused_and_shrinking_is_free() {
+        let small = blob(40, 40);
+        let err = run_chain_limited(&small, &[Op::Resize { width: 64, height: 64 }], Some(ICON_MAX_UPSCALE)).unwrap_err();
+        assert_eq!(err.code(), UPSCALE_CODE);
+        // 40 -> 50 is exactly 1.25 times: allowed
+        assert!(run_chain_limited(&small, &[Op::Resize { width: 50, height: 50 }], Some(ICON_MAX_UPSCALE)).is_ok());
+        assert!(run_chain_limited(&blob(200, 200), &[Op::Resize { width: 64, height: 64 }], Some(ICON_MAX_UPSCALE)).is_ok());
+        // without a limit nothing changes (pictures may enlarge)
+        assert!(run_chain(&small, &[Op::Resize { width: 64, height: 64 }]).is_ok());
+    }
+
+    #[test]
+    fn fit_and_cover_steps_are_limited_too() {
+        let small = blob(30, 30);
+        let fit = Op::FitSubject { width: 64, height: 64, margin: 2, min_alpha: 16 };
+        assert_eq!(run_chain_limited(&small, &[fit], Some(ICON_MAX_UPSCALE)).unwrap_err().code(), UPSCALE_CODE);
+        let cover = Op::CoverResize { width: 100, height: 60 };
+        assert_eq!(run_chain_limited(&small, &[cover], Some(ICON_MAX_UPSCALE)).unwrap_err().code(), UPSCALE_CODE);
+        assert!(upscale_factor(&small, &Op::Grayscale).is_none());
     }
 }

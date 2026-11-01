@@ -8,7 +8,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::category::Category;
+use crate::family::Family;
 use crate::hashing::{canonical_hash, sha256_hex};
 use crate::profile::Profile;
 use crate::records::{ProfileRef, RefSummary};
@@ -19,8 +19,8 @@ use crate::style::StyleProfile;
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct PlanRequest {
-    /// Asset category.
-    pub category: Category,
+    /// Asset family. The only thing that selects canvas, frames, naming, references, processing and validation.
+    pub family: Family,
     /// Feature folder name (snake_case).
     pub feature_slug: String,
     /// Asset name (snake_case; a country tag for flags).
@@ -51,7 +51,7 @@ pub struct PlanRequest {
     /// Quality tier where the model has tiers.
     #[serde(default)]
     pub quality: Option<String>,
-    /// Canvas for categories that have none (`custom`, `gui_texture`).
+    /// Canvas for families that have none (`gui_texture`, `super_event`): the mod defines it.
     #[serde(default)]
     pub canvas: Option<[u32; 2]>,
 }
@@ -205,7 +205,7 @@ pub fn build_prompt(
     transparent: bool,
 ) -> PromptPlan {
     let subst = |s: &str| s.replace("{w}", &canvas[0].to_string()).replace("{h}", &canvas[1].to_string());
-    let mut text = format!("Create one Hearts of Iron IV {}: {}\n", profile.category.label(), brief.trim());
+    let mut text = format!("Create one Hearts of Iron IV {}: {}\n", profile.family.label(), brief.trim());
     text.push_str("\nRequirements:\n");
     for rule in &profile.imagegen.prompt.rules {
         text.push_str(&format!("- {}\n", subst(rule)));
@@ -261,14 +261,14 @@ mod tests {
 
     fn plan() -> Plan {
         let set = ProfileSet::builtin();
-        let prof = set.for_category(Category::FocusIcon).unwrap();
+        let prof = set.for_family(Family::Focus).unwrap();
         let prompt = build_prompt(prof, [100, 88], "an iron wall", None, &[], true);
         let mut p = Plan {
             plan_id: String::new(),
             plan_hash: String::new(),
             created: "2026-10-31T00:00:00Z".into(),
             request: PlanRequest {
-                category: Category::FocusIcon,
+                family: Family::Focus,
                 feature_slug: "iron".into(),
                 asset: "wall".into(),
                 brief: "an iron wall".into(),
@@ -283,7 +283,7 @@ mod tests {
                 canvas: None,
             },
             asset_id: "iron.wall".into(),
-            profile: ProfileRef { id: "focus_icon".into(), hash: "h".into(), kit_sha256: None },
+            profile: ProfileRef { id: "focus".into(), hash: "h".into(), kit_sha256: None },
             canvas: [100, 88],
             frames: 1,
             provider: "openai".into(),
@@ -347,7 +347,7 @@ mod tests {
     #[test]
     fn prompt_includes_rules_style_references_and_negatives() {
         let set = ProfileSet::builtin();
-        let prof = set.for_category(Category::FocusIcon).unwrap();
+        let prof = set.for_family(Family::Focus).unwrap();
         let style = StyleProfile {
             schema: 1,
             name: "oil".into(),
@@ -355,7 +355,7 @@ mod tests {
             prompt_fragments: vec!["Visible brush strokes.".into()],
             negative_rules: vec!["neon colours".into()],
             palette_notes: "earth tones".into(),
-            categories: vec![],
+            families: vec![],
             references: vec![],
             provider: None,
             model: None,

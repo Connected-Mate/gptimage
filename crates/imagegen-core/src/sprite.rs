@@ -28,6 +28,20 @@ pub fn plain_sprite(name: &str, texture_path: &str) -> SpriteEntry {
     }
 }
 
+/// Sprite of a frame strip: `noOfFrames` tells the engine how many equal frames the texture holds.
+pub fn framed_sprite(name: &str, texture_path: &str, frames: u32) -> SpriteEntry {
+    SpriteEntry {
+        name: name.to_string(),
+        text: format!("	spriteType = {{
+		name = \"{name}\"
+		texturefile = \"{texture_path}\"
+		noOfFrames = {frames}
+	}}
+"),
+        caveat: String::new(),
+    }
+}
+
 /// The `_shine` companion every vanilla focus icon has (3,122 shine sprites against 3,131 goal sprites in
 /// 1.19.3.0). The pattern is copied from what the survey saw; whether a mod focus without it logs an error
 /// has not been tested in game.
@@ -210,6 +224,13 @@ mod tests {
         assert!(s.text.contains("legacy_lazy_load = no"));
         assert!(s.caveat.contains("untested"));
         assert_eq!(s.text.matches('{').count(), s.text.matches('}').count());
+    }
+
+    #[test]
+    fn frame_strips_register_with_no_of_frames() {
+        let f = framed_sprite("GFX_unit_x_icon", "gfx/c.dds", 2);
+        assert!(f.text.contains("noOfFrames = 2") && f.text.contains("texturefile = \"gfx/c.dds\""));
+        assert_eq!(f.text.matches('{').count(), f.text.matches('}').count());
     }
 
     #[test]

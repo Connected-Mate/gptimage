@@ -16,7 +16,7 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use imagegen_core::category::Category;
+use imagegen_core::family::Family;
 use imagegen_core::dds;
 use imagegen_core::pixels::Rgba;
 use imagegen_core::profile::ProfileSet;
@@ -207,7 +207,7 @@ fn dds_writer_and_pixel_rules_match_the_kits_python() {
     assert_eq!(results.len(), corpus.len());
 
     let set = ProfileSet::builtin();
-    let category = set.for_category(Category::DecisionCategoryIcon).unwrap();
+    let category = set.for_family(Family::DecisionCategoryIcon).unwrap();
     let mut pillow_equal = 0;
     for ((name, img, profile), res) in corpus.iter().zip(&results) {
         assert_eq!(res["name"], *name);
