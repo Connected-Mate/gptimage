@@ -75,7 +75,7 @@ pub fn sprite_entries(profile: &Profile, feature_slug: &str, asset: &str, files:
     let main = files.first().ok_or_else(|| Error::Invalid("no final files".into()))?;
     let prefix = resolved_prefix(profile, feature_slug, asset)?;
     let name = expand(&spec.name, feature_slug, asset, &prefix)?;
-    let gfx_file = format!("{}", expand(&spec.gfx_file, feature_slug, asset, &prefix)?);
+    let gfx_file = expand(&spec.gfx_file, feature_slug, asset, &prefix)?;
     let mut entries = vec![plain_sprite(&name, &main.rel)];
     for companion in &spec.companions {
         match companion.as_str() {

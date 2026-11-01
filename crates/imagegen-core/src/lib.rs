@@ -24,6 +24,7 @@ pub mod pixels;
 pub mod plan;
 pub mod process;
 pub mod profile;
+pub mod recipes;
 pub mod records;
 pub mod refs;
 pub mod resize;
