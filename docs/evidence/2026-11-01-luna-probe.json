@@ -1,0 +1,15 @@
+{
+  "about": "First signed-in ChatGPT-login probe (maintainer's own account, Windows 11). Real backend response, recorded with HOI4_IMAGEGEN_RECORD_RESPONSES; values below are copied from that response. No token or account identifier is included.",
+  "date_utc": "2026-11-01T19:33:15Z",
+  "binary": "hoi4-imagegen 0.1.0 debug build of commit 2fd9547 (branch w5/login)",
+  "command": "hoi4-imagegen call hoi4.image_plan {category focus_icon, feature_slug probe, asset iron_wall} then hoi4.image_generate {plan_id plan-5ff7c30ca9b1ddd6}",
+  "plan": "Plus",
+  "request": {"model": "gpt-6-luna", "reasoning": {"effort": "high"}, "tool": {"type": "image_generation", "output_format": "png", "quality": "high", "size": "1344x1184"}},
+  "response_created": {"model": "gpt-6-luna", "reasoning": {"context": "all_turns", "effort": "high", "mode": "standard"}, "service_tier": "auto"},
+  "response_completed": {"model": "gpt-6-luna", "reasoning_effort": "high", "status": "completed", "usage": {"input_tokens": 2506, "output_tokens": 184, "total_tokens": 2690}},
+  "image_tool_as_reported": {"model": "gpt-image-2-codex", "quality": "auto", "size": "auto", "background": "auto"},
+  "image_generation_call": {"status": "completed", "background": "transparent", "quality": "medium", "output_format": "png"},
+  "image": {"width": 1337, "height": 1176, "mode": "RGBA", "has_transparency": true},
+  "verifier": "verify_model accepted (model gpt-6-luna, effort high)",
+  "wall_time_s": 63
+}

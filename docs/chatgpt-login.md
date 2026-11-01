@@ -59,3 +59,12 @@ Every image runs on **gpt-6-luna at high reasoning effort**. This is the maintai
 ## Recorded responses
 
 Set `HOI4_IMAGEGEN_RECORD_RESPONSES=<folder>` to save each raw backend response. The fixtures under `crates/provider-chatgpt-login/tests/fixtures/recorded-real/` were made this way. They are reviewed before commit and labelled "recorded-real replay", and faults are injected into them for CI.
+
+## What the backend controls
+
+The first signed-in probe was on Windows on 2026-11-01. Its fixture is `crates/provider-chatgpt-login/tests/fixtures/recorded-real/focus-luna-high-2026-11-01.sse`, and the evidence is `docs/evidence/2026-11-01-luna-probe.json`.
+- The backend ran the request on `gpt-6-luna` with `reasoning.effort = high`, as both `response.created` and `response.completed` report.
+- The pixels come from the backend's hosted image tool, which the response names `gpt-image-2-codex`.
+- The backend replaces the tool settings we send with `quality = auto` and `size = auto`. The probe image came back at quality `medium`, 1337x1176, with a transparent background.
+
+So the route forces and verifies the outer model and effort, but it cannot choose the image tool's model, quality or size. The ledger records what the backend reported for every image.
