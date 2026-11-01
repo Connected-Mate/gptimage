@@ -260,7 +260,7 @@ pub fn plan_finishing(profile: &Profile, canvas: [u32; 2], img: &Rgba, imported:
             }
         }
         Recipe::SelectedStrip | Recipe::DisabledStrip => {
-            let accepted_strip = size[0] % frames == 0 && accepted_single([size[0] / frames, size[1]]);
+            let accepted_strip = size[0].is_multiple_of(frames) && accepted_single([size[0] / frames, size[1]]);
             if imported && accepted_strip {
                 ops.push(Op::Conform { width: size[0], height: size[1] });
             } else {
@@ -269,7 +269,7 @@ pub fn plan_finishing(profile: &Profile, canvas: [u32; 2], img: &Rgba, imported:
             }
         }
         Recipe::ImportedArt => {
-            let accepted_strip = size[0] % frames == 0 && accepted_single([size[0] / frames, size[1]]);
+            let accepted_strip = size[0].is_multiple_of(frames) && accepted_single([size[0] / frames, size[1]]);
             if !imported || !accepted_strip {
                 return Err(Error::Invalid(format!(
                     "{} is art that another tool makes: bring it in with import as exactly {}x{}, or as {frames} frame files with import.frames",
@@ -589,7 +589,7 @@ mod tests {
         let missing = audit(&record(&focus, &[Op::TrimToSubject { min_alpha: 16 }], &[], &[], ""), &focus);
         assert!(missing.iter().any(|m| m.contains("fit_subject")), "{missing:?}");
         // no recipe at all
-        let mut bare = record(&focus, &[fit.clone()], &[], &[], "");
+        let mut bare = record(&focus, std::slice::from_ref(&fit), &[], &[], "");
         bare.recipe = None;
         assert!(audit(&bare, &focus)[0].contains("no recipe"));
         // wrong recipe or version
@@ -619,10 +619,10 @@ mod tests {
         assert!(audit(&record(&logo, &[Op::Conform { width: 200, height: 100 }], &[], &[], ""), &logo).is_empty());
         let ach = prof(Family::Achievement);
         let fit = Op::FitSubject { width: 64, height: 64, margin: 2, min_alpha: 16 };
-        assert!(audit(&record(&ach, &[fit.clone()], &["achievement_triplet"], &["_grey", "_not_eligible"], ""), &ach).is_empty());
-        let no_comp = audit(&record(&ach, &[fit.clone()], &["achievement_triplet"], &["_grey"], ""), &ach);
+        assert!(audit(&record(&ach, std::slice::from_ref(&fit), &["achievement_triplet"], &["_grey", "_not_eligible"], ""), &ach).is_empty());
+        let no_comp = audit(&record(&ach, std::slice::from_ref(&fit), &["achievement_triplet"], &["_grey"], ""), &ach);
         assert!(no_comp.iter().any(|m| m.contains("_not_eligible")), "{no_comp:?}");
-        assert!(!audit(&record(&ach, &[fit.clone()], &[], &["_grey", "_not_eligible"], ""), &ach).is_empty());
+        assert!(!audit(&record(&ach, std::slice::from_ref(&fit), &[], &["_grey", "_not_eligible"], ""), &ach).is_empty());
         // a pixel hash that no stage produced
         let mismatch = audit(&record(&ach, &[fit], &["achievement_triplet"], &["_grey", "_not_eligible"], "other"), &ach);
         assert!(mismatch.iter().any(|m| m.contains("recorded pixels")), "{mismatch:?}");

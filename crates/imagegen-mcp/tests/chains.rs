@@ -503,7 +503,7 @@ fn report_event_output_has_transparent_corners_and_passes_validation() {
     assert_eq!(
         p["steps"][seed]["op"]["seed"],
         imagegen_core::chain::seed_from_sha(
-            &h.engine.ledger.entries().unwrap().iter().find(|e| e.kind == kind::GENERATED).unwrap().data["sha256"].as_str().unwrap()
+            h.engine.ledger.entries().unwrap().iter().find(|e| e.kind == kind::GENERATED).unwrap().data["sha256"].as_str().unwrap()
         )
     );
     let again = process(&h, &cand, json!({})).unwrap();
