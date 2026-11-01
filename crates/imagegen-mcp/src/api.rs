@@ -443,7 +443,7 @@ pub struct AuditParams {
     /// Only report these families (ids as in `hoi4.image_families`). Default: all.
     #[serde(default)]
     pub families: Option<Vec<Family>>,
-    /// Findings listed per code (default 50, at most 5000). Counts are always complete.
+    /// Findings listed per code (default 25, at most 5000; a reuse finding lists at most 100 uses and reports uses_total). Counts are always complete.
     #[serde(default)]
     pub limit: Option<u32>,
 }

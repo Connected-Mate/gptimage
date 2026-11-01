@@ -32,11 +32,11 @@ use crate::profile::ProfileSet;
 /// Where a project keeps its allowlist when the caller names none.
 pub const DEFAULT_ALLOWLIST: &str = ".hoi4-imagegen/audit-allowlist.json";
 /// Findings listed per code unless the caller asks for another number.
-pub const DEFAULT_LIMIT: usize = 50;
+pub const DEFAULT_LIMIT: usize = 25;
 /// Largest `limit`.
 pub const MAX_LIMIT: usize = 5000;
 /// Uses listed on one reuse finding.
-const MAX_USES_PER_FINDING: usize = 200;
+const MAX_USES_PER_FINDING: usize = 100;
 /// Report-event textures decoded for the corner check in one run.
 const MAX_ALPHA_DECODES: usize = 3000;
 /// Directory entries the pre-install trace walks before it gives up and leaves the check to the pixel-hash guard.

@@ -307,7 +307,11 @@ pub fn execute(engine: &Engine, cli: &Cli, out: &mut dyn Write) -> i32 {
             None,
         )),
         Command::Audit(a) => {
-            let v = dispatch(engine, "hoi4.image_audit", json!({"allowlist": a.allowlist, "families": if a.families.is_empty() { Value::Null } else { json!(a.families) }, "limit": a.limit}))?;
+            let v = dispatch(
+                engine,
+                "hoi4.image_audit",
+                json!({"allowlist": a.allowlist, "families": if a.families.is_empty() { Value::Null } else { json!(a.families) }, "limit": a.limit}),
+            )?;
             let text = audit_text(&v);
             Ok((v, 0, Some(text)))
         }
@@ -469,10 +473,7 @@ fn plan_text(p: &Value) -> String {
 fn audit_text(v: &Value) -> String {
     let s = &v["summary"];
     let mut t = format!(
-        "Audit of {}
-  game {}
-  {} sprites ({} definitions), {} traced uses, {} textures resolved, {} missing
-",
+        "Audit of {}\n  game {}\n  {} sprites ({} definitions), {} traced uses, {} textures resolved, {} missing\n",
         v["project_root"].as_str().unwrap_or("?"),
         v["game_dir"].as_str().unwrap_or("not found"),
         s["sprites_indexed"],
@@ -482,44 +483,35 @@ fn audit_text(v: &Value) -> String {
         s["textures_missing"],
     );
     if !v["allowlist"].is_null() {
-        t.push_str(&format!("  allowlist {}
-", v["allowlist"]["path"].as_str().unwrap_or("?")));
+        t.push_str(&format!("  allowlist {}\n", v["allowlist"]["path"].as_str().unwrap_or("?")));
     }
-    t.push_str("
-Uses per family:
-");
+    t.push_str("\nUses per family:\n");
     for (family, c) in v["uses_by_family"].as_object().into_iter().flatten() {
         t.push_str(&format!(
-            "  {:<26} {:>6} uses  {} defined  {} undefined  {} direct  {} texture missing
-",
+            "  {:<26} {:>6} uses  {} defined  {} undefined  {} direct  {} texture missing\n",
             family, c["uses"], c["defined"], c["undefined"], c["direct_texture"], c["texture_missing"]
         ));
     }
-    t.push_str("
-Findings:
-");
+    t.push_str("\nFindings:\n");
     for (code, g) in v["findings"].as_object().into_iter().flatten() {
-        t.push_str(&format!("  {:<26} {:>6} ({})
-", code, g["count"], g["severity"].as_str().unwrap_or("?")));
+        t.push_str(&format!("  {:<26} {:>6} ({})\n", code, g["count"], g["severity"].as_str().unwrap_or("?")));
     }
     for (code, g) in v["findings"].as_object().into_iter().flatten() {
         let list = g["findings"].as_array().cloned().unwrap_or_default();
         if list.is_empty() {
             continue;
         }
-        t.push_str(&format!("
-{code} ({} of {} listed)
-", g["shown"], g["count"]));
+        t.push_str(&format!("\n{code} ({} of {} listed)\n", g["shown"], g["count"]));
         for f in list.iter().take(10) {
-            t.push_str(&format!("  {}
-", f["message"].as_str().unwrap_or("")));
+            t.push_str(&format!("  {}\n", f["message"].as_str().unwrap_or("")));
         }
     }
-    t.push_str(&format!("
-Full detail: add --json. Checked {} textures for canvas and {} report cards for corners.", v["canvas_checked"], v["alpha_checked"]));
+    t.push_str(&format!(
+        "\nFull detail: add --json. Checked {} textures for canvas and {} report cards for corners.",
+        v["canvas_checked"], v["alpha_checked"]
+    ));
     for n in v["notes"].as_array().into_iter().flatten() {
-        t.push_str(&format!("
-note: {}", n.as_str().unwrap_or("")));
+        t.push_str(&format!("\nnote: {}", n.as_str().unwrap_or("")));
     }
     t
 }
