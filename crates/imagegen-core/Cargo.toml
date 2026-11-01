@@ -16,6 +16,14 @@ serde_json.workspace = true
 sha2.workspace = true
 thiserror.workspace = true
 toml.workspace = true
+tract-onnx = { version = "0.21", optional = true }
 
 [dev-dependencies]
 tempfile.workspace = true
+
+[features]
+# YuNet face detection through pure-Rust tract (no OpenCV, no system libraries). On by default, so portrait
+# processing always has it (maintainer decision: processing always runs). A cold release
+# build of tract adds about three minutes and the linked binary about 16 MB.
+default = ["face-detect"]
+face-detect = ["dep:tract-onnx"]

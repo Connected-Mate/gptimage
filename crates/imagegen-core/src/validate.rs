@@ -141,7 +141,7 @@ pub fn validate_image(img: &Rgba, profile: &Profile, checks: &[String], opts: &O
     };
 
     // frame split (falls back to one frame when the width does not divide)
-    let divisible = img.width % frames == 0;
+    let divisible = img.width.is_multiple_of(frames);
     if !divisible && (wants("frames") || wants("size")) {
         run.push("frames".to_string());
         findings.push(Finding::new(
@@ -634,7 +634,7 @@ mod tests {
         let mut img = Rgba::new(w, h);
         for y in 0..h {
             for x in 0..w {
-                let v = if ((x + offset) / block + (y + offset) / block) % 2 == 0 { a } else { b };
+                let v = if ((x + offset) / block + (y + offset) / block).is_multiple_of(2) { a } else { b };
                 img.set_px(x, y, [v, v, v, 255]);
             }
         }

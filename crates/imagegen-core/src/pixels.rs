@@ -54,6 +54,12 @@ impl Rgba {
         Ok(Rgba { width, height, data })
     }
 
+    /// Width and height.
+    #[inline]
+    pub fn size(&self) -> (u32, u32) {
+        (self.width, self.height)
+    }
+
     /// Pixel at (x, y).
     #[inline]
     pub fn px(&self, x: u32, y: u32) -> [u8; 4] {
@@ -153,7 +159,7 @@ impl Rgba {
 
     /// Split a horizontal strip into `count` equal frames.
     pub fn split_frames(&self, count: u32) -> Result<Vec<Rgba>> {
-        if count == 0 || self.width % count != 0 {
+        if count == 0 || !self.width.is_multiple_of(count) {
             return Err(Error::Image(format!(
                 "width {} does not divide into {count} frames",
                 self.width
