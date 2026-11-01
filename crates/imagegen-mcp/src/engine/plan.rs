@@ -122,14 +122,19 @@ impl Engine {
         }
         let quality = req.quality.clone().or_else(|| self.config.provider(&provider_id).quality);
         let transparent = req.transparent.unwrap_or(profile.imagegen.background == Background::Transparent);
-        let prompt = build_prompt(&profile, canvas, &brief, style_profile.as_ref(), &loaded, transparent);
+        // what the model is asked for: the canvas, or a different shape when the recipe needs one (a tall portrait for the advisor card)
+        let source_canvas = profile.imagegen.source_canvas.filter(|c| *c != canvas);
+        let ask = source_canvas.unwrap_or(canvas);
+        // finishing that needs the mod's templates is refused now, before anything is spent
+        self.check_finishing_resources(imagegen_core::chain::recipe_of(&profile))?;
+        let prompt = build_prompt(&profile, ask, &brief, style_profile.as_ref(), &loaded, transparent);
 
         let probe = ImageRequest {
             model: model_id.clone(),
             prompt: prompt.text.clone(),
             negative: prompt.negative.clone(),
-            width: canvas[0],
-            height: canvas[1],
+            width: ask[0],
+            height: ask[1],
             transparent,
             quality: quality.clone(),
             refs: loaded
@@ -172,6 +177,19 @@ impl Engine {
             if transparent && model.alpha == AlphaSupport::Preview {
                 warnings.push(format!("{model_id} documents transparent backgrounds as a preview; the pixels are checked either way"));
             }
+        }
+        if profile.family.group() == Group::Portrait && profile.family != Family::AdvisorCard {
+            warnings.push(
+                "portraits of real people: providers may refuse or treat images of real people differently, and the Steam warranty covers personal rights. Prefer stylised portraits and never edit photographs of identifiable living people (docs/rules-and-terms.md)".into(),
+            );
+            if !self.face_model_available() {
+                warnings.push(
+                    "the YuNet face model was not found in the project (.claude/skills/*/tools/models/), so processing needs portrait_crop to choose the crop by hand".into(),
+                );
+            }
+        }
+        if profile.family == Family::AdvisorCard {
+            warnings.push("advisor portraits of real people: the same likeness caution applies (docs/rules-and-terms.md)".into());
         }
         if profile.source.starts_with("LOW CONFIDENCE") {
             warnings.push("this profile's canvas has low confidence; confirm the surface before installing".into());
@@ -233,11 +251,12 @@ impl Engine {
             asset_id: asset_id(&req.feature_slug, &req.asset),
             profile: self.profile_ref(&profile),
             canvas,
+            source_canvas,
             frames: profile.frames.max(1),
             provider: provider_id,
             model: model_id,
             quality,
-            generation: GenerationPlan { width: gw, height: gh, transparent, aspect: aspect_of(canvas) },
+            generation: GenerationPlan { width: gw, height: gh, transparent, aspect: aspect_of(ask) },
             prompt,
             references: loaded
                 .iter()
