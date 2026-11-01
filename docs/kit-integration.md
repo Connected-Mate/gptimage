@@ -1,18 +1,36 @@
-# Kit integration (proposal)
+# Kit integration
 
-Status: **proposed, nothing in the kit has been changed.** The kit's `.tools/gfx/profiles.json` stays the single owner of canvas sizes, accepted sizes, margins, frames and evidence. `gfx.py` reads only `canvas`, `accepted`, `margin` and `frames` from a row and ignores other keys, so the optional `imagegen` object below is safe next to it. This repository reads the same file (built-in vanilla-measured family defaults underneath, project overrides on top) and reports the difference with `hoi4-imagegen calibrate`.
+The [Agentic HOI4 Modding Kit](https://github.com/klimPaskov/Agentic-HOI4-Modding) and this repository work together. This page says what the integration is, how the pieces connect, and what is still pending. The kit is a separate repository, so check its `main` for the current state.
+
+## What the integration is
+
+* **Profile rows.** The kit's `.tools/gfx/profiles.json` has one row per family, 40 rows in all, with the canvas for new art, accepted sizes, minimum margin, frame count and the vanilla evidence for each number. The values are the sizes measured on HOI4 1.19.4.1. The kit stays the single owner of those sizes. This repository reads the same file over its built-in defaults (also measured from 1.19.4.1) and under the project's own overrides, and reports the difference with `hoi4-imagegen calibrate`.
+* **`family_ids.json`.** `.tools/gfx/family_ids.json` is the kit's list of the 40 family ids. The kit's `shelf` check verifies that its profiles, shelf catalog and shelf builder input name exactly that list.
+* **The shelf.** The kit's asset skill ships a vanilla reference shelf (`assets/vanilla_reference/` with a `CATALOG.md` that lists the canvas of every family). A mod's copy of the shelf is style tier 2, and the advisor, achievement and portrait templates and the YuNet face model come from the mod's copy of the same skill (see the README).
+* **Skills and agents.** The kit's `hoi4-imagegen` skill (a downstream copy of `skill/hoi4-imagegen/SKILL.md` in this repository) and its icon, portrait and generated-feature-art agents call the `hoi4.image_*` tools. They pick the `family`, run the loop and never build a second image pipeline. The kit's `hoi4-feature-assets` skill keeps the source, naming and handoff rules that the loop follows.
+* **HOI4 Mod Setup.** Setup installs the release binary per project and writes the project-level MCP entry under the server id `hoi4_imagegen`. The kit's setup manifest lists the skill and the runtime.
+
+Changes to the skill are made here first and copied to the kit. The two copies should differ only in kit-specific lines (the kit's copy points to `hoi4-feature-assets`, `hoi4-frame-animation` and the kit's own tools).
+
+## Still pending
+
+* The kit's rewrite of its `hoi4-imagegen` skill and its profile and shelf work were on the kit branch `claude/hoi4-imagegen` when this page was written. Check that they are merged.
+* `hoi4.image_audit`, the whole-mod cross-family reuse audit that the kit's skill mentions, does not exist in this repository yet. It is planned. Until it does, the per-asset gate (`GFX-FAMILY-MISMATCH`, `GFX-FAMILY-REUSE`) is the only reuse protection.
+* This repository does not read `family_ids.json`. Its own list of 40 families is in the code, and a test keeps it equal to the measurement data. A check that the two lists agree is not built.
+* The kit's profile rows carry geometry only. None has an `imagegen` object yet, so every family uses the built-in sprite, naming and check defaults.
+* Nothing here has been checked in game. That needs a user-operated session.
 
 ## Row names
 
-A row named `focus`, `decision`, `idea` (spirits), `category` (decision category icons), `report`, `news`, `counter-large` or `counter-small` maps to the family of the same meaning (these are the names `gfx.py` already uses). Any other row name that is a family id (`idea_spirit`, `idea_concern`, `advisor_card`, `technology`, `mio_department`, `agency_logo`, `officer_corps_spirit`, `super_event`, `leader_portrait`, `flag`, and the rest of the 40) maps to that family. A row with any other name is ignored with a note: there is no `custom` family, because an asset without a family cannot be checked or kept apart from the others.
+A row named `focus`, `decision`, `idea` (spirits), `category` (decision category icons), `report`, `news`, `counter-large` or `counter-small` maps to the family of the same meaning (these are the names `gfx.py` uses). Any other row name that is a family id (`idea_spirit`, `advisor_card`, `technology`, and the rest of the 40) maps to that family. A row with any other name is ignored with a note. There is no `custom` family, because an asset without a family cannot be checked or kept apart from the others.
 
 ## The `imagegen` object
 
-All keys optional; each overrides the built-in default for that row.
+`gfx.py` reads only `canvas`, `accepted`, `margin`, `frames` and `off_size_level` from a row and ignores other keys, so the optional `imagegen` object is safe next to it. All its keys are optional, and each overrides the built-in default for that row.
 
 | Key | Meaning |
 |---|---|
-| `automation` | `generate` (every family except the counters and the division emblem), `import_only` (a different tool makes the second frame) or `user_run_only` (a project may still set it) |
+| `automation` | `generate` (generated, processed, validated and installed here), `import_only` (another step makes the art, as for the counters and the division emblem) or `user_run_only` (a person runs the generator) |
 | `background` | `transparent` or `opaque` |
 | `container` | `dds` (uncompressed A8R8G8B8, one mip) or `tga` |
 | `folder`, `prefix`, `alt_prefixes` | Final folder and file prefix with `{feature_slug}`, `{asset}` placeholders; other prefixes the game accepts (focus accepts `goal_`) |
@@ -30,7 +48,7 @@ The processing recipe of a family (`icon`, `report_card`, `achievement`...) is n
 
 ## Rows
 
-The built-in defaults are the vanilla-measured values of HOI4 1.19.4.1 (`crates/imagegen-core/data/vanilla-measurement.json`), one row per family. A kit row overrides any of them; a mod keeps the sizes it chose (for example 94x86 for focus, 64x64 for ideas and 32x32 for decisions) by listing them in its own `.tools/gfx/profiles.json`, and `hoi4.image_families` then shows the override next to the vanilla value. Examples:
+The built-in defaults are the vanilla-measured values of HOI4 1.19.4.1 (`crates/imagegen-core/data/vanilla-measurement.json`), one row per family. A kit row overrides any of them. A mod keeps the sizes it chose (for example 94x86 for focus, 64x64 for ideas and 32x32 for decisions) by listing them in its own `.tools/gfx/profiles.json`, and `hoi4.image_families` then shows the override next to the vanilla value. Examples:
 
 ```json
 "focus": {
