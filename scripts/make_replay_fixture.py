@@ -20,7 +20,7 @@ import sys
 
 from PIL import Image
 
-REDACT_KEYS = {"safety_identifier": "user-REDACTED", "prompt_cache_key": "REDACTED", "user": None}
+REDACT_KEYS = {"safety_identifier": "user-REDACTED", "prompt_cache_key": "REDACTED", "user": None, "encrypted_content": "REDACTED"}
 
 
 def scrub(value):

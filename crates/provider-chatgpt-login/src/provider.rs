@@ -26,6 +26,11 @@ use crate::{BACKEND_URL, HOSTS, MODEL, ORIGINATOR, REASONING_EFFORT};
 /// Environment variable naming a folder where raw backend responses are saved, to build recorded-real fixtures.
 pub const RECORD_ENV: &str = "HOI4_IMAGEGEN_RECORD_RESPONSES";
 
+/// Start of a parse error for an image the provider's safety system refused.
+pub const MODERATION_PREFIX: &str = "moderation_blocked: ";
+/// Start of a parse error for an image call that failed for another reason.
+pub const FAILED_PREFIX: &str = "image_generation_failed: ";
+
 /// Refresh this long before the token expires.
 const EXPIRY_MARGIN_MS: u64 = 60_000;
 
@@ -180,7 +185,19 @@ impl ChatGptLoginProvider {
         }
         let text = String::from_utf8_lossy(&resp.body);
         self.record(&text);
-        let outcome = parse_sse(&text).map_err(|e| ProviderError::new(ErrorKind::MalformedResponse, RetryClass::ReconcileFirst, e))?;
+        let outcome = parse_sse(&text).map_err(|e| {
+            if let Some(d) = e.strip_prefix(MODERATION_PREFIX) {
+                ProviderError::new(
+                    ErrorKind::ModerationBlocked,
+                    RetryClass::Terminal,
+                    format!("the provider's safety system refused this image; change the brief or the references and plan again ({d})"),
+                )
+            } else if let Some(d) = e.strip_prefix(FAILED_PREFIX) {
+                ProviderError::new(ErrorKind::BadRequest, RetryClass::Terminal, format!("the image call failed: {d}"))
+            } else {
+                ProviderError::new(ErrorKind::MalformedResponse, RetryClass::ReconcileFirst, e)
+            }
+        })?;
         let (model, effort) = verify_model(&outcome)?;
         let mut notes = vec![format!("ran on {model} at {effort} reasoning effort, as reported by the backend; usage is not reported")];
         if let Some(meta) = outcome.image_meta.as_object() {
@@ -278,6 +295,18 @@ pub fn parse_sse(stream: &str) -> Result<SseOutcome, String> {
         }
         match v.get("type").and_then(Value::as_str) {
             Some("response.output_item.done") if image.is_none() => {
+                // a refused or failed image call: the backend then answers in text, and the stream has no image
+                if v.pointer("/item/type").and_then(Value::as_str) == Some("image_generation_call")
+                    && v.pointer("/item/status").and_then(Value::as_str) == Some("failed")
+                {
+                    let detail = match v.pointer("/item/error") {
+                        Some(Value::String(s)) => s.clone(),
+                        Some(other) => other.to_string(),
+                        None => "no detail".into(),
+                    };
+                    let kind = if detail.contains("moderation_blocked") { MODERATION_PREFIX } else { FAILED_PREFIX };
+                    return Err(format!("{kind}{detail}"));
+                }
                 if v.pointer("/item/type").and_then(Value::as_str) == Some("image_generation_call") {
                     if let Some(result) = v.pointer("/item/result").and_then(Value::as_str) {
                         image = Some(result.to_string());

@@ -142,3 +142,16 @@ fn an_expired_token_is_refreshed_before_the_recorded_call() {
     let urls: Vec<String> = f.requests().iter().map(|r| r.url.clone()).collect();
     assert!(urls[0].ends_with("/oauth/token") && urls[1].ends_with(BACKEND_PATH), "{urls:?}");
 }
+
+/// RECORDED-REAL REPLAY of a refused image (2026-11-01, an officer-corps icon brief during the end-to-end run): the
+/// image call ends with `status: failed` and `moderation_blocked`, then the backend answers in text.
+const REFUSED: &str = include_str!("fixtures/recorded-real/moderation-blocked-2026-11-01.sse");
+
+#[test]
+fn a_moderation_refusal_is_reported_as_such_and_never_retried() {
+    assert!(REFUSED.contains("moderation_blocked") && !REFUSED.contains("gAAAA"), "the fixture is the scrubbed refusal");
+    let (_d, _f, p) = replay(200, REFUSED.to_string(), None);
+    let e = p.generate(&request(), &CallContext::new()).unwrap_err();
+    assert_eq!((e.kind, e.retry), (ErrorKind::ModerationBlocked, RetryClass::Terminal));
+    assert!(e.message.contains("safety system"), "{}", e.message);
+}
