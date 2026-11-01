@@ -17,6 +17,7 @@ use imagegen_providers::types::{CancelToken, JobRef, ProviderError, Sleeper};
 use imagegen_providers::{ErrorKind, HttpTransport, ProviderRegistry};
 use serde_json::Value;
 
+pub mod autostyle;
 pub mod generate;
 pub mod install;
 pub mod misc;

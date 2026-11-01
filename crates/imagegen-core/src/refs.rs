@@ -1,18 +1,17 @@
-//! Reference images: loading, validation and the vanilla-art opt-in (decision D4).
+//! Reference images: loading and validation. Vanilla art may always be sent (decision D4, amended 2026-11-01).
 //!
 //! Upstream read any path, trusted the file extension as a fallback and sent whatever it found. Here a
 //! reference must be a real PNG, JPEG, WebP, DDS or TGA found inside the project; its type comes from its
 //! bytes, markup is refused, size and pixel caps apply, and it is re-encoded to a clean PNG so metadata and
-//! trailing data never reach a provider. Paradox's own art (the installed game or the kit's vanilla
-//! reference shelf) is sent only when the project opted in.
+//! trailing data never reach a provider. Paradox's own art (the installed game or a vanilla reference shelf)
+//! may be sent to a provider, and its origin is recorded with every reference; the tool never copies it into a mod.
 
 use std::path::Path;
 
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use crate::config::PolicyConfig;
-use crate::error::{Error, Result, RetryClass};
+use crate::error::{Error, Result};
 use crate::fsio::{display_path, read_limited, ProjectFs};
 use crate::hashing::sha256_hex;
 use crate::pixels::{decode, encode_png, DecodeLimits, SourceFormat};
@@ -22,7 +21,7 @@ use crate::resize::resize_lanczos3;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum RefRole {
-    /// Shows the target style (approved project art, or opted-in vanilla art).
+    /// Shows the target style (approved project art, or vanilla art).
     StyleAnchor,
     /// Shows the subject to depict.
     SubjectAnchor,
@@ -52,9 +51,9 @@ pub enum RefOrigin {
     Project,
     /// An earlier candidate of this tool.
     PreviousCandidate,
-    /// The kit's vanilla reference shelf (Paradox-derived). Needs the D4 opt-in.
+    /// A vanilla reference shelf in the mod (the kit's `vanilla_reference`, Chaos Redux's `gfx_references`): Paradox art.
     KitShelf,
-    /// The installed game. Needs the D4 opt-in.
+    /// The installed game: Paradox art.
     InstalledGame,
 }
 
@@ -68,7 +67,7 @@ impl RefOrigin {
 /// A reference as the caller names it.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct ReferenceInput {
-    /// Project-relative path (an absolute path inside the installed game folder is accepted only with the D4 opt-in).
+    /// Project-relative path (an absolute path inside the installed game folder is accepted too).
     pub path: String,
     /// Role in the request.
     pub role: RefRole,
@@ -109,30 +108,16 @@ pub const MAX_REFERENCES: usize = 8;
 /// Total clean PNG bytes one request may carry.
 pub const MAX_TOTAL_REFERENCE_BYTES: usize = 64 * 1024 * 1024;
 
-const KIT_SHELF_MARKER: &str = "assets/vanilla_reference/";
+const KIT_SHELF_MARKERS: [&str; 2] = ["assets/vanilla_reference/", "assets/gfx_references/"];
 
 /// Classify a project-relative path.
 pub fn classify_project_path(rel: &str) -> RefOrigin {
     let unified = rel.replace('\\', "/").to_ascii_lowercase();
-    if unified.contains(KIT_SHELF_MARKER) {
+    if KIT_SHELF_MARKERS.iter().any(|m| unified.contains(m)) {
         RefOrigin::KitShelf
     } else {
         RefOrigin::Project
     }
-}
-
-/// Refuse Paradox art unless the project opted in (D4).
-pub fn check_vanilla_policy(origin: RefOrigin, policy: &PolicyConfig, what: &str) -> Result<()> {
-    if origin.is_vanilla() && !policy.allow_vanilla_references {
-        return Err(Error::refused(
-            "vanilla_reference_not_allowed",
-            format!(
-                "{what} is Paradox art. Sending it to a provider is a per-project opt-in (decision D4); set policy.allow_vanilla_references = true in .hoi4-imagegen/config.toml to allow it for this project"
-            ),
-            RetryClass::RequiresAuthorization,
-        ));
-    }
-    Ok(())
 }
 
 /// Turn raw bytes into a clean, capped PNG reference.
@@ -183,25 +168,19 @@ pub fn clean_reference(
 
 /// Load a reference named by the caller.
 ///
-/// `game_dir` is the installed game folder, used only to recognise (and gate) absolute paths into it.
-pub fn load_reference(
-    fs: &ProjectFs,
-    game_dir: Option<&Path>,
-    policy: &PolicyConfig,
-    input: &ReferenceInput,
-) -> Result<LoadedRef> {
+/// `game_dir` is the installed game folder, used to recognise absolute paths into it.
+pub fn load_reference(fs: &ProjectFs, game_dir: Option<&Path>, input: &ReferenceInput) -> Result<LoadedRef> {
     let raw = input.path.as_str();
     let as_path = Path::new(raw);
     if as_path.is_absolute() || raw.starts_with('/') || raw.starts_with('\\') {
-        // The only absolute locations accepted: inside the project, or inside the installed game (opt-in).
+        // The only absolute locations accepted: inside the project, or inside the installed game.
         let canon = std::fs::canonicalize(as_path).map_err(|_| Error::NotFound(raw.to_string()))?;
         if canon.starts_with(fs.root()) {
             let rel = fs.rel(&canon)?;
-            return load_project_relative(fs, policy, &rel, input.role);
+            return load_project_relative(fs, &rel, input.role);
         }
         if let Some(game) = game_dir.and_then(|g| std::fs::canonicalize(g).ok()) {
             if canon.starts_with(&game) {
-                check_vanilla_policy(RefOrigin::InstalledGame, policy, &format!("'{}'", display_path(&canon)))?;
                 let bytes = read_limited(&canon, MAX_REFERENCE_BYTES)?;
                 let name = canon.file_name().map(|s| s.to_string_lossy().to_string()).unwrap_or_default();
                 return clean_reference(&bytes, &name, &display_path(&canon), input.role, RefOrigin::InstalledGame);
@@ -211,12 +190,11 @@ pub fn load_reference(
             "reference '{raw}' is outside the project; copy it into the project's references/ folder"
         )));
     }
-    load_project_relative(fs, policy, raw, input.role)
+    load_project_relative(fs, raw, input.role)
 }
 
-fn load_project_relative(fs: &ProjectFs, policy: &PolicyConfig, rel: &str, role: RefRole) -> Result<LoadedRef> {
+fn load_project_relative(fs: &ProjectFs, rel: &str, role: RefRole) -> Result<LoadedRef> {
     let origin = classify_project_path(rel);
-    check_vanilla_policy(origin, policy, &format!("'{rel}'"))?;
     let bytes = fs.read(rel, MAX_REFERENCE_BYTES)?;
     let name = rel.rsplit(['/', '\\']).next().unwrap_or(rel);
     clean_reference(&bytes, name, &rel.replace('\\', "/"), role, origin)
@@ -256,7 +234,6 @@ mod tests {
         let r = load_reference(
             &fs,
             None,
-            &PolicyConfig::default(),
             &ReferenceInput { path: "references/style.png".into(), role: RefRole::StyleAnchor },
         )
         .unwrap();
@@ -274,7 +251,6 @@ mod tests {
         let r = load_reference(
             &fs,
             None,
-            &PolicyConfig::default(),
             &ReferenceInput { path: "references/real_png.jpg".into(), role: RefRole::SubjectAnchor },
         )
         .unwrap();
@@ -287,12 +263,11 @@ mod tests {
         let (_d, fs) = setup();
         fs.write_new("references/a.png", b"<svg xmlns='http://www.w3.org/2000/svg'/>").unwrap();
         fs.write_new("references/b.png", b"not an image at all").unwrap();
-        let policy = PolicyConfig::default();
         for p in ["references/a.png", "references/b.png"] {
-            let err = load_reference(&fs, None, &policy, &ReferenceInput { path: p.into(), role: RefRole::StyleAnchor }).unwrap_err();
+            let err = load_reference(&fs, None, &ReferenceInput { path: p.into(), role: RefRole::StyleAnchor }).unwrap_err();
             assert!(matches!(err, Error::Image(_)), "{p}: {err}");
         }
-        let err = load_reference(&fs, None, &policy, &ReferenceInput { path: "references/none.png".into(), role: RefRole::StyleAnchor }).unwrap_err();
+        let err = load_reference(&fs, None, &ReferenceInput { path: "references/none.png".into(), role: RefRole::StyleAnchor }).unwrap_err();
         assert!(matches!(err, Error::NotFound(_)));
     }
 
@@ -301,32 +276,27 @@ mod tests {
         let (_d, fs) = setup();
         let outside = tempfile::tempdir().unwrap();
         std::fs::write(outside.path().join("x.png"), png(4, 4)).unwrap();
-        let policy = PolicyConfig::default();
         let abs = outside.path().join("x.png").display().to_string();
         for p in ["../x.png", abs.as_str(), "/etc/passwd", "C:\\Windows\\win.ini"] {
-            let err = load_reference(&fs, None, &policy, &ReferenceInput { path: p.into(), role: RefRole::StyleAnchor }).unwrap_err();
+            let err = load_reference(&fs, None, &ReferenceInput { path: p.into(), role: RefRole::StyleAnchor }).unwrap_err();
             assert!(matches!(err, Error::PathRejected(_) | Error::NotFound(_)), "{p}: {err}");
         }
     }
 
     #[test]
-    fn kit_shelf_art_needs_the_opt_in() {
+    fn shelf_art_loads_without_any_flag_and_is_recorded_as_vanilla() {
         let (_d, fs) = setup();
-        fs.write_new(".claude/skills/hoi4-feature-assets/assets/vanilla_reference/icons/national_focus/a.png", &png(16, 16)).unwrap();
-        let input = ReferenceInput {
-            path: ".claude/skills/hoi4-feature-assets/assets/vanilla_reference/icons/national_focus/a.png".into(),
-            role: RefRole::StyleAnchor,
-        };
-        let err = load_reference(&fs, None, &PolicyConfig::default(), &input).unwrap_err();
-        assert_eq!(err.code(), "vanilla_reference_not_allowed");
-        assert_eq!(err.retry_class(), RetryClass::RequiresAuthorization);
-        let allowed = PolicyConfig { allow_vanilla_references: true, ..Default::default() };
-        let ok = load_reference(&fs, None, &allowed, &input).unwrap();
-        assert_eq!(ok.origin, RefOrigin::KitShelf);
+        for root in ["vanilla_reference", "gfx_references"] {
+            let rel = format!(".claude/skills/hoi4-feature-assets/assets/{root}/icons/national_focus/a.png");
+            fs.write_new(&rel, &png(16, 16)).unwrap();
+            let r = load_reference(&fs, None, &ReferenceInput { path: rel, role: RefRole::StyleAnchor }).unwrap();
+            assert_eq!(r.origin, RefOrigin::KitShelf);
+            assert!(r.origin.is_vanilla());
+        }
     }
 
     #[test]
-    fn installed_game_art_needs_the_opt_in_and_decodes_dds() {
+    fn installed_game_art_loads_without_a_flag_and_decodes_dds() {
         let (_d, fs) = setup();
         let game = tempfile::tempdir().unwrap();
         let dds = crate::dds::write_a8r8g8b8(&Rgba::filled(100, 88, [200, 50, 50, 255]));
@@ -335,13 +305,12 @@ mod tests {
         std::fs::write(file.join("focus_x.dds"), dds).unwrap();
         let abs = file.join("focus_x.dds").display().to_string();
         let input = ReferenceInput { path: abs, role: RefRole::StyleAnchor };
-        let err = load_reference(&fs, Some(game.path()), &PolicyConfig::default(), &input).unwrap_err();
-        assert_eq!(err.code(), "vanilla_reference_not_allowed");
-        let allowed = PolicyConfig { allow_vanilla_references: true, ..Default::default() };
-        let r = load_reference(&fs, Some(game.path()), &allowed, &input).unwrap();
+        let r = load_reference(&fs, Some(game.path()), &input).unwrap();
         assert_eq!(r.origin, RefOrigin::InstalledGame);
         assert_eq!(r.source_format, "dds");
         assert_eq!((r.width, r.height), (100, 88));
+        // without the game folder the same absolute path is outside the project and refused
+        assert!(load_reference(&fs, None, &input).is_err());
     }
 
     #[test]
@@ -351,7 +320,6 @@ mod tests {
         let r = load_reference(
             &fs,
             None,
-            &PolicyConfig::default(),
             &ReferenceInput { path: "references/big.png".into(), role: RefRole::GeometryAnchor },
         )
         .unwrap();

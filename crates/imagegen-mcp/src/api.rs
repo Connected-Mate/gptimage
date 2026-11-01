@@ -86,7 +86,7 @@ macro_rules! group_request {
             /// Project style profile to apply.
             #[serde(default)]
             pub style: Option<String>,
-            /// Reference images.
+            /// Reference images of your own. Style references are also chosen automatically (the mod first, then vanilla), up to the provider limit.
             #[serde(default)]
             pub references: Vec<ReferenceInput>,
             /// Provider id; defaults to the style's, the project's, or the first ready one.

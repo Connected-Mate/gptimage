@@ -49,6 +49,9 @@ impl Engine {
                 "terms_note": desc.terms_note,
             }));
         }
+        if self.config.policy.allow_vanilla_references.is_some() {
+            warnings.push("policy.allow_vanilla_references is deprecated and ignored: vanilla references may always be sent (decision D4, amended 2026-11-01). Remove it from .hoi4-imagegen/config.toml".into());
+        }
         let game = self.game_dir();
         let ledger = self.ledger.verify().ok();
         let kit_path = self.config.kit_profiles_file(self.fs.root());
@@ -70,7 +73,10 @@ impl Engine {
             },
             "ledger": {"exists": self.ledger.exists(), "entries": ledger.as_ref().map(|l| l.entries), "chain_ok": ledger.as_ref().map(|l| l.ok), "first_bad": ledger.and_then(|l| l.first_bad)},
             "policy": {
-                "allow_vanilla_references": self.config.policy.allow_vanilla_references,
+                "allow_vanilla_references": {
+                    "configured": self.config.policy.allow_vanilla_references,
+                    "effect": "none: deprecated and ignored. Vanilla art may always be sent to a provider as a reference (decision D4, amended 2026-11-01). The tool never copies it into the mod and records the origin of every reference",
+                },
                 "forbidden_families": self.config.policy.forbidden_families,
                 "max_usd_per_call": self.config.policy.max_usd_per_call,
             },
@@ -79,8 +85,9 @@ impl Engine {
         })
     }
 
-    /// The style sources that exist today for a family: the style profiles that apply to it and the reference
-    /// folders of the family. Another packet adds automatic selection.
+    /// The style sources of a family: the tiers found with their counts, the references the plan would send with
+    /// the reason for each, the measured statistics and the drift threshold, plus the style profiles that apply and
+    /// the reference folders of the family.
     fn style_sources(&self, prof: &imagegen_core::profile::Profile) -> Value {
         let styles: Vec<Value> = style::list(&self.fs)
             .unwrap_or_default()
@@ -99,7 +106,14 @@ impl Engine {
                 json!({"dir": d, "exists": self.fs.exists(d), "files": files.len()})
             })
             .collect();
-        json!({"style_profiles": styles, "reference_dirs": dirs, "selection": "explicit: name a style and references in the request; automatic selection is not built yet"})
+        let pinned = self.pinned_style_for(prof.family, None);
+        let resolved = self.resolve_style(prof, pinned.as_ref(), imagegen_core::stylesrc::DEFAULT_SEND, true);
+        json!({
+            "style_profiles": styles,
+            "reference_dirs": dirs,
+            "selection": "automatic, mod first: (1) the project's pinned style for the family, (2) the mod's copy of the asset skill's assets folder, (3) the mod's own installed assets, (4) vanilla art from the installed game. The first tier with at least 3 usable images is used. Vanilla may always be sent. A provider's own reference limit can reduce the number sent at plan time",
+            "automatic": resolved.report,
+        })
     }
 
     /// `hoi4.image_families`
@@ -192,7 +206,7 @@ impl Engine {
                 self.collect_reference_files("references", 0, &mut files)?;
                 let recorded: Vec<Value> = self.ledger.entries()?.into_iter().filter(|e| e.kind == kind::REFERENCE).map(|e| e.data).collect();
                 Ok(
-                    json!({"files": files, "recorded": recorded, "styles": style::list(&self.fs)?, "note": "Put approved reference images under references/. Paradox art is refused unless policy.allow_vanilla_references is set for the project."}),
+                    json!({"files": files, "recorded": recorded, "styles": style::list(&self.fs)?, "note": "Put approved reference images under references/. References are also chosen automatically from the mod first, then vanilla (see hoi4.image_families for a family). Paradox art may be sent to a provider and its origin is recorded."}),
                 )
             }
             ReferencesAction::Add | ReferencesAction::Approve => {
@@ -200,7 +214,7 @@ impl Engine {
                 let note = need(&p.note, "note (rights note: where the image comes from and what you may do with it)")?;
                 let role = p.role.unwrap_or(refs::RefRole::StyleAnchor);
                 let loaded =
-                    refs::load_reference(&self.fs, self.game_dir().as_deref(), &self.config.policy, &ReferenceInput { path: path.clone(), role })?;
+                    refs::load_reference(&self.fs, self.game_dir().as_deref(), &ReferenceInput { path: path.clone(), role })?;
                 let approving = p.action == ReferencesAction::Approve;
                 if approving {
                     need(&p.approver, "approver")?;
@@ -226,14 +240,12 @@ impl Engine {
                 let mut s = p.style.clone().ok_or_else(|| EngineError::invalid("style is required for style_save"))?;
                 for r in &mut s.references {
                     // pin the hash of the file as it is now; a changed file later invalidates plans that use the style
-                    let loaded = refs::load_reference(
+                    refs::load_reference(
                         &self.fs,
                         self.game_dir().as_deref(),
-                        &self.config.policy,
                         &ReferenceInput { path: r.path.clone(), role: refs::RefRole::StyleAnchor },
                     )?;
                     r.sha256 = sha256_hex(&self.fs.read(&r.path, refs::MAX_REFERENCE_BYTES)?);
-                    let _ = loaded;
                 }
                 if s.approved_by.is_some() && s.approved_on.is_none() {
                     s.approved_on = Some(self.now());

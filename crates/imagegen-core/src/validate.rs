@@ -15,6 +15,7 @@ use crate::dds;
 use crate::pixels::Rgba;
 use crate::process::edge_stats;
 use crate::profile::{Background, Profile};
+use crate::styledesc::{self, DriftModel};
 use crate::tga;
 
 /// Severity of a finding.
@@ -122,7 +123,8 @@ pub struct Options {
 }
 
 /// Every check id this crate knows.
-pub const ALL_CHECKS: &[&str] = &["size", "alpha", "opaque_canvas", "opaque", "fringe", "margin", "fill", "checker", "ghost", "frames", "dds", "tga"];
+pub const ALL_CHECKS: &[&str] =
+    &["size", "alpha", "opaque_canvas", "opaque", "fringe", "margin", "fill", "checker", "ghost", "frames", "style", "dds", "tga"];
 
 /// Hash of a check set (order does not matter). The install gate compares the hash recorded with a validation
 /// against the full set of the artifact's family, so a validation that skipped a check cannot open it.
@@ -359,6 +361,60 @@ pub fn validate_image(img: &Rgba, profile: &Profile, checks: &[String], opts: &O
 
     let status = if findings.iter().any(|f| f.level == Level::Error) { Status::Fail } else { Status::Pass };
     Report { status, findings, frames: stats, size: [img.width, img.height], pixels_sha256: img.pixels_sha256(), checks_run: run }
+}
+
+/// The style distribution the `style` check compares an image with. It is built from the family's chosen style
+/// source (see `stylesrc`), so it is not part of [`Options`] and `validate_image` never runs it.
+#[derive(Debug, Clone)]
+pub struct StyleModel {
+    /// The drift model.
+    pub drift: DriftModel,
+    /// Tier of the source, 1 to 4.
+    pub tier: u8,
+    /// Tier name.
+    pub tier_name: String,
+    /// What the distribution describes, for the message.
+    pub subject: String,
+}
+
+/// The `style` check: a candidate far from the family's style distribution gets `GFX-STYLE-DRIFT` at warning level
+/// (never an error, so it never blocks an install). Within the distribution it gets the advisory `GFX-STYLE-MATCH`,
+/// which exists so the recorded validation carries the numbers either way. `None` for an image with no visible pixel.
+pub fn style_check(img: &Rgba, model: &StyleModel) -> Option<Finding> {
+    let a = styledesc::analyse(img)?;
+    let d = model.drift.check(&a.v);
+    let round = |x: f64| (x * 1000.0).round() / 1000.0;
+    let worst: Vec<Value> = d.worst.iter().map(|(n, z)| json!({"dimension": n, "z": round(*z)})).collect();
+    let evidence = json!({
+        "z_rms": round(d.z_rms),
+        "threshold": round(d.threshold),
+        "p95_leave_one_out": round(model.drift.p95_leave_one_out),
+        "images": model.drift.images,
+        "tier": model.tier,
+        "tier_name": model.tier_name,
+        "furthest_dimensions": worst,
+    });
+    let furthest = d.worst.iter().map(|(n, z)| format!("{n} {z:+.1}")).collect::<Vec<_>>().join(", ");
+    Some(if d.drifted {
+        Finding::new(
+            "GFX-STYLE-DRIFT",
+            Level::Warning,
+            format!(
+                "the image is far from {}: RMS z-score {:.2} against a threshold of {:.2} (furthest: {furthest}). Review it against the references; this never blocks an install",
+                model.subject, d.z_rms, d.threshold
+            ),
+            None,
+            evidence,
+        )
+    } else {
+        Finding::new(
+            "GFX-STYLE-MATCH",
+            Level::Advisory,
+            format!("the image is within the style of {}: RMS z-score {:.2}, threshold {:.2}", model.subject, d.z_rms, d.threshold),
+            None,
+            evidence,
+        )
+    })
 }
 
 /// Measure one frame.

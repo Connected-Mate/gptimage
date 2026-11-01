@@ -14,6 +14,7 @@ use crate::profile::Profile;
 use crate::records::{ProfileRef, RefSummary};
 use crate::refs::{LoadedRef, ReferenceInput};
 use crate::style::StyleProfile;
+use crate::stylesrc::StyleReport;
 
 /// What a caller asks for.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
@@ -149,6 +150,9 @@ pub struct Plan {
     pub style: Option<String>,
     /// Hash of the style file content.
     pub style_sha256: Option<String>,
+    /// Where the automatic style references came from: tiers, chosen references with reasons, statistics.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub style_sources: Option<StyleReport>,
     /// Estimate.
     pub estimate: PlanEstimate,
     /// Output paths.
@@ -203,6 +207,7 @@ pub fn build_prompt(
     style: Option<&StyleProfile>,
     refs: &[LoadedRef],
     transparent: bool,
+    measured_style: Option<&str>,
 ) -> PromptPlan {
     let subst = |s: &str| s.replace("{w}", &canvas[0].to_string()).replace("{h}", &canvas[1].to_string());
     let mut text = format!("Create one Hearts of Iron IV {}: {}\n", profile.family.label(), brief.trim());
@@ -213,19 +218,23 @@ pub fn build_prompt(
     if transparent && !profile.imagegen.prompt.rules.iter().any(|r| r.to_ascii_lowercase().contains("transparent")) {
         text.push_str("- Real transparent background (alpha), not a drawn checkerboard.\n");
     }
-    if let Some(s) = style {
-        if !s.description.is_empty() || !s.prompt_fragments.is_empty() || !s.palette_notes.is_empty() {
-            text.push_str("\nStyle:\n");
-            if !s.description.is_empty() {
-                text.push_str(&format!("- {}\n", s.description));
-            }
-            for f in &s.prompt_fragments {
-                text.push_str(&format!("- {f}\n"));
-            }
-            if !s.palette_notes.is_empty() {
-                text.push_str(&format!("- Palette: {}\n", s.palette_notes));
-            }
+    let note = style.filter(|s| !s.description.is_empty() || !s.prompt_fragments.is_empty() || !s.palette_notes.is_empty());
+    if note.is_some() || measured_style.is_some() {
+        text.push_str("\nStyle:\n");
+    }
+    if let Some(s) = note {
+        if !s.description.is_empty() {
+            text.push_str(&format!("- {}\n", s.description));
         }
+        for f in &s.prompt_fragments {
+            text.push_str(&format!("- {f}\n"));
+        }
+        if !s.palette_notes.is_empty() {
+            text.push_str(&format!("- Palette: {}\n", s.palette_notes));
+        }
+    }
+    if let Some(m) = measured_style {
+        text.push_str(&format!("- {m}\n"));
     }
     if !refs.is_empty() {
         text.push_str("\nReference images, in the order attached:\n");
@@ -266,7 +275,7 @@ mod tests {
     fn plan() -> Plan {
         let set = ProfileSet::builtin();
         let prof = set.for_family(Family::Focus).unwrap();
-        let prompt = build_prompt(prof, [100, 88], "an iron wall", None, &[], true);
+        let prompt = build_prompt(prof, [100, 88], "an iron wall", None, &[], true, None);
         let mut p = Plan {
             plan_id: String::new(),
             plan_hash: String::new(),
@@ -298,6 +307,7 @@ mod tests {
             references: vec![],
             style: None,
             style_sha256: None,
+            style_sources: None,
             estimate: PlanEstimate {
                 usd_per_call: 0.006,
                 calls: 1,
@@ -386,11 +396,12 @@ mod tests {
             notes: vec![],
             png: vec![],
         };
-        let p = build_prompt(prof, [100, 88], "a steel gate", Some(&style), &[r], true);
+        let p = build_prompt(prof, [100, 88], "a steel gate", Some(&style), &[r], true, Some("Match the mod's focus art: muted palette."));
         assert!(p.text.contains("national focus icon: a steel gate"));
         assert!(p.text.contains("100x88"));
         assert!(p.text.contains("Aged oil painting.") && p.text.contains("Visible brush strokes.") && p.text.contains("earth tones"));
         assert!(p.text.contains("1. style anchor"));
+        assert!(p.text.contains("- Palette: earth tones\n- Match the mod's focus art: muted palette.\n"));
         assert!(p.text.contains("neon colours") && p.text.contains("a drawn checkerboard pattern"));
         assert_eq!(p.sha256, sha256_hex(p.text.as_bytes()));
         assert_eq!(
@@ -412,7 +423,8 @@ mod tests {
                     notes: vec![],
                     png: vec![]
                 }],
-                true
+                true,
+                Some("Match the mod's focus art: muted palette.")
             )
         );
     }

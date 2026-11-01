@@ -281,7 +281,7 @@ fn policy_gates_follow_the_maintainer_decisions() {
 }
 
 #[test]
-fn vanilla_art_as_a_reference_is_a_per_project_opt_in() {
+fn vanilla_art_as_a_reference_needs_no_flag_and_its_origin_is_recorded() {
     let shelf = ".claude/skills/hoi4-feature-assets/assets/vanilla_reference/icons/national_focus/a.png";
     let plan_with_ref = |h: &Harness| {
         std::fs::create_dir_all(h.root().join(".claude/skills/hoi4-feature-assets/assets/vanilla_reference/icons/national_focus")).unwrap();
@@ -294,13 +294,19 @@ fn vanilla_art_as_a_reference_is_a_per_project_opt_in() {
             .unwrap(),
         )
     };
-    let off = openai_harness();
-    assert_eq!(code(&plan_with_ref(&off).unwrap_err()), "vanilla_reference_not_allowed");
-    let on =
-        harness("[defaults]\nprovider = \"openai\"\n[policy]\nallow_vanilla_references = true\n", &[("OPENAI_API_KEY", "sk-test-synthetic-000")]);
-    let plan = plan_with_ref(&on).unwrap();
+    let plan = plan_with_ref(&openai_harness()).unwrap();
     assert_eq!(plan.references[0].origin, imagegen_core::refs::RefOrigin::KitShelf);
-    assert!(plan.approvals.iter().any(|a| a.contains("Paradox art")));
+    assert!(!plan.approvals.iter().any(|a| a.contains("Paradox")), "no approval is needed for vanilla references");
+    // the old key is read, ignored and reported as deprecated
+    let on =
+        harness("[defaults]
+provider = \"openai\"
+[policy]
+allow_vanilla_references = false
+", &[("OPENAI_API_KEY", "sk-test-synthetic-000")]);
+    let plan = plan_with_ref(&on).unwrap();
+    assert_eq!(plan.references[0].origin, imagegen_core::refs::RefOrigin::KitShelf, "false no longer blocks anything");
+    assert!(on.engine.status()["warnings"].as_array().unwrap().iter().any(|w| w.as_str().unwrap().contains("deprecated")));
 }
 
 #[test]
@@ -624,7 +630,8 @@ fn status_and_profiles_describe_the_project_without_leaking_keys() {
     assert!(!text.contains("sk-test-synthetic-000"), "the key value must never appear in status");
     let openai = s["providers"].as_array().unwrap().iter().find(|p| p["id"] == "openai").expect("openai listed").clone();
     assert_eq!(openai["configured"], true);
-    assert_eq!(s["policy"]["allow_vanilla_references"], false);
+    assert_eq!(s["policy"]["allow_vanilla_references"]["configured"], Value::Null, "the deprecated key is unset");
+    assert!(s["policy"]["allow_vanilla_references"]["effect"].as_str().unwrap().contains("ignored"));
     assert_eq!(s["chatgpt_login"]["compiled"], true);
     assert_eq!(s["chatgpt_login"]["signed_in"], false);
     let p = h.engine.families_info(serde_json::from_value(json!({"family": "focus"})).unwrap()).unwrap();

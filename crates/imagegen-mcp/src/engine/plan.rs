@@ -10,6 +10,7 @@ use imagegen_core::records::{kind, RefSummary};
 use imagegen_core::refs::{self, LoadedRef, RefRole, ReferenceInput};
 use imagegen_core::reuse;
 use imagegen_core::style;
+use imagegen_core::stylesrc;
 use imagegen_providers::types::{AlphaSupport, ImageRequest, ModelStatus};
 use serde_json::json;
 
@@ -84,16 +85,47 @@ impl Engine {
             EngineError::new("provider_not_found", format!("provider '{provider_id}' is not available ({why})"), RetryClass::Terminal)
         })?;
 
-        // references: the style's pinned ones first, then the caller's
+        // references, mod first (maintainer decision of 2026-11-01): the pinned style, the mod's copy of the asset
+        // skill's shelf, the mod's own assets, then vanilla. The tier is chosen from the files alone, so the
+        // provider's limit (which depends on the model) only trims the list afterwards.
         let game = self.game_dir();
-        let mut inputs: Vec<ReferenceInput> = Vec::new();
-        if let Some(s) = &style_profile {
-            inputs.extend(s.references.iter().map(|r| ReferenceInput { path: r.path.clone(), role: RefRole::StyleAnchor }));
+        let pinned = self.pinned_style_for(req.family, style_profile.as_ref());
+        let mut sources = self.resolve_style(&profile, pinned.as_ref(), stylesrc::DEFAULT_SEND, false);
+        let explicit_model = req.model.clone().or_else(|| style_profile.as_ref().and_then(|s| s.model.clone()));
+        let explicit_refs = req.references.len();
+        let wants_refs = explicit_refs > 0 || !sources.send_paths().is_empty();
+        let mut model_id = explicit_model.clone().unwrap_or_else(|| provider.default_model(wants_refs));
+        let model_refs = |m: &str| provider.descriptor().model(m).map(|x| if x.supports_edit { usize::from(x.max_refs) } else { 0 }).unwrap_or(0);
+        let cap = model_refs(&model_id).saturating_sub(explicit_refs).min(stylesrc::DEFAULT_SEND);
+        sources.limit_send(cap, &format!("{provider_id} {model_id} takes at most {} reference images", model_refs(&model_id)));
+        if explicit_model.is_none() && explicit_refs == 0 && sources.send_paths().is_empty() {
+            model_id = provider.default_model(false);
         }
+
+        let mut inputs: Vec<ReferenceInput> =
+            sources.send_paths().into_iter().map(|path| ReferenceInput { path, role: RefRole::StyleAnchor }).collect();
         inputs.extend(req.references.iter().cloned());
         let mut loaded: Vec<LoadedRef> = Vec::new();
         for input in &inputs {
-            loaded.push(refs::load_reference(&self.fs, game.as_deref(), &self.config.policy, input)?);
+            let is_auto = !req.references.contains(input);
+            match refs::load_reference(&self.fs, game.as_deref(), input) {
+                Ok(l) => {
+                    if is_auto {
+                        if let Some(c) = sources.report.chosen.iter_mut().find(|c| c.sent_to_provider && c.path == input.path) {
+                            c.sha256 = l.sha256.clone();
+                        }
+                    }
+                    loaded.push(l);
+                }
+                Err(e) if is_auto => {
+                    // an automatic reference that cannot be read is dropped; only the caller's own references fail a plan
+                    if let Some(c) = sources.report.chosen.iter_mut().find(|c| c.sent_to_provider && c.path == input.path) {
+                        c.sent_to_provider = false;
+                        c.reason = format!("{} (not sent: {e})", c.reason);
+                    }
+                }
+                Err(e) => return Err(e.into()),
+            }
         }
         refs::check_set_caps(&loaded)?;
         // a reference that is the candidate itself must not be another family's installed art
@@ -108,11 +140,6 @@ impl Engine {
             )?;
         }
 
-        let model_id = req
-            .model
-            .clone()
-            .or_else(|| style_profile.as_ref().and_then(|s| s.model.clone()))
-            .unwrap_or_else(|| provider.default_model(!loaded.is_empty()));
         if provider_id == "chatgpt_login" && model_id != provider_chatgpt_login::MODEL {
             return Err(EngineError::invalid(format!(
                 "the ChatGPT-login route runs only {} at {} reasoning effort (maintainer decision); '{model_id}' cannot be used with it",
@@ -122,7 +149,8 @@ impl Engine {
         }
         let quality = req.quality.clone().or_else(|| self.config.provider(&provider_id).quality);
         let transparent = req.transparent.unwrap_or(profile.imagegen.background == Background::Transparent);
-        let prompt = build_prompt(&profile, canvas, &brief, style_profile.as_ref(), &loaded, transparent);
+        let prompt_style = style_profile.as_ref().or(pinned.as_ref());
+        let prompt = build_prompt(&profile, canvas, &brief, prompt_style, &loaded, transparent, sources.report.style_paragraph.as_deref());
 
         let probe = ImageRequest {
             model: model_id.clone(),
@@ -192,8 +220,10 @@ impl Engine {
                 imagegen_providers::registry::key_env_names(&provider_id, &self.config.provider(&provider_id)).join(" or ")
             ));
         }
-        if loaded.iter().any(|r| r.origin.is_vanilla()) {
-            approvals.push("references include Paradox art; this project opted in with policy.allow_vanilla_references (decision D4)".into());
+        if req.style.is_none() {
+            if let Some(p) = &pinned {
+                warnings.push(format!("the project's pinned style '{}' for {} was applied automatically (references and style text)", p.name, req.family));
+            }
         }
         if est.usd > self.config.policy.max_usd_per_call {
             approvals.push(format!(
@@ -244,6 +274,7 @@ impl Engine {
                 .map(|r| RefSummary { path: r.path.clone(), role: r.role, origin: r.origin, sha256: r.sha256.clone() })
                 .collect(),
             style: req.style.clone(),
+            style_sources: Some(sources.report.clone()),
             style_sha256: match &req.style {
                 Some(n) => Some(imagegen_core::hashing::sha256_hex(&self.fs.read(&style::style_path(n)?, 256 * 1024)?)),
                 None => None,

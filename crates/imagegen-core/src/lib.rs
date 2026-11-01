@@ -34,6 +34,8 @@ pub mod reuse;
 pub mod rubric;
 pub mod sprite;
 pub mod style;
+pub mod styledesc;
+pub mod stylesrc;
 pub mod tga;
 pub mod validate;
 

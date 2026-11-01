@@ -77,7 +77,7 @@ impl Engine {
         let mut provider_refs = Vec::new();
         for r in &plan.references {
             let loaded =
-                refs::load_reference(&self.fs, game.as_deref(), &self.config.policy, &ReferenceInput { path: r.path.clone(), role: r.role })?;
+                refs::load_reference(&self.fs, game.as_deref(), &ReferenceInput { path: r.path.clone(), role: r.role })?;
             if loaded.sha256 != r.sha256 {
                 return Err(EngineError::refused(
                     "reference_changed",
@@ -198,7 +198,7 @@ impl Engine {
         let game = self.game_dir();
         let mut loaded = Vec::new();
         for r in &p.extra_references {
-            loaded.push(refs::load_reference(&self.fs, game.as_deref(), &self.config.policy, r)?);
+            loaded.push(refs::load_reference(&self.fs, game.as_deref(), r)?);
         }
         refs::check_set_caps(&loaded)?;
         let mask_png = match &p.mask {
