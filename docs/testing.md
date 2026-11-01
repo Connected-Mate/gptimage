@@ -29,7 +29,7 @@ Evidence kinds stay separate. Nothing marked synthetic is provider evidence.
 export CARGO_TARGET_DIR=<a shared target folder>   # disk is tight; share one build cache
 cargo test --no-fail-fast                         # default members
 cargo test -p provider-chatgpt-login              # the plugin, which is not a default member
-cargo test -p imagegen-mcp --features unofficial-chatgpt-login   # plugin wiring
+cargo test -p imagegen-mcp --test plugin_gates   # ChatGPT-login wiring (D-12a): local default, hosted refusal
 
 ## Last full run (Windows 11, debug build)
 

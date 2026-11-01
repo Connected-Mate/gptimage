@@ -1,6 +1,6 @@
 [package]
 name = "provider-chatgpt-login"
-description = "OPT-IN, UNOFFICIAL, personal-use image provider that signs in with a ChatGPT account and calls an undocumented backend. Not a default workspace member; never part of a default or hosted build."
+description = "ChatGPT-login image provider for local use: signs in with your own ChatGPT account (gpt-6-luna, high effort). Never part of a hosted deployment."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -19,3 +19,12 @@ sha2.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true
+
+[target.'cfg(windows)'.dependencies]
+keyring = { version = "3.6", default-features = false, features = ["windows-native"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+keyring = { version = "3.6", default-features = false, features = ["apple-native"] }
+
+[target.'cfg(all(unix, not(target_os = "macos")))'.dependencies]
+keyring = { version = "3.6", default-features = false, features = ["sync-secret-service", "crypto-rust", "vendored"] }

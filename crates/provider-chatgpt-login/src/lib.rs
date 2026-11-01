@@ -1,27 +1,29 @@
-//! OPT-IN, UNOFFICIAL provider: sign in with a ChatGPT account and generate images through an undocumented backend.
+//! The ChatGPT-login provider: sign in with your own ChatGPT account and generate images on your plan.
 //!
 //! Derived from Connected-Mate/gptimage (MIT, commit dfb4948): `src/auth.js`, `src/login.js` and `src/codex.js`
-//! are ported to Rust here and nowhere else. Read `docs/unofficial-chatgpt-login.md` before enabling it.
+//! are ported to Rust here and nowhere else. See `docs/chatgpt-login.md`.
 //!
-//! What this is, plainly:
-//! * It impersonates the OpenAI Codex CLI against an endpoint OpenAI does not publish or support. It can change
-//!   or be blocked without notice, and the model slug it uses is not a stable image model.
-//! * Upstream's own README warns that heavy use can hit plan rate limits or "worst case, account restrictions".
-//!   OpenAI's guidance is to use Platform API keys for general API calls. Whether this use fits OpenAI's Terms of
-//!   Use was not verified (the primary text could not be fetched).
+//! Decision D-12a (hoi4-factory, 2026-11-01): this is a first-class local route. It ships in every local build,
+//! needs one explicit browser sign-in that shows the risk note once, and becomes the default local provider once
+//! the user is signed in. It is never part of hosted HOI4 Factory: [`PluginMode::Hosted`] is always refused.
+//!
+//! What this is, plainly (the risk note shown at sign-in says the same):
+//! * It presents itself as the OpenAI Codex CLI to an endpoint OpenAI does not publish for third parties. It can
+//!   change or be blocked without notice. Heavy use can hit plan limits or, in the worst case, restrict the account.
 //! * It is for one person's own account on their own machine. Never share tokens, never run it on a server.
 //!
-//! What it does differently from upstream: it keeps its own credential file only (it never reads or writes
-//! `~/.codex/auth.json`, so it cannot rotate another tool's refresh token), has no token environment variable,
-//! reports usage as unknown and never charges any operator allowance.
+//! The maintainer fixed the model: every image request runs on [`MODEL`] at [`REASONING_EFFORT`] reasoning effort.
+//! There is no override and no fallback. A response that does not echo both is refused.
 //!
-//! Isolation: this crate is a workspace member but not a default member. `imagegen-core` and
-//! `imagegen-providers` know nothing about it. `imagegen-mcp` and `imagegen-cli` depend on it only through the
-//! `unofficial-chatgpt-login` feature, and register it only after [`evaluate_gates`] passes.
+//! It keeps its own credentials only (it never reads or writes `~/.codex/auth.json`), has no token environment
+//! variable, reports usage as unknown and never charges any operator allowance.
 
 #![forbid(unsafe_code)]
+// ProviderError is the shared error type of every provider; boxing it here alone would buy nothing.
+#![allow(clippy::result_large_err)]
 
 pub mod cli;
+pub mod consent;
 pub mod oauth;
 pub mod provider;
 pub mod store;
@@ -31,9 +33,8 @@ pub use provider::ChatGptLoginProvider;
 // ---------------------------------------------------------------------------------------------------------
 // Everything that identifies this client to the backend lives here, in one place, on purpose.
 //
-// WARNING: CLIENT_ID and ORIGINATOR are the public identifiers of the official Codex CLI. Presenting them makes
-// this tool look like that CLI to OpenAI's servers. That is the unofficial part. If OpenAI changes them or
-// objects to their use, this plugin stops working, and the account consequences are the user's alone.
+// CLIENT_ID and ORIGINATOR are the public identifiers of the official Codex CLI. Presenting them makes this tool
+// look like that CLI to OpenAI's servers. If OpenAI changes them or objects to their use, this route stops working.
 // ---------------------------------------------------------------------------------------------------------
 
 /// OAuth client id of the official Codex CLI (public).
@@ -44,19 +45,19 @@ pub const ORIGINATOR: &str = "codex_cli_rs";
 pub const AUTHORIZE_URL: &str = "https://auth.openai.com/oauth/authorize";
 /// Token endpoint.
 pub const TOKEN_URL: &str = "https://auth.openai.com/oauth/token";
-/// The undocumented responses endpoint of the Codex backend.
+/// The responses endpoint of the Codex backend.
 pub const BACKEND_URL: &str = "https://chatgpt.com/backend-api/codex/responses";
-/// Model slug that carries the hosted image tool. Not a stable image model; override in config when it rotates.
-pub const DEFAULT_MODEL: &str = "gpt-5.5";
+/// The only model this route uses (maintainer decision, 2026-11-01). No override, no fallback.
+pub const MODEL: &str = "gpt-6-luna";
+/// The only reasoning effort this route uses (maintainer decision, 2026-11-01).
+pub const REASONING_EFFORT: &str = "high";
 /// Scopes requested at sign-in.
 pub const SCOPE: &str = "openid profile email offline_access";
 /// Loopback port the sign-in redirect uses.
 pub const CALLBACK_PORT: u16 = 1455;
 /// Path of the sign-in redirect.
 pub const CALLBACK_PATH: &str = "/auth/callback";
-/// Environment variable that must be exactly `1` for the plugin to start. A project file alone cannot set it.
-pub const ACK_ENV: &str = "HOI4_IMAGEGEN_ACCEPT_UNOFFICIAL";
-/// Hosts the plugin may contact.
+/// Hosts the provider may contact.
 pub const HOSTS: [&str; 2] = ["chatgpt.com", "auth.openai.com"];
 
 /// How the host process runs.
@@ -66,28 +67,19 @@ pub enum PluginMode {
     LocalStdio,
     /// The command-line tool on the user's machine.
     Cli,
-    /// Anything networked or hosted. Always refused.
+    /// Hosted HOI4 Factory or any networked service. Always refused.
     Hosted,
 }
 
-/// Check every gate. All must hold: the cargo feature (implied by this crate being compiled in), the config flag,
-/// the environment acknowledgement, and a local mode. Returns every reason it is closed, not just the first.
-pub fn evaluate_gates(config_enabled: bool, acknowledgement: Option<&str>, mode: PluginMode) -> Result<(), Vec<String>> {
-    let mut reasons = Vec::new();
-    if !config_enabled {
-        reasons.push("set [providers.chatgpt_login] enabled = true in .hoi4-imagegen/config.toml".to_string());
-    }
-    if acknowledgement != Some("1") {
-        reasons.push(format!("set the environment variable {ACK_ENV}=1 in your own environment (a project file cannot do this for you)"));
-    }
+/// The one gate left after D-12a: the provider never runs hosted.
+pub fn evaluate_gates(mode: PluginMode) -> Result<(), String> {
     if mode == PluginMode::Hosted {
-        reasons.push("this plugin never runs in a hosted or networked mode; use a local stdio server or the command line".to_string());
+        return Err(
+            "the ChatGPT-login provider is never available in a hosted or networked deployment (decision D-12a); use a documented API provider"
+                .to_string(),
+        );
     }
-    if reasons.is_empty() {
-        Ok(())
-    } else {
-        Err(reasons)
-    }
+    Ok(())
 }
 
 #[cfg(test)]
@@ -95,33 +87,16 @@ mod tests {
     use super::*;
 
     #[test]
-    fn all_gates_must_hold() {
-        assert!(evaluate_gates(true, Some("1"), PluginMode::LocalStdio).is_ok());
-        assert!(evaluate_gates(true, Some("1"), PluginMode::Cli).is_ok());
-    }
-
-    #[test]
-    fn each_gate_closes_it_on_its_own() {
-        let e = evaluate_gates(false, Some("1"), PluginMode::LocalStdio).unwrap_err();
-        assert_eq!(e.len(), 1);
-        assert!(e[0].contains("enabled = true"));
-        let e = evaluate_gates(true, None, PluginMode::LocalStdio).unwrap_err();
-        assert!(e[0].contains(ACK_ENV));
-        assert!(evaluate_gates(true, Some("yes"), PluginMode::LocalStdio).is_err(), "only the exact value 1 counts");
-        assert!(evaluate_gates(true, Some("true"), PluginMode::LocalStdio).is_err());
-        let e = evaluate_gates(true, Some("1"), PluginMode::Hosted).unwrap_err();
-        assert!(e[0].contains("hosted"));
-    }
-
-    #[test]
-    fn every_closed_gate_is_reported() {
-        let e = evaluate_gates(false, None, PluginMode::Hosted).unwrap_err();
-        assert_eq!(e.len(), 3);
+    fn local_modes_pass_and_hosted_is_always_refused() {
+        assert!(evaluate_gates(PluginMode::LocalStdio).is_ok());
+        assert!(evaluate_gates(PluginMode::Cli).is_ok());
+        assert!(evaluate_gates(PluginMode::Hosted).unwrap_err().contains("hosted"));
     }
 
     #[test]
     fn the_identifying_constants_are_in_one_place() {
         assert!(BACKEND_URL.starts_with("https://") && TOKEN_URL.starts_with("https://") && AUTHORIZE_URL.starts_with("https://"));
         assert_eq!(HOSTS, ["chatgpt.com", "auth.openai.com"]);
+        assert_eq!((MODEL, REASONING_EFFORT), ("gpt-6-luna", "high"));
     }
 }

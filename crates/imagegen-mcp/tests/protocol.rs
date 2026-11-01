@@ -45,7 +45,10 @@ impl MockOpenAi {
                         read_http_request(&mut stream);
                         h2.fetch_add(1, Ordering::SeqCst);
                         std::thread::sleep(delay);
-                        let head = format!("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\nx-request-id: req_mock\r\n\r\n", body.len());
+                        let head = format!(
+                            "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\nx-request-id: req_mock\r\n\r\n",
+                            body.len()
+                        );
                         let _ = stream.write_all(head.as_bytes());
                         let _ = stream.write_all(&body);
                         let _ = stream.flush();
@@ -104,10 +107,12 @@ impl Client {
     fn start(root: &Path, mock_port: u16) -> Client {
         let mut cmd = Command::new(env!("CARGO_BIN_EXE_hoi4-imagegen-mcp"));
         cmd.arg("--project-root").arg(root);
-        for var in ["GEMINI_API_KEY", "GOOGLE_API_KEY", "FAL_KEY", "COMFYUI_API_KEY", "HOI4_IMAGEGEN_ALLOWED_HOSTS", "HOI4_IMAGEGEN_ACCEPT_UNOFFICIAL"] {
+        for var in ["GEMINI_API_KEY", "GOOGLE_API_KEY", "FAL_KEY", "COMFYUI_API_KEY", "HOI4_IMAGEGEN_ALLOWED_HOSTS"] {
             cmd.env_remove(var);
         }
-        cmd.env("OPENAI_API_KEY", "sk-test-synthetic-proto").env("HOI4_GAME_DIR", root.join("no-game"));
+        cmd.env("OPENAI_API_KEY", "sk-test-synthetic-proto")
+            .env("HOI4_GAME_DIR", root.join("no-game"))
+            .env("HOI4_IMAGEGEN_CHATGPT_AUTH", root.join("chatgpt-auth.json"));
         cmd.stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped());
         let mut child = cmd.spawn().expect("the server starts");
         let stdin = child.stdin.take().unwrap();
@@ -173,7 +178,10 @@ impl Client {
     }
 
     fn initialize(&mut self) -> Value {
-        let r = self.request("initialize", json!({"protocolVersion": "2025-11-25", "capabilities": {}, "clientInfo": {"name": "protocol-test", "version": "0.0.1"}}));
+        let r = self.request(
+            "initialize",
+            json!({"protocolVersion": "2025-11-25", "capabilities": {}, "clientInfo": {"name": "protocol-test", "version": "0.0.1"}}),
+        );
         self.notify("notifications/initialized", json!({}));
         r
     }
@@ -277,10 +285,14 @@ fn status_never_leaks_the_key_and_bad_arguments_are_rejected() {
     let r = c.call("hoi4.image_status", json!({}));
     assert_ne!(r["isError"], json!(true));
     assert!(!r.to_string().contains("sk-test-synthetic-proto"), "the key value must never appear");
-    assert_eq!(r["structuredContent"]["providers"][2]["configured"], true);
+    let openai = r["structuredContent"]["providers"].as_array().unwrap().iter().find(|p| p["id"] == "openai").expect("openai listed").clone();
+    assert_eq!(openai["configured"], true);
 
     // unknown field: a protocol error or a refused tool call, never a silent accept
-    let r = c.request("tools/call", json!({"name": "hoi4.image_plan", "arguments": {"category": "focus_icon", "feature_slug": "f", "asset": "a", "brief": "x", "surprise": 1}}));
+    let r = c.request(
+        "tools/call",
+        json!({"name": "hoi4.image_plan", "arguments": {"category": "focus_icon", "feature_slug": "f", "asset": "a", "brief": "x", "surprise": 1}}),
+    );
     assert!(r.get("error").is_some() || r["result"]["isError"] == json!(true), "unknown fields must be rejected: {r}");
     // unknown tool
     let r = c.request("tools/call", json!({"name": "hoi4.image_nope", "arguments": {}}));
@@ -303,7 +315,10 @@ fn the_whole_loop_runs_over_stdio() {
     let mut c = Client::start(dir.path(), mock.port);
     c.initialize();
 
-    let plan = c.ok("hoi4.image_plan", json!({"category": "focus_icon", "feature_slug": "iron_pact", "asset": "steel_gate", "brief": "a riveted steel gate"}));
+    let plan = c.ok(
+        "hoi4.image_plan",
+        json!({"category": "focus_icon", "feature_slug": "iron_pact", "asset": "steel_gate", "brief": "a riveted steel gate"}),
+    );
     assert_eq!(plan["model"], "gpt-image-2.5-flare");
     let plan_id = plan["plan_id"].as_str().unwrap().to_string();
 
@@ -333,7 +348,8 @@ fn the_whole_loop_runs_over_stdio() {
     assert!(dir.path().join(pr["structuredContent"]["sheet"].as_str().unwrap()).exists());
 
     let profile = c.ok("hoi4.image_profiles", json!({"id": "focus_icon"}));
-    let answers: serde_json::Map<String, Value> = profile["profile"]["rubric_questions"].as_array().unwrap().iter().map(|q| (q["key"].as_str().unwrap().to_string(), json!(true))).collect();
+    let answers: serde_json::Map<String, Value> =
+        profile["profile"]["rubric_questions"].as_array().unwrap().iter().map(|q| (q["key"].as_str().unwrap().to_string(), json!(true))).collect();
     let rev = c.ok("hoi4.image_review", json!({"target": art, "verdict": "approved", "reviewer": "protocol test", "answers": answers}));
     let approval = rev["approval_id"].as_str().unwrap().to_string();
 
@@ -366,7 +382,8 @@ fn a_running_generation_can_be_cancelled_from_a_second_request() {
     let mut c = Client::start(dir.path(), mock.port);
     c.initialize();
     let plan = c.ok("hoi4.image_plan", json!({"category": "focus_icon", "feature_slug": "f", "asset": "a", "brief": "x"}));
-    let gen_id = c.send_request("tools/call", json!({"name": "hoi4.image_generate", "arguments": {"plan_id": plan["plan_id"], "idempotency_key": "slow-1"}}));
+    let gen_id =
+        c.send_request("tools/call", json!({"name": "hoi4.image_generate", "arguments": {"plan_id": plan["plan_id"], "idempotency_key": "slow-1"}}));
     std::thread::sleep(Duration::from_millis(600));
     let cancel_id = c.send_request("tools/call", json!({"name": "hoi4.image_cancel", "arguments": {"idempotency_key": "slow-1"}}));
     let cancel = c.wait_for(cancel_id, Duration::from_secs(20));

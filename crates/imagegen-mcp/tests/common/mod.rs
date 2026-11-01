@@ -45,7 +45,13 @@ pub fn harness(config: &str, env: &[(&str, &str)]) -> Harness {
     let no_game = dir.path().join("no-game").display().to_string();
     let mut pairs: Vec<(&str, &str)> = env.to_vec();
     pairs.push(("HOI4_GAME_DIR", &no_game));
-    let engine = Engine::open(dir.path(), Arc::new(MapEnv::from_pairs(&pairs)), fixture.clone(), Arc::new(FixedClock(1_793_404_800)), RunMode::Cli).unwrap();
+    // never touch the developer's real ChatGPT sign-in: the provider gets a private file store per test
+    let auth = dir.path().join("chatgpt-auth.json").display().to_string();
+    if !pairs.iter().any(|(k, _)| *k == "HOI4_IMAGEGEN_CHATGPT_AUTH") {
+        pairs.push(("HOI4_IMAGEGEN_CHATGPT_AUTH", &auth));
+    }
+    let engine =
+        Engine::open(dir.path(), Arc::new(MapEnv::from_pairs(&pairs)), fixture.clone(), Arc::new(FixedClock(1_793_404_800)), RunMode::Cli).unwrap();
     Harness { dir, engine, fixture }
 }
 
@@ -119,10 +125,7 @@ impl Harness {
     pub fn make_processed(&self, asset: &str, key: &str) -> (Value, String, String) {
         self.queue_generation(&synthetic_icon_png());
         let plan = self.plan_focus(asset);
-        let gen = self
-            .engine
-            .generate(serde_json::from_value(json!({"plan_id": plan["plan_id"], "idempotency_key": key})).unwrap())
-            .unwrap();
+        let gen = self.engine.generate(serde_json::from_value(json!({"plan_id": plan["plan_id"], "idempotency_key": key})).unwrap()).unwrap();
         let cand = gen["candidates"][0]["candidate_id"].as_str().unwrap().to_string();
         let proc = self.engine.process(serde_json::from_value(json!({"candidate_id": cand})).unwrap()).unwrap();
         let pid = proc["artifact_id"].as_str().unwrap().to_string();

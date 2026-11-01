@@ -14,6 +14,9 @@ use serde_json::json;
 
 use super::{EResult, Engine, EngineError};
 
+/// Default provider order when a plan names none (decision D-12a and the maintainer's answer of 2026-11-01).
+pub const PROVIDER_ORDER: [&str; 5] = ["chatgpt_login", "openai", "gemini", "fal", "comfyui"];
+
 impl Engine {
     /// Resolve and store a plan.
     pub fn plan(&self, req: PlanRequest) -> EResult<Plan> {
@@ -55,25 +58,26 @@ impl Engine {
             None => None,
         };
 
-        // provider: named, the style's, the project default, or the only configured one. Never a silent fallback.
+        // provider: named, the style's, the project default, then the first ready one in the fixed order (a
+        // signed-in ChatGPT login first, decision D-12a). The choice is reported in the plan.
         let provider_id = req
             .provider
             .clone()
             .or_else(|| style_profile.as_ref().and_then(|s| s.provider.clone()))
             .or_else(|| self.config.defaults.provider.clone())
             .or_else(|| {
-                let c = self.registry.configured_ids();
-                (c.len() == 1).then(|| c[0].clone())
+                let configured = self.registry.configured_ids();
+                PROVIDER_ORDER.iter().find(|id| configured.iter().any(|c| c == *id)).map(|s| s.to_string())
             })
             .ok_or_else(|| {
-                EngineError::invalid(format!(
-                    "name a provider: configured providers are [{}]; set defaults.provider in .hoi4-imagegen/config.toml to choose one for the project",
-                    self.registry.configured_ids().join(", ")
-                ))
+                EngineError::invalid(
+                    "no image provider is ready: run `hoi4-imagegen login` to sign in with your ChatGPT account, or set an API key (OPENAI_API_KEY, GEMINI_API_KEY, FAL_KEY) or a ComfyUI endpoint",
+                )
             })?;
         self.check_category_policy(&profile, &provider_id)?;
         let provider = self.registry.get(&provider_id).ok_or_else(|| {
-            let why = self.registry.problems().get(&provider_id).cloned().unwrap_or_else(|| format!("known providers: {}", self.registry.ids().join(", ")));
+            let why =
+                self.registry.problems().get(&provider_id).cloned().unwrap_or_else(|| format!("known providers: {}", self.registry.ids().join(", ")));
             EngineError::new("provider_not_found", format!("provider '{provider_id}' is not available ({why})"), RetryClass::Terminal)
         })?;
 
@@ -95,6 +99,13 @@ impl Engine {
             .clone()
             .or_else(|| style_profile.as_ref().and_then(|s| s.model.clone()))
             .unwrap_or_else(|| provider.default_model(!loaded.is_empty()));
+        if provider_id == "chatgpt_login" && model_id != provider_chatgpt_login::MODEL {
+            return Err(EngineError::invalid(format!(
+                "the ChatGPT-login route runs only {} at {} reasoning effort (maintainer decision); '{model_id}' cannot be used with it",
+                provider_chatgpt_login::MODEL,
+                provider_chatgpt_login::REASONING_EFFORT
+            )));
+        }
         let quality = req.quality.clone().or_else(|| self.config.provider(&provider_id).quality);
         let transparent = req.transparent.unwrap_or(profile.imagegen.background == Background::Transparent);
         let prompt = build_prompt(&profile, canvas, &brief, style_profile.as_ref(), &loaded, transparent);
@@ -214,7 +225,10 @@ impl Engine {
             quality,
             generation: GenerationPlan { width: gw, height: gh, transparent, aspect: aspect_of(canvas) },
             prompt,
-            references: loaded.iter().map(|r| RefSummary { path: r.path.clone(), role: r.role, origin: r.origin, sha256: r.sha256.clone() }).collect(),
+            references: loaded
+                .iter()
+                .map(|r| RefSummary { path: r.path.clone(), role: r.role, origin: r.origin, sha256: r.sha256.clone() })
+                .collect(),
             style: req.style.clone(),
             style_sha256: match &req.style {
                 Some(n) => Some(imagegen_core::hashing::sha256_hex(&self.fs.read(&style::style_path(n)?, 256 * 1024)?)),
@@ -261,10 +275,13 @@ impl Engine {
             return Err(EngineError::invalid(format!("'{plan_id}' is not a plan id (plan- and 16 hex digits)")));
         }
         let bytes = self.fs.read(&plan_path(plan_id), 4 * 1024 * 1024).map_err(|e| match e {
-            imagegen_core::Error::NotFound(_) => EngineError::new("not_found", format!("no stored plan {plan_id}; run hoi4.image_plan first"), RetryClass::Terminal),
+            imagegen_core::Error::NotFound(_) => {
+                EngineError::new("not_found", format!("no stored plan {plan_id}; run hoi4.image_plan first"), RetryClass::Terminal)
+            }
             other => other.into(),
         })?;
-        let plan: Plan = serde_json::from_slice(&bytes).map_err(|e| EngineError::new("plan_unreadable", format!("plan {plan_id} is not readable: {e}"), RetryClass::Terminal))?;
+        let plan: Plan = serde_json::from_slice(&bytes)
+            .map_err(|e| EngineError::new("plan_unreadable", format!("plan {plan_id} is not readable: {e}"), RetryClass::Terminal))?;
         if !plan.is_intact() || plan.plan_id != plan_id {
             return Err(EngineError::refused(
                 "plan_changed",

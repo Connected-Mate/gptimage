@@ -7,14 +7,13 @@ members = [
     "crates/imagegen-cli",
     "crates/provider-chatgpt-login",
 ]
-# The opt-in ChatGPT-login plugin is a workspace member (so it shares the lock file and can be
-# tested with `-p provider-chatgpt-login`) but it is NOT a default member, and no default build
-# depends on it. See docs/unofficial-chatgpt-login.md and crates/imagegen-mcp/tests/plugin_isolation.rs.
+# Every crate is part of the default build, the ChatGPT-login provider included (decision D-12a).
 default-members = [
     "crates/imagegen-core",
     "crates/imagegen-providers",
     "crates/imagegen-mcp",
     "crates/imagegen-cli",
+    "crates/provider-chatgpt-login",
 ]
 
 [workspace.package]

@@ -86,7 +86,8 @@ fn install_refuses_until_validation_review_and_hashes_are_in_order() {
     assert_eq!(code(&e), "install_gate_review_missing");
 
     // approving without a preview is refused
-    let answers: serde_json::Map<String, Value> = imagegen_core::rubric::questions("focus_icon_v1").iter().map(|(k, _)| (k.to_string(), json!(true))).collect();
+    let answers: serde_json::Map<String, Value> =
+        imagegen_core::rubric::questions("focus_icon_v1").iter().map(|(k, _)| (k.to_string(), json!(true))).collect();
     let review = |verdict: &str, answers: Value| {
         h.engine.review(serde_json::from_value(json!({"target": processed, "verdict": verdict, "reviewer": "t", "answers": answers})).unwrap())
     };
@@ -223,7 +224,8 @@ fn cost_above_the_project_limit_needs_confirmation() {
     let e = h.engine.generate(serde_json::from_value(json!({"plan_id": plan["plan_id"], "idempotency_key": "k-cost"})).unwrap()).unwrap_err();
     assert_eq!(code(&e), "requires_authorization");
     assert!(h.fixture.requests().is_empty(), "no request before the confirmation");
-    let ok = h.engine.generate(serde_json::from_value(json!({"plan_id": plan["plan_id"], "idempotency_key": "k-cost", "approve_cost": true})).unwrap());
+    let ok =
+        h.engine.generate(serde_json::from_value(json!({"plan_id": plan["plan_id"], "idempotency_key": "k-cost", "approve_cost": true})).unwrap());
     assert!(ok.is_ok());
 }
 
@@ -237,19 +239,44 @@ fn plan_budget_is_enforced_before_any_spend() {
 
 #[test]
 fn policy_gates_follow_the_maintainer_decisions() {
-    let h = harness("[defaults]\nprovider = \"openai\"\n[policy]\nforbidden_categories = [\"idea_icon\"]\n", &[("OPENAI_API_KEY", "sk-test-synthetic-000")]);
+    let h = harness(
+        "[defaults]\nprovider = \"openai\"\n[policy]\nforbidden_categories = [\"idea_icon\"]\n",
+        &[("OPENAI_API_KEY", "sk-test-synthetic-000")],
+    );
     let plan = |category: &str, asset: &str| {
-        h.engine.plan(serde_json::from_value(json!({"category": category, "feature_slug": "f", "asset": asset, "brief": "x", "provider": "openai"})).unwrap())
+        h.engine.plan(
+            serde_json::from_value(json!({"category": category, "feature_slug": "f", "asset": asset, "brief": "x", "provider": "openai"})).unwrap(),
+        )
     };
     assert_eq!(code(&plan("idea_icon", "a").unwrap_err()), "category_forbidden_by_project");
     assert_eq!(code(&plan("advisor_icon", "a").unwrap_err()), "category_import_only");
-    assert_eq!(code(&plan("leader_portrait", "a").unwrap_err()), "category_user_run_only", "D3: only a configured ComfyUI endpoint may make user-run categories");
+    assert_eq!(
+        code(&plan("leader_portrait", "a").unwrap_err()),
+        "category_user_run_only",
+        "D3: only a configured ComfyUI endpoint may make user-run categories"
+    );
     assert!(plan("focus_icon", "a").is_ok());
     assert_eq!(code(&plan("custom", "a").unwrap_err()), "invalid_argument", "custom needs a canvas");
-    assert!(h.engine.plan(serde_json::from_value(json!({"category": "custom", "feature_slug": "f", "asset": "a", "brief": "x", "provider": "openai", "canvas": [120, 90]})).unwrap()).is_ok());
+    assert!(h
+        .engine
+        .plan(
+            serde_json::from_value(
+                json!({"category": "custom", "feature_slug": "f", "asset": "a", "brief": "x", "provider": "openai", "canvas": [120, 90]})
+            )
+            .unwrap()
+        )
+        .is_ok());
     assert_eq!(code(&plan("focus_icon", "Bad Name").unwrap_err()), "invalid_argument");
     // a canvas cannot be overridden per request for a fixed-canvas category
-    let e = h.engine.plan(serde_json::from_value(json!({"category": "focus_icon", "feature_slug": "f", "asset": "a", "brief": "x", "provider": "openai", "canvas": [94, 86]})).unwrap()).unwrap_err();
+    let e = h
+        .engine
+        .plan(
+            serde_json::from_value(
+                json!({"category": "focus_icon", "feature_slug": "f", "asset": "a", "brief": "x", "provider": "openai", "canvas": [94, 86]}),
+            )
+            .unwrap(),
+        )
+        .unwrap_err();
     assert!(e.message.contains("fixed canvas"));
 }
 
@@ -259,14 +286,18 @@ fn vanilla_art_as_a_reference_is_a_per_project_opt_in() {
     let plan_with_ref = |h: &Harness| {
         std::fs::create_dir_all(h.root().join(".claude/skills/hoi4-feature-assets/assets/vanilla_reference/icons/national_focus")).unwrap();
         std::fs::write(h.root().join(shelf), synthetic_icon_png()).unwrap();
-        h.engine.plan(serde_json::from_value(json!({
-            "category": "focus_icon", "feature_slug": "f", "asset": "a", "brief": "x", "provider": "openai",
-            "references": [{"path": shelf, "role": "style_anchor"}]
-        })).unwrap())
+        h.engine.plan(
+            serde_json::from_value(json!({
+                "category": "focus_icon", "feature_slug": "f", "asset": "a", "brief": "x", "provider": "openai",
+                "references": [{"path": shelf, "role": "style_anchor"}]
+            }))
+            .unwrap(),
+        )
     };
     let off = openai_harness();
     assert_eq!(code(&plan_with_ref(&off).unwrap_err()), "vanilla_reference_not_allowed");
-    let on = harness("[defaults]\nprovider = \"openai\"\n[policy]\nallow_vanilla_references = true\n", &[("OPENAI_API_KEY", "sk-test-synthetic-000")]);
+    let on =
+        harness("[defaults]\nprovider = \"openai\"\n[policy]\nallow_vanilla_references = true\n", &[("OPENAI_API_KEY", "sk-test-synthetic-000")]);
     let plan = plan_with_ref(&on).unwrap();
     assert_eq!(plan.references[0].origin, imagegen_core::refs::RefOrigin::KitShelf);
     assert!(plan.approvals.iter().any(|a| a.contains("Paradox art")));
@@ -335,18 +366,30 @@ fn fake_checkerboards_are_rejected_at_validation() {
     // it already has an accepted size, so the importer takes it as finished art; the checks then name the problem
     let out = h
         .engine
-        .process(serde_json::from_value(json!({"import": {"path": "incoming/fake.png", "category": "focus_icon", "feature_slug": "f", "asset": "fake"}})).unwrap())
+        .process(
+            serde_json::from_value(json!({"import": {"path": "incoming/fake.png", "category": "focus_icon", "feature_slug": "f", "asset": "fake"}}))
+                .unwrap(),
+        )
         .unwrap();
     let codes_of = |v: &Value| -> Vec<String> { v.as_array().unwrap().iter().map(|f| f["code"].as_str().unwrap().to_string()).collect() };
     let quick = codes_of(&out["quick_check"]["findings"]);
-    assert!(quick.contains(&"GFX-FAKE-CHECKERBOARD".to_string()) && quick.contains(&"GFX-OPAQUE-CANVAS".to_string()) && quick.contains(&"GFX-NO-ALPHA".to_string()), "{quick:?}");
+    assert!(
+        quick.contains(&"GFX-FAKE-CHECKERBOARD".to_string())
+            && quick.contains(&"GFX-OPAQUE-CANVAS".to_string())
+            && quick.contains(&"GFX-NO-ALPHA".to_string()),
+        "{quick:?}"
+    );
     let id = out["artifact_id"].as_str().unwrap().to_string();
     let v = h.validate(&id);
     assert_eq!(v["status"], "fail");
     // the failed validation blocks approval and install
     h.preview(&id);
-    let answers: serde_json::Map<String, Value> = imagegen_core::rubric::questions("focus_icon_v1").iter().map(|(k, _)| (k.to_string(), json!(true))).collect();
-    let e = h.engine.review(serde_json::from_value(json!({"target": id, "verdict": "approved", "reviewer": "t", "answers": answers})).unwrap()).unwrap_err();
+    let answers: serde_json::Map<String, Value> =
+        imagegen_core::rubric::questions("focus_icon_v1").iter().map(|(k, _)| (k.to_string(), json!(true))).collect();
+    let e = h
+        .engine
+        .review(serde_json::from_value(json!({"target": id, "verdict": "approved", "reviewer": "t", "answers": answers})).unwrap())
+        .unwrap_err();
     assert_eq!(e.code, "review_needs_validation");
     assert_eq!(code(&h.install(&id, "apr-0000000000000000", json!({})).unwrap_err()), "install_gate_validation_failed");
     // validating a loose file with the same flaws gives the same findings
@@ -386,7 +429,12 @@ fn provider_failures_leave_a_clean_trail_and_uncertain_calls_block_blind_retries
     let plan3 = h3.plan_focus("steel_gate");
     h3.engine
         .ledger
-        .append("job_intent", Some("iron_pact.steel_gate"), None, json!({"job_id": "job-crashed", "idempotency_key": "k-crash", "asset_id": "iron_pact.steel_gate"}))
+        .append(
+            "job_intent",
+            Some("iron_pact.steel_gate"),
+            None,
+            json!({"job_id": "job-crashed", "idempotency_key": "k-crash", "asset_id": "iron_pact.steel_gate"}),
+        )
         .unwrap();
     let e = h3.engine.generate(serde_json::from_value(json!({"plan_id": plan3["plan_id"], "idempotency_key": "k-crash"})).unwrap()).unwrap_err();
     assert_eq!(code(&e), "uncertain_previous_attempt");
@@ -409,7 +457,15 @@ fn a_missing_key_fails_before_anything_is_sent() {
 #[test]
 fn retired_models_are_refused_at_plan_time() {
     let h = openai_harness();
-    let e = h.engine.plan(serde_json::from_value(json!({"category": "focus_icon", "feature_slug": "f", "asset": "a", "brief": "x", "provider": "openai", "model": "gpt-image-1"})).unwrap()).unwrap_err();
+    let e = h
+        .engine
+        .plan(
+            serde_json::from_value(
+                json!({"category": "focus_icon", "feature_slug": "f", "asset": "a", "brief": "x", "provider": "openai", "model": "gpt-image-1"}),
+            )
+            .unwrap(),
+        )
+        .unwrap_err();
     assert_eq!(code(&e), "provider_model_retired");
     assert!(e.message.contains("2026-10-23"));
 }
@@ -437,7 +493,10 @@ fn edits_create_a_child_candidate_that_keeps_the_original_plan() {
     // an unreadable mask is refused before anything is sent
     let before = h.fixture.requests().len();
     std::fs::write(h.root().join("mask.png"), vec![0u8; 4]).unwrap();
-    assert!(h.engine.edit(serde_json::from_value(json!({"candidate_id": cand, "instruction": "x", "mask": "mask.png", "idempotency_key": "k-edit-2"})).unwrap()).is_err());
+    assert!(h
+        .engine
+        .edit(serde_json::from_value(json!({"candidate_id": cand, "instruction": "x", "mask": "mask.png", "idempotency_key": "k-edit-2"})).unwrap())
+        .is_err());
     assert_eq!(h.fixture.requests().len(), before);
 }
 
@@ -455,7 +514,12 @@ fn finished_art_from_another_tool_can_be_imported_validated_and_installed() {
     std::fs::write(h.root().join("incoming/advisor.dds"), dds::write_a8r8g8b8(&art)).unwrap();
     let p = h
         .engine
-        .process(serde_json::from_value(json!({"import": {"path": "incoming/advisor.dds", "category": "advisor_icon", "feature_slug": "iron_pact", "asset": "chief_advisor"}})).unwrap())
+        .process(
+            serde_json::from_value(
+                json!({"import": {"path": "incoming/advisor.dds", "category": "advisor_icon", "feature_slug": "iron_pact", "asset": "chief_advisor"}}),
+            )
+            .unwrap(),
+        )
         .unwrap();
     let id = p["artifact_id"].as_str().unwrap().to_string();
     assert_eq!(p["steps"], json!([]), "finished art of the right size is not re-fitted");
@@ -483,7 +547,12 @@ fn flag_sets_install_three_tga_sizes() {
     std::fs::write(h.root().join("incoming/flag.png"), imagegen_core::pixels::encode_png(&flag).unwrap()).unwrap();
     let p = h
         .engine
-        .process(serde_json::from_value(json!({"import": {"path": "incoming/flag.png", "category": "flag_set", "feature_slug": "iron_pact", "asset": "IRP"}})).unwrap())
+        .process(
+            serde_json::from_value(
+                json!({"import": {"path": "incoming/flag.png", "category": "flag_set", "feature_slug": "iron_pact", "asset": "IRP"}}),
+            )
+            .unwrap(),
+        )
         .unwrap();
     let id = p["artifact_id"].as_str().unwrap().to_string();
     assert_eq!(p["size"], json!([82, 52]));
@@ -535,7 +604,8 @@ fn validating_a_folder_reports_every_file_and_flags_missing_provenance() {
     };
     std::fs::write(h.root().join("gfx/interface/goals/old/focus_a.dds"), dds::write_a8r8g8b8(&good)).unwrap();
     std::fs::write(h.root().join("gfx/interface/goals/old/focus_b.dds"), dds::write_a8r8g8b8(&Rgba::new(94, 86))).unwrap();
-    std::fs::write(h.root().join("gfx/interface/goals/old/focus_c.dds"), b"version https://git-lfs.github.com/spec/v1\noid sha256:abc\nsize 1\n").unwrap();
+    std::fs::write(h.root().join("gfx/interface/goals/old/focus_c.dds"), b"version https://git-lfs.github.com/spec/v1\noid sha256:abc\nsize 1\n")
+        .unwrap();
     let v = h.engine.validate(serde_json::from_value(json!({"targets": ["gfx/interface/goals/old/"], "profile": "focus_icon"})).unwrap()).unwrap();
     assert_eq!(v["checked"], 3);
     assert_eq!(v["failed"], 2, "{v:#}");
@@ -553,10 +623,11 @@ fn status_and_profiles_describe_the_project_without_leaking_keys() {
     let s = h.engine.status();
     let text = s.to_string();
     assert!(!text.contains("sk-test-synthetic-000"), "the key value must never appear in status");
-    assert_eq!(s["providers"][2]["id"], "openai");
-    assert_eq!(s["providers"][2]["configured"], true);
+    let openai = s["providers"].as_array().unwrap().iter().find(|p| p["id"] == "openai").expect("openai listed").clone();
+    assert_eq!(openai["configured"], true);
     assert_eq!(s["policy"]["allow_vanilla_references"], false);
-    assert_eq!(s["chatgpt_login"]["compiled"], cfg!(feature = "unofficial-chatgpt-login"));
+    assert_eq!(s["chatgpt_login"]["compiled"], true);
+    assert_eq!(s["chatgpt_login"]["signed_in"], false);
     let p = h.engine.profiles_info(serde_json::from_value(json!({"id": "focus_icon"})).unwrap()).unwrap();
     assert_eq!(p["profile"]["canvas"], json!([100, 88]));
     assert!(p["profile"]["rubric_questions"].as_array().unwrap().len() >= 5);
@@ -582,11 +653,27 @@ fn reference_and_style_management() {
     assert_eq!(saved["style"]["references"][0]["sha256"], sha256_hex(&synthetic_icon_png()), "hashes are pinned for you");
     assert_eq!(call(json!({"action": "style_list"})).unwrap()["styles"], json!(["iron_oil"]));
     // a plan with the style includes its reference and fails if the file later changes
-    let plan = h.engine.plan(serde_json::from_value(json!({"category": "focus_icon", "feature_slug": "f", "asset": "a", "brief": "x", "provider": "openai", "style": "iron_oil"})).unwrap()).unwrap();
+    let plan = h
+        .engine
+        .plan(
+            serde_json::from_value(
+                json!({"category": "focus_icon", "feature_slug": "f", "asset": "a", "brief": "x", "provider": "openai", "style": "iron_oil"}),
+            )
+            .unwrap(),
+        )
+        .unwrap();
     assert_eq!(plan.references.len(), 1);
     assert!(plan.prompt.text.contains("visible brush strokes"));
     std::fs::write(h.root().join("references/a.png"), opaque_png()).unwrap();
-    let e = h.engine.plan(serde_json::from_value(json!({"category": "focus_icon", "feature_slug": "f", "asset": "b", "brief": "x", "provider": "openai", "style": "iron_oil"})).unwrap()).unwrap_err();
+    let e = h
+        .engine
+        .plan(
+            serde_json::from_value(
+                json!({"category": "focus_icon", "feature_slug": "f", "asset": "b", "brief": "x", "provider": "openai", "style": "iron_oil"}),
+            )
+            .unwrap(),
+        )
+        .unwrap_err();
     assert_eq!(e.code, "style_reference_changed");
 }
 
