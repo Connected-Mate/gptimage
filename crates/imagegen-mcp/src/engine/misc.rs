@@ -2,7 +2,6 @@
 
 use imagegen_core::calibrate::calibrate;
 use imagegen_core::config::game_version;
-use imagegen_core::error::RetryClass;
 use imagegen_core::export;
 use imagegen_core::fsio::display_path;
 use imagegen_core::hashing::sha256_hex;
@@ -14,7 +13,7 @@ use imagegen_providers::registry::key_env_names;
 use imagegen_providers::types::ModelStatus;
 use serde_json::{json, Value};
 
-use crate::api::{LedgerParams, ProfilesParams, ReferencesAction, ReferencesParams};
+use crate::api::{FamiliesParams, LedgerParams, ReferencesAction, ReferencesParams};
 
 use super::{EResult, Engine, EngineError};
 
@@ -31,7 +30,9 @@ impl Engine {
             if let Some(m) = &configured_model {
                 match desc.model(m).map(|x| &x.status) {
                     Some(ModelStatus::Retired { on }) => warnings.push(format!("providers.{id}.model is {m}, which was shut down on {on}")),
-                    Some(ModelStatus::Deprecated { shutdown }) => warnings.push(format!("providers.{id}.model is {m}, which shuts down on {shutdown}")),
+                    Some(ModelStatus::Deprecated { shutdown }) => {
+                        warnings.push(format!("providers.{id}.model is {m}, which shuts down on {shutdown}"))
+                    }
                     None if id != "comfyui" => warnings.push(format!("providers.{id}.model '{m}' is not in the reviewed model table")),
                     _ => {}
                 }
@@ -70,7 +71,7 @@ impl Engine {
             "ledger": {"exists": self.ledger.exists(), "entries": ledger.as_ref().map(|l| l.entries), "chain_ok": ledger.as_ref().map(|l| l.ok), "first_bad": ledger.and_then(|l| l.first_bad)},
             "policy": {
                 "allow_vanilla_references": self.config.policy.allow_vanilla_references,
-                "forbidden_categories": self.config.policy.forbidden_categories,
+                "forbidden_families": self.config.policy.forbidden_families,
                 "max_usd_per_call": self.config.policy.max_usd_per_call,
             },
             "chatgpt_login": self.plugin,
@@ -78,49 +79,87 @@ impl Engine {
         })
     }
 
-    /// `hoi4.image_profiles`
-    pub fn profiles_info(&self, p: ProfilesParams) -> EResult<Value> {
+    /// The style sources that exist today for a family: the style profiles that apply to it and the reference
+    /// folders of the family. Another packet adds automatic selection.
+    fn style_sources(&self, prof: &imagegen_core::profile::Profile) -> Value {
+        let styles: Vec<Value> = style::list(&self.fs)
+            .unwrap_or_default()
+            .into_iter()
+            .filter_map(|name| style::load(&self.fs, &name).ok())
+            .filter(|s| s.applies_to(prof.family))
+            .map(|s| json!({"name": s.name, "pinned_references": s.references.len(), "approved_by": s.approved_by, "provider": s.provider, "model": s.model}))
+            .collect();
+        let dirs: Vec<Value> = prof
+            .imagegen
+            .reference_dirs
+            .iter()
+            .map(|d| {
+                let mut files = Vec::new();
+                let _ = self.collect_reference_files(d, 0, &mut files);
+                json!({"dir": d, "exists": self.fs.exists(d), "files": files.len()})
+            })
+            .collect();
+        json!({"style_profiles": styles, "reference_dirs": dirs, "selection": "explicit: name a style and references in the request; automatic selection is not built yet"})
+    }
+
+    /// `hoi4.image_families`
+    pub fn families_info(&self, p: FamiliesParams) -> EResult<Value> {
+        let measured = imagegen_core::measurement::data();
         let describe = |prof: &imagegen_core::profile::Profile, full: bool| -> Value {
+            let entries = imagegen_core::measurement::entries_of(prof.family);
             let mut v = json!({
-                "id": prof.id,
-                "category": prof.category,
+                "family": prof.family,
+                "group": prof.family.group(),
+                "tool": prof.family.group().tool_name(),
                 "canvas": prof.canvas,
                 "frames": prof.frames,
+                "strip": [prof.canvas[0] * prof.frames.max(1), prof.canvas[1]],
                 "accepted": prof.accepted,
                 "margin": prof.margin,
                 "automation": prof.imagegen.automation,
                 "background": prof.imagegen.background,
                 "container": prof.imagegen.container,
-                "origin": prof.origin,
-                "overridden": prof.overridden,
-                "differs_from_vanilla": prof.differs_from_vanilla(),
-                "vanilla_canvas": prof.vanilla.as_ref().map(|x| x.canvas),
+                "needs_mod_canvas": prof.needs_mod_canvas(),
+                "mod_override": {"origin": prof.origin, "overridden": prof.overridden, "differs_from_vanilla": prof.differs_from_vanilla(), "vanilla_canvas": prof.vanilla.as_ref().map(|x| x.canvas)},
                 "evidence": prof.source,
             });
             if full {
+                v["measured"] = json!({
+                    "game_version": measured.game_version(),
+                    "entries": entries,
+                    "distribution": entries.first().map(|id| measured.distribution(id).into_iter().map(|(s, n)| json!({"size": s, "files": n})).collect::<Vec<_>>()),
+                });
                 v["checks"] = json!(prof.imagegen.checks);
+                v["check_set_hash"] = json!(imagegen_core::validate::check_set_hash(&prof.imagegen.checks));
                 v["rubric"] = json!(prof.imagegen.rubric);
-                v["rubric_questions"] = json!(rubric::questions(&prof.imagegen.rubric).iter().map(|(k, q)| json!({"key": k, "question": q})).collect::<Vec<_>>());
+                v["rubric_questions"] =
+                    json!(rubric::questions(&prof.imagegen.rubric).iter().map(|(k, q)| json!({"key": k, "question": q})).collect::<Vec<_>>());
                 v["prompt_rules"] = json!(prof.imagegen.prompt);
+                v["folder"] = json!(prof.imagegen.folder);
+                v["prefix"] = json!(prof.imagegen.prefix);
+                v["alt_prefixes"] = json!(prof.imagegen.alt_prefixes);
                 v["sprite"] = json!(prof.imagegen.sprite);
+                v["companion_files"] = json!(prof.imagegen.companion_files);
                 v["variants"] = json!(prof.imagegen.variants);
-                v["example_final_files"] = export::final_files(prof, if prof.canvas == [0, 0] { [64, 64] } else { prof.canvas }, "example_feature", if prof.category == imagegen_core::Category::FlagSet { "EXA" } else { "example_asset" })
-                    .map(|f| f.into_iter().map(|x| x.rel).collect::<Vec<_>>())
-                    .map(Value::from)
-                    .unwrap_or(Value::Null);
+                v["grayscale"] = json!(prof.imagegen.grayscale);
+                v["style_sources"] = self.style_sources(prof);
+                v["example_final_files"] = export::final_files(
+                    prof,
+                    if prof.needs_mod_canvas() { [64, 64] } else { prof.canvas },
+                    "example_feature",
+                    if prof.family == imagegen_core::Family::Flag { "EXA" } else { "example_asset" },
+                )
+                .map(|f| f.into_iter().map(|x| x.rel).collect::<Vec<_>>())
+                .map(Value::from)
+                .unwrap_or(Value::Null);
             }
             v
         };
-        let mut out = match &p.id {
-            Some(id) => {
-                let prof = self
-                    .profiles
-                    .get(id)
-                    .or_else(|| id.parse().ok().and_then(|c| self.profiles.for_category(c)))
-                    .ok_or_else(|| EngineError::new("not_found", format!("no profile '{id}'"), RetryClass::Terminal))?;
-                json!({"profile": describe(prof, true)})
+        let mut out = match p.family {
+            Some(f) => json!({"family": describe(self.family_profile(f)?, true)}),
+            None => {
+                json!({"families": self.profiles.all().map(|x| describe(x, false)).collect::<Vec<_>>(), "groups": imagegen_core::Group::ALL.iter().map(|g| json!({"group": g, "tool": g.tool_name(), "families": g.family_ids()})).collect::<Vec<_>>()})
             }
-            None => json!({"profiles": self.profiles.all().map(|x| describe(x, false)).collect::<Vec<_>>()}),
         };
         out["kit_file"] = json!(self.profiles.kit_path);
         out["kit_sha256"] = json!(self.profiles.kit_sha256);
@@ -134,7 +173,9 @@ impl Engine {
                     v["note"] = json!("Header-only survey of the installed game (DDS and TGA headers; no pixels, nothing copied). proposed_canvas is a proposal: nothing is written, edit the kit's profiles.json or the project config yourself.");
                     v
                 }
-                None => json!({"available": false, "reason": "the installed game folder was not found; set HOI4_GAME_DIR or game_dir in .hoi4-imagegen/config.toml"}),
+                None => {
+                    json!({"available": false, "reason": "the installed game folder was not found; set HOI4_GAME_DIR or game_dir in .hoi4-imagegen/config.toml"})
+                }
             };
         }
         Ok(out)
@@ -142,25 +183,24 @@ impl Engine {
 
     /// `hoi4.image_references`
     pub fn references(&self, p: ReferencesParams) -> EResult<Value> {
-        let need = |v: &Option<String>, what: &str| -> EResult<String> { v.clone().filter(|s| !s.trim().is_empty()).ok_or_else(|| EngineError::invalid(format!("{what} is required for this action"))) };
+        let need = |v: &Option<String>, what: &str| -> EResult<String> {
+            v.clone().filter(|s| !s.trim().is_empty()).ok_or_else(|| EngineError::invalid(format!("{what} is required for this action")))
+        };
         match p.action {
             ReferencesAction::List => {
                 let mut files = Vec::new();
                 self.collect_reference_files("references", 0, &mut files)?;
-                let recorded: Vec<Value> = self
-                    .ledger
-                    .entries()?
-                    .into_iter()
-                    .filter(|e| e.kind == kind::REFERENCE)
-                    .map(|e| e.data)
-                    .collect();
-                Ok(json!({"files": files, "recorded": recorded, "styles": style::list(&self.fs)?, "note": "Put approved reference images under references/. Paradox art is refused unless policy.allow_vanilla_references is set for the project."}))
+                let recorded: Vec<Value> = self.ledger.entries()?.into_iter().filter(|e| e.kind == kind::REFERENCE).map(|e| e.data).collect();
+                Ok(
+                    json!({"files": files, "recorded": recorded, "styles": style::list(&self.fs)?, "note": "Put approved reference images under references/. Paradox art is refused unless policy.allow_vanilla_references is set for the project."}),
+                )
             }
             ReferencesAction::Add | ReferencesAction::Approve => {
                 let path = need(&p.path, "path")?;
                 let note = need(&p.note, "note (rights note: where the image comes from and what you may do with it)")?;
                 let role = p.role.unwrap_or(refs::RefRole::StyleAnchor);
-                let loaded = refs::load_reference(&self.fs, self.game_dir().as_deref(), &self.config.policy, &ReferenceInput { path: path.clone(), role })?;
+                let loaded =
+                    refs::load_reference(&self.fs, self.game_dir().as_deref(), &self.config.policy, &ReferenceInput { path: path.clone(), role })?;
                 let approving = p.action == ReferencesAction::Approve;
                 if approving {
                     need(&p.approver, "approver")?;
@@ -173,7 +213,9 @@ impl Engine {
                            "source_sha256": loaded.source_sha256, "sha256": loaded.sha256, "size": [loaded.width, loaded.height],
                            "note": note, "approver": p.approver}),
                 )?;
-                Ok(json!({"path": loaded.path, "role": loaded.role, "origin": loaded.origin, "source_sha256": loaded.source_sha256, "clean_png_sha256": loaded.sha256, "size": [loaded.width, loaded.height], "notes": loaded.notes, "recorded": true, "approved": approving}))
+                Ok(
+                    json!({"path": loaded.path, "role": loaded.role, "origin": loaded.origin, "source_sha256": loaded.source_sha256, "clean_png_sha256": loaded.sha256, "size": [loaded.width, loaded.height], "notes": loaded.notes, "recorded": true, "approved": approving}),
+                )
             }
             ReferencesAction::StyleList => Ok(json!({"styles": style::list(&self.fs)?})),
             ReferencesAction::StyleGet => {
@@ -184,7 +226,12 @@ impl Engine {
                 let mut s = p.style.clone().ok_or_else(|| EngineError::invalid("style is required for style_save"))?;
                 for r in &mut s.references {
                     // pin the hash of the file as it is now; a changed file later invalidates plans that use the style
-                    let loaded = refs::load_reference(&self.fs, self.game_dir().as_deref(), &self.config.policy, &ReferenceInput { path: r.path.clone(), role: refs::RefRole::StyleAnchor })?;
+                    let loaded = refs::load_reference(
+                        &self.fs,
+                        self.game_dir().as_deref(),
+                        &self.config.policy,
+                        &ReferenceInput { path: r.path.clone(), role: refs::RefRole::StyleAnchor },
+                    )?;
                     r.sha256 = sha256_hex(&self.fs.read(&r.path, refs::MAX_REFERENCE_BYTES)?);
                     let _ = loaded;
                 }
@@ -192,7 +239,12 @@ impl Engine {
                     s.approved_on = Some(self.now());
                 }
                 let rel = style::save(&self.fs, &s, p.replace.unwrap_or(false))?;
-                self.ledger.append(kind::STYLE, None, None, json!({"name": s.name, "path": rel, "references": s.references, "approved_by": s.approved_by}))?;
+                self.ledger.append(
+                    kind::STYLE,
+                    None,
+                    None,
+                    json!({"name": s.name, "path": rel, "references": s.references, "approved_by": s.approved_by}),
+                )?;
                 Ok(json!({"saved": rel, "style": s}))
             }
         }

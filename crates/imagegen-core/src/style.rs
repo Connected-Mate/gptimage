@@ -7,8 +7,8 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use crate::category::Category;
 use crate::error::{Error, Result};
+use crate::family::Family;
 use crate::fsio::ProjectFs;
 use crate::hashing::sha256_hex;
 use crate::naming::validate_snake;
@@ -48,9 +48,9 @@ pub struct StyleProfile {
     /// Palette notes.
     #[serde(default)]
     pub palette_notes: String,
-    /// Categories the style applies to; empty means all.
-    #[serde(default)]
-    pub categories: Vec<Category>,
+    /// Families the style applies to; empty means all.
+    #[serde(default, alias = "categories")]
+    pub families: Vec<Family>,
     /// Approved reference images, pinned by hash.
     #[serde(default)]
     pub references: Vec<StyleRef>,
@@ -90,9 +90,9 @@ impl StyleProfile {
         Ok(())
     }
 
-    /// True when the style applies to a category.
-    pub fn applies_to(&self, c: Category) -> bool {
-        self.categories.is_empty() || self.categories.contains(&c)
+    /// True when the style applies to a family.
+    pub fn applies_to(&self, c: Family) -> bool {
+        self.families.is_empty() || self.families.contains(&c)
     }
 
     /// Check that every pinned reference still matches its recorded hash.
@@ -103,7 +103,10 @@ impl StyleProfile {
             if now != r.sha256 {
                 return Err(Error::refused(
                     "style_reference_changed",
-                    format!("reference {} no longer matches the hash recorded when the style '{}' was approved; re-approve the style", r.path, self.name),
+                    format!(
+                        "reference {} no longer matches the hash recorded when the style '{}' was approved; re-approve the style",
+                        r.path, self.name
+                    ),
                     crate::error::RetryClass::RefreshPreconditions,
                 ));
             }
@@ -135,11 +138,7 @@ pub fn load(fs: &ProjectFs, name: &str) -> Result<StyleProfile> {
 
 /// Names of the saved styles.
 pub fn list(fs: &ProjectFs) -> Result<Vec<String>> {
-    let mut names: Vec<String> = fs
-        .list_names(STYLE_DIR)?
-        .into_iter()
-        .filter_map(|n| n.strip_suffix(".json").map(str::to_string))
-        .collect();
+    let mut names: Vec<String> = fs.list_names(STYLE_DIR)?.into_iter().filter_map(|n| n.strip_suffix(".json").map(str::to_string)).collect();
     names.sort();
     Ok(names)
 }
@@ -176,7 +175,7 @@ mod tests {
             prompt_fragments: vec!["Aged oil painting look.".into()],
             negative_rules: vec!["no text".into()],
             palette_notes: "earth tones".into(),
-            categories: vec![Category::FocusIcon],
+            families: vec![Family::Focus],
             references: vec![],
             provider: Some("openai".into()),
             model: None,
@@ -228,9 +227,9 @@ mod tests {
     #[test]
     fn applies_to_respects_categories() {
         let s = style("x");
-        assert!(s.applies_to(Category::FocusIcon) && !s.applies_to(Category::IdeaIcon));
+        assert!(s.applies_to(Family::Focus) && !s.applies_to(Family::IdeaSpirit));
         let mut all = style("y");
-        all.categories.clear();
-        assert!(all.applies_to(Category::IdeaIcon));
+        all.families.clear();
+        assert!(all.applies_to(Family::IdeaSpirit));
     }
 }

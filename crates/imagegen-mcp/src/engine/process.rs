@@ -2,12 +2,15 @@
 
 use imagegen_core::error::RetryClass;
 use imagegen_core::export;
+use imagegen_core::family::{Family, Group};
 use imagegen_core::hashing::sha256_hex;
+use imagegen_core::lock;
 use imagegen_core::naming::{self, asset_id, candidate_id, processed_id};
 use imagegen_core::pixels::{decode, encode_png, DecodeLimits, Rgba, SourceFormat};
-use imagegen_core::process::{edge_stats, run_chain, Op};
+use imagegen_core::process::{edge_stats, run_chain_limited, Op, ICON_MAX_UPSCALE};
 use imagegen_core::profile::{Background, Profile};
 use imagegen_core::records::{kind, CandidateRecord, CostRecord, ProcessedRecord};
+use imagegen_core::reuse;
 use imagegen_core::validate::{validate_image, Options};
 use serde_json::{json, Value};
 
@@ -23,14 +26,17 @@ impl Engine {
             (Some(id), None) => {
                 let a = self.artifact(id)?;
                 if a.processed {
-                    return Err(EngineError::invalid(format!("{id} is already a processed artifact; process its source candidate {} again to try other steps", a.root_id)));
+                    return Err(EngineError::invalid(format!(
+                        "{id} is already a processed artifact; process its source candidate {} again to try other steps",
+                        a.root_id
+                    )));
                 }
                 let imported = a.provider == "import";
                 (a, imported)
             }
             (None, Some(spec)) => (self.import(spec, p.canvas)?, true),
         };
-        let profile = self.profile(&artifact.profile.id)?.clone();
+        let profile = self.profile_of(&artifact)?.clone();
         let (bytes, sha) = self.read_artifact(&artifact)?;
         if sha != artifact.recorded_sha256 {
             return Err(EngineError::refused(
@@ -45,13 +51,17 @@ impl Engine {
             Some(_) => Vec::new(),
             None => default_chain(&profile, artifact.canvas, &img, imported)?,
         };
-        let (out, records) = run_chain(&img, &steps)?;
+        let (out, records) = run_chain_limited(&img, &steps, max_upscale(profile.family))?;
         let png = encode_png(&out)?;
 
         let slug = &artifact.feature_slug;
         let dir = format!("docs/assets/{slug}/processed_png");
         let entries = self.ledger.entries()?;
-        let mut run = entries.iter().filter(|e| e.kind == kind::PROCESSED && e.data.get("source_id").and_then(Value::as_str) == Some(artifact.id.as_str())).count() as u32 + 1;
+        let mut run = entries
+            .iter()
+            .filter(|e| e.kind == kind::PROCESSED && e.data.get("source_id").and_then(Value::as_str) == Some(artifact.id.as_str()))
+            .count() as u32
+            + 1;
         let parsed = naming::ArtifactId::parse(&artifact.id)?;
         let (written_rel, run) = loop {
             let rel = format!("{dir}/{}-v{}-p{run}.png", artifact.asset, parsed.version);
@@ -67,6 +77,7 @@ impl Engine {
             source_id: artifact.id.clone(),
             asset_id: artifact.asset_id.clone(),
             run,
+            family: artifact.family,
             canvas: artifact.canvas,
             path: written_rel.clone(),
             sha256: sha256_hex(&png),
@@ -98,24 +109,33 @@ impl Engine {
     }
 
     /// Bring an existing image under the ledger as a candidate.
+    ///
+    /// The family lock applies here: an image whose native size belongs to another family is refused
+    /// (`GFX-FAMILY-MISMATCH`), and so are the pixels of an asset already installed for another family
+    /// (`GFX-FAMILY-REUSE`).
     fn import(&self, spec: &ImportSpec, canvas_override: Option<[u32; 2]>) -> EResult<Artifact> {
-        export::validate_asset_name(spec.category, &spec.asset)?;
+        export::validate_asset_name(spec.family, &spec.asset)?;
         naming::validate_snake("feature slug", &spec.feature_slug)?;
-        let profile = self
-            .profiles
-            .for_category(spec.category)
-            .ok_or_else(|| EngineError::new("not_found", format!("no profile for {}", spec.category), RetryClass::Terminal))?
-            .clone();
-        let canvas = match (profile.canvas, canvas_override) {
-            ([0, 0], Some(c)) => c,
-            ([0, 0], None) => return Err(EngineError::invalid(format!("{} has no fixed canvas: pass canvas [width, height]", spec.category))),
-            (p, _) => p,
-        };
-        if self.config.policy.forbidden_categories.contains(&spec.category) {
-            return Err(EngineError::refused("category_forbidden_by_project", format!("this project forbids {}", spec.category), RetryClass::Terminal));
+        let profile = self.family_profile(spec.family)?.clone();
+        if self.config.policy.forbidden_families.contains(&spec.family) {
+            return Err(EngineError::refused("family_forbidden_by_project", format!("this project forbids {}", spec.family), RetryClass::Terminal));
         }
         let bytes = self.fs.read(&spec.path, 32 * 1024 * 1024)?;
         let (img, format) = decode(&bytes, Some(&spec.path), DecodeLimits::default())?;
+        reuse::ensure_no_cross_family_reuse(&self.fs, &self.profiles, spec.family, &reuse::pixel_hash(&img), &format!("the image {}", spec.path))?;
+        lock::check_native_size(&self.profiles, spec.family, [img.width, img.height])?;
+        let frames = profile.frames.max(1);
+        let canvas = if profile.needs_mod_canvas() {
+            canvas_override.ok_or_else(|| EngineError::invalid(format!("{} has no fixed canvas: pass canvas [width, height]", spec.family)))?
+        } else {
+            // finished art of an accepted size keeps that size; anything else is fitted to the family's canvas
+            let frame = [img.width / frames, img.height];
+            if img.width % frames == 0 && profile.accepted.contains(&frame) {
+                frame
+            } else {
+                profile.canvas
+            }
+        };
         let ext = match format {
             SourceFormat::Png => "png",
             SourceFormat::Jpeg => "jpg",
@@ -131,7 +151,7 @@ impl Engine {
         let rec = CandidateRecord {
             candidate_id: candidate_id(&aid, written.version),
             asset_id: aid.clone(),
-            category: spec.category,
+            family: spec.family,
             feature_slug: spec.feature_slug.clone(),
             asset: spec.asset.clone(),
             profile: self.profile_ref(&profile),
@@ -150,7 +170,14 @@ impl Engine {
             idempotency_key: None,
             prompt_sha256: String::new(),
             references: vec![],
-            cost: CostRecord { estimated_usd: 0.0, reserved_usd: 0.0, actual_usd: Some(0.0), usage_unknown: false, funding: "local".into(), basis: "imported file, no provider call".into() },
+            cost: CostRecord {
+                estimated_usd: 0.0,
+                reserved_usd: 0.0,
+                actual_usd: Some(0.0),
+                usage_unknown: false,
+                funding: "local".into(),
+                basis: "imported file, no provider call".into(),
+            },
             parent: None,
             provider_request_id: None,
             usage: None,
@@ -161,21 +188,36 @@ impl Engine {
     }
 }
 
-/// The profile's default chain.
+/// The largest enlargement the family tolerates in a fit or resize step: icon families only.
+pub fn max_upscale(family: Family) -> Option<f64> {
+    (family.group() == Group::Icon).then_some(ICON_MAX_UPSCALE)
+}
+
+/// What provider alpha is composited over in an opaque family.
+const FLATTEN_BACKGROUND: [u8; 3] = [0, 0, 0];
+
+/// The family's default chain.
+///
+/// Opaque families always end in a flatten step, so provider alpha never survives into a picture, a portrait,
+/// a flag or an achievement. The report card is the one exception for finished (imported) art: its alpha is
+/// the card's corners and shadow.
 pub fn default_chain(profile: &Profile, canvas: [u32; 2], img: &Rgba, imported: bool) -> EResult<Vec<Op>> {
     let frames = profile.frames.max(1);
     let strip = [canvas[0] * frames, canvas[1]];
+    let opaque = profile.imagegen.background == Background::Opaque;
+    let keeps_card_alpha = profile.family == Family::ReportEvent && imported;
+    let flatten = opaque && !keeps_card_alpha;
     // art that already has an accepted size is taken as it is: a finished icon must not be re-fitted
     if imported && img.width % frames == 0 {
         let frame = [img.width / frames, img.height];
         if profile.accepted.contains(&frame) || frame == canvas {
-            return Ok(Vec::new());
+            return Ok(if flatten { vec![Op::FlattenOn { background: FLATTEN_BACKGROUND }] } else { Vec::new() });
         }
     }
     if frames > 1 {
         return Err(EngineError::invalid(format!(
             "{} art is a strip of {frames} frames and needs separate art for each; assemble it first. Imported art of exactly {}x{} is accepted unchanged",
-            profile.category, strip[0], strip[1]
+            profile.family, strip[0], strip[1]
         )));
     }
     match profile.imagegen.background {
@@ -193,10 +235,17 @@ pub fn default_chain(profile: &Profile, canvas: [u32; 2], img: &Rgba, imported: 
             }
             steps.push(Op::TrimToSubject { min_alpha: 16 });
             steps.push(Op::FitSubject { width: canvas[0], height: canvas[1], margin: profile.margin, min_alpha: 16 });
+            if profile.imagegen.grayscale {
+                steps.push(Op::Grayscale);
+            }
             Ok(steps)
         }
         Background::Opaque => {
-            let mut steps = vec![Op::CoverResize { width: canvas[0], height: canvas[1] }];
+            let mut steps = Vec::new();
+            if flatten {
+                steps.push(Op::FlattenOn { background: FLATTEN_BACKGROUND });
+            }
+            steps.push(Op::CoverResize { width: canvas[0], height: canvas[1] });
             if profile.imagegen.grayscale {
                 steps.push(Op::Grayscale);
             }
@@ -208,11 +257,11 @@ pub fn default_chain(profile: &Profile, canvas: [u32; 2], img: &Rgba, imported: 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use imagegen_core::category::Category;
+    use imagegen_core::family::Family;
     use imagegen_core::profile::ProfileSet;
 
-    fn prof(c: Category) -> Profile {
-        ProfileSet::builtin().for_category(c).unwrap().clone()
+    fn prof(c: Family) -> Profile {
+        ProfileSet::builtin().for_family(c).unwrap().clone()
     }
 
     fn blob() -> Rgba {
@@ -227,7 +276,7 @@ mod tests {
 
     #[test]
     fn transparent_icons_trim_and_fit_with_the_profile_margin() {
-        let p = prof(Category::FocusIcon);
+        let p = prof(Family::Focus);
         let steps = default_chain(&p, p.canvas, &blob(), false).unwrap();
         assert_eq!(steps.len(), 2);
         assert!(matches!(steps[1], Op::FitSubject { width: 100, height: 88, margin: 2, .. }));
@@ -235,34 +284,38 @@ mod tests {
 
     #[test]
     fn an_opaque_source_is_refused_for_a_transparent_icon() {
-        let p = prof(Category::FocusIcon);
+        let p = prof(Family::Focus);
         let err = default_chain(&p, p.canvas, &Rgba::filled(64, 64, [1, 2, 3, 255]), false).unwrap_err();
         assert_eq!(err.code, "no_transparency_in_source");
     }
 
     #[test]
     fn pictures_cover_resize_and_news_goes_grayscale() {
-        let news = prof(Category::EventNews);
+        let news = prof(Family::NewsEvent);
         let steps = default_chain(&news, news.canvas, &Rgba::filled(800, 600, [9, 9, 9, 255]), false).unwrap();
-        assert_eq!(steps, vec![Op::CoverResize { width: 397, height: 153 }, Op::Grayscale]);
-        let report = prof(Category::EventReport);
-        assert_eq!(default_chain(&report, report.canvas, &Rgba::filled(10, 10, [9, 9, 9, 255]), false).unwrap().len(), 1);
+        assert_eq!(steps, vec![Op::FlattenOn { background: [0, 0, 0] }, Op::CoverResize { width: 397, height: 153 }, Op::Grayscale]);
+        let report = prof(Family::ReportEvent);
+        assert_eq!(default_chain(&report, report.canvas, &Rgba::filled(10, 10, [9, 9, 9, 255]), false).unwrap().len(), 2);
+        assert!(
+            default_chain(&report, report.canvas, &Rgba::filled(210, 176, [9, 9, 9, 255]), true).unwrap().is_empty(),
+            "an imported report card keeps its card alpha"
+        );
     }
 
     #[test]
     fn finished_imports_are_left_alone_and_frame_strips_need_finished_art() {
-        let idea = prof(Category::IdeaIcon);
-        let finished = blob().crop(0, 0, 65, 67).unwrap();
+        let idea = prof(Family::IdeaSpirit);
+        let finished = blob().crop(0, 0, 60, 68).unwrap();
         assert!(default_chain(&idea, idea.canvas, &finished, true).unwrap().is_empty());
         assert!(!default_chain(&idea, idea.canvas, &finished, false).unwrap().is_empty(), "generated art is always fitted");
-        let counter = prof(Category::CounterLarge);
+        let counter = prof(Family::CounterLarge);
         assert!(default_chain(&counter, counter.canvas, &Rgba::new(152, 42), true).unwrap().is_empty());
         assert!(default_chain(&counter, counter.canvas, &Rgba::new(100, 42), true).is_err());
     }
 
     #[test]
     fn magenta_rims_add_a_defringe_step() {
-        let p = prof(Category::IdeaIcon);
+        let p = prof(Family::IdeaSpirit);
         let mut img = Rgba::new(80, 80);
         for y in 10..70 {
             for x in 10..70 {

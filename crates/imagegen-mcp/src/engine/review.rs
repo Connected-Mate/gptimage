@@ -23,7 +23,7 @@ impl Engine {
             return Err(EngineError::invalid("notes must be at most 4000 characters"));
         }
         let artifact = self.artifact(&p.target)?;
-        let profile = self.profile(&artifact.profile.id)?;
+        let profile = self.profile_of(&artifact)?;
         let (_, sha) = self.read_artifact(&artifact)?;
         let rubric_id = profile.imagegen.rubric.clone();
         let answers = p.answers.clone().unwrap_or_else(|| json!({}));
@@ -41,6 +41,13 @@ impl Engine {
                 .filter_map(|e| serde_json::from_value::<ValidatedRecord>(e.data.clone()).ok())
                 .last();
             match latest_validation {
+                Some(v) if v.family != artifact.family || v.check_set_hash != self.gate_expect(artifact.family)?.check_set_hash => {
+                    return Err(EngineError::refused(
+                        "review_needs_validation",
+                        "the last validation did not run the full check set of this artifact's family; validate it again before approving",
+                        RetryClass::RefreshPreconditions,
+                    ))
+                }
                 Some(v) if v.sha256 == sha && v.status == Status::Pass => {}
                 Some(v) if v.sha256 != sha => {
                     return Err(EngineError::refused(
@@ -50,15 +57,25 @@ impl Engine {
                     ))
                 }
                 Some(_) => {
-                    return Err(EngineError::refused("review_needs_validation", "the last validation failed; fix the findings and validate again before approving", RetryClass::RefreshPreconditions))
+                    return Err(EngineError::refused(
+                        "review_needs_validation",
+                        "the last validation failed; fix the findings and validate again before approving",
+                        RetryClass::RefreshPreconditions,
+                    ))
                 }
                 None => {
-                    return Err(EngineError::refused("review_needs_validation", "this artifact has not been validated; run hoi4.image_validate first", RetryClass::RefreshPreconditions))
+                    return Err(EngineError::refused(
+                        "review_needs_validation",
+                        "this artifact has not been validated; run hoi4.image_validate first",
+                        RetryClass::RefreshPreconditions,
+                    ))
                 }
             }
-            let previewed = entries
-                .iter()
-                .any(|e| e.kind == kind::PREVIEWED && e.artifact_id.as_deref() == Some(artifact.id.as_str()) && e.data.get("sha256").and_then(Value::as_str) == Some(sha.as_str()));
+            let previewed = entries.iter().any(|e| {
+                e.kind == kind::PREVIEWED
+                    && e.artifact_id.as_deref() == Some(artifact.id.as_str())
+                    && e.data.get("sha256").and_then(Value::as_str) == Some(sha.as_str())
+            });
             if !previewed {
                 return Err(EngineError::refused(
                     "review_needs_preview",
@@ -80,14 +97,13 @@ impl Engine {
                 .with_details(json!({"rubric": rubric_id, "questions": questions})));
             }
             let next_seq = entries.len() + 1;
-            approval_id = Some(format!(
-                "apr-{}",
-                &sha256_hex(format!("{}|{}|{}|{}|{}", artifact.id, sha, reviewer, self.now(), next_seq).as_bytes())[..16]
-            ));
+            approval_id =
+                Some(format!("apr-{}", &sha256_hex(format!("{}|{}|{}|{}|{}", artifact.id, sha, reviewer, self.now(), next_seq).as_bytes())[..16]));
         }
 
         let record = ReviewedRecord {
             target: artifact.id.clone(),
+            family: artifact.family,
             sha256: sha.clone(),
             verdict: p.verdict,
             reviewer,
@@ -99,6 +115,7 @@ impl Engine {
         self.ledger.append(kind::REVIEWED, Some(&artifact.asset_id), Some(&artifact.id), &record)?;
         Ok(json!({
             "target": artifact.id,
+            "family": artifact.family,
             "sha256": sha,
             "verdict": p.verdict,
             "approval_id": approval_id,

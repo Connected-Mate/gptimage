@@ -5,9 +5,9 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
-use imagegen_core::category::{Automation, Category};
 use imagegen_core::config::{Config, EnvSource};
 use imagegen_core::error::{Error as CoreError, RetryClass};
+use imagegen_core::family::{Automation, Family};
 use imagegen_core::fsio::ProjectFs;
 use imagegen_core::hashing::{sha256_hex, Clock};
 use imagegen_core::ledger::Ledger;
@@ -227,8 +227,20 @@ impl Engine {
         })
     }
 
-    pub(crate) fn profile(&self, id: &str) -> EResult<&Profile> {
-        self.profiles.get(id).ok_or_else(|| EngineError::new("not_found", format!("no profile '{id}'"), RetryClass::Terminal))
+    /// The effective profile of a family.
+    pub(crate) fn family_profile(&self, family: Family) -> EResult<&Profile> {
+        self.profiles.for_family(family).ok_or_else(|| EngineError::new("not_found", format!("no profile for family {family}"), RetryClass::Terminal))
+    }
+
+    /// The profile of an artifact: always its own family's, never a caller's choice.
+    pub(crate) fn profile_of(&self, a: &Artifact) -> EResult<&Profile> {
+        self.family_profile(a.family)
+    }
+
+    /// What the install gate expects of the records of an artifact.
+    pub(crate) fn gate_expect(&self, family: Family) -> EResult<imagegen_core::gate::GateExpect> {
+        let p = self.family_profile(family)?;
+        Ok(imagegen_core::gate::GateExpect { family, check_set_hash: imagegen_core::validate::check_set_hash(&p.imagegen.checks) })
     }
 
     pub(crate) fn profile_ref(&self, p: &Profile) -> ProfileRef {
@@ -239,31 +251,31 @@ impl Engine {
         imagegen_core::config::find_game_dir(&self.config, &*self.env)
     }
 
-    /// Refuse categories the project or the profile does not allow, for a given provider (decision D3).
-    pub(crate) fn check_category_policy(&self, profile: &Profile, provider: &str) -> EResult<()> {
-        if self.config.policy.forbidden_categories.contains(&profile.category) {
+    /// Refuse families the project or the profile does not allow, for a given provider (decision D3).
+    pub(crate) fn check_family_policy(&self, profile: &Profile, provider: &str) -> EResult<()> {
+        if self.config.policy.forbidden_families.contains(&profile.family) {
             return Err(EngineError::refused(
-                "category_forbidden_by_project",
-                format!("this project's policy.forbidden_categories lists {}; no provider may generate it", profile.category),
+                "family_forbidden_by_project",
+                format!("this project's policy.forbidden_families lists {}; no provider may generate it", profile.family),
                 RetryClass::Terminal,
             ));
         }
         match profile.imagegen.automation {
             Automation::Generate => Ok(()),
             Automation::ImportOnly => Err(EngineError::refused(
-                "category_import_only",
+                "family_import_only",
                 format!(
                     "{} is built by another kit tool. Bring its output under the ledger with hoi4.image_process (import), then validate, review and install it",
-                    profile.category
+                    profile.family
                 ),
                 RetryClass::Terminal,
             )),
             Automation::UserRunOnly if provider == "comfyui" => Ok(()),
             Automation::UserRunOnly => Err(EngineError::refused(
-                "category_user_run_only",
+                "family_user_run_only",
                 format!(
                     "{} is user-run: only a ComfyUI endpoint you configured may generate it (decision D3). Import the result with hoi4.image_process instead",
-                    profile.category
+                    profile.family
                 ),
                 RetryClass::RequiresAuthorization,
             )),
@@ -294,8 +306,8 @@ pub struct Artifact {
     pub path: String,
     /// Hash recorded when it was written.
     pub recorded_sha256: String,
-    /// Category.
-    pub category: Category,
+    /// Family.
+    pub family: Family,
     /// Feature folder.
     pub feature_slug: String,
     /// Asset name.
@@ -328,14 +340,26 @@ impl Engine {
             .and_then(|e| serde_json::from_value::<ProcessedRecord>(e.data.clone()).ok())
         {
             let root_id = imagegen_core::naming::ArtifactId::parse(&p.source_id)?.raw_id();
-            let root = find_candidate(&root_id).ok_or_else(|| EngineError::new("ledger_error", format!("the root candidate {root_id} of {id} is missing from the ledger"), RetryClass::Terminal))?;
+            let root = find_candidate(&root_id).ok_or_else(|| {
+                EngineError::new("ledger_error", format!("the root candidate {root_id} of {id} is missing from the ledger"), RetryClass::Terminal)
+            })?;
+            if root.family != p.family || p.profile.id != p.family.as_str() {
+                return Err(EngineError::refused(
+                    "GFX-FAMILY-MISMATCH",
+                    format!(
+                        "the records of {id} disagree about its family ({} against {}); an asset keeps the family it was planned as",
+                        root.family, p.family
+                    ),
+                    RetryClass::Terminal,
+                ));
+            }
             return Ok(Artifact {
                 id: id.to_string(),
                 processed: true,
                 asset_id: p.asset_id,
                 path: p.path,
                 recorded_sha256: p.sha256,
-                category: root.category,
+                family: p.family,
                 feature_slug: root.feature_slug,
                 asset: root.asset,
                 profile: p.profile,
@@ -345,13 +369,20 @@ impl Engine {
             });
         }
         if let Some(c) = find_candidate(id) {
+            if c.profile.id != c.family.as_str() {
+                return Err(EngineError::refused(
+                    "GFX-FAMILY-MISMATCH",
+                    format!("candidate {id} is a {} but was recorded against profile {}", c.family, c.profile.id),
+                    RetryClass::Terminal,
+                ));
+            }
             return Ok(Artifact {
                 id: id.to_string(),
                 processed: false,
                 asset_id: c.asset_id,
                 path: c.path,
                 recorded_sha256: c.sha256,
-                category: c.category,
+                family: c.family,
                 feature_slug: c.feature_slug,
                 asset: c.asset,
                 profile: c.profile,

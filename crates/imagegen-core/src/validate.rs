@@ -122,8 +122,26 @@ pub struct Options {
 }
 
 /// Every check id this crate knows.
-pub const ALL_CHECKS: &[&str] =
-    &["size", "alpha", "opaque_canvas", "fringe", "margin", "fill", "checker", "ghost", "frames", "dds", "tga"];
+pub const ALL_CHECKS: &[&str] = &["size", "alpha", "opaque_canvas", "opaque", "fringe", "margin", "fill", "checker", "ghost", "frames", "dds", "tga"];
+
+/// Hash of a check set (order does not matter). The install gate compares the hash recorded with a validation
+/// against the full set of the artifact's family, so a validation that skipped a check cannot open it.
+pub fn check_set_hash(checks: &[String]) -> String {
+    let mut sorted: Vec<&str> = checks.iter().map(String::as_str).collect();
+    sorted.sort_unstable();
+    sorted.dedup();
+    crate::hashing::sha256_hex(
+        format!(
+            "hoi4-imagegen-check-set-v1
+{}",
+            sorted.join(
+                "
+"
+            )
+        )
+        .as_bytes(),
+    )
+}
 
 /// Validate decoded pixels against a profile. `checks` selects which checks run; pass the profile's list
 /// for the default set.
@@ -135,7 +153,11 @@ pub fn validate_image(img: &Rgba, profile: &Profile, checks: &[String], opts: &O
     let frames = profile.frames.max(1);
     let canvas = opts.canvas.unwrap_or(profile.canvas);
     let accepted: Vec<[u32; 2]> = if opts.canvas.is_some() || profile.accepted.is_empty() {
-        if canvas == [0, 0] { Vec::new() } else { vec![canvas] }
+        if canvas == [0, 0] {
+            Vec::new()
+        } else {
+            vec![canvas]
+        }
     } else {
         profile.accepted.clone()
     };
@@ -147,16 +169,17 @@ pub fn validate_image(img: &Rgba, profile: &Profile, checks: &[String], opts: &O
         findings.push(Finding::new(
             "GFX-FRAME-WIDTH",
             Level::Error,
-            format!("width {} does not divide into {frames} frames; per-frame width would be {:.2}", img.width, f64::from(img.width) / f64::from(frames)),
+            format!(
+                "width {} does not divide into {frames} frames; per-frame width would be {:.2}",
+                img.width,
+                f64::from(img.width) / f64::from(frames)
+            ),
             None,
             json!({"width": img.width, "frames": frames}),
         ));
     }
-    let frame_imgs: Vec<Rgba> = if divisible && frames > 1 {
-        img.split_frames(frames).unwrap_or_else(|_| vec![img.clone()])
-    } else {
-        vec![img.clone()]
-    };
+    let frame_imgs: Vec<Rgba> =
+        if divisible && frames > 1 { img.split_frames(frames).unwrap_or_else(|_| vec![img.clone()]) } else { vec![img.clone()] };
     let frame_count = frame_imgs.len() as u32;
 
     if wants("size") {
@@ -257,7 +280,10 @@ pub fn validate_image(img: &Rgba, profile: &Profile, checks: &[String], opts: &O
                 findings.push(Finding::new(
                     "GFX-CHROMA-FRINGE",
                     Level::Warning,
-                    format!("{} of {} edge pixels carry the magenta or green key colour; legitimate green or purple art also triggers this", s.chroma_edge_pixels, s.edge_pixels),
+                    format!(
+                        "{} of {} edge pixels carry the magenta or green key colour; legitimate green or purple art also triggers this",
+                        s.chroma_edge_pixels, s.edge_pixels
+                    ),
                     n,
                     json!({"chroma_edge_pixels": s.chroma_edge_pixels, "edge_pixels": s.edge_pixels}),
                 ));
@@ -298,6 +324,22 @@ pub fn validate_image(img: &Rgba, profile: &Profile, checks: &[String], opts: &O
         }
     }
 
+    if wants("opaque") && !transparent_profile {
+        run.push("opaque".into());
+        let translucent = img.data.chunks_exact(4).filter(|p| p[3] < 255).count();
+        if translucent > 0 {
+            findings.push(Finding::new(
+                "GFX-ALPHA-IN-OPAQUE",
+                Level::Error,
+                format!(
+                    "{translucent} pixels have alpha below 255, but this family is an opaque picture; flatten it so provider alpha never survives"
+                ),
+                None,
+                json!({"translucent_pixels": translucent}),
+            ));
+        }
+    }
+
     if wants("checker") {
         run.push("checker".into());
         if let Some(c) = detect_fake_checkerboard(img) {
@@ -316,14 +358,7 @@ pub fn validate_image(img: &Rgba, profile: &Profile, checks: &[String], opts: &O
     }
 
     let status = if findings.iter().any(|f| f.level == Level::Error) { Status::Fail } else { Status::Pass };
-    Report {
-        status,
-        findings,
-        frames: stats,
-        size: [img.width, img.height],
-        pixels_sha256: img.pixels_sha256(),
-        checks_run: run,
-    }
+    Report { status, findings, frames: stats, size: [img.width, img.height], pixels_sha256: img.pixels_sha256(), checks_run: run }
 }
 
 /// Measure one frame.
@@ -438,7 +473,13 @@ pub fn validate_container(bytes: &[u8], file_name: &str, profile: &Profile, chec
     let wants = |name: &str| checks.iter().any(|c| c == name);
     let mut out = Vec::new();
     if bytes.starts_with(b"version https://git-lfs") {
-        out.push(Finding::new("GFX-LFS-POINTER", Level::Error, "the file is a Git LFS pointer, not the binary; run git lfs checkout for this path".into(), None, json!({})));
+        out.push(Finding::new(
+            "GFX-LFS-POINTER",
+            Level::Error,
+            "the file is a Git LFS pointer, not the binary; run git lfs checkout for this path".into(),
+            None,
+            json!({}),
+        ));
         return out;
     }
     let lower = file_name.to_ascii_lowercase();
@@ -450,24 +491,39 @@ pub fn validate_container(bytes: &[u8], file_name: &str, profile: &Profile, chec
         if wants("dds") {
             for problem in dds::canonical_problems(bytes) {
                 let code = if problem.contains("canonical length") { "GFX-TRUNCATED" } else { "GFX-DDS-HEADER" };
-                out.push(Finding::new(code, Level::Error, format!("DDS is not the canonical one-level uncompressed BGRA layout: {problem}"), None, json!({})));
+                out.push(Finding::new(
+                    code,
+                    Level::Error,
+                    format!("DDS is not the canonical one-level uncompressed BGRA layout: {problem}"),
+                    None,
+                    json!({}),
+                ));
             }
         }
     } else if lower.ends_with(".tga") {
         match tga::parse_header(bytes) {
-            Err(_) => out.push(Finding::new("GFX-TRUNCATED", Level::Error, "the file has no complete TGA header".into(), None, json!({"bytes": bytes.len()}))),
+            Err(_) => out.push(Finding::new(
+                "GFX-TRUNCATED",
+                Level::Error,
+                "the file has no complete TGA header".into(),
+                None,
+                json!({"bytes": bytes.len()}),
+            )),
             Ok(info) => {
                 if wants("tga") {
                     if info.image_type != 2 || info.bits_per_pixel != 32 {
                         out.push(Finding::new(
                             "GFX-TGA-FORMAT",
                             Level::Warning,
-                            format!("TGA is type {} at {} bits per pixel; flags written by this tool are uncompressed 32-bit", info.image_type, info.bits_per_pixel),
+                            format!(
+                                "TGA is type {} at {} bits per pixel; flags written by this tool are uncompressed 32-bit",
+                                info.image_type, info.bits_per_pixel
+                            ),
                             None,
                             json!({}),
                         ));
                     }
-                    if info.top_origin && profile.category == crate::category::Category::FlagSet {
+                    if info.top_origin && profile.family == crate::family::Family::Flag {
                         out.push(Finding::new(
                             "GFX-FLAG-ORIGIN",
                             Level::Warning,
@@ -478,7 +534,13 @@ pub fn validate_container(bytes: &[u8], file_name: &str, profile: &Profile, chec
                     }
                     let need = tga::HEADER_LEN + info.id_len + (info.width * info.height * u32::from(info.bits_per_pixel / 8)) as usize;
                     if bytes.len() < need {
-                        out.push(Finding::new("GFX-TRUNCATED", Level::Error, format!("the file holds {} bytes, its TGA header needs at least {need}", bytes.len()), None, json!({})));
+                        out.push(Finding::new(
+                            "GFX-TRUNCATED",
+                            Level::Error,
+                            format!("the file holds {} bytes, its TGA header needs at least {need}", bytes.len()),
+                            None,
+                            json!({}),
+                        ));
                     }
                 }
             }
@@ -490,11 +552,11 @@ pub fn validate_container(bytes: &[u8], file_name: &str, profile: &Profile, chec
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::category::Category;
+    use crate::family::Family;
     use crate::profile::ProfileSet;
 
-    fn profile(c: Category) -> Profile {
-        ProfileSet::builtin().for_category(c).unwrap().clone()
+    fn profile(c: Family) -> Profile {
+        ProfileSet::builtin().for_family(c).unwrap().clone()
     }
 
     fn checks(p: &Profile) -> Vec<String> {
@@ -521,7 +583,7 @@ mod tests {
 
     #[test]
     fn clean_focus_icon_passes() {
-        let p = profile(Category::FocusIcon);
+        let p = profile(Family::Focus);
         let r = validate_image(&good_focus(), &p, &checks(&p), &Options::default());
         assert_eq!(r.status, Status::Pass, "{:?}", r.findings);
         assert!(r.checks_run.contains(&"margin".to_string()));
@@ -530,7 +592,7 @@ mod tests {
 
     #[test]
     fn wrong_size_is_an_error_with_both_sizes_named() {
-        let p = profile(Category::FocusIcon);
+        let p = profile(Family::Focus);
         let r = validate_image(&Rgba::new(94, 86), &p, &checks(&p), &Options::default());
         assert_eq!(r.status, Status::Fail);
         let f = r.findings.iter().find(|f| f.code == "GFX-CANVAS-SIZE").unwrap();
@@ -539,7 +601,7 @@ mod tests {
 
     #[test]
     fn opaque_canvas_and_missing_alpha_are_caught() {
-        let p = profile(Category::FocusIcon);
+        let p = profile(Family::Focus);
         let r = validate_image(&Rgba::filled(100, 88, [10, 10, 10, 255]), &p, &checks(&p), &Options::default());
         let c = codes(&r);
         assert!(c.contains(&"GFX-OPAQUE-CANVAS"), "{c:?}");
@@ -549,7 +611,7 @@ mod tests {
 
     #[test]
     fn empty_subject_ghosting_margin_and_fill() {
-        let p = profile(Category::FocusIcon);
+        let p = profile(Family::Focus);
         let r = validate_image(&Rgba::new(100, 88), &p, &checks(&p), &Options::default());
         assert!(codes(&r).contains(&"GFX-EMPTY-SUBJECT"));
 
@@ -580,7 +642,7 @@ mod tests {
 
     #[test]
     fn chroma_fringe_is_reported() {
-        let p = profile(Category::FocusIcon);
+        let p = profile(Family::Focus);
         let mut img = good_focus();
         // recolour the rim of the disc magenta
         let b = img.alpha_bbox(1).unwrap();
@@ -594,16 +656,16 @@ mod tests {
 
     #[test]
     fn opaque_pictures_need_only_size_and_no_checker() {
-        let p = profile(Category::EventNews);
+        let p = profile(Family::NewsEvent);
         let r = validate_image(&Rgba::filled(397, 153, [90, 90, 90, 255]), &p, &checks(&p), &Options::default());
         assert_eq!(r.status, Status::Pass, "{:?}", r.findings);
-        let r = validate_image(&Rgba::filled(396, 153, [90, 90, 90, 255]), &p, &checks(&p), &Options::default());
+        let r = validate_image(&Rgba::filled(395, 153, [90, 90, 90, 255]), &p, &checks(&p), &Options::default());
         assert_eq!(r.status, Status::Fail);
     }
 
     #[test]
     fn frames_must_divide_and_each_frame_is_measured() {
-        let p = profile(Category::CounterLarge);
+        let p = profile(Family::CounterLarge);
         let mut strip = Rgba::new(152, 42);
         for x in 5..70 {
             for y in 3..39 {
@@ -620,7 +682,7 @@ mod tests {
 
     #[test]
     fn canvas_override_for_custom_profiles() {
-        let p = profile(Category::Custom);
+        let p = profile(Family::GuiTexture);
         let r = validate_image(&Rgba::new(10, 10), &p, &checks(&p), &Options::default());
         assert!(codes(&r).contains(&"GFX-CANVAS-UNSPECIFIED"));
         let img = Rgba::filled(64, 32, [1, 2, 3, 255]);
@@ -671,7 +733,7 @@ mod tests {
 
     #[test]
     fn container_checks_flag_bad_dds_tga_and_lfs() {
-        let p = profile(Category::FocusIcon);
+        let p = profile(Family::Focus);
         let good = dds::write_a8r8g8b8(&good_focus());
         assert!(validate_container(&good, "a.dds", &p, &checks(&p)).is_empty());
         let mut cut = good.clone();
@@ -680,7 +742,7 @@ mod tests {
         assert!(validate_container(&good[..50], "a.dds", &p, &checks(&p)).iter().any(|f| f.code == "GFX-TRUNCATED"));
         let lfs = b"version https://git-lfs.github.com/spec/v1\noid sha256:abc\nsize 1\n";
         assert!(validate_container(lfs, "a.dds", &p, &checks(&p)).iter().any(|f| f.code == "GFX-LFS-POINTER"));
-        let flag = profile(Category::FlagSet);
+        let flag = profile(Family::Flag);
         let top = tga::write_truecolor32(&Rgba::filled(82, 52, [1, 2, 3, 255]), tga::Origin::TopLeft);
         let fc = vec!["tga".to_string()];
         assert!(validate_container(&top, "GER.tga", &flag, &fc).iter().any(|f| f.code == "GFX-FLAG-ORIGIN"));

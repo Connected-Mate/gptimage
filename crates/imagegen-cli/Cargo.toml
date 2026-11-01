@@ -22,6 +22,7 @@ imagegen-core.workspace = true
 imagegen-mcp.workspace = true
 imagegen-providers.workspace = true
 provider-chatgpt-login.workspace = true
+serde.workspace = true
 serde_json.workspace = true
 
 [dev-dependencies]

@@ -1,4 +1,4 @@
-//! Category profiles.
+//! Family profiles.
 //!
 //! Geometry (canvas, accepted sizes, margin, frames) and its evidence belong to the kit's
 //! `.tools/gfx/profiles.json`. This crate reads that file when it exists and layers it over a built-in
@@ -13,8 +13,8 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::category::{Automation, Category};
 use crate::error::{Error, Result};
+use crate::family::{Automation, Family};
 use crate::hashing::{canonical_hash, sha256_hex};
 
 /// Where a profile's geometry came from.
@@ -104,8 +104,14 @@ pub struct ImagegenSpec {
     pub folder: String,
     /// File name prefix, with placeholders.
     pub prefix: String,
-    /// Sprite registration, when the category uses `.gfx` sprites.
+    /// Other file name prefixes the game accepts for the family (the focus family accepts `goal_`).
+    #[serde(default)]
+    pub alt_prefixes: Vec<String>,
+    /// Sprite registration, when the family uses `.gfx` sprites.
     pub sprite: Option<SpriteSpec>,
+    /// Companion files the engine expects next to the main file, as name suffixes (`_grey`, `_small`).
+    #[serde(default)]
+    pub companion_files: Vec<String>,
     /// Size variants for multi-file assets.
     #[serde(default)]
     pub variants: Vec<Variant>,
@@ -135,10 +141,10 @@ pub struct VanillaDefault {
 /// An effective profile.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct Profile {
-    /// Profile id (a category id, or a kit row name for rows this crate does not know).
+    /// Profile id: always the family id.
     pub id: String,
-    /// Category.
-    pub category: Category,
+    /// The family. Fixed for the life of an asset.
+    pub family: Family,
     /// Canvas per frame for new art.
     pub canvas: [u32; 2],
     /// Every size treated as valid per frame.
@@ -166,6 +172,27 @@ impl Profile {
         self.canvas[0] * self.frames.max(1)
     }
 
+    /// True when the family has no fixed canvas and the mod must define one (GUI textures, super events).
+    pub fn needs_mod_canvas(&self) -> bool {
+        self.canvas == [0, 0]
+    }
+
+    /// Every size of a whole image (all frames) the family accepts, canonical size first.
+    pub fn accepted_strips(&self) -> Vec<[u32; 2]> {
+        let f = self.frames.max(1);
+        let mut out: Vec<[u32; 2]> = Vec::new();
+        for a in std::iter::once(&self.canvas).chain(self.accepted.iter()) {
+            if *a == [0, 0] {
+                continue;
+            }
+            let strip = [a[0] * f, a[1]];
+            if !out.contains(&strip) {
+                out.push(strip);
+            }
+        }
+        out
+    }
+
     /// True when the effective canvas differs from the vanilla-measured default.
     pub fn differs_from_vanilla(&self) -> bool {
         self.vanilla.as_ref().map(|v| v.canvas != self.canvas).unwrap_or(false)
@@ -186,8 +213,12 @@ pub struct ImagegenOverride {
     pub folder: Option<String>,
     /// Prefix pattern.
     pub prefix: Option<String>,
+    /// Alternative prefixes.
+    pub alt_prefixes: Option<Vec<String>>,
     /// Sprite details.
     pub sprite: Option<SpriteSpec>,
+    /// Companion file suffixes.
+    pub companion_files: Option<Vec<String>>,
     /// Variants.
     pub variants: Option<Vec<Variant>>,
     /// Checks.
@@ -200,8 +231,6 @@ pub struct ImagegenOverride {
     pub prompt: Option<PromptSpec>,
     /// Grayscale flag.
     pub grayscale: Option<bool>,
-    /// The category this row stands for (kit rows with unknown names).
-    pub category: Option<Category>,
 }
 
 /// A kit row or a project override: geometry plus an optional `imagegen` object. Unknown keys are ignored,
@@ -223,17 +252,17 @@ pub struct RowOverride {
     pub imagegen: Option<ImagegenOverride>,
 }
 
-/// Map a kit `profiles.json` row name to a category.
-pub fn kit_row_category(name: &str) -> Option<Category> {
+/// Map a kit `profiles.json` row name to a family.
+pub fn kit_row_family(name: &str) -> Option<Family> {
     Some(match name {
-        "category" => Category::DecisionCategoryIcon,
-        "report" => Category::EventReport,
-        "news" => Category::EventNews,
-        "counter-large" => Category::CounterLarge,
-        "counter-small" => Category::CounterSmall,
-        "focus" => Category::FocusIcon,
-        "decision" => Category::DecisionIcon,
-        "idea" => Category::IdeaIcon,
+        "category" => Family::DecisionCategoryIcon,
+        "report" => Family::ReportEvent,
+        "news" => Family::NewsEvent,
+        "counter-large" => Family::CounterLarge,
+        "counter-small" => Family::CounterSmall,
+        "focus" => Family::Focus,
+        "decision" => Family::Decision,
+        "idea" => Family::IdeaSpirit,
         other => return other.parse().ok(),
     })
 }
@@ -265,15 +294,14 @@ impl ProfileSet {
                 let bytes = crate::fsio::read_limited(path, 4 * 1024 * 1024)?;
                 set.kit_sha256 = Some(sha256_hex(&bytes));
                 set.kit_path = Some(crate::fsio::display_path(path));
-                let doc: Value = serde_json::from_slice(&bytes)
-                    .map_err(|e| Error::Config(format!("{} is not valid JSON: {e}", path.display())))?;
+                let doc: Value = serde_json::from_slice(&bytes).map_err(|e| Error::Config(format!("{} is not valid JSON: {e}", path.display())))?;
                 let rows = doc
                     .get("profiles")
                     .and_then(Value::as_object)
                     .ok_or_else(|| Error::Config(format!("{} has no 'profiles' object", path.display())))?;
                 for (name, row) in rows {
-                    let parsed: RowOverride = serde_json::from_value(row.clone())
-                        .map_err(|e| Error::Config(format!("profiles.json row '{name}': {e}")))?;
+                    let parsed: RowOverride =
+                        serde_json::from_value(row.clone()).map_err(|e| Error::Config(format!("profiles.json row '{name}': {e}")))?;
                     set.apply(name, &parsed, ProfileOrigin::Kit)?;
                 }
             } else {
@@ -287,23 +315,13 @@ impl ProfileSet {
     }
 
     fn apply(&mut self, name: &str, row: &RowOverride, origin: ProfileOrigin) -> Result<()> {
-        let id = match kit_row_category(name) {
-            Some(cat) => cat.as_str().to_string(),
-            None => name.to_string(),
+        let Some(family) = kit_row_family(name) else {
+            // The 0.1 "custom" profiles are gone: a row must name a family, or it cannot be generated or checked.
+            self.notes.push(format!("row '{name}' is not a known family; ignored"));
+            return Ok(());
         };
-        if !self.profiles.contains_key(&id) {
-            // An unknown row becomes a custom-category profile so gfx.py rows keep working here.
-            let canvas = row.canvas.ok_or_else(|| {
-                Error::Config(format!("profile row '{name}' is not a known category and has no canvas"))
-            })?;
-            let mut p = crate::builtin::custom_profile(&id, canvas);
-            if let Some(cat) = row.imagegen.as_ref().and_then(|i| i.category) {
-                p.category = cat;
-            }
-            self.notes.push(format!("row '{name}' is not a known category; added as a custom profile"));
-            self.profiles.insert(id.clone(), p);
-        }
-        let p = self.profiles.get_mut(&id).expect("inserted above");
+        let id = family.as_str().to_string();
+        let p = self.profiles.get_mut(&id).expect("every family has a built-in profile");
         let mut changed = Vec::new();
         if let Some(c) = row.canvas {
             if p.canvas != c {
@@ -352,9 +370,9 @@ impl ProfileSet {
         self.profiles.get(id)
     }
 
-    /// Profile for a category (the profile whose id is the category id).
-    pub fn for_category(&self, category: Category) -> Option<&Profile> {
-        self.profiles.get(category.as_str())
+    /// Profile of a family (the profile whose id is the family id).
+    pub fn for_family(&self, family: Family) -> Option<&Profile> {
+        self.profiles.get(family.as_str())
     }
 
     /// All profiles in id order.
@@ -390,12 +408,14 @@ fn merge_imagegen(dst: &mut ImagegenSpec, src: &ImagegenOverride, changed: &mut 
     set!(container, "container");
     set!(folder, "folder");
     set!(prefix, "prefix");
+    set!(alt_prefixes, "alt_prefixes");
     if let Some(v) = &src.sprite {
         if dst.sprite.as_ref() != Some(v) {
             changed.push("imagegen.sprite".to_string());
         }
         dst.sprite = Some(v.clone());
     }
+    set!(companion_files, "companion_files");
     set!(variants, "variants");
     set!(checks, "checks");
     set!(reference_dirs, "reference_dirs");
@@ -415,17 +435,19 @@ mod tests {
     }
 
     #[test]
-    fn builtin_set_covers_every_category_with_a_profile() {
+    fn builtin_set_covers_every_family_with_a_profile() {
         let set = ProfileSet::builtin();
-        for c in Category::ALL {
-            let p = set.for_category(c).unwrap_or_else(|| panic!("no profile for {c}"));
-            assert_eq!(p.category, c);
-            assert!(p.accepted.contains(&p.canvas) || c == Category::Custom || c == Category::GuiTexture, "{c}");
+        for c in Family::ALL.iter().copied() {
+            let p = set.for_family(c).unwrap_or_else(|| panic!("no profile for {c}"));
+            assert_eq!(p.family, c);
+            assert_eq!(p.id, c.as_str());
+            assert!(p.accepted.contains(&p.canvas) || p.needs_mod_canvas(), "{c}");
             assert!(!p.source.is_empty());
         }
-        assert_eq!(set.for_category(Category::FocusIcon).unwrap().canvas, [100, 88]);
-        assert_eq!(set.for_category(Category::IdeaIcon).unwrap().canvas, [65, 67]);
-        assert_eq!(set.for_category(Category::DecisionIcon).unwrap().canvas, [33, 32]);
+        assert_eq!(set.for_family(Family::Focus).unwrap().canvas, [100, 88]);
+        assert_eq!(set.for_family(Family::IdeaSpirit).unwrap().canvas, [60, 68]);
+        assert_eq!(set.for_family(Family::Decision).unwrap().canvas, [33, 32]);
+        assert_eq!(set.all().count(), Family::ALL.len());
     }
 
     #[test]
@@ -436,19 +458,18 @@ mod tests {
             r#"{"_about":"x","profiles":{
                 "focus":{"canvas":[94,86],"accepted":[[94,86],[100,88]],"margin":2,"frames":1,"source":"project decision","off_size_level":"error",
                          "imagegen":{"prefix":"focus_"}},
-                "report":{"canvas":[210,176],"accepted":[[210,176]],"margin":0,"frames":1,"source":"kit"}
+                "report":{"canvas":[210,176],"accepted":[[210,176],[209,176]],"margin":0,"frames":1,"source":"kit"}
             }}"#,
         );
         let set = ProfileSet::load(Some(&path), &BTreeMap::new()).unwrap();
-        let focus = set.for_category(Category::FocusIcon).unwrap();
+        let focus = set.for_family(Family::Focus).unwrap();
         assert_eq!(focus.canvas, [94, 86]);
         assert_eq!(focus.origin, ProfileOrigin::Kit);
         assert!(focus.overridden.contains(&"canvas".to_string()));
-        assert!(focus.overridden.contains(&"imagegen.prefix".to_string()));
         assert_eq!(focus.imagegen.prefix, "focus_");
         assert!(focus.differs_from_vanilla());
         assert_eq!(focus.vanilla.as_ref().unwrap().canvas, [100, 88]);
-        let report = set.for_category(Category::EventReport).unwrap();
+        let report = set.for_family(Family::ReportEvent).unwrap();
         assert!(report.overridden.is_empty(), "same numbers as the default are not an override: {:?}", report.overridden);
         assert!(set.kit_sha256.is_some());
     }
@@ -458,26 +479,23 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let path = kit_file(dir.path(), r#"{"profiles":{"idea":{"canvas":[64,64],"accepted":[[64,64]],"margin":2,"frames":1,"source":"kit"}}}"#);
         let mut project = BTreeMap::new();
-        project.insert("idea_icon".to_string(), RowOverride { canvas: Some([60, 68]), ..Default::default() });
+        project.insert("idea_spirit".to_string(), RowOverride { canvas: Some([62, 70]), ..Default::default() });
         let set = ProfileSet::load(Some(&path), &project).unwrap();
-        let p = set.for_category(Category::IdeaIcon).unwrap();
-        assert_eq!(p.canvas, [60, 68]);
+        let p = set.for_family(Family::IdeaSpirit).unwrap();
+        assert_eq!(p.canvas, [62, 70]);
         assert_eq!(p.origin, ProfileOrigin::Project);
-        assert!(p.accepted.contains(&[60, 68]));
+        assert!(p.accepted.contains(&[62, 70]));
     }
 
     #[test]
-    fn unknown_rows_become_custom_profiles_and_bad_files_fail() {
+    fn unknown_rows_are_ignored_with_a_note_and_bad_files_fail() {
         let dir = tempfile::tempdir().unwrap();
         let path = kit_file(dir.path(), r#"{"profiles":{"my-banner":{"canvas":[300,100],"margin":0,"frames":1,"source":"mine"}}}"#);
         let set = ProfileSet::load(Some(&path), &BTreeMap::new()).unwrap();
-        let p = set.get("my-banner").unwrap();
-        assert_eq!(p.category, Category::Custom);
-        assert_eq!(p.canvas, [300, 100]);
-        assert!(!set.notes.is_empty());
+        assert!(set.get("my-banner").is_none(), "no custom family exists");
+        assert!(set.notes.iter().any(|n| n.contains("my-banner")));
+        assert_eq!(set.all().count(), Family::ALL.len());
 
-        let bad = kit_file(dir.path(), r#"{"profiles":{"mystery":{"margin":1}}}"#);
-        assert!(ProfileSet::load(Some(&bad), &BTreeMap::new()).is_err());
         let notjson = kit_file(dir.path(), "not json");
         assert!(ProfileSet::load(Some(&notjson), &BTreeMap::new()).is_err());
         let missing = dir.path().join("absent.json");
@@ -486,10 +504,29 @@ mod tests {
     }
 
     #[test]
+    fn a_mod_defines_the_canvas_of_gui_textures_through_its_profile() {
+        let mut project = BTreeMap::new();
+        assert!(ProfileSet::builtin().for_family(Family::GuiTexture).unwrap().needs_mod_canvas());
+        project.insert("gui_texture".to_string(), RowOverride { canvas: Some([300, 100]), ..Default::default() });
+        let set = ProfileSet::load(None, &project).unwrap();
+        let p = set.for_family(Family::GuiTexture).unwrap();
+        assert_eq!(p.canvas, [300, 100]);
+        assert!(!p.needs_mod_canvas());
+    }
+
+    #[test]
+    fn accepted_strips_multiply_by_frames() {
+        let set = ProfileSet::builtin();
+        assert_eq!(set.for_family(Family::CounterLarge).unwrap().accepted_strips(), vec![[152, 42]]);
+        assert_eq!(set.for_family(Family::Building).unwrap().accepted_strips(), vec![[128, 64], [64, 32]]);
+        assert_eq!(set.for_family(Family::Focus).unwrap().accepted_strips()[0], [100, 88]);
+    }
+
+    #[test]
     fn effective_hash_changes_with_geometry() {
         let a = ProfileSet::builtin();
         let mut project = BTreeMap::new();
-        project.insert("focus_icon".to_string(), RowOverride { canvas: Some([94, 86]), ..Default::default() });
+        project.insert("focus".to_string(), RowOverride { canvas: Some([94, 86]), ..Default::default() });
         let b = ProfileSet::load(None, &project).unwrap();
         assert_ne!(a.effective_hash(), b.effective_hash());
         assert_eq!(a.effective_hash(), ProfileSet::builtin().effective_hash());

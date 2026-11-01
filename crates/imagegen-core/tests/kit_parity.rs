@@ -16,8 +16,8 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use imagegen_core::category::Category;
 use imagegen_core::dds;
+use imagegen_core::family::Family;
 use imagegen_core::pixels::Rgba;
 use imagegen_core::profile::ProfileSet;
 use imagegen_core::validate::{frame_stats, validate_image, Options};
@@ -114,10 +114,7 @@ fn repo_root() -> PathBuf {
 }
 
 fn find_kit() -> Option<PathBuf> {
-    let candidates = [
-        std::env::var("HOI4_KIT_DIR").ok().map(PathBuf::from),
-        Some(repo_root().join("..").join("agentic-hoi4-modding")),
-    ];
+    let candidates = [std::env::var("HOI4_KIT_DIR").ok().map(PathBuf::from), Some(repo_root().join("..").join("agentic-hoi4-modding"))];
     candidates
         .into_iter()
         .flatten()
@@ -190,24 +187,13 @@ fn dds_writer_and_pixel_rules_match_the_kits_python() {
     std::fs::write(work.join("manifest.json"), serde_json::to_vec(&manifest).unwrap()).unwrap();
     std::fs::write(work.join("parity.py"), SCRIPT).unwrap();
 
-    let out = Command::new(&python[0])
-        .args(&python[1..])
-        .arg(work.join("parity.py"))
-        .arg(&kit)
-        .arg(&work)
-        .output()
-        .expect("python starts");
-    assert!(
-        out.status.success(),
-        "python parity script failed:\n{}\n{}",
-        String::from_utf8_lossy(&out.stdout),
-        String::from_utf8_lossy(&out.stderr)
-    );
+    let out = Command::new(&python[0]).args(&python[1..]).arg(work.join("parity.py")).arg(&kit).arg(&work).output().expect("python starts");
+    assert!(out.status.success(), "python parity script failed:\n{}\n{}", String::from_utf8_lossy(&out.stdout), String::from_utf8_lossy(&out.stderr));
     let results: Vec<Value> = serde_json::from_slice(&std::fs::read(work.join("results.json")).unwrap()).unwrap();
     assert_eq!(results.len(), corpus.len());
 
     let set = ProfileSet::builtin();
-    let category = set.for_category(Category::DecisionCategoryIcon).unwrap();
+    let category = set.for_family(Family::DecisionCategoryIcon).unwrap();
     let mut pillow_equal = 0;
     for ((name, img, profile), res) in corpus.iter().zip(&results) {
         assert_eq!(res["name"], *name);

@@ -9,22 +9,22 @@ It is a Rust rewrite of [Connected-Mate/gptimage](https://github.com/Connected-M
 ## The loop
 
 ```
-status -> profiles -> plan -> generate -> process -> validate -> preview -> review -> install
-                                   \-> edit (refine a candidate) --/            \-> ledger
+status -> families -> icon | picture | portrait | flag | unit | interface (plan, or plan + generate with approve)
+       -> process -> validate -> preview -> review -> install      edit (refine a candidate) and generate (run a stored plan) are shared
 ```
 
 | Tool | What it does |
 |---|---|
 | `hoi4.image_status` | Providers (key present or not, never the value), model tables with their date, game reference, profile source, ledger chain, plugin state |
-| `hoi4.image_profiles` | Category profiles with evidence, canvas, final paths and review rubric. `calibrate` compares them with the installed game's file headers and proposes a diff |
+| `hoi4.image_families` | Every family (or one) with its group and tool, the vanilla-measured canvas and frames (1.19.4.1 counts), accepted sizes, the mod's override, naming, checks, review rubric, final paths and the style sources that exist for it. `calibrate` compares them with the installed game's file headers |
 | `hoi4.image_references` | Reference images with role and rights note; project style profiles pinned by SHA-256 |
-| `hoi4.image_plan` | Free dry run: profile, prompt, references, provider, model, size, **cost estimate with its basis**, output paths, approvals needed. Returns a `plan_id` |
-| `hoi4.image_generate` | Runs a plan: one paid call per variant, stored unchanged as a versioned candidate. `idempotency_key` makes a retry free |
+| `hoi4.image_icon`, `_picture`, `_portrait`, `_flag`, `_unit`, `_interface` | One tool per group of families, each with a **required `family`** whose schema enum lists only that group. Without `approve`: a free plan (prompt, references, provider, model, size, **cost estimate with its basis**, output paths, approvals needed) and a `plan_id`. With `approve: true` and an `idempotency_key`: plan and generate in one call |
+| `hoi4.image_generate` | Runs a stored plan: one paid call per variant, stored unchanged as a versioned candidate. `idempotency_key` makes a retry free |
 | `hoi4.image_edit` | Refines a candidate with an instruction, an optional mask and extra references |
-| `hoi4.image_process` | Deterministic chain: trim, fit with margin, crop, Lanczos resize, defringe, grayscale. Also imports art made elsewhere. Refuses to invent transparency |
-| `hoi4.image_validate` | Size, alpha, opaque canvas, ghosting, chroma fringe, margins, fill, fake checkerboard, frames, DDS/TGA layout, with stable finding codes |
+| `hoi4.image_process` | The family's deterministic chain: trim, fit with margin, crop, Lanczos resize, defringe, grayscale, flatten for opaque families. Also imports art made elsewhere, with a required family: another family's size (`GFX-FAMILY-MISMATCH`) and pixels already installed for another family (`GFX-FAMILY-REUSE`) are refused, and icons are never enlarged beyond 1.25 times. Refuses to invent transparency |
+| `hoi4.image_validate` | The family's full check set, never fewer (size, alpha, opaque, ghosting, chroma fringe, margins, fill, fake checkerboard, frames, DDS/TGA layout), with stable finding codes. The record carries a check-set hash the install gate compares |
 | `hoi4.image_preview` | Contact sheet: native size and enlarged, on dark, light and checker backgrounds, beside the references |
-| `hoi4.image_review` | The visual review against the profile's rubric. An approval returns the `approval_id` install needs |
+| `hoi4.image_review` | The visual review against the family's rubric. An approval returns the `approval_id` install needs |
 | `hoi4.image_install` | Writes the DDS/TGA and a sprite snippet. **Refuses unless validation passed, a review approved this exact file and the hashes are unchanged** |
 | `hoi4.image_ledger` | Which references, settings and outputs belong together; lineage; chain check |
 | `hoi4.image_cancel` | Cancels a running job, or reconciles one a crashed run left behind |
@@ -70,7 +70,7 @@ provider = "openai"
 
 [policy]
 allow_vanilla_references = false     # D4
-forbidden_categories = []            # for example ["leader_portrait"]
+forbidden_families = []              # for example ["leader_portrait"]
 max_usd_per_call = 1.0
 
 [providers.openai]
@@ -80,18 +80,29 @@ quality = "low"                      # the cheapest tier; raise it when review s
 endpoint = "http://127.0.0.1:8188"
 workflow = ".hoi4-imagegen/comfyui/text_to_image.json"
 
-[profiles.focus_icon]                # per-project canvas override
+[profiles.focus]                     # per-project canvas override (a family id)
 canvas = [94, 86]
 ```
 
-### Profiles
+### Families
 
-Canvas conventions come from the kit's `.tools/gfx/profiles.json` when it exists, over built-in defaults measured from HOI4 1.19.3.0 (focus 100x88, idea 65x67, decision 33x32, report 210x176, news 397x153, flags 82x52 / 41x26 / 10x7, and more). Every value is overridable and `hoi4-imagegen calibrate` shows where one is not the dominant vanilla size. The built-in defaults are headers-only measurements; style cannot be measured and stays a review matter.
+There are 40 families in six groups. The family alone selects canvas, frames, naming, references, processing and validation, and an asset keeps its family from the plan to the install record: `process`, `validate`, `review` and `install` use the artifact's own family and take no family argument for it.
+
+| Tool | Families |
+|---|---|
+| `hoi4.image_icon` | focus, idea_spirit, idea_concern, officer_corps_spirit, decision, decision_category_icon, state_modifier, special_project_icon, raid, mio_department, mio_trait, mio_policy, bop_side, medal, agency_upgrade, operation_icon, commander_trait, personal_trait, doctrine |
+| `hoi4.image_picture` | report_event, news_event, decision_category_picture, operation_picture, technology, achievement |
+| `hoi4.image_portrait` | leader_portrait, commander_portrait, operative_portrait, scientist_portrait, advisor_card |
+| `hoi4.image_flag` | flag |
+| `hoi4.image_unit` | counter_large, counter_small, division_emblem, building, faction_logo, agency_logo |
+| `hoi4.image_interface` | modifier_stat_icon, gui_texture, super_event (the mod defines the canvas of the last two) |
+
+Canvas conventions come from the kit's `.tools/gfx/profiles.json` when it exists, over built-in defaults measured from HOI4 1.19.4.1 (`crates/imagegen-core/data/vanilla-measurement.json`, produced by `scripts/measure_families.py`; a unit test fails when a family stops matching it). Examples: focus 100x88, idea_spirit 60x68, advisor_card 65x67, decision 33x32, report_event 210x176, news_event 397x153, flags 82x52 / 41x26 / 10x7. Every value is overridable and `hoi4-imagegen calibrate` shows where one is not the dominant vanilla size. Style cannot be measured and stays a review matter.
 
 ## Layout
 
 ```
-crates/imagegen-core        categories, profiles, processing, validation, DDS/TGA, naming, ledger. No network
+crates/imagegen-core        families, profiles, the family lock, processing, validation, DDS/TGA, naming, ledger. No network
 crates/imagegen-providers   one trait; OpenAI, Gemini, fal, ComfyUI; destination-checked HTTP
 crates/imagegen-mcp         the operations and the rmcp stdio server (binary hoi4-imagegen-mcp)
 crates/imagegen-cli         hoi4-imagegen: doctor, calibrate, plan, generate, validate, install, call

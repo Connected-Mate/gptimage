@@ -48,18 +48,32 @@ const GENERIC: &[Question] = &[
     ("no_text_or_watermark", "Is it free of text and watermarks?"),
 ];
 
-/// Questions for a rubric id such as `focus_icon_v1`.
+const UNIT: &[Question] = &[
+    ("readable_at_native_size", "Is the subject recognizable at the native game size (look at the 1x preview, not only the enlarged one)?"),
+    ("frames_consistent", "Do all frames share the same size, position and style, and does the strip read correctly frame by frame?"),
+    ("style_matches_references", "Does the painting style match the approved references side by side?"),
+    ("no_text_or_watermark", "Is the art free of text, letters, numbers, signatures and watermarks?"),
+    ("no_unintended_elements", "Is it free of frames, plates, drawn checkerboards and other additions that were not asked for?"),
+];
+
+const INTERFACE: &[Question] = &[
+    ("fits_the_surface", "Does the art fit the interface element it is made for, at the exact size the mod defined?"),
+    ("style_matches_references", "Does the style match the approved references or the surrounding interface?"),
+    ("no_text_or_watermark", "Is the art free of text and watermarks?"),
+];
+
+/// Questions for a rubric id. Rubrics are per group (`icon_v1`, `picture_v1`, `portrait_v1`, `flag_v1`,
+/// `unit_v1`, `interface_v1`), so every family of a group, officer corps spirits included, gets its group's
+/// questions. Anything else falls back to the generic questions.
 pub fn questions(rubric: &str) -> &'static [Question] {
-    if rubric.starts_with("flag") {
-        FLAG
-    } else if rubric.starts_with("portrait") {
-        PORTRAIT
-    } else if rubric.contains("picture") {
-        PICTURE
-    } else if rubric.contains("icon") || rubric.starts_with("counter") || rubric.starts_with("achievement") {
-        ICON
-    } else {
-        GENERIC
+    match rubric.strip_suffix("_v1").unwrap_or(rubric) {
+        "icon" => ICON,
+        "picture" => PICTURE,
+        "portrait" => PORTRAIT,
+        "flag" => FLAG,
+        "unit" => UNIT,
+        "interface" => INTERFACE,
+        _ => GENERIC,
     }
 }
 
@@ -99,29 +113,34 @@ mod tests {
     use serde_json::json;
 
     #[test]
-    fn rubric_families() {
-        assert!(questions("focus_icon_v1").iter().any(|q| q.0 == "silhouette_clear"));
-        assert!(questions("report_picture_v1").iter().any(|q| q.0 == "composition_fills_frame"));
+    fn every_group_has_its_rubric_and_every_family_resolves_to_a_real_one() {
+        assert!(questions("icon_v1").iter().any(|q| q.0 == "silhouette_clear"));
+        assert!(questions("picture_v1").iter().any(|q| q.0 == "composition_fills_frame"));
         assert!(questions("flag_v1").iter().any(|q| q.0 == "readable_at_small_size"));
         assert!(questions("portrait_v1").iter().any(|q| q.0 == "face_natural"));
+        assert!(questions("unit_v1").iter().any(|q| q.0 == "frames_consistent"));
+        assert!(questions("interface_v1").iter().any(|q| q.0 == "fits_the_surface"));
         assert!(questions("anything_else").iter().any(|q| q.0 == "looks_correct"));
-        for r in ["focus_icon_v1", "idea_icon_v1", "tech_icon_v1", "mio_icon_v1", "counter_v1", "achievement_v1", "news_picture_v1", "picture_v1"] {
-            assert!(!questions(r).is_empty());
+        // the 0.1 gap: officer spirits fell through to the generic rubric
+        for f in crate::family::Family::ALL.iter().copied() {
+            let id = crate::builtin::rubric_of(f);
+            assert_ne!(questions(&id), GENERIC, "{f} resolves to the generic rubric");
         }
+        assert!(questions(&crate::builtin::rubric_of(crate::family::Family::OfficerCorpsSpirit)).iter().any(|q| q.0 == "silhouette_clear"));
     }
 
     #[test]
     fn approval_needs_every_answer_true() {
-        let all: Value = questions("focus_icon_v1").iter().map(|(k, _)| (k.to_string(), json!(true))).collect::<serde_json::Map<_, _>>().into();
-        assert!(check_answers("focus_icon_v1", &all).all_true());
+        let all: Value = questions("icon_v1").iter().map(|(k, _)| (k.to_string(), json!(true))).collect::<serde_json::Map<_, _>>().into();
+        assert!(check_answers("icon_v1", &all).all_true());
         let mut some = all.clone();
         some["silhouette_clear"] = json!(false);
         some.as_object_mut().unwrap().remove("no_text_or_watermark");
-        let c = check_answers("focus_icon_v1", &some);
+        let c = check_answers("icon_v1", &some);
         assert_eq!(c.failed, vec!["silhouette_clear"]);
         assert_eq!(c.missing, vec!["no_text_or_watermark"]);
-        assert!(!check_answers("focus_icon_v1", &json!({})).all_true());
+        assert!(!check_answers("icon_v1", &json!({})).all_true());
         let stringly = json!({"silhouette_clear": "yes"});
-        assert!(check_answers("focus_icon_v1", &stringly).failed.contains(&"silhouette_clear"), "'yes' is not true");
+        assert!(check_answers("icon_v1", &stringly).failed.contains(&"silhouette_clear"), "'yes' is not true");
     }
 }

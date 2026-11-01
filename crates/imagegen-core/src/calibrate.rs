@@ -28,22 +28,35 @@ struct Survey {
 }
 
 const SURVEYS: &[Survey] = &[
-    Survey { profile: "focus_icon", folder: "gfx/interface/goals", prefix: Some("focus_"), ext: "dds", recursive: false, mixed: false },
-    Survey { profile: "idea_icon", folder: "gfx/interface/ideas", prefix: Some("idea_"), ext: "dds", recursive: false, mixed: false },
-    Survey { profile: "advisor_icon", folder: "gfx/interface/ideas", prefix: Some("portrait_"), ext: "dds", recursive: false, mixed: false },
-    Survey { profile: "decision_icon", folder: "gfx/interface/decisions", prefix: Some("decision_"), ext: "dds", recursive: false, mixed: true },
+    Survey { profile: "focus", folder: "gfx/interface/goals", prefix: Some("focus_"), ext: "dds", recursive: false, mixed: false },
+    Survey { profile: "idea_spirit", folder: "gfx/interface/ideas", prefix: Some("idea_"), ext: "dds", recursive: false, mixed: true },
+    Survey { profile: "advisor_card", folder: "gfx/interface/ideas", prefix: Some("portrait_"), ext: "dds", recursive: false, mixed: false },
+    Survey { profile: "decision", folder: "gfx/interface/decisions", prefix: Some("decision_"), ext: "dds", recursive: false, mixed: true },
     Survey { profile: "decision_category_icon", folder: "gfx/interface/decisions", prefix: None, ext: "dds", recursive: false, mixed: true },
     Survey { profile: "decision_category_picture", folder: "gfx/interface/decisions", prefix: None, ext: "dds", recursive: false, mixed: true },
-    Survey { profile: "tech_icon_small", folder: "gfx/interface/technologies", prefix: None, ext: "dds", recursive: false, mixed: true },
-    Survey { profile: "tech_icon_medium", folder: "gfx/interface/technologies", prefix: None, ext: "dds", recursive: false, mixed: true },
-    Survey { profile: "event_report", folder: "gfx/event_pictures", prefix: None, ext: "dds", recursive: false, mixed: true },
-    Survey { profile: "event_news", folder: "gfx/event_pictures", prefix: None, ext: "dds", recursive: false, mixed: true },
-    Survey { profile: "flag_set", folder: "gfx/flags", prefix: None, ext: "tga", recursive: false, mixed: false },
-    Survey { profile: "mio_icon", folder: "gfx/interface/military_industrial_organization", prefix: None, ext: "dds", recursive: false, mixed: true },
+    Survey { profile: "technology", folder: "gfx/interface/technologies", prefix: None, ext: "dds", recursive: false, mixed: true },
+    Survey { profile: "report_event", folder: "gfx/event_pictures", prefix: Some("report_event"), ext: "dds", recursive: false, mixed: false },
+    Survey { profile: "news_event", folder: "gfx/event_pictures", prefix: Some("news_event"), ext: "dds", recursive: false, mixed: false },
+    Survey { profile: "flag", folder: "gfx/flags", prefix: None, ext: "tga", recursive: false, mixed: false },
+    Survey {
+        profile: "mio_department",
+        folder: "gfx/interface/military_industrial_organization/department_icons",
+        prefix: None,
+        ext: "dds",
+        recursive: false,
+        mixed: false,
+    },
     Survey { profile: "agency_logo", folder: "gfx/interface/operatives/agencies", prefix: None, ext: "dds", recursive: false, mixed: false },
-    Survey { profile: "officer_spirit", folder: "gfx/interface/officer_corp/spirits", prefix: None, ext: "dds", recursive: false, mixed: false },
+    Survey {
+        profile: "officer_corps_spirit",
+        folder: "gfx/interface/officer_corp/spirits",
+        prefix: None,
+        ext: "dds",
+        recursive: false,
+        mixed: false,
+    },
     Survey { profile: "leader_portrait", folder: "gfx/leaders", prefix: None, ext: "dds", recursive: true, mixed: false },
-    Survey { profile: "achievement_icon", folder: "gfx/achievements", prefix: None, ext: "dds", recursive: false, mixed: false },
+    Survey { profile: "achievement", folder: "gfx/achievements", prefix: None, ext: "dds", recursive: false, mixed: false },
     Survey { profile: "counter_large", folder: "gfx/interface/counters/divisions_large", prefix: None, ext: "dds", recursive: false, mixed: false },
     Survey { profile: "counter_small", folder: "gfx/interface/counters/divisions_small", prefix: None, ext: "dds", recursive: false, mixed: false },
 ];
@@ -196,12 +209,7 @@ pub fn calibrate(game_dir: &Path, set: &ProfileSet) -> Result<CalibrationReport>
         });
     }
     let not_surveyed = set.all().filter(|p| !surveyed.contains(&p.id)).map(|p| p.id.clone()).collect();
-    Ok(CalibrationReport {
-        game_dir: crate::fsio::display_path(game_dir),
-        game_version: game_version(game_dir),
-        rows,
-        not_surveyed,
-    })
+    Ok(CalibrationReport { game_dir: crate::fsio::display_path(game_dir), game_version: game_version(game_dir), rows, not_surveyed })
 }
 
 #[cfg(test)]
@@ -225,7 +233,7 @@ mod tests {
         put(dir.path(), "gfx/interface/goals/focus_odd.dds", 94, 86);
         put(dir.path(), "gfx/interface/goals/shine_overlay.dds", 4, 4); // wrong prefix: ignored
         for i in 0..25 {
-            put(dir.path(), &format!("gfx/interface/ideas/idea_{i}.dds"), 65, 67);
+            put(dir.path(), &format!("gfx/interface/ideas/idea_{i}.dds"), 60, 68);
         }
         fs::write(dir.path().join("launcher-settings.json"), r#"{"rawVersion":"1.19.3.0"}"#).unwrap();
         dir
@@ -236,25 +244,25 @@ mod tests {
         let game = fake_game();
         let report = calibrate(game.path(), &ProfileSet::builtin()).unwrap();
         assert_eq!(report.game_version.as_deref(), Some("1.19.3.0"));
-        let focus = report.rows.iter().find(|r| r.profile == "focus_icon").unwrap();
+        let focus = report.rows.iter().find(|r| r.profile == "focus").unwrap();
         assert_eq!(focus.files, 31);
         assert_eq!(focus.top[0], SizeCount { size: [100, 88], files: 30 });
         assert!(focus.profile_is_dominant);
         assert_eq!(focus.files_at_profile_size, 30);
         assert!(focus.proposed_canvas.is_none());
-        let idea = report.rows.iter().find(|r| r.profile == "idea_icon").unwrap();
+        let idea = report.rows.iter().find(|r| r.profile == "idea_spirit").unwrap();
         assert!(idea.profile_is_dominant && idea.files == 25);
-        assert!(report.not_surveyed.contains(&"event_super".to_string()));
+        assert!(report.not_surveyed.contains(&"super_event".to_string()));
     }
 
     #[test]
     fn a_kit_canvas_that_is_not_vanilla_gets_a_proposal() {
         let game = fake_game();
         let mut project = BTreeMap::new();
-        project.insert("focus_icon".to_string(), RowOverride { canvas: Some([94, 86]), ..Default::default() });
+        project.insert("focus".to_string(), RowOverride { canvas: Some([94, 86]), ..Default::default() });
         let set = ProfileSet::load(None, &project).unwrap();
         let report = calibrate(game.path(), &set).unwrap();
-        let focus = report.rows.iter().find(|r| r.profile == "focus_icon").unwrap();
+        let focus = report.rows.iter().find(|r| r.profile == "focus").unwrap();
         assert!(!focus.profile_is_dominant);
         assert_eq!(focus.proposed_canvas, Some([100, 88]));
         assert_eq!(focus.files_at_profile_size, 1);
@@ -266,7 +274,7 @@ mod tests {
         assert!(calibrate(Path::new("/definitely/not/a/game"), &ProfileSet::builtin()).is_err());
         let empty = tempfile::tempdir().unwrap();
         let report = calibrate(empty.path(), &ProfileSet::builtin()).unwrap();
-        let focus = report.rows.iter().find(|r| r.profile == "focus_icon").unwrap();
+        let focus = report.rows.iter().find(|r| r.profile == "focus").unwrap();
         assert_eq!(focus.files, 0);
         assert!(focus.notes.iter().any(|n| n.contains("no dds files")));
         assert!(focus.proposed_canvas.is_none());

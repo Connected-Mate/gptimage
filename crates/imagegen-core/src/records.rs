@@ -88,8 +88,8 @@ pub struct CandidateRecord {
     pub candidate_id: String,
     /// `feature.asset`
     pub asset_id: String,
-    /// Category.
-    pub category: crate::category::Category,
+    /// Family.
+    pub family: crate::family::Family,
     /// Feature folder name.
     pub feature_slug: String,
     /// Asset name.
@@ -147,6 +147,8 @@ pub struct ProcessedRecord {
     pub source_id: String,
     /// `feature.asset`
     pub asset_id: String,
+    /// Family of the source candidate (the lock: it can never change).
+    pub family: crate::family::Family,
     /// Run number for this source.
     pub run: u32,
     /// Effective canvas per frame.
@@ -170,6 +172,11 @@ pub struct ProcessedRecord {
 pub struct ValidatedRecord {
     /// Artifact id (or the path for files outside the ledger).
     pub target: String,
+    /// Family the validation ran as: the artifact's own, or the one named for a plain file.
+    pub family: crate::family::Family,
+    /// Hash of the check set that ran (`validate::check_set_hash`). The gate compares it with the family's
+    /// full set, so a validation that skipped a check cannot open it.
+    pub check_set_hash: String,
     /// SHA-256 of the validated file.
     pub sha256: String,
     /// Result.
@@ -203,6 +210,8 @@ pub enum Verdict {
 pub struct ReviewedRecord {
     /// Artifact reviewed.
     pub target: String,
+    /// Family of the artifact when it was reviewed.
+    pub family: crate::family::Family,
     /// SHA-256 of the file the reviewer saw.
     pub sha256: String,
     /// Verdict.
@@ -237,6 +246,8 @@ pub struct InstalledFile {
 pub struct InstalledRecord {
     /// Artifact installed.
     pub target: String,
+    /// Family the files were installed as. The reuse guard reads this.
+    pub family: crate::family::Family,
     /// `handoff` or `register`.
     pub mode: String,
     /// Files written.
