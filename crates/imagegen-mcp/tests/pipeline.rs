@@ -556,7 +556,7 @@ fn status_and_profiles_describe_the_project_without_leaking_keys() {
     assert_eq!(s["providers"][2]["id"], "openai");
     assert_eq!(s["providers"][2]["configured"], true);
     assert_eq!(s["policy"]["allow_vanilla_references"], false);
-    assert_eq!(s["chatgpt_login"]["compiled"], false);
+    assert_eq!(s["chatgpt_login"]["compiled"], cfg!(feature = "unofficial-chatgpt-login"));
     let p = h.engine.profiles_info(serde_json::from_value(json!({"id": "focus_icon"})).unwrap()).unwrap();
     assert_eq!(p["profile"]["canvas"], json!([100, 88]));
     assert!(p["profile"]["rubric_questions"].as_array().unwrap().len() >= 5);

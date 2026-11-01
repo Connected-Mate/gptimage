@@ -10,6 +10,10 @@
 //! The binary and source scans are skipped when this test itself is built with the feature on, because then the
 //! binary legitimately contains the plugin.
 
+#![cfg_attr(feature = "unofficial-chatgpt-login", allow(dead_code))]
+
+#![cfg_attr(feature = "unofficial-chatgpt-login", allow(dead_code))]
+
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
