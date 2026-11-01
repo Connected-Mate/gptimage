@@ -187,7 +187,11 @@ fn a_copy_of_the_asset_skill_shelf_is_tier_two() {
     for root in ["gfx_references", "vanilla_reference"] {
         let dir = format!(".claude/skills/some-skill/assets/{root}/icons/ideas");
         for i in 0..6 {
-            write_png(h.root(), &format!("{dir}/shelf_{root}_{i}.png"), &spirit_icon([100 + i as u8 * 8, 100, 90], i % 2 == 0, i + if root == "gfx_references" { 0 } else { 20 }));
+            write_png(
+                h.root(),
+                &format!("{dir}/shelf_{root}_{i}.png"),
+                &spirit_icon([100 + i as u8 * 8, 100, 90], i % 2 == 0, i + if root == "gfx_references" { 0 } else { 20 }),
+            );
         }
         // the contact sheet and other-sized pictures are not style images
         write_png(h.root(), &format!("{dir}/contact_sheet.png"), &Rgba::filled(60, 68, [1, 2, 3, 255]));
@@ -316,6 +320,8 @@ fn statistics_and_the_prompt_follow_the_mods_palette() {
 
 /// Generate, process and validate a candidate made from `synthetic_icon_png` (orange-brown) for the focus family.
 fn focus_candidate(h: &Harness, key: &str) -> String {
+    // a mod with focus icons sends references, which goes through the edit call
+    h.queue_edit(&synthetic_icon_png());
     let (_plan, _cand, processed) = h.make_processed("steel_gate", key);
     processed
 }
@@ -324,7 +330,15 @@ fn focus_candidate(h: &Harness, key: &str) -> String {
 /// shifted in brightness a little per copy so the set has some spread.
 fn mod_focus_like_candidate(h: &Harness, n: u32) {
     let (_p, _c, seed) = h.make_processed("seed_asset", "k-seed");
-    let path = h.engine.ledger.entries().unwrap().into_iter().find(|e| e.artifact_id.as_deref() == Some(seed.as_str()) && e.kind == "processed").unwrap().data["path"]
+    let path = h
+        .engine
+        .ledger
+        .entries()
+        .unwrap()
+        .into_iter()
+        .find(|e| e.artifact_id.as_deref() == Some(seed.as_str()) && e.kind == "processed")
+        .unwrap()
+        .data["path"]
         .as_str()
         .unwrap()
         .to_string();
@@ -452,7 +466,23 @@ fn real_game_and_chaos_redux_choose_references() {
             let info = engine.families_info(serde_json::from_value(json!({"family": family})).unwrap()).unwrap();
             let a = &info["family"]["style_sources"]["automatic"];
             eprintln!("=== {label} / {family} (resolved in {:?})", started.elapsed());
-            eprintln!("tiers: {}", a["tiers"].as_array().unwrap().iter().map(|t| format!("[{} {} found={} chosen={} scanned={}]", t["tier"], t["name"].as_str().unwrap(), t["found"], t["chosen"], t["scanned"])).collect::<Vec<_>>().join(" "));
+            eprintln!(
+                "tiers: {}",
+                a["tiers"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|t| format!(
+                        "[{} {} found={} chosen={} scanned={}]",
+                        t["tier"],
+                        t["name"].as_str().unwrap(),
+                        t["found"],
+                        t["chosen"],
+                        t["scanned"]
+                    ))
+                    .collect::<Vec<_>>()
+                    .join(" ")
+            );
             for c in a["chosen"].as_array().unwrap() {
                 eprintln!(
                     "  {} tier {} sent={} stats={} {} sha={}.. | {}",
@@ -470,8 +500,49 @@ fn real_game_and_chaos_redux_choose_references() {
             eprintln!("  drift: {}", a["drift"]);
             if label == "vanilla_only" {
                 assert_eq!(a["chosen_tier"], 4, "{family}: vanilla expected for an empty mod: {a:#}");
-                assert!(sent(a).len() >= 1);
+                assert!(!sent(a).is_empty());
             }
         }
+    }
+}
+
+/// Local measurement behind the drift threshold: for every family with vanilla art, the leave-one-out RMS z-scores of
+/// vanilla's own images. Prints one row per family. Skipped when the game is absent.
+#[test]
+fn real_vanilla_leave_one_out_distances_per_family() {
+    let Some(game) = real_game() else {
+        eprintln!("SKIPPED: the installed game was not found at the default Steam path");
+        return;
+    };
+    let empty = temp_project("");
+    let env = MapEnv::from_pairs(&[KEY, ("HOI4_GAME_DIR", &game.display().to_string()), ("HOI4_IMAGEGEN_CHATGPT_AUTH", "C:/nonexistent/auth.json")]);
+    let engine =
+        Engine::open(empty.path(), Arc::new(env), Arc::new(FixtureTransport::new()), Arc::new(FixedClock(1_793_404_800)), RunMode::Cli).unwrap();
+    eprintln!("family | vanilla found | measured | p95 leave-one-out | threshold | edge density | outline | alpha coverage");
+    let mut p95s: Vec<f64> = Vec::new();
+    for fam in imagegen_core::Family::ALL {
+        let info = engine.families_info(serde_json::from_value(json!({"family": fam.as_str()})).unwrap()).unwrap();
+        let a = &info["family"]["style_sources"]["automatic"];
+        let v = &a["tiers"][3];
+        match (a["drift"].as_object(), a["statistics"].as_object()) {
+            (Some(d), Some(s)) if a["chosen_tier"] == 4 => {
+                p95s.push(d["p95_leave_one_out"].as_f64().unwrap());
+                eprintln!(
+                    "{fam} | {} | {} | {} | {} | {} | {} | {}",
+                    v["found"], d["images"], d["p95_leave_one_out"], d["threshold"], s["edge_density"], s["outline_presence"], s["alpha_coverage"]
+                );
+            }
+            _ => eprintln!("{fam} | {} | no usable vanilla tier ({})", v["found"], v["note"]),
+        }
+    }
+    p95s.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    if !p95s.is_empty() {
+        eprintln!(
+            "families with vanilla art: {}; p95 leave-one-out min {:.3}, median {:.3}, max {:.3}",
+            p95s.len(),
+            p95s[0],
+            p95s[p95s.len() / 2],
+            p95s[p95s.len() - 1]
+        );
     }
 }

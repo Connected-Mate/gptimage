@@ -41,6 +41,10 @@ pub const DIM_NAMES: [&str; DIMS] = [
 /// from turning a rounding difference into an enormous z-score.
 const SD_FLOOR: [f64; DIMS] = [3.0, 3.0, 3.0, 2.0, 2.0, 2.0, 0.03, 0.02, 0.03, 0.03, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02];
 
+/// Sobel magnitude (Lab lightness units per pixel) above which a pixel counts as an edge. Measured on vanilla: at 6
+/// almost every pixel of dark painted art counted (mean density 0.8 for focus icons), which left no spread to compare.
+pub const EDGE_THRESHOLD: f64 = 12.0;
+
 /// Longest side measured. Larger images are shrunk first so edge density does not depend on the file's size.
 pub const MAX_MEASURED_SIDE: u32 = 160;
 
@@ -198,7 +202,7 @@ pub fn analyse(src: &Rgba) -> Option<Analysis> {
                 let gx = (l(2, 0) + 2.0 * l(2, 1) + l(2, 2)) - (l(0, 0) + 2.0 * l(0, 1) + l(0, 2));
                 let gy = (l(0, 2) + 2.0 * l(1, 2) + l(2, 2)) - (l(0, 0) + 2.0 * l(1, 0) + l(2, 0));
                 interior += 1;
-                if gx.hypot(gy) / 4.0 > 6.0 {
+                if gx.hypot(gy) / 4.0 > EDGE_THRESHOLD {
                     edgy += 1;
                 }
             }
@@ -320,6 +324,7 @@ pub struct Medoids {
 /// Deterministic k-medoids (PAM): the greedy BUILD phase, then best-improvement SWAP until nothing improves.
 /// There is no random start. Ties go to the lower index, so the caller fixes the order of `points` (the selector
 /// orders them by content hash) and the answer depends on the images alone. Points are standardised first.
+#[allow(clippy::needless_range_loop)]
 pub fn kmedoids(points: &[Vector], k: usize) -> Medoids {
     let n = points.len();
     let k = k.min(n);
@@ -331,10 +336,7 @@ pub fn kmedoids(points: &[Vector], k: usize) -> Medoids {
     let d: Vec<Vec<f64>> = (0..n).map(|i| (0..n).map(|j| dist(&z[i], &z[j])).collect()).collect();
 
     // BUILD
-    let first = (0..n)
-        .map(|i| (i, d[i].iter().sum::<f64>()))
-        .fold((0usize, f64::INFINITY), |best, c| if c.1 < best.1 - 1e-12 { c } else { best })
-        .0;
+    let first = (0..n).map(|i| (i, d[i].iter().sum::<f64>())).fold((0usize, f64::INFINITY), |best, c| if c.1 < best.1 - 1e-12 { c } else { best }).0;
     let mut med = vec![first];
     let mut nearest: Vec<f64> = (0..n).map(|j| d[first][j]).collect();
     while med.len() < k {
@@ -520,8 +522,8 @@ pub fn aggregate(items: &[&Analysis]) -> StyleStats {
             let e = share.entry(*key).or_insert((0.0, 0.0, [0.0; 3]));
             e.0 += f64::from(*count) / total;
             e.1 += f64::from(*count);
-            for c in 0..3 {
-                e.2[c] += rgb[c] as f64;
+            for (acc, v) in e.2.iter_mut().zip(rgb) {
+                *acc += *v as f64;
             }
         }
     }
@@ -536,7 +538,11 @@ pub fn aggregate(items: &[&Analysis]) -> StyleStats {
         palette: ranked
             .into_iter()
             .take(6)
-            .map(|(_, s, c)| PaletteColor { hex: format!("#{:02x}{:02x}{:02x}", c[0], c[1], c[2]), name: colour_name(c[0], c[1], c[2]), share: round3(s) })
+            .map(|(_, s, c)| PaletteColor {
+                hex: format!("#{:02x}{:02x}{:02x}", c[0], c[1], c[2]),
+                name: colour_name(c[0], c[1], c[2]),
+                share: round3(s),
+            })
             .collect(),
         saturation: MeanStd { mean: round3(mean(&|a| a.v[6])), std: round3(mean(&|a| a.sat_std)) },
         value: MeanStd { mean: round3(mean(&|a| a.val_mean)), std: round3(mean(&|a| a.val_std)) },

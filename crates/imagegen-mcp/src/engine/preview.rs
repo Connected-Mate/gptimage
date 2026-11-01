@@ -70,10 +70,7 @@ fn panel(content: &Rgba, bg: &str) -> Rgba {
 pub fn compose(img: &Rgba, references: &[Rgba]) -> imagegen_core::Result<Sheet> {
     let longest = img.width.max(img.height).max(1);
     let scale = (512 / longest).clamp(1, 6);
-    let mut panels: Vec<(String, Rgba)> = vec![
-        ("native on dark".into(), panel(img, "dark")),
-        ("native on light".into(), panel(img, "light")),
-    ];
+    let mut panels: Vec<(String, Rgba)> = vec![("native on dark".into(), panel(img, "dark")), ("native on light".into(), panel(img, "light"))];
     if scale > 1 {
         let big = upscale_nearest(img, scale);
         panels.push((format!("{scale}x on dark"), panel(&big, "dark")));

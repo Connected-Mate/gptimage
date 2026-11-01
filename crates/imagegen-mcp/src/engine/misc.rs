@@ -213,8 +213,7 @@ impl Engine {
                 let path = need(&p.path, "path")?;
                 let note = need(&p.note, "note (rights note: where the image comes from and what you may do with it)")?;
                 let role = p.role.unwrap_or(refs::RefRole::StyleAnchor);
-                let loaded =
-                    refs::load_reference(&self.fs, self.game_dir().as_deref(), &ReferenceInput { path: path.clone(), role })?;
+                let loaded = refs::load_reference(&self.fs, self.game_dir().as_deref(), &ReferenceInput { path: path.clone(), role })?;
                 let approving = p.action == ReferencesAction::Approve;
                 if approving {
                     need(&p.approver, "approver")?;

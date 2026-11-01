@@ -445,7 +445,7 @@ fn project_cands(fs: &ProjectFs, files: Vec<PathBuf>) -> Vec<Cand> {
 
 fn game_cands(files: Vec<PathBuf>) -> Vec<Cand> {
     let mut out: Vec<Cand> =
-        files.into_iter().map(|abs| Cand { display: display_path(&abs), origin: RefOrigin::InstalledGame, abs }).collect();
+        files.into_iter().map(|abs| Cand { display: unify(&display_path(&abs)), origin: RefOrigin::InstalledGame, abs }).collect();
     out.sort_by(|a, b| a.display.cmp(&b.display));
     out
 }
@@ -573,7 +573,8 @@ pub fn resolve(ctx: &SourceCtx) -> Resolved {
     }
 
     for tier in Tier::ALL {
-        let mut summary = TierSummary { tier: tier.number(), name: tier.label().into(), scanned: false, found: 0, chosen: false, note: String::new() };
+        let mut summary =
+            TierSummary { tier: tier.number(), name: tier.label().into(), scanned: false, found: 0, chosen: false, note: String::new() };
         if chosen_tier.is_some() && !ctx.scan_all {
             summary.note = "not scanned: a higher tier is used".into();
             summaries.push(summary);
@@ -601,42 +602,44 @@ pub fn resolve(ctx: &SourceCtx) -> Resolved {
                     list
                 }
             },
-            Tier::ModAssetFolderCopy => match shelf_folder(family) {
-                None => {
-                    summary.note = "this family has no shelf folder".into();
-                    vec![]
-                }
-                Some(shelf) => {
-                    let mut sizes = vanilla_sizes.clone();
-                    for s in &effective_sizes {
-                        if !sizes.contains(s) {
-                            sizes.push(*s);
-                        }
+            Tier::ModAssetFolderCopy => {
+                match shelf_folder(family) {
+                    None => {
+                        summary.note = "this family has no shelf folder".into();
+                        vec![]
                     }
-                    let mut files = Vec::new();
-                    for skill in sorted_names(ctx.fs, ".claude/skills") {
-                        let assets = format!(".claude/skills/{skill}/assets");
-                        for root in sorted_names(ctx.fs, &assets) {
-                            let rel = format!("{assets}/{root}/{shelf}");
-                            let Ok(abs) = ctx.fs.resolve(&rel) else { continue };
-                            if !abs.is_dir() {
-                                continue;
+                    Some(shelf) => {
+                        let mut sizes = vanilla_sizes.clone();
+                        for s in &effective_sizes {
+                            if !sizes.contains(s) {
+                                sizes.push(*s);
                             }
-                            let mut budget = SCAN_BUDGET;
-                            let mut found = Vec::new();
-                            walk(&abs, true, 0, &mut budget, &mut found);
-                            files.extend(found.into_iter().filter(|p| {
-                                RASTER_ALL.contains(&ext_of(p).as_str()) && !stem_of(p).contains("contact_sheet") && size_ok(p, &sizes)
-                            }));
                         }
+                        let mut files = Vec::new();
+                        for skill in sorted_names(ctx.fs, ".claude/skills") {
+                            let assets = format!(".claude/skills/{skill}/assets");
+                            for root in sorted_names(ctx.fs, &assets) {
+                                let rel = format!("{assets}/{root}/{shelf}");
+                                let Ok(abs) = ctx.fs.resolve(&rel) else { continue };
+                                if !abs.is_dir() {
+                                    continue;
+                                }
+                                let mut budget = SCAN_BUDGET;
+                                let mut found = Vec::new();
+                                walk(&abs, true, 0, &mut budget, &mut found);
+                                files.extend(found.into_iter().filter(|p| {
+                                    RASTER_ALL.contains(&ext_of(p).as_str()) && !stem_of(p).contains("contact_sheet") && size_ok(p, &sizes)
+                                }));
+                            }
+                        }
+                        let list = project_cands(ctx.fs, files);
+                        if list.is_empty() {
+                            summary.note = format!("no `.claude/skills/*/assets/*/{shelf}` folder with images in this mod");
+                        }
+                        list
                     }
-                    let list = project_cands(ctx.fs, files);
-                    if list.is_empty() {
-                        summary.note = format!("no `.claude/skills/*/assets/*/{shelf}` folder with images in this mod");
-                    }
-                    list
                 }
-            },
+            }
             Tier::ModAssets => {
                 let dirs: Vec<Dir> = texture_dirs(family).into_iter().filter(|d| ctx.fs.resolve(d.path).is_ok()).collect();
                 let mut files = scan_dirs(ctx.fs.root(), &dirs, &effective_sizes, &RASTER);
@@ -679,7 +682,11 @@ pub fn resolve(ctx: &SourceCtx) -> Resolved {
                 let pool = build_pool(&cands, cap, &mut notes);
                 if pool.len() >= MIN_TIER_IMAGES {
                     summary.chosen = true;
-                    summary.note = format!("used: {} image(s) measured{}", pool.len(), if cands.len() > pool.len() { format!(" of {} found", cands.len()) } else { String::new() });
+                    summary.note = format!(
+                        "used: {} image(s) measured{}",
+                        pool.len(),
+                        if cands.len() > pool.len() { format!(" of {} found", cands.len()) } else { String::new() }
+                    );
                     chosen_tier = Some(tier);
                     chosen_found = cands.len();
                     chosen_pool = pool;
@@ -720,13 +727,19 @@ pub fn resolve(ctx: &SourceCtx) -> Resolved {
         let points: Vec<Vector> = pool.iter().map(|p| p.analysis.v).collect();
         let n = pool.len();
         let label = family.as_str();
+        let sampled = if chosen_found > n { format!(" ({n} sampled evenly)") } else { String::new() };
+        if !sampled.is_empty() {
+            notes.push(format!("tier {} has {chosen_found} images; {n} were measured, sampled evenly by path", tier.number()));
+        }
         let (send_idx, send_why): (Vec<usize>, Vec<String>) = if tier == Tier::PinnedStyle && n <= send_slots {
             // pinned references are sent as the style's author ordered them
             let order: Vec<usize> = ctx
                 .pinned
                 .map(|s| s.references.iter().filter_map(|r| pool.iter().position(|p| p.cand.display == unify(&r.path))).collect())
                 .unwrap_or_default();
-            let why = (0..order.len()).map(|i| format!("pinned style '{}': reference {} of {}", ctx.pinned.map(|s| s.name.as_str()).unwrap_or(""), i + 1, order.len())).collect();
+            let why = (0..order.len())
+                .map(|i| format!("pinned style '{}': reference {} of {}", ctx.pinned.map(|s| s.name.as_str()).unwrap_or(""), i + 1, order.len()))
+                .collect();
             (order, why)
         } else {
             let m = styledesc::kmedoids(&points, send_slots.min(n));
@@ -738,19 +751,15 @@ pub fn resolve(ctx: &SourceCtx) -> Resolved {
                 .map(|((rank, _), size)| match tier {
                     Tier::PinnedStyle => format!("pinned style: medoid {} of {} references (cluster of {size})", rank + 1, n),
                     Tier::ModAssetFolderCopy => {
-                        format!("mod asset folder copy: medoid {} of {chosen_found} {label} images (cluster of {size})", rank + 1)
+                        format!("mod asset folder copy: medoid {} of {chosen_found} {label} images{sampled} (cluster of {size})", rank + 1)
                     }
-                    Tier::ModAssets => format!("mod asset: medoid {} of {chosen_found} {label} images (cluster of {size})", rank + 1),
-                    Tier::Vanilla => format!("vanilla: medoid {} of {chosen_found} {label} images (cluster of {size})", rank + 1),
+                    Tier::ModAssets => format!("mod asset: medoid {} of {chosen_found} {label} images{sampled} (cluster of {size})", rank + 1),
+                    Tier::Vanilla => format!("vanilla: medoid {} of {chosen_found} {label} images{sampled} (cluster of {size})", rank + 1),
                 })
                 .collect();
             (m.medoids, why)
         };
         let stats_idx: Vec<usize> = if n <= STATS_IMAGES { (0..n).collect() } else { styledesc::kmedoids(&points, STATS_IMAGES).medoids };
-        let sampled = if chosen_found > n { format!(" (measured {n} of them, sampled evenly)") } else { String::new() };
-        if !sampled.is_empty() {
-            notes.push(format!("tier {} has {chosen_found} images{sampled}", tier.number()));
-        }
         for (k, &i) in send_idx.iter().enumerate() {
             let p = &pool[i];
             chosen.push(ChosenRef {

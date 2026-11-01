@@ -222,7 +222,10 @@ impl Engine {
         }
         if req.style.is_none() {
             if let Some(p) = &pinned {
-                warnings.push(format!("the project's pinned style '{}' for {} was applied automatically (references and style text)", p.name, req.family));
+                warnings.push(format!(
+                    "the project's pinned style '{}' for {} was applied automatically (references and style text)",
+                    p.name, req.family
+                ));
             }
         }
         if est.usd > self.config.policy.max_usd_per_call {

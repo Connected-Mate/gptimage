@@ -17,7 +17,7 @@ status -> families -> icon | picture | portrait | flag | unit | interface (plan,
 |---|---|
 | `hoi4.image_status` | Providers (key present or not, never the value), model tables with their date, game reference, profile source, ledger chain, plugin state |
 | `hoi4.image_families` | Every family (or one) with its group and tool, the vanilla-measured canvas and frames (1.19.4.1 counts), accepted sizes, the mod's override, naming, checks, review rubric, final paths and the style sources that exist for it. `calibrate` compares them with the installed game's file headers |
-| `hoi4.image_references` | Reference images with role and rights note; project style profiles pinned by SHA-256 |
+| `hoi4.image_references` | Reference images with role and rights note (manual add and approve); project style profiles pinned by SHA-256. Style references are also chosen automatically, see below |
 | `hoi4.image_icon`, `_picture`, `_portrait`, `_flag`, `_unit`, `_interface` | One tool per group of families, each with a **required `family`** whose schema enum lists only that group. Without `approve`: a free plan (prompt, references, provider, model, size, **cost estimate with its basis**, output paths, approvals needed) and a `plan_id`. With `approve: true` and an `idempotency_key`: plan and generate in one call |
 | `hoi4.image_generate` | Runs a stored plan: one paid call per variant, stored unchanged as a versioned candidate. `idempotency_key` makes a retry free |
 | `hoi4.image_edit` | Refines a candidate with an instruction, an optional mask and extra references |
@@ -43,7 +43,7 @@ status -> families -> icon | picture | portrait | flag | unit | interface (plan,
 | | |
 |---|---|
 | D3 | A ComfyUI endpoint you configured may be used for any asset category, including user-run ones. It is a plain HTTP client; it never starts or stops pods |
-| D4 | Paradox art (the installed game, the kit's vanilla shelf) is sent to a provider as a reference only when the project sets `policy.allow_vanilla_references = true`. Off by default |
+| D4 (amended 2026-11-01) | Paradox art (the installed game, a vanilla shelf) may always be sent to a provider as a reference when it helps match the style. There is no switch: `policy.allow_vanilla_references` is still read but ignored, and `hoi4.image_status` says so. The origin of every reference is recorded, and the tool never copies vanilla files into a mod |
 | D-12 | The ChatGPT-login route is a separate crate, off by default, local only, personal use. See below |
 
 ## Install and run
@@ -69,7 +69,6 @@ Standard output carries only protocol messages. Project state lives in `.hoi4-im
 provider = "openai"
 
 [policy]
-allow_vanilla_references = false     # D4
 forbidden_families = []              # for example ["leader_portrait"]
 max_usd_per_call = 1.0
 
@@ -96,6 +95,25 @@ There are 40 families in six groups. The family alone selects canvas, frames, na
 | `hoi4.image_flag` | flag |
 | `hoi4.image_unit` | counter_large, counter_small, division_emblem, building, faction_logo, agency_logo |
 | `hoi4.image_interface` | modifier_stat_icon, gui_texture, super_event (the mod defines the canvas of the last two) |
+
+### Automatic style references
+
+A plan picks style references for the family on its own, **mod first** (maintainer decision of 2026-11-01), and reports each with its tier, reason, SHA-256 and whether it goes to the provider (`plan.style_sources`, also `hoi4.image_families { family }`):
+
+| Tier | Source | Example reason |
+|---|---|---|
+| 1 | The project's pinned style profile for the family (`.hoi4-imagegen/styles/`) | `pinned style 'mine': reference 1 of 3` |
+| 2 | The mod's copy of the asset skill's `assets/` shelf, `.claude/skills/*/assets/*/<shelf folder>/` (the kit's root is `vanilla_reference`, Chaos Redux's `gfx_references`). It holds vanilla art but is the mod's own copy | `mod asset folder copy: medoid 2 of 16 focus images (cluster of 6)` |
+| 3 | The mod's own installed assets: the family's texture folders plus the textures its `.gfx` files register under the family's sprite name pattern | `mod asset: medoid 3 of 214 idea_spirit images (cluster of 9)` |
+| 4 | Vanilla art from the installed game | `vanilla: medoid 1 of 742 report_event images (256 sampled evenly)` |
+
+The first tier with at least 3 usable images is used. Files of the wrong size for the family (idea pictures share a folder with advisor and concern art) are dropped by header. Vanilla may always be sent to a provider; the tool never copies it into the mod, and the contact sheet leaves it out.
+
+Selection is deterministic. Each candidate is measured: CIE Lab mean and spread, mean saturation, Sobel edge density, alpha coverage, dark-outline share on the alpha edge and a 6-bin hue histogram (16 numbers). They are standardised, candidates are ordered by content hash, and PAM k-medoids (greedy build, best-improvement swap, no random start) picks up to 4 images to send (the model's reference limit caps it) and up to 24 medoids for the statistics. At most 256 candidates are measured per tier (an even sample by path beyond that). The same image set gives the same choice in the same order, whatever the folder names are.
+
+The statistics (palette, mean and spread of saturation and value, edge density, outline presence, alpha coverage, margin, subject span) become a short paragraph in the prompt, for example `Match vanilla Hearts of Iron IV national focus icon art: moderately muted, dark palette dominated by black, dark grey and brown; partial dark outline; ...`, after the style profile's own note when one applies.
+
+**Style check.** `style` is part of every family's check set (so the check-set hash and the install gate treat it like the others). It measures the candidate the same way and warns with `GFX-STYLE-DRIFT` when its RMS z-score against the family's style distribution exceeds a threshold. It is a warning, never an error, and never blocks an install. Within the distribution it records the advisory `GFX-STYLE-MATCH`, so the stored validation carries the numbers either way. The threshold is the 95th percentile of the leave-one-out RMS z-scores of the distribution's own images, never below 1.75. Measured on the installed game (1.19.4.1), that percentile ran from 0.60 to 2.15 for 37 of the 38 families with vanilla art (median 1.53, large families 1.0 to 1.7; one 15-image family reached 6.7). `docs/testing.md` has the table.
 
 Canvas conventions come from the kit's `.tools/gfx/profiles.json` when it exists, over built-in defaults measured from HOI4 1.19.4.1 (`crates/imagegen-core/data/vanilla-measurement.json`, produced by `scripts/measure_families.py`; a unit test fails when a family stops matching it). Examples: focus 100x88, idea_spirit 60x68, advisor_card 65x67, decision 33x32, report_event 210x176, news_event 397x153, flags 82x52 / 41x26 / 10x7. Every value is overridable and `hoi4-imagegen calibrate` shows where one is not the dominant vanilla size. Style cannot be measured and stays a review matter.
 

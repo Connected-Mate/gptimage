@@ -186,7 +186,9 @@ fn run_checks(
                     Some(Some(model)) => {
                         let f = style_check(&img, model);
                         extra["style"] = match &f {
-                            Some(f) => json!({"available": true, "tier": model.tier, "tier_name": model.tier_name, "verdict": f.code, "numbers": f.evidence}),
+                            Some(f) => {
+                                json!({"available": true, "tier": model.tier, "tier_name": model.tier_name, "verdict": f.code, "numbers": f.evidence})
+                            }
                             None => json!({"available": true, "verdict": "image has no visible pixel"}),
                         };
                         findings.extend(f);

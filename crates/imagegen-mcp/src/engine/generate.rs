@@ -76,8 +76,7 @@ impl Engine {
         let game = self.game_dir();
         let mut provider_refs = Vec::new();
         for r in &plan.references {
-            let loaded =
-                refs::load_reference(&self.fs, game.as_deref(), &ReferenceInput { path: r.path.clone(), role: r.role })?;
+            let loaded = refs::load_reference(&self.fs, game.as_deref(), &ReferenceInput { path: r.path.clone(), role: r.role })?;
             if loaded.sha256 != r.sha256 {
                 return Err(EngineError::refused(
                     "reference_changed",

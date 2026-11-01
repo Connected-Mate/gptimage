@@ -298,12 +298,14 @@ fn vanilla_art_as_a_reference_needs_no_flag_and_its_origin_is_recorded() {
     assert_eq!(plan.references[0].origin, imagegen_core::refs::RefOrigin::KitShelf);
     assert!(!plan.approvals.iter().any(|a| a.contains("Paradox")), "no approval is needed for vanilla references");
     // the old key is read, ignored and reported as deprecated
-    let on =
-        harness("[defaults]
+    let on = harness(
+        "[defaults]
 provider = \"openai\"
 [policy]
 allow_vanilla_references = false
-", &[("OPENAI_API_KEY", "sk-test-synthetic-000")]);
+",
+        &[("OPENAI_API_KEY", "sk-test-synthetic-000")],
+    );
     let plan = plan_with_ref(&on).unwrap();
     assert_eq!(plan.references[0].origin, imagegen_core::refs::RefOrigin::KitShelf, "false no longer blocks anything");
     assert!(on.engine.status()["warnings"].as_array().unwrap().iter().any(|w| w.as_str().unwrap().contains("deprecated")));
