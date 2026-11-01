@@ -74,7 +74,15 @@ struct LockGuard(PathBuf);
 
 impl Drop for LockGuard {
     fn drop(&mut self) {
-        let _ = fs::remove_file(&self.0);
+        // On Windows the removal can fail for a moment (another thread's failed open still holds a handle). A lock
+        // that stays behind blocks every later append for a minute, so the removal is retried.
+        for _ in 0..200 {
+            match fs::remove_file(&self.0) {
+                Ok(()) => return,
+                Err(e) if e.kind() == ErrorKind::NotFound => return,
+                Err(_) => std::thread::sleep(Duration::from_millis(2)),
+            }
+        }
     }
 }
 

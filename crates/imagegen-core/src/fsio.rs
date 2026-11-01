@@ -178,7 +178,7 @@ impl ProjectFs {
     pub fn resolve(&self, rel: &str) -> Result<PathBuf> {
         let parts = check_relative(rel)?;
         let mut cur = self.root.clone();
-        for part in &parts {
+        for (i, part) in parts.iter().enumerate() {
             cur.push(part);
             match fs::symlink_metadata(&cur) {
                 Ok(meta) => {
@@ -187,12 +187,17 @@ impl ProjectFs {
                     }
                 }
                 Err(e) if e.kind() == ErrorKind::NotFound => {}
+                // Windows reports a file that another thread is deleting as "access denied". The last component
+                // is then treated as absent (a delete-pending file is not a link), and a write to it fails safely.
+                Err(e) if e.kind() == ErrorKind::PermissionDenied && i + 1 == parts.len() => {}
                 Err(e) => return Err(Error::io(cur.display(), e)),
             }
         }
-        // Belt and braces: the deepest existing ancestor must still be inside the root once canonical.
+        // Belt and braces: the deepest existing ancestor directory must still be inside the root once canonical.
+        // A directory, not a file: a file that another thread creates and removes (the ledger lock) can vanish
+        // between the existence check and the canonical form, and then the check fails for no real reason.
         let mut probe = cur.clone();
-        while !probe.exists() {
+        while !probe.is_dir() {
             if !probe.pop() {
                 break;
             }
