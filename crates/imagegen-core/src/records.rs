@@ -89,7 +89,7 @@ pub struct CandidateRecord {
     /// `feature.asset`
     pub asset_id: String,
     /// Family.
-    pub category: crate::family::Family,
+    pub family: crate::family::Family,
     /// Feature folder name.
     pub feature_slug: String,
     /// Asset name.

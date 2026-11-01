@@ -9,7 +9,7 @@ use imagegen_core::naming::ArtifactId;
 use imagegen_core::pixels::{decode, DecodeLimits};
 use imagegen_core::profile::Profile;
 use imagegen_core::records::{kind, ValidatedRecord};
-use imagegen_core::validate::{validate_container, validate_image, Finding, Level, Options, Status};
+use imagegen_core::validate::{check_set_hash, validate_container, validate_image, Finding, Level, Options, Status};
 use serde_json::{json, Value};
 
 use crate::api::ValidateParams;
@@ -66,18 +66,15 @@ impl Engine {
         Ok(files)
     }
 
-    fn profile_for_path(&self, p: &ValidateParams) -> EResult<&Profile> {
-        let id = p.profile.as_deref().ok_or_else(|| EngineError::invalid("validating a file needs profile (a profile id or category such as focus_icon)"))?;
-        self.profiles
-            .get(id)
-            .or_else(|| id.parse().ok().and_then(|c| self.profiles.for_category(c)))
-            .ok_or_else(|| EngineError::new("not_found", format!("no profile '{id}'"), RetryClass::Terminal))
+    fn family_for_path(&self, p: &ValidateParams) -> EResult<&Profile> {
+        let family = p.family.ok_or_else(|| EngineError::invalid("validating a file needs family (for example focus); artifacts use their own"))?;
+        self.family_profile(family)
     }
 
     fn validate_path(&self, rel: &str, p: &ValidateParams) -> EResult<Value> {
-        let profile = self.profile_for_path(p)?;
+        let profile = self.family_for_path(p)?;
         let bytes = self.fs.read(rel, 64 * 1024 * 1024)?;
-        let checks = p.checks.clone().unwrap_or_else(|| profile.imagegen.checks.clone());
+        let checks = profile.imagegen.checks.clone();
         let canvas = if profile.canvas == [0, 0] { p.canvas } else { None };
         let (status, mut findings, extra) = run_checks(&bytes, rel, profile, &checks, canvas);
         // installed art should be in the ledger
@@ -97,9 +94,19 @@ impl Engine {
     fn validate_artifact(&self, id: &str, p: &ValidateParams) -> EResult<Value> {
         ArtifactId::parse(id)?;
         let artifact = self.artifact(id)?;
-        let profile = self.profile(&artifact.profile.id)?;
+        if let Some(f) = p.family {
+            if f != artifact.family {
+                return Err(EngineError::refused(
+                    "GFX-FAMILY-MISMATCH",
+                    format!("{id} is a {} and can only be validated as a {}, not as a {f}", artifact.family, artifact.family),
+                    RetryClass::Terminal,
+                ));
+            }
+        }
+        let profile = self.profile_of(&artifact)?;
         let (bytes, sha) = self.read_artifact(&artifact)?;
-        let checks = p.checks.clone().unwrap_or_else(|| profile.imagegen.checks.clone());
+        // the full check set of the family always runs: there is no way to ask for fewer
+        let checks = profile.imagegen.checks.clone();
         let canvas = if profile.canvas == [0, 0] { Some(artifact.canvas) } else { None };
         let (status, findings, extra) = run_checks(&bytes, &artifact.path, profile, &checks, canvas);
         let mut notes = extra;
@@ -120,6 +127,8 @@ impl Engine {
             Some(&artifact.id),
             ValidatedRecord {
                 target: artifact.id.clone(),
+                family: artifact.family,
+                check_set_hash: check_set_hash(&checks),
                 sha256: sha.clone(),
                 status,
                 errors,
@@ -174,6 +183,9 @@ fn result_json(target: &str, path: &str, sha: &str, status: Status, findings: &[
         "warnings": warnings,
         "findings": findings,
         "checks": checks,
+        "family": profile.family,
+        "group": profile.family.group(),
+        "check_set_hash": check_set_hash(checks),
         "profile": {"id": profile.id, "canvas": profile.canvas, "frames": profile.frames, "rubric": profile.imagegen.rubric},
         "visual_review": "pending: run hoi4.image_preview and hoi4.image_review",
     });

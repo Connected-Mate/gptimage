@@ -902,6 +902,7 @@ dependencies = [
  "imagegen-mcp",
  "imagegen-providers",
  "provider-chatgpt-login",
+ "serde",
  "serde_json",
  "tempfile",
 ]

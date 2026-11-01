@@ -23,7 +23,7 @@ impl Engine {
             return Err(EngineError::invalid("notes must be at most 4000 characters"));
         }
         let artifact = self.artifact(&p.target)?;
-        let profile = self.profile(&artifact.profile.id)?;
+        let profile = self.profile_of(&artifact)?;
         let (_, sha) = self.read_artifact(&artifact)?;
         let rubric_id = profile.imagegen.rubric.clone();
         let answers = p.answers.clone().unwrap_or_else(|| json!({}));
@@ -41,6 +41,13 @@ impl Engine {
                 .filter_map(|e| serde_json::from_value::<ValidatedRecord>(e.data.clone()).ok())
                 .last();
             match latest_validation {
+                Some(v) if v.family != artifact.family || v.check_set_hash != self.gate_expect(artifact.family)?.check_set_hash => {
+                    return Err(EngineError::refused(
+                        "review_needs_validation",
+                        "the last validation did not run the full check set of this artifact's family; validate it again before approving",
+                        RetryClass::RefreshPreconditions,
+                    ))
+                }
                 Some(v) if v.sha256 == sha && v.status == Status::Pass => {}
                 Some(v) if v.sha256 != sha => {
                     return Err(EngineError::refused(
@@ -88,6 +95,7 @@ impl Engine {
 
         let record = ReviewedRecord {
             target: artifact.id.clone(),
+            family: artifact.family,
             sha256: sha.clone(),
             verdict: p.verdict,
             reviewer,
@@ -99,6 +107,7 @@ impl Engine {
         self.ledger.append(kind::REVIEWED, Some(&artifact.asset_id), Some(&artifact.id), &record)?;
         Ok(json!({
             "target": artifact.id,
+            "family": artifact.family,
             "sha256": sha,
             "verdict": p.verdict,
             "approval_id": approval_id,

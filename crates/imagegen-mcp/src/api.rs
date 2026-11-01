@@ -1,6 +1,7 @@
-//! Parameter types of the thirteen `hoi4.image_*` tools. Unknown fields are rejected everywhere.
+//! Parameter types of the `hoi4.image_*` tools. Unknown fields are rejected everywhere.
 
-use imagegen_core::category::Category;
+use imagegen_core::family::{Family, Group};
+use imagegen_core::plan::PlanRequest;
 use imagegen_core::process::Op;
 use imagegen_core::records::Verdict;
 use imagegen_core::refs::{ReferenceInput, RefRole};
@@ -9,17 +10,170 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-/// `hoi4.image_profiles`
+/// `hoi4.image_families`
 #[derive(Debug, Clone, Default, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
-pub struct ProfilesParams {
-    /// A profile id such as `focus_icon`. Omit to list every profile.
+pub struct FamiliesParams {
+    /// A family id such as `focus`. Omit to list every family.
     #[serde(default)]
-    pub id: Option<String>,
-    /// Compare the profiles with the installed game's file headers and return the proposed diff.
+    pub family: Option<Family>,
+    /// Compare the families with the installed game's file headers and return the proposed diff.
     #[serde(default)]
     pub calibrate: Option<bool>,
 }
+
+/// What a group tool does after it has planned.
+#[derive(Debug, Clone, Default)]
+pub struct GroupFollowUp {
+    /// Generate now (one paid call per variant). Without it the tool only returns the free plan.
+    pub approve: bool,
+    /// Needed with `approve`.
+    pub idempotency_key: Option<String>,
+    /// Confirm a call above the per-call limit.
+    pub approve_cost: bool,
+}
+
+/// Schema functions of the `family` field: a string whose enum lists exactly the families of one group.
+mod family_schemas {
+    use imagegen_core::family::Group;
+
+    fn schema(group: Group) -> schemars::Schema {
+        schemars::json_schema!({
+            "type": "string",
+            "enum": group.family_ids(),
+            "description": format!(
+                "Which {} asset to make. The family alone selects canvas, frames, naming, references, processing and validation, and it never changes afterwards.",
+                group.as_str()
+            )
+        })
+    }
+
+    pub fn icon(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schema(Group::Icon)
+    }
+    pub fn picture(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schema(Group::Picture)
+    }
+    pub fn portrait(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schema(Group::Portrait)
+    }
+    pub fn flag(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schema(Group::Flag)
+    }
+    pub fn unit(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schema(Group::Unit)
+    }
+    pub fn interface(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schema(Group::Interface)
+    }
+}
+
+macro_rules! group_request {
+    ($(#[$doc:meta])* $name:ident, $group:expr, $schema_fn:literal) => {
+        $(#[$doc])*
+        #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+        #[serde(deny_unknown_fields)]
+        pub struct $name {
+            /// The family to make. Required; the schema lists only this tool's families.
+            #[schemars(schema_with = $schema_fn)]
+            pub family: Family,
+            /// Feature folder name (snake_case).
+            pub feature_slug: String,
+            /// Asset name (snake_case; a country tag with an optional ideology suffix for flags).
+            pub asset: String,
+            /// What to depict, in plain words (at most 4000 characters).
+            pub brief: String,
+            /// Project style profile to apply.
+            #[serde(default)]
+            pub style: Option<String>,
+            /// Reference images.
+            #[serde(default)]
+            pub references: Vec<ReferenceInput>,
+            /// Provider id; defaults to the style's, the project's, or the first ready one.
+            #[serde(default)]
+            pub provider: Option<String>,
+            /// Model id; defaults to the provider's recommended model.
+            #[serde(default)]
+            pub model: Option<String>,
+            /// Quality tier where the model has tiers.
+            #[serde(default)]
+            pub quality: Option<String>,
+            /// Canvas `[width, height]` for families that have none (the mod defines it). Refused for the others.
+            #[serde(default)]
+            pub canvas: Option<[u32; 2]>,
+            /// Candidates to produce in one go (1 to 4); each is a separate provider call.
+            #[serde(default)]
+            pub variants: Option<u8>,
+            /// Refuse the plan if the estimate exceeds this many USD.
+            #[serde(default)]
+            pub budget_usd: Option<f64>,
+            /// true: plan and generate in this call. Omitted or false: return the free plan only.
+            #[serde(default)]
+            pub approve: Option<bool>,
+            /// Your own key for this request (needed with approve). Repeating it returns the stored candidate instead of paying again.
+            #[serde(default)]
+            pub idempotency_key: Option<String>,
+            /// Confirm that a call costing more than the project's per-call limit is intended.
+            #[serde(default)]
+            pub approve_cost: Option<bool>,
+        }
+
+        impl $name {
+            /// The group this tool serves.
+            pub const GROUP: Group = $group;
+
+            /// Split into the plan request and what to do after planning.
+            pub fn into_parts(self) -> (PlanRequest, GroupFollowUp) {
+                let follow = GroupFollowUp {
+                    approve: self.approve.unwrap_or(false),
+                    idempotency_key: self.idempotency_key,
+                    approve_cost: self.approve_cost.unwrap_or(false),
+                };
+                let req = PlanRequest {
+                    family: self.family,
+                    feature_slug: self.feature_slug,
+                    asset: self.asset,
+                    brief: self.brief,
+                    style: self.style,
+                    references: self.references,
+                    provider: self.provider,
+                    model: self.model,
+                    transparent: None,
+                    variants: self.variants,
+                    budget_usd: self.budget_usd,
+                    quality: self.quality,
+                    canvas: self.canvas,
+                };
+                (req, follow)
+            }
+        }
+    };
+}
+
+group_request!(
+    /// `hoi4.image_icon`: single-frame transparent icons.
+    IconRequest, Group::Icon, "family_schemas::icon"
+);
+group_request!(
+    /// `hoi4.image_picture`: opaque pictures and card art.
+    PictureRequest, Group::Picture, "family_schemas::picture"
+);
+group_request!(
+    /// `hoi4.image_portrait`: character portraits and advisor cards.
+    PortraitRequest, Group::Portrait, "family_schemas::portrait"
+);
+group_request!(
+    /// `hoi4.image_flag`: country flags (one call writes the whole three-size ladder).
+    FlagRequest, Group::Flag, "family_schemas::flag"
+);
+group_request!(
+    /// `hoi4.image_unit`: counters, emblems, buildings and logos (frame strips).
+    UnitRequest, Group::Unit, "family_schemas::unit"
+);
+group_request!(
+    /// `hoi4.image_interface`: interface art whose canvas the mod defines.
+    InterfaceRequest, Group::Interface, "family_schemas::interface"
+);
 
 /// What `hoi4.image_references` does.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
@@ -72,7 +226,7 @@ pub struct ReferencesParams {
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct GenerateParams {
-    /// Plan id from `hoi4.image_plan`.
+    /// Plan id returned by a group tool (`hoi4.image_icon` and the others) called without `approve`.
     pub plan_id: String,
     /// Your own key for this request. Repeating it returns the stored candidate instead of paying again.
     pub idempotency_key: String,
@@ -117,8 +271,8 @@ pub struct EditParams {
 pub struct ImportSpec {
     /// Project-relative path of the image.
     pub path: String,
-    /// Category it is for.
-    pub category: Category,
+    /// The family it is for. A size of another family is refused (GFX-FAMILY-MISMATCH), and so are the pixels of an asset already installed for another family (GFX-FAMILY-REUSE).
+    pub family: Family,
     /// Feature folder name.
     pub feature_slug: String,
     /// Asset name.
@@ -135,10 +289,10 @@ pub struct ProcessParams {
     /// Or import an existing image (art made by another tool, or by hand) and process that.
     #[serde(default)]
     pub import: Option<ImportSpec>,
-    /// Explicit steps. Omit for the profile's default chain.
+    /// Explicit steps. Omit for the family's default chain.
     #[serde(default)]
     pub steps: Option<Vec<Op>>,
-    /// Canvas for categories that have none.
+    /// Canvas for families that have none.
     #[serde(default)]
     pub canvas: Option<[u32; 2]>,
 }
@@ -149,13 +303,11 @@ pub struct ProcessParams {
 pub struct ValidateParams {
     /// Artifact ids, project-relative image paths, or folders (ending in `/`) of DDS, TGA or PNG files.
     pub targets: Vec<String>,
-    /// Profile id or category. Needed for paths; artifacts know their own.
+    /// The family to check plain files as. Needed for paths and folders. An artifact always uses its own family,
+    /// and naming another one for it is refused (`GFX-FAMILY-MISMATCH`). The full check set of the family always runs.
     #[serde(default)]
-    pub profile: Option<String>,
-    /// Checks to run; defaults to the profile's list.
-    #[serde(default)]
-    pub checks: Option<Vec<String>>,
-    /// Canvas for categories that have none.
+    pub family: Option<Family>,
+    /// Canvas for families that have none.
     #[serde(default)]
     pub canvas: Option<[u32; 2]>,
 }
@@ -181,7 +333,7 @@ pub struct ReviewParams {
     pub verdict: Verdict,
     /// Who reviewed: a person's name or an agent's name.
     pub reviewer: String,
-    /// Answers to the rubric questions (`hoi4.image_profiles` lists them), as `{key: true|false}`.
+    /// Answers to the rubric questions (`hoi4.image_families` lists them), as `{key: true|false}`.
     #[serde(default)]
     pub answers: Option<Value>,
     /// Notes for the next round.

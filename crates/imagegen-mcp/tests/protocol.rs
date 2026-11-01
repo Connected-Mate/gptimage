@@ -291,7 +291,7 @@ fn status_never_leaks_the_key_and_bad_arguments_are_rejected() {
     // unknown field: a protocol error or a refused tool call, never a silent accept
     let r = c.request(
         "tools/call",
-        json!({"name": "hoi4.image_plan", "arguments": {"category": "focus_icon", "feature_slug": "f", "asset": "a", "brief": "x", "surprise": 1}}),
+        json!({"name": "hoi4.image_plan", "arguments": {"category": "focus", "feature_slug": "f", "asset": "a", "brief": "x", "surprise": 1}}),
     );
     assert!(r.get("error").is_some() || r["result"]["isError"] == json!(true), "unknown fields must be rejected: {r}");
     // unknown tool
@@ -301,9 +301,9 @@ fn status_never_leaks_the_key_and_bad_arguments_are_rejected() {
     let r = c.request("tools/call", json!({"name": "hoi4.image_plan", "arguments": {"category": 7}}));
     assert!(r.get("error").is_some() || r["result"]["isError"] == json!(true));
     // unknown category and a traversal attempt come back as structured refusals
-    let e = c.refused("hoi4.image_plan", json!({"category": "focus_icon", "feature_slug": "../x", "asset": "a", "brief": "x"}));
+    let e = c.refused("hoi4.image_plan", json!({"category": "focus", "feature_slug": "../x", "asset": "a", "brief": "x"}));
     assert_eq!(e["code"], "invalid_argument");
-    let e = c.refused("hoi4.image_plan", json!({"category": "focus_icon", "feature_slug": "f", "asset": "a", "brief": "x", "references": [{"path": "../../outside.png", "role": "style_anchor"}]}));
+    let e = c.refused("hoi4.image_plan", json!({"category": "focus", "feature_slug": "f", "asset": "a", "brief": "x", "references": [{"path": "../../outside.png", "role": "style_anchor"}]}));
     assert_eq!(e["code"], "path_rejected");
     assert!(e["retry_class"].is_string());
 }
@@ -317,7 +317,7 @@ fn the_whole_loop_runs_over_stdio() {
 
     let plan = c.ok(
         "hoi4.image_plan",
-        json!({"category": "focus_icon", "feature_slug": "iron_pact", "asset": "steel_gate", "brief": "a riveted steel gate"}),
+        json!({"category": "focus", "feature_slug": "iron_pact", "asset": "steel_gate", "brief": "a riveted steel gate"}),
     );
     assert_eq!(plan["model"], "gpt-image-2.5-flare");
     let plan_id = plan["plan_id"].as_str().unwrap().to_string();
@@ -347,7 +347,7 @@ fn the_whole_loop_runs_over_stdio() {
     assert!(pr["content"].as_array().unwrap().iter().any(|b| b["type"] == "image" && b["mimeType"] == "image/png"), "{pr}");
     assert!(dir.path().join(pr["structuredContent"]["sheet"].as_str().unwrap()).exists());
 
-    let profile = c.ok("hoi4.image_profiles", json!({"id": "focus_icon"}));
+    let profile = c.ok("hoi4.image_profiles", json!({"id": "focus"}));
     let answers: serde_json::Map<String, Value> =
         profile["profile"]["rubric_questions"].as_array().unwrap().iter().map(|q| (q["key"].as_str().unwrap().to_string(), json!(true))).collect();
     let rev = c.ok("hoi4.image_review", json!({"target": art, "verdict": "approved", "reviewer": "protocol test", "answers": answers}));
@@ -381,7 +381,7 @@ fn a_running_generation_can_be_cancelled_from_a_second_request() {
     let dir = project(mock.port);
     let mut c = Client::start(dir.path(), mock.port);
     c.initialize();
-    let plan = c.ok("hoi4.image_plan", json!({"category": "focus_icon", "feature_slug": "f", "asset": "a", "brief": "x"}));
+    let plan = c.ok("hoi4.image_plan", json!({"category": "focus", "feature_slug": "f", "asset": "a", "brief": "x"}));
     let gen_id =
         c.send_request("tools/call", json!({"name": "hoi4.image_generate", "arguments": {"plan_id": plan["plan_id"], "idempotency_key": "slow-1"}}));
     std::thread::sleep(Duration::from_millis(600));

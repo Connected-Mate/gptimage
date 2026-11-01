@@ -57,8 +57,11 @@ impl Engine {
     pub fn generate(&self, p: GenerateParams) -> EResult<Value> {
         validate_key(&p.idempotency_key)?;
         let plan = self.load_plan(&p.plan_id)?;
-        let profile = self.profile(&plan.profile.id)?.clone();
-        self.check_category_policy(&profile, &plan.provider)?;
+        let profile = self.family_profile(plan.request.family)?.clone();
+        if plan.profile.id != plan.request.family.as_str() {
+            return Err(EngineError::refused("GFX-FAMILY-MISMATCH", "the plan's profile is not its family's profile", RetryClass::Terminal));
+        }
+        self.check_family_policy(&profile, &plan.provider)?;
         if self.profile_ref(&profile).hash != plan.profile.hash {
             return Err(EngineError::refused(
                 "profile_changed",
@@ -104,7 +107,7 @@ impl Engine {
                 template: CandidateRecord {
                     candidate_id: String::new(),
                     asset_id: plan.asset_id.clone(),
-                    category: plan.request.category,
+                    family: plan.request.family,
                     feature_slug: plan.request.feature_slug.clone(),
                     asset: plan.request.asset.clone(),
                     profile: plan.profile.clone(),
@@ -167,7 +170,7 @@ impl Engine {
             return Err(EngineError::invalid("instruction must be 1 to 4000 characters"));
         }
         let artifact = self.artifact(&p.candidate_id)?;
-        let profile = self.profile(&artifact.profile.id)?.clone();
+        let profile = self.profile_of(&artifact)?.clone();
         let (bytes, sha) = self.read_artifact(&artifact)?;
         let (base_img, _) = decode(&bytes, Some(&artifact.path), DecodeLimits::default())?;
         let base_png = encode_png(&base_img)?;
@@ -182,7 +185,7 @@ impl Engine {
                 (c.len() == 1).then(|| c[0].clone())
             })
             .ok_or_else(|| EngineError::invalid("name a provider for this edit"))?;
-        self.check_category_policy(&profile, &provider_id)?;
+        self.check_family_policy(&profile, &provider_id)?;
         let provider = self.registry.get(&provider_id).ok_or_else(|| EngineError::new("provider_not_found", format!("provider '{provider_id}' is not available"), RetryClass::Terminal))?;
         let model = p.model.clone().unwrap_or_else(|| provider.default_model(true));
         let quality = p.quality.clone().or_else(|| self.config.provider(&provider_id).quality);
@@ -242,7 +245,7 @@ impl Engine {
             template: CandidateRecord {
                 candidate_id: String::new(),
                 asset_id: artifact.asset_id.clone(),
-                category: artifact.category,
+                family: artifact.family,
                 feature_slug: artifact.feature_slug.clone(),
                 asset: artifact.asset.clone(),
                 profile: artifact.profile.clone(),
@@ -410,6 +413,8 @@ impl Engine {
             SourceFormat::WebP => "webp",
             _ => "png",
         };
+        // a provider that hands back another family's installed art (a reference echoed as the answer) is refused
+        imagegen_core::reuse::ensure_no_cross_family_reuse(&self.fs, &self.profiles, rec.family, &img.pixels_sha256(), "the provider's image")?;
         let min = self.ledger.highest_version(&rec.asset_id)?;
         let written = self.fs.write_next_version(candidate_dir, &rec.asset, ext, min, &out.image)?;
         rec.version = written.version;

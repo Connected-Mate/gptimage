@@ -35,14 +35,14 @@ pub struct Cli {
 pub enum Command {
     /// Check the setup: providers and keys, game folder, profiles, ledger.
     Doctor,
-    /// Compare the profiles with the installed game's file headers and propose a diff. Writes nothing.
+    /// Compare the families with the installed game's file headers and propose a diff. Writes nothing.
     Calibrate,
-    /// Show one profile or list them all.
-    Profiles {
-        /// Profile id, for example focus_icon.
-        id: Option<String>,
+    /// Show one family (measured spec, mod override, style sources) or list them all.
+    Families {
+        /// Family id, for example focus.
+        family: Option<String>,
     },
-    /// Make a plan: a free dry run with the cost.
+    /// Make a plan: a free dry run with the cost. Runs the group tool of the family.
     Plan(PlanArgs),
     /// Execute a plan (paid, one call per variant).
     Generate(GenerateArgs),
@@ -78,9 +78,9 @@ pub enum Command {
 /// `plan` arguments.
 #[derive(Args, Debug)]
 pub struct PlanArgs {
-    /// Category, for example focus_icon.
+    /// Family, for example focus.
     #[arg(long)]
-    pub category: String,
+    pub family: String,
     /// Feature folder name.
     #[arg(long)]
     pub feature: String,
@@ -111,7 +111,7 @@ pub struct PlanArgs {
     /// Refuse the plan above this many USD.
     #[arg(long)]
     pub budget: Option<f64>,
-    /// Canvas WxH for categories with none.
+    /// Canvas WxH for families with none.
     #[arg(long)]
     pub canvas: Option<String>,
 }
@@ -135,13 +135,10 @@ pub struct GenerateArgs {
 pub struct ValidateArgs {
     /// Artifact ids, files or folders (ending in /).
     pub targets: Vec<String>,
-    /// Profile id or category (needed for files).
+    /// Family to check plain files as (artifacts use their own).
     #[arg(long)]
-    pub profile: Option<String>,
-    /// Comma-separated checks.
-    #[arg(long)]
-    pub checks: Option<String>,
-    /// Canvas WxH for categories with none.
+    pub family: Option<String>,
+    /// Canvas WxH for families with none.
     #[arg(long)]
     pub canvas: Option<String>,
 }
@@ -186,9 +183,14 @@ pub fn dispatch(engine: &Engine, tool: &str, params: Value) -> Result<Value, Eng
     let params = if params.is_null() { json!({}) } else { params };
     match tool {
         "hoi4.image_status" => Ok(engine.status()),
-        "hoi4.image_profiles" => engine.profiles_info(serde_json::from_value(params).map_err(bad)?),
+        "hoi4.image_families" => engine.families_info(serde_json::from_value(params).map_err(bad)?),
+        "hoi4.image_icon" => group(engine, params, bad, |p: imagegen_mcp::api::IconRequest| (imagegen_mcp::api::IconRequest::GROUP, p.into_parts())),
+        "hoi4.image_picture" => group(engine, params, bad, |p: imagegen_mcp::api::PictureRequest| (imagegen_mcp::api::PictureRequest::GROUP, p.into_parts())),
+        "hoi4.image_portrait" => group(engine, params, bad, |p: imagegen_mcp::api::PortraitRequest| (imagegen_mcp::api::PortraitRequest::GROUP, p.into_parts())),
+        "hoi4.image_flag" => group(engine, params, bad, |p: imagegen_mcp::api::FlagRequest| (imagegen_mcp::api::FlagRequest::GROUP, p.into_parts())),
+        "hoi4.image_unit" => group(engine, params, bad, |p: imagegen_mcp::api::UnitRequest| (imagegen_mcp::api::UnitRequest::GROUP, p.into_parts())),
+        "hoi4.image_interface" => group(engine, params, bad, |p: imagegen_mcp::api::InterfaceRequest| (imagegen_mcp::api::InterfaceRequest::GROUP, p.into_parts())),
         "hoi4.image_references" => engine.references(serde_json::from_value(params).map_err(bad)?),
-        "hoi4.image_plan" => engine.plan(serde_json::from_value(params).map_err(bad)?).map(|p| serde_json::to_value(p).unwrap_or(Value::Null)),
         "hoi4.image_generate" => engine.generate(serde_json::from_value(params).map_err(bad)?),
         "hoi4.image_edit" => engine.edit(serde_json::from_value(params).map_err(bad)?),
         "hoi4.image_process" => engine.process(serde_json::from_value(params).map_err(bad)?),
@@ -200,6 +202,16 @@ pub fn dispatch(engine: &Engine, tool: &str, params: Value) -> Result<Value, Eng
         "hoi4.image_cancel" => engine.cancel(serde_json::from_value(params).map_err(bad)?),
         other => Err(EngineError::invalid(format!("unknown tool '{other}'; the tools are {}", imagegen_mcp::server::TOOL_NAMES.join(", ")))),
     }
+}
+
+fn group<T: serde::de::DeserializeOwned>(
+    engine: &Engine,
+    params: Value,
+    bad: impl Fn(serde_json::Error) -> EngineError,
+    split: impl FnOnce(T) -> (imagegen_core::Group, (imagegen_core::plan::PlanRequest, imagegen_mcp::api::GroupFollowUp)),
+) -> Result<Value, EngineError> {
+    let (g, (req, follow)) = split(serde_json::from_value(params).map_err(bad)?);
+    engine.group_request(g, req, follow)
 }
 
 fn parse_canvas(s: &str) -> Result<[u32; 2], EngineError> {
@@ -224,12 +236,12 @@ pub fn execute(engine: &Engine, cli: &Cli, out: &mut dyn Write) -> i32 {
             Ok((s, i32::from(broken), Some(text)))
         }
         Command::Calibrate => {
-            let v = engine.profiles_info(serde_json::from_value(json!({"calibrate": true})).map_err(|e| EngineError::invalid(e.to_string()))?)?;
+            let v = engine.families_info(serde_json::from_value(json!({"calibrate": true})).map_err(|e| EngineError::invalid(e.to_string()))?)?;
             let text = calibrate_text(&v["calibration"]);
             Ok((v["calibration"].clone(), 0, Some(text)))
         }
-        Command::Profiles { id } => {
-            Ok((engine.profiles_info(serde_json::from_value(json!({"id": id})).map_err(|e| EngineError::invalid(e.to_string()))?)?, 0, None))
+        Command::Families { family } => {
+            Ok((engine.families_info(serde_json::from_value(json!({"family": family})).map_err(|e| EngineError::invalid(e.to_string()))?)?, 0, None))
         }
         Command::Plan(a) => {
             let mut refs = Vec::new();
@@ -238,13 +250,14 @@ pub fn execute(engine: &Engine, cli: &Cli, out: &mut dyn Write) -> i32 {
                 refs.push(json!({"path": path, "role": role}));
             }
             let params = json!({
-                "category": a.category, "feature_slug": a.feature, "asset": a.asset, "brief": a.brief,
+                "family": a.family, "feature_slug": a.feature, "asset": a.asset, "brief": a.brief,
                 "provider": a.provider, "model": a.model, "quality": a.quality, "style": a.style,
                 "references": refs, "variants": a.variants, "budget_usd": a.budget,
                 "canvas": a.canvas.as_deref().map(parse_canvas).transpose()?,
             });
-            let v = dispatch(engine, "hoi4.image_plan", params)?;
-            let text = plan_text(&v);
+            let fam: imagegen_core::Family = a.family.parse().map_err(EngineError::from)?;
+            let v = dispatch(engine, fam.group().tool_name(), params)?;
+            let text = plan_text(&v["plan"]);
             Ok((v, 0, Some(text)))
         }
         Command::Generate(a) => Ok((
@@ -254,8 +267,7 @@ pub fn execute(engine: &Engine, cli: &Cli, out: &mut dyn Write) -> i32 {
         )),
         Command::Validate(a) => {
             let params = json!({
-                "targets": a.targets, "profile": a.profile,
-                "checks": a.checks.as_ref().map(|c| c.split(',').map(str::trim).collect::<Vec<_>>()),
+                "targets": a.targets, "family": a.family,
                 "canvas": a.canvas.as_deref().map(parse_canvas).transpose()?,
             });
             let v = dispatch(engine, "hoi4.image_validate", params)?;
@@ -395,12 +407,12 @@ fn calibrate_text(c: &Value) -> String {
 
 fn plan_text(p: &Value) -> String {
     let mut t = format!(
-        "Plan {} ({}, {} on {})\n  profile {} canvas {}x{}, generation size {}x{}, transparent {}\n  estimate ${:.4} for {} call(s): {}\n",
+        "Plan {} ({}, {} on {})\n  family {} canvas {}x{}, generation size {}x{}, transparent {}\n  estimate ${:.4} for {} call(s): {}\n",
         p["plan_id"].as_str().unwrap_or("?"),
         p["asset_id"].as_str().unwrap_or("?"),
         p["model"].as_str().unwrap_or("?"),
         p["provider"].as_str().unwrap_or("?"),
-        p["profile"]["id"].as_str().unwrap_or("?"),
+        p["request"]["family"].as_str().unwrap_or("?"),
         p["canvas"][0],
         p["canvas"][1],
         p["generation"]["width"],

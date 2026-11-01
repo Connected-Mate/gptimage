@@ -114,7 +114,7 @@ impl Harness {
 
     pub fn plan_focus(&self, asset: &str) -> Value {
         let req = serde_json::from_value(json!({
-            "category": "focus_icon", "feature_slug": "iron_pact", "asset": asset,
+            "category": "focus", "feature_slug": "iron_pact", "asset": asset,
             "brief": "a riveted steel gate under a red banner", "provider": "openai", "quality": "low"
         }))
         .unwrap();

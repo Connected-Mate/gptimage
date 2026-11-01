@@ -1,6 +1,7 @@
 //! `hoi4.image_plan`: a dry run that costs nothing and fixes everything a generation will use.
 
-use imagegen_core::category::Category;
+use imagegen_core::family::{Family, Group};
+use imagegen_core::reuse;
 use imagegen_core::error::RetryClass;
 use imagegen_core::export;
 use imagegen_core::naming::{self, asset_id};
@@ -12,6 +13,8 @@ use imagegen_core::style;
 use imagegen_providers::types::{AlphaSupport, ImageRequest, ModelStatus};
 use serde_json::json;
 
+use crate::api::{GenerateParams, GroupFollowUp};
+
 use super::{EResult, Engine, EngineError};
 
 /// Default provider order when a plan names none (decision D-12a and the maintainer's answer of 2026-11-01).
@@ -20,7 +23,7 @@ pub const PROVIDER_ORDER: [&str; 5] = ["chatgpt_login", "openai", "gemini", "fal
 impl Engine {
     /// Resolve and store a plan.
     pub fn plan(&self, req: PlanRequest) -> EResult<Plan> {
-        export::validate_asset_name(req.category, &req.asset)?;
+        export::validate_asset_name(req.family, &req.asset)?;
         naming::validate_snake("feature slug", &req.feature_slug)?;
         let brief = req.brief.trim().to_string();
         if brief.is_empty() || brief.chars().count() > 4000 || brief.chars().any(|c| c.is_control() && c != '\n' && c != '\t') {
@@ -28,20 +31,20 @@ impl Engine {
         }
         let profile = self
             .profiles
-            .for_category(req.category)
-            .ok_or_else(|| EngineError::new("not_found", format!("no profile for {}", req.category), RetryClass::Terminal))?
+            .for_family(req.family)
+            .ok_or_else(|| EngineError::new("not_found", format!("no profile for {}", req.family), RetryClass::Terminal))?
             .clone();
 
         let canvas = match (profile.canvas, req.canvas) {
             ([0, 0], Some(c)) if (1..=4096).contains(&c[0]) && (1..=4096).contains(&c[1]) => c,
             ([0, 0], Some(_)) => return Err(EngineError::invalid("canvas sides must be 1 to 4096")),
-            ([0, 0], None) => return Err(EngineError::invalid(format!("{} has no fixed canvas: pass canvas [width, height]", req.category))),
+            ([0, 0], None) => return Err(EngineError::invalid(format!("{} has no fixed canvas: pass canvas [width, height]", req.family))),
             (p, None) => p,
             (p, Some(c)) if c == p => p,
             (p, Some(_)) => {
                 return Err(EngineError::invalid(format!(
                     "{} has a fixed canvas of {}x{}; to use another, override the profile in .hoi4-imagegen/config.toml or the kit's profiles.json",
-                    req.category, p[0], p[1]
+                    req.family, p[0], p[1]
                 )))
             }
         };
@@ -49,8 +52,8 @@ impl Engine {
         let style_profile = match &req.style {
             Some(name) => {
                 let s = style::load(&self.fs, name)?;
-                if !s.applies_to(req.category) {
-                    return Err(EngineError::invalid(format!("style '{name}' does not apply to {}", req.category)));
+                if !s.applies_to(req.family) {
+                    return Err(EngineError::invalid(format!("style '{name}' does not apply to {}", req.family)));
                 }
                 s.verify_references(&self.fs)?;
                 Some(s)
@@ -74,7 +77,7 @@ impl Engine {
                     "no image provider is ready: run `hoi4-imagegen login` to sign in with your ChatGPT account, or set an API key (OPENAI_API_KEY, GEMINI_API_KEY, FAL_KEY) or a ComfyUI endpoint",
                 )
             })?;
-        self.check_category_policy(&profile, &provider_id)?;
+        self.check_family_policy(&profile, &provider_id)?;
         let provider = self.registry.get(&provider_id).ok_or_else(|| {
             let why =
                 self.registry.problems().get(&provider_id).cloned().unwrap_or_else(|| format!("known providers: {}", self.registry.ids().join(", ")));
@@ -93,6 +96,11 @@ impl Engine {
             loaded.push(refs::load_reference(&self.fs, game.as_deref(), &self.config.policy, input)?);
         }
         refs::check_set_caps(&loaded)?;
+        // a reference that is the candidate itself must not be another family's installed art
+        for r in loaded.iter().filter(|r| r.role == RefRole::EditTarget) {
+            let (img, _) = imagegen_core::pixels::decode(&r.png, None, imagegen_core::pixels::DecodeLimits::default())?;
+            reuse::ensure_no_cross_family_reuse(&self.fs, &self.profiles, req.family, &reuse::pixel_hash(&img), &format!("the edit target {}", r.path))?;
+        }
 
         let model_id = req
             .model
@@ -252,6 +260,40 @@ impl Engine {
         Ok(plan)
     }
 
+    /// The group tools (`hoi4.image_icon` and the others): plan, and generate when `approve` is set.
+    ///
+    /// The family must belong to the tool's group. This is checked here as well as in the tool's schema, so a
+    /// caller that ignores the schema still cannot make an asset through the wrong tool.
+    pub fn group_request(&self, group: Group, req: PlanRequest, follow: GroupFollowUp) -> EResult<serde_json::Value> {
+        if req.family.group() != group {
+            return Err(EngineError::new(
+                "family_not_in_group",
+                format!(
+                    "{} is a {} family and cannot be made with {}. Use {} (this tool makes: {})",
+                    req.family,
+                    req.family.group(),
+                    group.tool_name(),
+                    req.family.group().tool_name(),
+                    group.family_ids().join(", ")
+                ),
+                RetryClass::Terminal,
+            ));
+        }
+        let plan = self.plan(req)?;
+        let plan_json = serde_json::to_value(&plan).map_err(|e| EngineError::new("internal", e.to_string(), RetryClass::Terminal))?;
+        if !follow.approve {
+            return Ok(json!({
+                "generated": false,
+                "plan_id": plan.plan_id,
+                "plan": plan_json,
+                "next": "Nothing was spent. Call this tool again with approve = true and an idempotency_key to generate, or pass the plan_id to hoi4.image_generate."
+            }));
+        }
+        let key = follow.idempotency_key.clone().filter(|k| !k.trim().is_empty()).ok_or_else(|| EngineError::invalid("approve = true needs an idempotency_key"))?;
+        let generation = self.generate(GenerateParams { plan_id: plan.plan_id.clone(), idempotency_key: key, approve_cost: Some(follow.approve_cost) })?;
+        Ok(json!({"generated": true, "plan_id": plan.plan_id, "plan": plan_json, "generation": generation}))
+    }
+
     fn store_plan(&self, plan: &Plan) -> EResult<()> {
         let rel = plan_path(&plan.plan_id);
         if self.fs.exists(&rel) {
@@ -293,7 +335,7 @@ impl Engine {
     }
 }
 
-/// Convenience for tests and the CLI: a category by id string.
-pub fn parse_category(s: &str) -> EResult<Category> {
-    s.parse::<Category>().map_err(EngineError::from)
+/// Convenience for tests and the CLI: a family by id string.
+pub fn parse_family(s: &str) -> EResult<Family> {
+    s.parse::<Family>().map_err(EngineError::from)
 }
