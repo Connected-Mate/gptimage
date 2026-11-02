@@ -93,6 +93,12 @@ pub struct ProviderConfig {
     pub workflow: Option<String>,
     /// Environment variable holding the key, when it is not the provider's usual one.
     pub api_key_env: Option<String>,
+    /// Cloud region (AWS Bedrock, for example `us-east-1`).
+    pub region: Option<String>,
+    /// Deployment name (Microsoft Foundry / Azure OpenAI).
+    pub deployment: Option<String>,
+    /// API version query value (Microsoft Foundry / Azure OpenAI).
+    pub api_version: Option<String>,
 }
 
 /// Defaults.
