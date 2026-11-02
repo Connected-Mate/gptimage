@@ -310,7 +310,10 @@ pub fn validate_image(img: &Rgba, profile: &Profile, checks: &[String], opts: &O
                 ));
             }
         }
-        if wants("margin") && transparent_profile && profile.margin > 0 {
+        // A selected strip's frame 2 is frame 1 with a glow that runs to the frame edge, as vanilla's does (most
+        // vanilla faction logos keep 0 or 1 px there), so only frame 1 holds the margin.
+        let derived_frame = i > 0 && crate::recipes::frames::selected_fit_margin(profile.family) > 0;
+        if wants("margin") && transparent_profile && profile.margin > 0 && !derived_frame {
             if i == 0 {
                 run.push("margin".into());
             }
@@ -332,7 +335,11 @@ pub fn validate_image(img: &Rgba, profile: &Profile, checks: &[String], opts: &O
             }
             if let Some(b) = s.visible_bounds {
                 let span = (f64::from(b[2] - b[0]) / f64::from(f.width)).max(f64::from(b[3] - b[1]) / f64::from(f.height));
-                if span < 0.80 {
+                // a selected-strip emblem sits as far inside frame 1 as vanilla's (about 76 percent of an agency
+                // frame), so the floor follows that fit, less a little for the subject's own shape
+                let fit = f64::from(crate::recipes::frames::selected_fit_margin(profile.family));
+                let fitted = (1.0 - 2.0 * fit / f64::from(f.width)).max(1.0 - 2.0 * fit / f64::from(f.height));
+                if span < 0.80_f64.min(fitted - 0.05) {
                     findings.push(Finding::new(
                         "GFX-UNDERSIZED-SUBJECT",
                         Level::Warning,

@@ -381,17 +381,15 @@ fn rows() -> Vec<Row> {
         Row {
             automation: Automation::Generate,
             rules: FRAME_STRIP_RULES,
-            margin: 10,
             sprite: Some(("interface/factions/{feature_slug}_factions.gfx", "GFX_{prefix}{asset}", &[])),
-            note: "Two 100x100 frames (200x100 strip). Frame 2 is the selected state (cream stroke and dark-red glow, fitted to 31 vanilla strips) which needs room around the emblem: vanilla frame 1 keeps a margin of 8 to 11 pixels, so the fit margin is 10. The 32x32 single-frame small logo of the same folder is a separate sprite and is not accepted here.",
+            note: "Two 100x100 frames (200x100 strip). Frame 2 is the selected state (cream stroke and dark-red glow, fitted to 31 vanilla strips) which needs room around the emblem: frame 1 is fitted 10 px inside its frame, the vanilla median, and the glow brings frame 2's margin down to about 2, the minimum checked. The 32x32 single-frame small logo of the same folder is a separate sprite and is not accepted here.",
             ..base(FactionLogo, [100, 100], &[[100, 100]], "gfx/interface/factions/faction_logos/{feature_slug}", "faction_", "")
         },
         Row {
             automation: Automation::Generate,
             rules: FRAME_STRIP_RULES,
-            margin: 10,
             sprite: Some(("interface/{feature_slug}_agencies.gfx", "GFX_intelligence_agency_logo_{asset}", &[])),
-            note: "Two 117x119 frames (234x119 strip). Frame 2 is the selected state, measured on the 37 vanilla 234x119 strips with the same glow profile as the faction logos. 34 files are 233x119, which does not divide into two whole frames and is not accepted.",
+            note: "Two 117x119 frames (234x119 strip). Frame 2 is the selected state, measured on the 37 vanilla 234x119 strips with the same glow profile as the faction logos. Frame 1 is fitted 14 px inside its frame (the vanilla median, an emblem of about 89 px), and the glow brings frame 2's margin down to about 2, the minimum checked. 34 files are 233x119, which does not divide into two whole frames and is not accepted.",
             ..base(AgencyLogo, [117, 119], &[[117, 119]], "gfx/interface/operatives/agencies/{feature_slug}", "agency_logo_", "")
         },
         // ---- interface group
@@ -703,7 +701,12 @@ mod tests {
         }
         assert_eq!(set[&Family::AdvisorCard].imagegen.source_canvas, Some([156, 210]), "the card is made from a tall portrait");
         assert_eq!(set[&Family::AdvisorCard].imagegen.background, Background::Opaque);
-        assert_eq!(set[&Family::FactionLogo].margin, 10, "frame 2 needs room for the glow");
+        // the profile margin is the minimum every frame keeps, the same as the kit row; the room for frame 2's glow
+        // is the recipe's fit margin
+        assert_eq!(set[&Family::FactionLogo].margin, 2);
+        assert_eq!(set[&Family::AgencyLogo].margin, 2);
+        assert_eq!(crate::recipes::frames::selected_fit_margin(Family::FactionLogo), 10);
+        assert_eq!(crate::recipes::frames::selected_fit_margin(Family::AgencyLogo), 14);
     }
 
     #[test]
