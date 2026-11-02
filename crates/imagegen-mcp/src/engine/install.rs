@@ -22,8 +22,24 @@ use crate::api::{InstallMode, InstallParams, OnExists};
 use super::{EResult, Engine, EngineError};
 
 impl Engine {
+    /// One install at a time per project. An install reads and rewrites shared files (the feature's handoff note, a
+    /// `.gfx` file, the division symbol numbers), so two installs that interleave lose one of the edits. The lock is
+    /// an OS file lock on `.hoi4-imagegen/install.lock`, held until the install returns and released by the OS if the
+    /// process dies, so it covers parallel MCP calls and separate processes alike.
+    fn install_lock(&self) -> EResult<std::fs::File> {
+        let failed = |e: std::io::Error| {
+            EngineError::new("install_lock_failed", format!("cannot take the project's install lock: {e}"), RetryClass::SafeSameInputs)
+        };
+        let dir = self.fs.root().join(".hoi4-imagegen");
+        std::fs::create_dir_all(&dir).map_err(failed)?;
+        let file = std::fs::OpenOptions::new().create(true).truncate(false).write(true).open(dir.join("install.lock")).map_err(failed)?;
+        file.lock().map_err(failed)?;
+        Ok(file)
+    }
+
     /// Install an approved artifact.
     pub fn install(&self, p: InstallParams) -> EResult<Value> {
+        let _install_lock = self.install_lock()?;
         let artifact = self.artifact(&p.target)?;
         let profile = self.profile_of(&artifact)?.clone();
         let (bytes, sha) = self.read_artifact(&artifact)?;

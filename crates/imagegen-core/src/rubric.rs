@@ -9,7 +9,20 @@ use serde_json::Value;
 /// Question key and the question as shown to the reviewer.
 pub type Question = (&'static str, &'static str);
 
+/// icon_v2: every icon family has a vanilla form (a loose subject, a plaque, a disc, a pictogram, a ribbon medal, line
+/// art), stated in the plan. A frame is unwanted only where the form has none.
 const ICON: &[Question] = &[
+    ("readable_at_native_size", "Is the subject recognizable at the native game size (look at the 1x preview, not only the enlarged one)?"),
+    ("family_form", "Does it have the family's vanilla form stated in the plan rules (for example a focus plaque, a decision category disc, a raid pictogram, a trait ribbon medal, blueprint line art, or a loose subject)?"),
+    ("silhouette_clear", "Is the silhouette clear and simple?"),
+    ("style_matches_references", "Does the painting style match the approved references side by side?"),
+    ("no_text_or_watermark", "Is the art free of text, letters, numbers, signatures and watermarks?"),
+    ("no_unintended_elements", "Is it free of drawn checkerboards, square backdrops and frames or plates that the family's form does not call for?"),
+    ("period_and_theme_fit", "Does it fit the period and the theme of the feature?"),
+];
+
+/// icon_v1, kept so reviews recorded before icon_v2 still read.
+const ICON_V1: &[Question] = &[
     ("readable_at_native_size", "Is the subject recognizable at the native game size (look at the 1x preview, not only the enlarged one)?"),
     ("silhouette_clear", "Is the silhouette clear and simple?"),
     ("style_matches_references", "Does the painting style match the approved references side by side?"),
@@ -66,7 +79,10 @@ const INTERFACE: &[Question] = &[
 /// `unit_v1`, `interface_v1`), so every family of a group, officer corps spirits included, gets its group's
 /// questions. Anything else falls back to the generic questions.
 pub fn questions(rubric: &str) -> &'static [Question] {
-    match rubric.strip_suffix("_v1").unwrap_or(rubric) {
+    if rubric == "icon_v1" {
+        return ICON_V1;
+    }
+    match rubric.strip_suffix("_v2").or_else(|| rubric.strip_suffix("_v1")).unwrap_or(rubric) {
         "icon" => ICON,
         "picture" => PICTURE,
         "portrait" => PORTRAIT,
@@ -115,6 +131,9 @@ mod tests {
     #[test]
     fn every_group_has_its_rubric_and_every_family_resolves_to_a_real_one() {
         assert!(questions("icon_v1").iter().any(|q| q.0 == "silhouette_clear"));
+        // icon_v2 adds the family-form question; icon_v1 stays readable for older reviews
+        assert!(questions("icon_v2").iter().any(|q| q.0 == "family_form"));
+        assert!(!questions("icon_v1").iter().any(|q| q.0 == "family_form"));
         assert!(questions("picture_v1").iter().any(|q| q.0 == "composition_fills_frame"));
         assert!(questions("flag_v1").iter().any(|q| q.0 == "readable_at_small_size"));
         assert!(questions("portrait_v1").iter().any(|q| q.0 == "face_natural"));

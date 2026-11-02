@@ -319,7 +319,7 @@ fn a_processed_artifact_without_its_mandatory_recipe_fails_validation_and_the_in
     // a failing validation cannot be approved, and the gate names the chain even when an approval id is made up
     h.preview(&no_fit);
     let answers: serde_json::Map<String, Value> =
-        imagegen_core::rubric::questions("icon_v1").iter().map(|(k, _)| (k.to_string(), json!(true))).collect();
+        imagegen_core::rubric::questions("icon_v2").iter().map(|(k, _)| (k.to_string(), json!(true))).collect();
     let e = h
         .engine
         .review(serde_json::from_value(json!({"target": no_fit, "verdict": "approved", "reviewer": "t", "answers": answers})).unwrap())
@@ -999,4 +999,32 @@ fn counters_and_division_symbols_are_generated_processed_validated_and_installed
     let out = h.install(&id, &approval, json!({"mode": "register"})).unwrap();
     assert_eq!(out["division_template_number"], 122);
     assert_eq!(out["sprite"]["names"], json!(["GFX_div_templ_122_large", "GFX_div_templ_122_small"]));
+}
+
+// ------------------------------------------------------------------ install lock
+
+/// Installs that run at the same time into one feature must all land in its handoff note. Each install reads the
+/// note, appends its block and writes it back, so without the project's install lock one block could be lost.
+#[test]
+fn parallel_installs_into_one_feature_keep_every_handoff_block() {
+    let h = chain_harness();
+    let subject = synthetic_icon_png();
+    let assets = ["gate_a", "gate_b", "gate_c", "gate_d"];
+    let mut ready = Vec::new();
+    for (i, asset) in assets.iter().enumerate() {
+        let cand = generate(&h, "decision", asset, &subject, &format!("k-par-{i}"));
+        let id = process(&h, &cand, json!({})).unwrap()["artifact_id"].as_str().unwrap().to_string();
+        let approval = approve(&h, &id, "decision");
+        ready.push((id, approval));
+    }
+    std::thread::scope(|s| {
+        for (id, approval) in &ready {
+            let h = &h;
+            s.spawn(move || h.install(id, approval, json!({})).unwrap());
+        }
+    });
+    let note = std::fs::read_to_string(h.dir.path().join("docs/assets/iron_pact/gfx_handoff.md")).unwrap();
+    for asset in assets {
+        assert!(note.contains(&format!("GFX_decision_{asset}")), "{asset} missing from the handoff note:\n{note}");
+    }
 }

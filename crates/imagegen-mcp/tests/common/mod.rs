@@ -154,7 +154,7 @@ impl Harness {
     pub fn approve_all(&self, id: &str) -> String {
         assert_eq!(self.validate(id)["status"], "pass", "{:#}", self.validate(id));
         self.preview(id);
-        self.approve(id, "icon_v1")["approval_id"].as_str().unwrap().to_string()
+        self.approve(id, "icon_v2")["approval_id"].as_str().unwrap().to_string()
     }
 
     pub fn install(&self, id: &str, approval: &str, extra: Value) -> Result<Value, imagegen_mcp::EngineError> {

@@ -87,7 +87,7 @@ fn install_refuses_until_validation_review_and_hashes_are_in_order() {
 
     // approving without a preview is refused
     let answers: serde_json::Map<String, Value> =
-        imagegen_core::rubric::questions("icon_v1").iter().map(|(k, _)| (k.to_string(), json!(true))).collect();
+        imagegen_core::rubric::questions("icon_v2").iter().map(|(k, _)| (k.to_string(), json!(true))).collect();
     let review = |verdict: &str, answers: Value| {
         h.engine.review(serde_json::from_value(json!({"target": processed, "verdict": verdict, "reviewer": "t", "answers": answers})).unwrap())
     };
@@ -400,7 +400,7 @@ fn fake_checkerboards_are_rejected_at_validation() {
     // the failed validation blocks approval and install
     h.preview(&id);
     let answers: serde_json::Map<String, Value> =
-        imagegen_core::rubric::questions("icon_v1").iter().map(|(k, _)| (k.to_string(), json!(true))).collect();
+        imagegen_core::rubric::questions("icon_v2").iter().map(|(k, _)| (k.to_string(), json!(true))).collect();
     let e = h
         .engine
         .review(serde_json::from_value(json!({"target": id, "verdict": "approved", "reviewer": "t", "answers": answers})).unwrap())
