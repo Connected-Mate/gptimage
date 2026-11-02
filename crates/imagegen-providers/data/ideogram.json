@@ -1,0 +1,77 @@
+{
+  "id": "ideogram",
+  "display_name": "Ideogram API (v2)",
+  "doc_url": "https://developer.ideogram.ai/v2/llms.txt",
+  "doc_urls": [
+    "https://developer.ideogram.ai/v2/llms.txt",
+    "https://developer.ideogram.ai/v2/api-reference/images/generate/ideogram-4-5.md",
+    "https://developer.ideogram.ai/v2/api-reference/images/generate/ideogram-4.md",
+    "https://developer.ideogram.ai/v2/api-reference/images/generate/ideogram-4-transparent.md",
+    "https://developer.ideogram.ai/v2/api-reference/images/generate/ideogram-3.md",
+    "https://developer.ideogram.ai/v2/api-reference/images/precise-edit/ideogram-4-5.md",
+    "https://developer.ideogram.ai/v2/api-reference/images/remix/auto.md",
+    "https://developer.ideogram.ai/v2/ideogram-api/api-setup.md",
+    "https://developer.ideogram.ai/openapi/ideogram-api-v2.yaml",
+    "https://ideogram.ai/pricing/?pricing_tab=api"
+  ],
+  "checked": "2026-11-02",
+  "live_verified": false,
+  "retrieved": "2026-11-02",
+  "env_vars": ["IDEOGRAM_API_KEY"],
+  "hosts": ["api.ideogram.ai", ".ideogram.ai"],
+  "terms_note": "Not live-verified: built from the vendor documentation read on 2026-11-02, no call was made. Ideogram publishes no per-image price in its API docs (the pricing page loads its figures with script and showed none): billing is credits at 1 cent per credit with a per-model credit count that could not be read, so the cost shown is an explicit planning stand-in, never a vendor figure. dry_run=true on any endpoint returns an exact PriceQuote without billing and is the way to replace the stand-in. Output terms were not read, so nothing is promised here. Check Paradox's and Steam's rules for AI-generated mod assets before publishing. Image links expire, so the adapter downloads the image straight away from ideogram.ai hosts.",
+  "models": [
+    {
+      "id": "ideogram-4-5",
+      "status": { "state": "current" },
+      "recommended": true,
+      "max_refs": 5,
+      "mask": false,
+      "alpha": "ga",
+      "sizes": { "kind": "fixed", "sizes": [[1024, 1024], [1120, 896], [896, 1120], [1152, 864], [864, 1152], [1248, 832], [832, 1248], [1280, 800], [800, 1280], [1280, 720], [720, 1280], [1440, 720], [720, 1440], [1536, 512], [512, 1536]] },
+      "cost": { "kind": "unpublished_proxy", "proxy_usd_by_quality": [["default", 0.1]], "proxy_of": "nothing: Ideogram publishes no per-image price in the API docs, so 0.10 USD is a planning ceiling set in this table" },
+      "async_job": false,
+      "supports_edit": true,
+      "notes": "POST /v2/image/generate/ideogram-4-5, multipart. Edits send the base image first and any references after it as images (up to 5 in all, the first is edited), with size=source. A reference on a plain generation is refused, because the endpoint would treat the first one as the image to edit. Transparent background: background=transparent (documented as an alpha channel). Quality maps low to medium (very_low needs a source image), medium to medium and high to high. Pricing is tiered: up to 1024x1024 bills as 1K, larger as 2K, so the sizes offered stay at or under 1 megapixel. The size list is the Ideogram 4.0 resolution list, because the 4.5 page names no list (1024x1024, 2048x2048 and 1440x2880 are its examples). Masks are not sent: Ideogram's mask is black for the edit area, the opposite of this tool's alpha mask. negative_prompt is not documented for 4.5 and is not sent. magic_prompt is off. Not live-verified."
+    },
+    {
+      "id": "ideogram-4",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 0,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "fixed", "sizes": [[1024, 1024], [1120, 896], [896, 1120], [1152, 864], [864, 1152], [1248, 832], [832, 1248], [1280, 800], [800, 1280], [1280, 720], [720, 1280], [1440, 720], [720, 1440], [1536, 512], [512, 1536]] },
+      "cost": { "kind": "unpublished_proxy", "proxy_usd_by_quality": [["default", 0.1]], "proxy_of": "nothing: Ideogram publishes no per-image price in the API docs, so 0.10 USD is a planning ceiling set in this table" },
+      "async_job": false,
+      "supports_edit": false,
+      "notes": "POST /v2/image/generate/ideogram-4, JSON body with resolution and rendering_speed (low is turbo, medium is default, high is quality). No image input, no negative prompt. Native transparency is on the separate ideogram-4-transparent model. Not live-verified."
+    },
+    {
+      "id": "ideogram-4-transparent",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 0,
+      "mask": false,
+      "alpha": "ga",
+      "sizes": { "kind": "aspect_tiers", "ratios": ["1:4", "1:3", "1:2", "9:16", "10:16", "2:3", "3:4", "4:5", "1:1", "5:4", "4:3", "3:2", "16:10", "16:9", "2:1", "3:1", "4:1"], "tier": "1k" },
+      "cost": { "kind": "unpublished_proxy", "proxy_usd_by_quality": [["default", 0.1]], "proxy_of": "nothing: Ideogram publishes no per-image price in the API docs, so 0.10 USD is a planning ceiling set in this table" },
+      "async_job": false,
+      "supports_edit": false,
+      "notes": "POST /v2/image/generate/ideogram-4-transparent, JSON body with aspect_ratio, output_resolution=1k and rendering_speed. Always returns a transparent background, so it cannot combine with an edit. The structured-prompt background is replaced with a transparent one. Not live-verified."
+    },
+    {
+      "id": "ideogram-3",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 10,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "aspect_tiers", "ratios": ["1:3", "3:1", "1:2", "2:1", "9:16", "16:9", "10:16", "16:10", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "1:1"], "tier": "default" },
+      "cost": { "kind": "unpublished_proxy", "proxy_usd_by_quality": [["default", 0.1]], "proxy_of": "nothing: Ideogram publishes no per-image price in the API docs, so 0.10 USD is a planning ceiling set in this table" },
+      "async_job": false,
+      "supports_edit": true,
+      "notes": "POST /v2/image/generate/ideogram-3, multipart, with aspect_ratio, rendering_speed, negative_prompt and style anchor references sent as style_reference_images (up to 10). It cannot edit: the remix and inpaint routes for 3.0 are not used. Native transparency is on a separate 3.0 transparent route that is not offered. Not live-verified."
+    }
+  ]
+}

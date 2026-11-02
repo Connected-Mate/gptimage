@@ -1,0 +1,34 @@
+{
+  "id": "automatic1111",
+  "display_name": "Stable Diffusion WebUI (AUTOMATIC1111 API)",
+  "doc_url": "https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/API",
+  "doc_urls": [
+    "https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/API",
+    "https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Command-Line-Arguments-and-Settings",
+    "https://raw.githubusercontent.com/AUTOMATIC1111/stable-diffusion-webui/master/modules/api/models.py",
+    "https://raw.githubusercontent.com/AUTOMATIC1111/stable-diffusion-webui/master/modules/processing.py",
+    "https://github.com/lllyasviel/stable-diffusion-webui-forge"
+  ],
+  "checked": "2026-11-02",
+  "live_verified": false,
+  "retrieved": "2026-11-02",
+  "env_vars": [],
+  "hosts": ["127.0.0.1", "localhost", "::1"],
+  "default_endpoint": "http://127.0.0.1:7860",
+  "terms_note": "Not live-verified: built from the WebUI wiki and source read on 2026-11-02, no server was started and no call was made. The wiki page for the API is marked unmaintained since 2023-09-09, so field names come from modules/api/models.py and processing.py, and the server's own /docs page is the authority. The server runs on the user's machine: no key, no provider fee, and nothing leaves the machine. The API is off unless the WebUI starts with --api. It listens on 127.0.0.1:7860 by default (--port 7860, --listen off), which is the endpoint used when none is configured, but the provider only counts as configured when an endpoint is set in the project config. Output terms follow the checkpoint's own license, which this adapter cannot see. Check the checkpoint's license and Paradox's and Steam's rules for AI-generated mod assets before publishing. Forge is a fork whose README lists the API endpoints as working but does not state parity with AUTOMATIC1111, so the forge provider shares this code on an assumption not yet checked against a running Forge.",
+  "models": [
+    {
+      "id": "loaded-checkpoint",
+      "status": { "state": "current" },
+      "recommended": true,
+      "max_refs": 1,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "arbitrary", "multiple": 8, "min_pixels": 262144, "max_pixels": 2359296, "max_edge": 2048, "max_ratio": 4.0 },
+      "cost": { "kind": "free" },
+      "async_job": false,
+      "supports_edit": true,
+      "notes": "Whatever checkpoint the WebUI has loaded. Any other model id is treated as a checkpoint name and sent as override_settings.sd_model_checkpoint for that one request. Generation is POST /sdapi/v1/txt2img, an edit is POST /sdapi/v1/img2img with the base as init_images and denoising_strength 0.6 (an adapter default, the server default is 0.75). Sizes are multiples of 8 (the code floors latents to eight pixels). The pixel floor is 512x512 for SD 1.x class models, and quality high raises it to 1024x1024 for SDXL class models. Steps, sampler and cfg_scale are left to the server's own defaults. No mask: the WebUI mask polarity differs from this tool's alpha mask and is not converted. References are refused on a plain generation. No native transparency. Not live-verified."
+    }
+  ]
+}
