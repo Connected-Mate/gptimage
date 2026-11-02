@@ -205,7 +205,27 @@ mod tests {
         let (_d, fs) = project();
         let env = MapEnv::from_pairs(&[("OPENAI_API_KEY", "sk-test-1"), ("GOOGLE_API_KEY", "g-test-1")]);
         let reg = ProviderRegistry::build(&fs, &Config::default(), &env, fixture());
-        assert_eq!(reg.ids(), vec!["fal", "gemini", "openai"]);
+        // every built-in backend is offered (doctor names the key it lacks); only those with keys are configured
+        assert_eq!(
+            reg.ids(),
+            vec![
+                "automatic1111",
+                "bfl",
+                "fal",
+                "forge",
+                "gemini",
+                "huggingface",
+                "ideogram",
+                "leonardo",
+                "openai",
+                "openrouter",
+                "recraft",
+                "replicate",
+                "stability",
+                "together",
+                "xai"
+            ]
+        );
         assert_eq!(reg.configured_ids(), vec!["gemini", "openai"]);
         assert!(reg.problems().is_empty());
     }
@@ -215,7 +235,11 @@ mod tests {
         let (_d, fs) = project();
         let cfg = Config::parse("[providers.fal]\nenabled = false\n[providers.gemini]\nenabled = false\n").unwrap();
         let reg = ProviderRegistry::build(&fs, &cfg, &MapEnv::default(), fixture());
-        assert_eq!(reg.ids(), vec!["openai"]);
+        let ids = reg.ids();
+        for off in ["fal", "gemini"] {
+            assert!(!ids.iter().any(|i| i == off), "{off} is switched off: {ids:?}");
+        }
+        assert!(ids.iter().any(|i| i == "openai") && ids.iter().any(|i| i == "replicate"));
     }
 
     #[test]
