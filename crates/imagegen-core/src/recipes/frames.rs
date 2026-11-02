@@ -16,6 +16,7 @@
 //! Both are pure functions of the pixels. The strips are built with [`crate::recipes::strip::build_strip`].
 
 use crate::error::{Error, Result};
+use crate::family::Family;
 use crate::pixels::Rgba;
 use crate::recipes::pillow::{alpha_composite, gaussian_blur_plane};
 use crate::recipes::strip::build_strip;
@@ -46,6 +47,19 @@ pub struct SelectedStyle {
 impl Default for SelectedStyle {
     fn default() -> Self {
         SelectedStyle { stroke: 2.91, stroke_rgb: [208, 198, 165], glow_dilate: 5.5, glow_sigma: 4.0, glow_opacity: 0.97, glow_rgb: [37, 5, 5] }
+    }
+}
+
+/// How far inside its frame a selected-strip emblem sits in frame 1, so frame 2's glow fits around it and the
+/// emblem draws at vanilla size. Measured on 1.19.4.1 as the median smallest frame-1 margin: 14 px over the 37
+/// 234x119 agency logos (p10 12, p90 17, emblem about 89 px) and 10 px over the 31 200x100 faction logos (p10 7,
+/// p90 13). An agency logo fitted with 2 px drew about 25 percent wider than vanilla emblems in game. The
+/// profile's `margin` stays the minimum every frame keeps, which frame 2's glow brings down to about 2.
+pub fn selected_fit_margin(family: Family) -> u32 {
+    match family {
+        Family::AgencyLogo => 14,
+        Family::FactionLogo => 10,
+        _ => 0,
     }
 }
 

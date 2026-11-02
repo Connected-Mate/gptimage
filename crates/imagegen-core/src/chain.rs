@@ -267,7 +267,12 @@ pub fn plan_finishing(profile: &Profile, canvas: [u32; 2], img: &Rgba, imported:
             if imported && accepted_strip {
                 ops.push(Op::Conform { width: size[0], height: size[1] });
             } else {
-                ops = transparent_icon_ops(img, canvas, keyed, profile.margin)?;
+                let margin = if recipe == Recipe::SelectedStrip {
+                    profile.margin.max(crate::recipes::frames::selected_fit_margin(profile.family))
+                } else {
+                    profile.margin
+                };
+                ops = transparent_icon_ops(img, canvas, keyed, margin)?;
                 if recipe == Recipe::SelectedStrip {
                     ops.push(Op::SelectedFrame { frames });
                 } else {
@@ -520,6 +525,22 @@ mod tests {
         );
         assert!(plan_finishing(&counter, counter.canvas, &Rgba::new(100, 42), true, false, "").is_err());
         assert!(plan_finishing(&counter, counter.canvas, &Rgba::new(152, 42), false, false, "").is_err());
+    }
+
+    /// Selected-strip emblems sit as far inside frame 1 as vanilla's, whatever minimum margin the profile sets (the
+    /// kit row says 2), and the finished strip passes its own margin and fill checks.
+    #[test]
+    fn selected_strips_fit_the_emblem_at_vanilla_size_and_pass_their_checks() {
+        for (family, fit) in [(Family::AgencyLogo, 14), (Family::FactionLogo, 10)] {
+            let mut p = prof(family);
+            p.margin = 2;
+            let plan = plan_finishing(&p, p.canvas, &blob(), false, false, "").unwrap();
+            assert!(plan.ops.iter().any(|op| matches!(op, Op::FitSubject { margin, .. } if *margin == fit)), "{family:?}: {:?}", plan.ops);
+            let (strip, _) = crate::process::run_chain(&blob(), &plan.ops).unwrap();
+            let checks = ["margin".to_string(), "fill".to_string()];
+            let report = crate::validate::validate_image(&strip, &p, &checks, &Default::default());
+            assert!(report.findings.is_empty(), "{family:?}: {:?}", report.findings);
+        }
     }
 
     #[test]
