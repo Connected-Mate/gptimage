@@ -1,0 +1,58 @@
+{
+  "id": "leonardo",
+  "display_name": "Leonardo.Ai (REST API v2)",
+  "doc_url": "https://docs.leonardo.ai/reference/creategeneration",
+  "doc_urls": [
+    "https://docs.leonardo.ai/reference/creategeneration",
+    "https://docs.leonardo.ai/docs/getting-started",
+    "https://docs.leonardo.ai/docs/api-faq.md",
+    "https://docs.leonardo.ai/docs/lucid-origin"
+  ],
+  "retrieved": "2026-11-02",
+  "checked": "2026-11-02",
+  "live_verified": false,
+  "env_vars": ["LEONARDO_API_KEY"],
+  "hosts": ["cloud.leonardo.ai", "cdn.leonardo.ai"],
+  "terms_note": "Not live-verified: built from Leonardo's API reference and guides read on 2026-11-02, with no live call. Leonardo bills in API credits and the pages read give no USD price per image or credit, so nothing here claims one: the estimate is $0 with usage unknown, and the create response's apiCreditCost (when the account reports it) is recorded in the output usage. No transparency option is documented for these models. Reference images need a separate upload flow that this adapter does not implement. Check Leonardo's terms for each model before shipping its output.",
+  "models": [
+    {
+      "id": "lucid-origin",
+      "status": { "state": "current" },
+      "recommended": true,
+      "max_refs": 0,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "arbitrary", "multiple": 8, "min_pixels": 262144, "max_pixels": 4194304, "max_edge": 3616, "max_ratio": 4.0 },
+      "cost": { "kind": "plan_quota" },
+      "async_job": true,
+      "supports_edit": false,
+      "notes": "Documented limits: width 16 to 3840 and height 16 to 3616 in multiples of 8, mode FAST (default) or ULTRA. The pixel floor, the 4 MP cap and the 4:1 ratio are this tool's own planning limits, not API limits. Priced in API credits with no published USD figure. Not live-verified."
+    },
+    {
+      "id": "flux-schnell",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 0,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "arbitrary", "multiple": 8, "min_pixels": 262144, "max_pixels": 4194304, "max_edge": 3616, "max_ratio": 4.0 },
+      "cost": { "kind": "plan_quota" },
+      "async_job": true,
+      "supports_edit": false,
+      "notes": "Listed in the v2 model discriminator. Size limits were not read from this model's schema, so the lucid-origin limits are used as a conservative guess. Priced in API credits with no published USD figure. Not live-verified."
+    },
+    {
+      "id": "flux-dev",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 0,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "arbitrary", "multiple": 8, "min_pixels": 262144, "max_pixels": 4194304, "max_edge": 3616, "max_ratio": 4.0 },
+      "cost": { "kind": "plan_quota" },
+      "async_job": true,
+      "supports_edit": false,
+      "notes": "Listed in the v2 model discriminator. Size limits were not read from this model's schema, so the lucid-origin limits are used as a conservative guess. The FLUX.1 dev weights have a non-commercial license: check before shipping output. Priced in API credits with no published USD figure. Not live-verified."
+    }
+  ]
+}
