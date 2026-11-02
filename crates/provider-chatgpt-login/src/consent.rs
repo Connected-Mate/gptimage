@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use crate::store::data_dir;
 
 /// Bump when the note's substance changes.
-pub const RISK_NOTE_VERSION: u32 = 1;
+pub const RISK_NOTE_VERSION: u32 = 2;
 
 /// The note, shown before the browser opens.
 pub const RISK_NOTE: &str = "\
@@ -22,6 +22,11 @@ ChatGPT login: read this once before signing in.
   that OpenAI does not document for other tools. It can stop working or be blocked without notice.
 * Heavy use counts against your plan's limits and, in the worst case, OpenAI could restrict the account.
   Whether this use fits OpenAI's terms has not been confirmed.
+* Running many generations at once, or from several tools that all present as Codex, can make OpenAI revoke
+  every Codex sign-in on your account, which also signs you out of Codex itself. This happened on 2026-11-02.
+  hoi4-imagegen now sends one request at a time on your machine (across every process), spaces generations at
+  least 20 seconds apart and backs off when OpenAI says to slow down. If the server does revoke the sign-in,
+  hoi4-imagegen records it, stops calling, and tells you to run `hoi4-imagegen login` again.
 * It is for your own account on your own computer only. Never share the sign-in or run it on a server.
   HOI4 Factory's hosted service never uses it.
 * Images use the gpt-6-luna model at high reasoning effort. Your password is typed only into OpenAI's page;
