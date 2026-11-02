@@ -1,0 +1,13 @@
+{
+  "id": "openai_compatible",
+  "display_name": "OpenAI-compatible images server",
+  "doc_url": "https://developers.openai.com/api/reference/resources/images/methods/generate/",
+  "doc_urls": ["https://developers.openai.com/api/reference/resources/images/methods/generate/"],
+  "retrieved": "2026-11-02",
+  "checked": "2026-11-02",
+  "live_verified": false,
+  "env_vars": ["OPENAI_COMPATIBLE_API_KEY"],
+  "hosts": [],
+  "terms_note": "This is the catch-all for any server that speaks the OpenAI images protocol (POST <base_url>/images/generations). Rights, prices and limits are the server operator's. Not live-verified: the adapter was built from the documented request and response shape, not from a recorded call. The model and base_url come from the project config and no model table exists here, so prices are unknown. Check Paradox's and Steam's rules for AI-generated mod assets before publishing.",
+  "models": []
+}

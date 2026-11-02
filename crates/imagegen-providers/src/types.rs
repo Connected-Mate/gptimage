@@ -163,6 +163,10 @@ pub struct ProviderDescriptor {
     pub models: Vec<ModelInfo>,
     /// Terms and rights note shown to users.
     pub terms_note: String,
+    /// True only when a real successful call was recorded for this adapter. Tables built from the vendor's
+    /// documentation alone leave it false, and `doctor` says "not live-verified".
+    #[serde(default)]
+    pub live_verified: bool,
 }
 
 impl ProviderDescriptor {

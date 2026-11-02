@@ -26,6 +26,7 @@ pub mod cli;
 pub mod consent;
 pub mod oauth;
 pub mod provider;
+pub mod route;
 pub mod store;
 
 pub use provider::ChatGptLoginProvider;

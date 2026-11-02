@@ -1,0 +1,92 @@
+{
+  "id": "bfl",
+  "display_name": "Black Forest Labs (FLUX API)",
+  "doc_url": "https://docs.bfl.ml/api_integration/integration_guidelines.md",
+  "doc_urls": [
+    "https://docs.bfl.ml/api_integration/integration_guidelines.md",
+    "https://docs.bfl.ml/api-reference/utility/get-result.md",
+    "https://docs.bfl.ml/api-reference/models/generate-or-edit-an-image-with-flux2-[pro].md",
+    "https://docs.bfl.ml/api-reference/models/generate-an-image-with-flux11-[pro].md",
+    "https://docs.bfl.ml/api-reference/models/generate-an-image-with-flux11-[pro]-ultra-mode.md",
+    "https://docs.bfl.ml/api-reference/models/edit-or-create-an-image-with-flux1-kontext-[pro].md",
+    "https://docs.bfl.ml/quick_start/pricing.md",
+    "https://bfl.ai/pricing",
+    "https://replicate.com/black-forest-labs/flux-1.1-pro",
+    "https://replicate.com/black-forest-labs/flux-1.1-pro-ultra",
+    "https://replicate.com/black-forest-labs/flux-kontext-pro",
+    "https://replicate.com/black-forest-labs/flux-kontext-max"
+  ],
+  "retrieved": "2026-11-02",
+  "checked": "2026-11-02",
+  "live_verified": false,
+  "env_vars": ["BFL_API_KEY"],
+  "hosts": ["api.bfl.ai", "api.eu.bfl.ai", "api.us.bfl.ai", ".bfl.ai"],
+  "terms_note": "Not live-verified: built from BFL's API documentation read on 2026-11-02, with no live call. 1 credit is $0.01. The per-image prices for FLUX1.1 [pro], its Ultra mode and Kontext were blank in the documentation pages as fetched, so their table rows are planning proxies taken from Replicate's published prices for the same models, and the real charge is read from the submit response's cost field (credits). Delivery URLs expire after 10 minutes, so results are downloaded at once. None of these models documents native transparency. Check each model's license terms before shipping its output.",
+  "models": [
+    {
+      "id": "flux-2-pro",
+      "status": { "state": "current" },
+      "recommended": true,
+      "max_refs": 8,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "arbitrary", "multiple": 16, "min_pixels": 262144, "max_pixels": 4194304, "max_edge": 2048, "max_ratio": 4.0 },
+      "cost": { "kind": "per_megapixel", "first": 0.03, "additional": 0.015 },
+      "async_job": true,
+      "supports_edit": true,
+      "notes": "First output megapixel $0.03, each further input or output megapixel $0.015 (bfl.ai/pricing structured data and fal's matching row, read 2026-11-02). Up to 8 reference images through input_image to input_image_8. The documentation gives no multiple or maximum for width and height, so 16 px steps and a 2048 px edge follow the same model on Replicate. Prompt upsampling is switched off with disable_pup. Not live-verified."
+    },
+    {
+      "id": "flux-pro-1.1",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 0,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "fixed", "sizes": [[1024, 1024], [1152, 896], [896, 1152], [1216, 832], [832, 1216], [1344, 768], [768, 1344], [1440, 640], [640, 1440], [1440, 448], [448, 1440], [1440, 320], [320, 1440], [1440, 256], [256, 1440]] },
+      "cost": { "kind": "unpublished_proxy", "proxy_usd_by_quality": [["default", 0.04]], "proxy_of": "replicate.com/black-forest-labs/flux-1.1-pro, $0.04 per output image, read 2026-11-02 (the BFL pages read show no figure)" },
+      "async_job": true,
+      "supports_edit": false,
+      "notes": "Width and height are multiples of 32 from 256 to 1440. The sizes listed are a curated set across aspect ratios. The real cost comes back in the submit response. Text to image here (the Redux image_prompt is not used). Not live-verified."
+    },
+    {
+      "id": "flux-pro-1.1-ultra",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 0,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "aspect_tiers", "ratios": ["21:9", "16:9", "3:2", "4:3", "5:4", "1:1", "4:5", "3:4", "2:3", "9:16", "9:21"], "tier": "1MP" },
+      "cost": { "kind": "unpublished_proxy", "proxy_usd_by_quality": [["default", 0.06]], "proxy_of": "replicate.com/black-forest-labs/flux-1.1-pro-ultra, $0.06 per output image, read 2026-11-02 (the BFL pages read show no figure)" },
+      "async_job": true,
+      "supports_edit": false,
+      "notes": "Chooses size by aspect_ratio between 21:9 and 9:21. BFL describes it as ultra-high resolution but the pages read give no pixel count, so the size reported by prepare is a nominal 1 MP and the real output is larger. The real cost comes back in the submit response. Not live-verified."
+    },
+    {
+      "id": "flux-kontext-pro",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 4,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "aspect_tiers", "ratios": ["21:9", "16:9", "3:2", "4:3", "5:4", "1:1", "4:5", "3:4", "2:3", "9:16", "9:21"], "tier": "1MP" },
+      "cost": { "kind": "unpublished_proxy", "proxy_usd_by_quality": [["default", 0.04]], "proxy_of": "replicate.com/black-forest-labs/flux-kontext-pro, $0.04 per output image, read 2026-11-02 (the BFL pages read show no figure)" },
+      "async_job": true,
+      "supports_edit": true,
+      "notes": "Legacy: BFL recommends FLUX.2 for new editing work. input_image is the image to edit, input_image_2 to input_image_4 are marked experimental by BFL. No mask. The real cost comes back in the submit response. Not live-verified."
+    },
+    {
+      "id": "flux-kontext-max",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 4,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "aspect_tiers", "ratios": ["21:9", "16:9", "3:2", "4:3", "5:4", "1:1", "4:5", "3:4", "2:3", "9:16", "9:21"], "tier": "1MP" },
+      "cost": { "kind": "unpublished_proxy", "proxy_usd_by_quality": [["default", 0.08]], "proxy_of": "replicate.com/black-forest-labs/flux-kontext-max, $0.08 per output image, read 2026-11-02 (the BFL pages read show no figure)" },
+      "async_job": true,
+      "supports_edit": true,
+      "notes": "Legacy, same fields as flux-kontext-pro. BFL allows 6 concurrent requests for this model. The real cost comes back in the submit response. Not live-verified."
+    }
+  ]
+}

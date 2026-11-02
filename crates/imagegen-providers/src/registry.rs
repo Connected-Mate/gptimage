@@ -27,11 +27,22 @@ pub fn key_env_names(provider: &str, cfg: &ProviderConfig) -> Vec<String> {
         "gemini" => vec!["GEMINI_API_KEY".into(), "GOOGLE_API_KEY".into()],
         "fal" => vec!["FAL_KEY".into()],
         "comfyui" => vec!["COMFYUI_API_KEY".into()],
+        "replicate" => vec!["REPLICATE_API_TOKEN".into()],
+        "bfl" => vec!["BFL_API_KEY".into()],
+        "stability" => vec!["STABILITY_API_KEY".into()],
+        "ideogram" => vec!["IDEOGRAM_API_KEY".into()],
+        "recraft" => vec!["RECRAFT_API_KEY".into()],
+        "leonardo" => vec!["LEONARDO_API_KEY".into()],
+        "xai" => vec!["XAI_API_KEY".into()],
+        "together" => vec!["TOGETHER_API_KEY".into()],
+        "openrouter" => vec!["OPENROUTER_API_KEY".into()],
+        "openai_compatible" => vec!["OPENAI_COMPATIBLE_API_KEY".into()],
+        "huggingface" => vec!["HF_TOKEN".into()],
         _ => vec![],
     }
 }
 
-fn read_key(provider: &str, cfg: &ProviderConfig, env: &dyn EnvSource) -> Option<String> {
+pub(crate) fn read_key(provider: &str, cfg: &ProviderConfig, env: &dyn EnvSource) -> Option<String> {
     key_env_names(provider, cfg).iter().find_map(|n| env.get(n))
 }
 
@@ -42,7 +53,7 @@ fn extra_hosts(env: &dyn EnvSource) -> Vec<String> {
 }
 
 /// Work out the policy for a provider with a possibly customized base URL.
-fn policy_for(builtin_hosts: &[&str], base_url: Option<&str>, env: &dyn EnvSource) -> Result<HostPolicy, String> {
+pub(crate) fn policy_for(builtin_hosts: &[&str], base_url: Option<&str>, env: &dyn EnvSource) -> Result<HostPolicy, String> {
     let mut policy = HostPolicy::api(builtin_hosts);
     let Some(url) = base_url else { return Ok(policy) };
     let parsed = parse_url(url)?;
@@ -112,6 +123,15 @@ impl ProviderRegistry {
                 Err(why) => reg.problem("fal", why),
             }
         }
+        // Each module registers its own providers (v0.3.0 backends).
+        crate::openai_compat::register(&mut reg, config, env, transport.clone());
+        crate::replicate::register(&mut reg, config, env, transport.clone());
+        crate::bfl::register(&mut reg, config, env, transport.clone());
+        crate::leonardo::register(&mut reg, config, env, transport.clone());
+        crate::stability::register(&mut reg, config, env, transport.clone());
+        crate::ideogram::register(&mut reg, config, env, transport.clone());
+        crate::recraft::register(&mut reg, config, env, transport.clone());
+        crate::sdwebui::register(&mut reg, config, env, transport.clone());
         if enabled("comfyui") {
             let cfg = config.provider("comfyui");
             if cfg.endpoint.is_some() {
@@ -185,7 +205,27 @@ mod tests {
         let (_d, fs) = project();
         let env = MapEnv::from_pairs(&[("OPENAI_API_KEY", "sk-test-1"), ("GOOGLE_API_KEY", "g-test-1")]);
         let reg = ProviderRegistry::build(&fs, &Config::default(), &env, fixture());
-        assert_eq!(reg.ids(), vec!["fal", "gemini", "openai"]);
+        // every built-in backend is offered (doctor names the key it lacks); only those with keys are configured
+        assert_eq!(
+            reg.ids(),
+            vec![
+                "automatic1111",
+                "bfl",
+                "fal",
+                "forge",
+                "gemini",
+                "huggingface",
+                "ideogram",
+                "leonardo",
+                "openai",
+                "openrouter",
+                "recraft",
+                "replicate",
+                "stability",
+                "together",
+                "xai"
+            ]
+        );
         assert_eq!(reg.configured_ids(), vec!["gemini", "openai"]);
         assert!(reg.problems().is_empty());
     }
@@ -195,7 +235,11 @@ mod tests {
         let (_d, fs) = project();
         let cfg = Config::parse("[providers.fal]\nenabled = false\n[providers.gemini]\nenabled = false\n").unwrap();
         let reg = ProviderRegistry::build(&fs, &cfg, &MapEnv::default(), fixture());
-        assert_eq!(reg.ids(), vec!["openai"]);
+        let ids = reg.ids();
+        for off in ["fal", "gemini"] {
+            assert!(!ids.iter().any(|i| i == off), "{off} is switched off: {ids:?}");
+        }
+        assert!(ids.iter().any(|i| i == "openai") && ids.iter().any(|i| i == "replicate"));
     }
 
     #[test]

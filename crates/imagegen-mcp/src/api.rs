@@ -310,6 +310,14 @@ pub struct ProcessParams {
     /// there). Make it with `hoi4.image_edit` on the first candidate, for example "the same landmark in ruins, burning".
     #[serde(default)]
     pub second_frame_candidate: Option<String>,
+    /// `counter_large` and `counter_small` only: the NATO symbol drawn in frame 2, as a preset (`infantry`,
+    /// `motorized`, `mechanized`, `light_armor`, `medium_armor`, `heavy_armor`, `modern_armor`, `super_heavy_armor`,
+    /// `artillery`, `motorized_artillery`, `anti_tank`, `motorized_anti_tank`, `anti_air`, `motorized_anti_air`,
+    /// `cavalry`, `recon`, `engineer`, `mountain`, `paratroop`, `rocket_artillery`, `support`) or marks, joined by `+`
+    /// (for example `infantry+support` or `cross+wheels`). Omit it to infer the symbol from the asset name (the
+    /// sub-unit key); an infantry cross when nothing matches.
+    #[serde(default)]
+    pub counter_symbol: Option<String>,
 }
 
 /// `hoi4.image_validate`

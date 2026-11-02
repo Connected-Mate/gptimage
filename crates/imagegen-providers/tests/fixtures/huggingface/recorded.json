@@ -1,0 +1,31 @@
+{
+ "recorded": "real",
+ "at": "2026-11-02T14:32:04.664433+00:00",
+ "request": {
+  "method": "POST",
+  "url": "https://router.huggingface.co/hf-inference/models/stabilityai/stable-diffusion-3-medium-diffusers",
+  "headers": {
+   "Authorization": "Bearer <redacted>",
+   "Content-Type": "application/json"
+  },
+  "body": {
+   "inputs": "A bronze heraldic eagle emblem on a plain background, Hearts of Iron IV icon style",
+   "parameters": {
+    "width": 512,
+    "height": 512
+   }
+  }
+ },
+ "response": {
+  "status": 402,
+  "headers": {
+   "Content-Type": "application/json; charset=utf-8",
+   "Content-Length": "172",
+   "Date": "Mon, 02 Nov 2026 14:32:04 GMT",
+   "X-Request-Id": "Root=1-6ae89ee4-66b2755312d005a0062f92d5"
+  },
+  "body_file": "response.body",
+  "body_sha256": "bdd9becb938d36a72edefa69f3b83f925e45f0ed91ad05275e02a1d53234e88b",
+  "body_bytes": 172
+ }
+}

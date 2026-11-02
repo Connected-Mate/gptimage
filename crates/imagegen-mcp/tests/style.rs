@@ -405,7 +405,7 @@ fn style_drift_warns_for_an_off_style_candidate_and_never_blocks() {
     let rec = entries.iter().rev().find(|e| e.kind == "validated").unwrap();
     assert!(rec.data["findings"].as_array().unwrap().iter().any(|f| f["code"] == "GFX-STYLE-DRIFT"));
     off.preview(&id);
-    let approval = off.approve(&id, "icon_v1")["approval_id"].as_str().unwrap().to_string();
+    let approval = off.approve(&id, "icon_v2")["approval_id"].as_str().unwrap().to_string();
     off.install(&id, &approval, json!({})).expect("a style warning must never block an install");
     assert!(off.exists("gfx/interface/goals/f/focus_steel_gate.dds") || off.exists("gfx/interface/goals/iron_pact/focus_steel_gate.dds"));
 }

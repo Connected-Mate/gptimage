@@ -6,15 +6,18 @@
 //! tokens go to the operating system's credential store. Nothing here runs unless the user types the command.
 
 use std::io::{BufRead, IsTerminal};
+use std::sync::Arc;
 use std::time::Duration;
 
 use imagegen_core::config::EnvSource;
 use imagegen_core::hashing::Clock;
 use imagegen_providers::transport::{send, HostPolicy, HttpTransport, UreqTransport};
+use imagegen_providers::types::{CallContext, CancelToken, RealSleeper};
 
 use crate::consent::{self, RISK_NOTE};
 use crate::oauth::{account_id, authorize_url, bind_listener, exchange_request, expiry_ms, make_pkce, make_state, parse_tokens, wait_for_callback};
-use crate::provider::describe;
+use crate::provider::{describe, ChatGptLoginProvider, CheckOutcome};
+use crate::route::Route;
 use crate::store::{CredentialStore, Credentials};
 use crate::{evaluate_gates, PluginMode, CALLBACK_PORT, HOSTS};
 
@@ -30,15 +33,17 @@ pub fn run_with(action: &str, env: &dyn EnvSource, clock: &dyn Clock, accept_ris
     let store = CredentialStore::for_environment(env)?;
     match action {
         "risk-note" => Ok(RISK_NOTE.to_string()),
-        "status" => Ok(match store.load()? {
-            Some(c) => format!("{}\nstored in: {}", describe(&c), store.location()),
-            None => format!("not signed in (run `hoi4-imagegen login`; tokens would go to the {})", store.location()),
-        }),
-        "logout" => Ok(if store.delete()? {
-            format!("signed out; removed the tokens from the {}", store.location())
-        } else {
-            "nothing to remove".to_string()
-        }),
+        "status" => status_text(&store),
+        "status-check" => {
+            let provider = ChatGptLoginProvider::from_environment(env, Arc::new(UreqTransport::new()))?;
+            status_check(&store, &provider, &CallContext::new())
+        }
+        "logout" => {
+            let existed = store.delete()?;
+            // signing out also forgets the server-revoked record: there is nothing left for it to describe
+            Route::new(store.state_dir()).clear()?;
+            Ok(if existed { format!("signed out; removed the tokens from the {}", store.location()) } else { "nothing to remove".to_string() })
+        }
         "login" => {
             if !consent::accepted(env) {
                 eprintln!("{RISK_NOTE}");
@@ -53,7 +58,32 @@ pub fn run_with(action: &str, env: &dyn EnvSource, clock: &dyn Clock, accept_ris
                 open_browser(url);
             })
         }
-        other => Err(format!("unknown action '{other}': use login, status or logout")),
+        other => Err(format!("unknown action '{other}': use login, status, status-check or logout")),
+    }
+}
+
+/// `login-status`: what is stored, and whether the server is known to have revoked it. Makes no network call.
+pub fn status_text(store: &CredentialStore) -> Result<String, String> {
+    let route = Route::new(store.state_dir()).state();
+    let stored = store.load()?;
+    if let Some(msg) = route.revoked_message() {
+        return Ok(format!("{msg}\nno request is made until you sign in again\nstored in: {}", store.location()));
+    }
+    Ok(match stored {
+        Some(c) => {
+            format!("{}\n(local view only: this does not ask the server; `login-status --check` can)\nstored in: {}", describe(&c), store.location())
+        }
+        None => format!("not signed in (run `hoi4-imagegen login`; tokens would go to the {})", store.location()),
+    })
+}
+
+/// `login-status --check`: ask the server once, when a call that is cheap and sends no image exists.
+pub fn status_check(store: &CredentialStore, provider: &ChatGptLoginProvider, ctx: &CallContext) -> Result<String, String> {
+    let local = status_text(store)?;
+    match provider.check(ctx) {
+        Ok(CheckOutcome::Accepted) => Ok(format!("{local}\nserver check: the token endpoint accepted the refresh, the sign-in is alive")),
+        Ok(CheckOutcome::NotChecked(why)) => Ok(format!("{local}\nserver check: not made ({why})")),
+        Err(e) => Err(e.message),
     }
 }
 
@@ -95,6 +125,10 @@ pub fn login(
     let actual_port = listener.local_addr().map_err(|e| e.to_string())?.port();
     show_url(&authorize_url(&pkce.challenge, &state, actual_port));
     let code = wait_for_callback(&listener, &state, timeout)?;
+    // The code exchange is a request to OpenAI like any other: one at a time on this machine. A successful sign-in
+    // also clears a recorded server revocation, so the route works again.
+    let route = Route::new(store.state_dir());
+    let _guard = route.acquire(&CancelToken::new(), &RealSleeper).map_err(|e| e.message)?;
     let resp = send(transport, &HostPolicy::api(&HOSTS), &exchange_request(&code, &pkce.verifier, actual_port)).map_err(|e| e.message)?;
     if resp.status != 200 {
         return Err(format!("the code exchange failed with HTTP {}", resp.status));
@@ -109,6 +143,7 @@ pub fn login(
         last_refresh: clock.now_rfc3339(),
     };
     store.save(&creds)?;
+    route.clear()?;
     Ok(format!("{}\nstored in: {}", describe(&creds), store.location()))
 }
 
@@ -124,12 +159,14 @@ mod tests {
 
     // SYNTHETIC: the browser is a local socket and the token endpoint is a fixture. No network is used.
 
-    #[test]
-    fn the_whole_sign_in_flow_works_against_a_local_callback_and_a_fixture_token_endpoint() {
+    fn work_dir(prefix: &str) -> tempfile::TempDir {
         let base = Path::new(env!("CARGO_MANIFEST_DIR")).join("..").join("..").join(".work");
         std::fs::create_dir_all(&base).unwrap();
-        let dir = tempfile::Builder::new().prefix("l").tempdir_in(base).unwrap();
-        let store = CredentialStore::at(dir.path().join("auth.json"));
+        tempfile::Builder::new().prefix(prefix).tempdir_in(base).unwrap()
+    }
+
+    /// Run the whole sign-in flow against a local socket "browser" and a fixture token endpoint.
+    fn fixture_login(store: &CredentialStore) -> (String, Vec<String>, FixtureTransport) {
         let fixture = FixtureTransport::new();
         fixture.respond(
             Method::Post,
@@ -154,12 +191,20 @@ mod tests {
             s.read_to_string(&mut r).ok();
         });
         let mut shown = Vec::new();
-        let text = login(&store, &fixture, &FixedClock(1_793_404_800), 0, Duration::from_secs(10), &mut |u| {
+        let text = login(store, &fixture, &FixedClock(1_793_404_800), 0, Duration::from_secs(10), &mut |u| {
             shown.push(u.to_string());
             tx.send(u.to_string()).unwrap();
         })
         .unwrap();
         browser.join().unwrap();
+        (text, shown, fixture)
+    }
+
+    #[test]
+    fn the_whole_sign_in_flow_works_against_a_local_callback_and_a_fixture_token_endpoint() {
+        let dir = work_dir("l");
+        let store = CredentialStore::at(dir.path().join("auth.json"));
+        let (text, shown, fixture) = fixture_login(&store);
         assert!(shown[0].starts_with("https://auth.openai.com/oauth/authorize?"));
         assert!(text.contains("signed in"));
         let saved = store.load().unwrap().unwrap();
@@ -168,6 +213,50 @@ mod tests {
         let sent = &fixture.requests()[0];
         let body = String::from_utf8_lossy(&sent.body);
         assert!(body.contains("code=synthetic-code") && body.contains("code_verifier="));
+    }
+
+    #[test]
+    fn a_new_login_clears_a_recorded_revocation_and_status_says_signed_out_until_then() {
+        let dir = work_dir("v");
+        let store = CredentialStore::at(dir.path().join("auth.json"));
+        store.save(&Credentials { access: "old".into(), refresh: None, account_id: None, expires_ms: None, last_refresh: "t".into() }).unwrap();
+        let route = Route::new(store.state_dir());
+        route.acquire(&CancelToken::new(), &RealSleeper).unwrap().record_revoked(
+            1_793_000_000,
+            401,
+            b"{\"error\":{\"code\":\"token_revoked\"}}",
+            "generation",
+        );
+        let before = status_text(&store).unwrap();
+        assert!(before.starts_with("signed out by the server (token revoked at 2026-"), "{before}");
+        assert!(before.contains("hoi4-imagegen login"));
+
+        fixture_login(&store);
+        assert_eq!(route.state().revoked, None, "login cleared the record");
+        let after = status_text(&store).unwrap();
+        assert!(after.starts_with("signed in;"), "{after}");
+    }
+
+    #[test]
+    fn logout_forgets_a_recorded_revocation_too() {
+        let dir = work_dir("o");
+        let file = dir.path().join("auth.json").display().to_string();
+        let home = dir.path().display().to_string();
+        let env = MapEnv::from_pairs(&[(crate::store::PATH_ENV, file.as_str()), ("APPDATA", home.as_str()), ("HOME", home.as_str())]);
+        let store = CredentialStore::at(&file);
+        Route::new(store.state_dir()).acquire(&CancelToken::new(), &RealSleeper).unwrap().record_revoked(1_793_000_000, 401, b"", "generation");
+        assert!(run_with("status", &env, &FixedClock(0), false, &mut || false).unwrap().contains("signed out by the server"));
+        run_with("logout", &env, &FixedClock(0), false, &mut || false).unwrap();
+        assert!(run_with("status", &env, &FixedClock(0), false, &mut || false).unwrap().contains("not signed in"));
+    }
+
+    #[test]
+    fn the_risk_note_warns_about_concurrent_use_and_says_what_the_tool_now_does() {
+        assert!(RISK_NOTE.contains("revoke") && RISK_NOTE.contains("every Codex sign-in") && RISK_NOTE.contains("signs you out of Codex"));
+        assert!(RISK_NOTE.contains("one request at a time"));
+        assert!(RISK_NOTE.contains(&format!("{} seconds", crate::route::MIN_GAP_SECS)));
+        let text = run_with("risk-note", &MapEnv::from_pairs(&[(crate::store::PATH_ENV, "x.json")]), &FixedClock(0), false, &mut || false).unwrap();
+        assert_eq!(text, RISK_NOTE, "`login-risk-note` prints the same note `login` shows");
     }
 
     #[test]

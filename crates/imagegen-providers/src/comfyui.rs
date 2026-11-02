@@ -161,6 +161,7 @@ impl ComfyProvider {
             hosts: vec![],
             models: vec![model],
             terms_note: "Output rights follow the models in the workflow (FLUX.2 Klein 9B weights are non-commercial). This adapter never starts or stops pods.".into(),
+            live_verified: false,
         };
         Ok(ComfyProvider {
             desc,
