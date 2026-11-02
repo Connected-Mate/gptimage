@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96" role="img" aria-labelledby="title">
+  <title id="title">HOI4 Image Generation</title>
+  <rect width="96" height="96" rx="20" fill="#1f3a34"/>
+  <rect x="16" y="16" width="64" height="48" rx="6" fill="#e8f3ee"/>
+  <path d="M22 58L38 36l10 13 8-9 18 18z" fill="#1f3a34"/>
+  <circle cx="64" cy="28" r="5" fill="#1f3a34"/>
+  <g fill="#9ad1b8">
+    <rect x="30" y="72" width="8" height="8" rx="2"/>
+    <rect x="44" y="72" width="8" height="8" rx="2"/>
+    <rect x="58" y="72" width="8" height="8" rx="2"/>
+  </g>
+</svg>

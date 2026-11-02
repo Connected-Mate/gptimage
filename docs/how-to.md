@@ -1,6 +1,6 @@
 # How to: sign in, make a first image, fix problems
 
-This is the short practical guide. The [README](../README.md) has the full reference.
+This is the short practical guide. The [reference](reference.md) has the full details and the [README](../README.md) is the short tour.
 
 ## 1. Sign in (ChatGPT login)
 
