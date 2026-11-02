@@ -45,7 +45,10 @@ impl MockOpenAi {
                         read_http_request(&mut stream);
                         h2.fetch_add(1, Ordering::SeqCst);
                         std::thread::sleep(delay);
-                        let head = format!("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\nx-request-id: req_mock\r\n\r\n", body.len());
+                        let head = format!(
+                            "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\nx-request-id: req_mock\r\n\r\n",
+                            body.len()
+                        );
                         let _ = stream.write_all(head.as_bytes());
                         let _ = stream.write_all(&body);
                         let _ = stream.flush();
@@ -102,12 +105,18 @@ struct Client {
 
 impl Client {
     fn start(root: &Path, mock_port: u16) -> Client {
+        Self::start_with(root, mock_port, &[])
+    }
+
+    fn start_with(root: &Path, mock_port: u16, extra: &[&str]) -> Client {
         let mut cmd = Command::new(env!("CARGO_BIN_EXE_hoi4-imagegen-mcp"));
-        cmd.arg("--project-root").arg(root);
-        for var in ["GEMINI_API_KEY", "GOOGLE_API_KEY", "FAL_KEY", "COMFYUI_API_KEY", "HOI4_IMAGEGEN_ALLOWED_HOSTS", "HOI4_IMAGEGEN_ACCEPT_UNOFFICIAL"] {
+        cmd.arg("--project-root").arg(root).args(extra);
+        for var in ["GEMINI_API_KEY", "GOOGLE_API_KEY", "FAL_KEY", "COMFYUI_API_KEY", "HOI4_IMAGEGEN_ALLOWED_HOSTS"] {
             cmd.env_remove(var);
         }
-        cmd.env("OPENAI_API_KEY", "sk-test-synthetic-proto").env("HOI4_GAME_DIR", root.join("no-game"));
+        cmd.env("OPENAI_API_KEY", "sk-test-synthetic-proto")
+            .env("HOI4_GAME_DIR", root.join("no-game"))
+            .env("HOI4_IMAGEGEN_CHATGPT_AUTH", root.join("chatgpt-auth.json"));
         cmd.stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped());
         let mut child = cmd.spawn().expect("the server starts");
         let stdin = child.stdin.take().unwrap();
@@ -173,7 +182,10 @@ impl Client {
     }
 
     fn initialize(&mut self) -> Value {
-        let r = self.request("initialize", json!({"protocolVersion": "2025-11-25", "capabilities": {}, "clientInfo": {"name": "protocol-test", "version": "0.0.1"}}));
+        let r = self.request(
+            "initialize",
+            json!({"protocolVersion": "2025-11-25", "capabilities": {}, "clientInfo": {"name": "protocol-test", "version": "0.0.1"}}),
+        );
         self.notify("notifications/initialized", json!({}));
         r
     }
@@ -223,14 +235,14 @@ fn golden_path() -> std::path::PathBuf {
 }
 
 #[test]
-fn handshake_lists_exactly_thirteen_tools_with_stable_schemas() {
+fn handshake_lists_exactly_nineteen_tools_with_stable_schemas() {
     let mock = MockOpenAi::start(Duration::from_millis(0));
     let dir = project(mock.port);
     let mut c = Client::start(dir.path(), mock.port);
     let init = c.initialize();
     assert_eq!(init["result"]["serverInfo"]["name"], "hoi4-imagegen-mcp");
     assert!(init["result"]["capabilities"]["tools"].is_object());
-    assert!(init["result"]["instructions"].as_str().unwrap().contains("hoi4.image_plan"));
+    assert!(init["result"]["instructions"].as_str().unwrap().contains("hoi4.image_icon"));
 
     let list = c.request("tools/list", json!({}));
     let tools = list["result"]["tools"].as_array().unwrap();
@@ -239,7 +251,36 @@ fn handshake_lists_exactly_thirteen_tools_with_stable_schemas() {
     let mut want: Vec<&str> = imagegen_mcp::server::TOOL_NAMES.to_vec();
     want.sort_unstable();
     assert_eq!(names, want);
-    assert_eq!(tools.len(), 13);
+    assert_eq!(tools.len(), 19);
+
+    // each generation tool's schema lists exactly the families of its group, and nothing else
+    let mut seen: Vec<String> = Vec::new();
+    for g in imagegen_core::Group::ALL {
+        let t = tools.iter().find(|t| t["name"] == g.tool_name()).unwrap_or_else(|| panic!("{} is not listed", g.tool_name()));
+        let listed: Vec<&str> = t["inputSchema"]["properties"]["family"]["enum"]
+            .as_array()
+            .unwrap_or_else(|| panic!("{}: no family enum", g.tool_name()))
+            .iter()
+            .map(|v| v.as_str().unwrap())
+            .collect();
+        assert_eq!(listed, g.family_ids(), "{}", g.tool_name());
+        assert!(t["inputSchema"]["required"].as_array().unwrap().iter().any(|r| r == "family"), "{}: family must be required", g.tool_name());
+        seen.extend(listed.iter().map(|s| s.to_string()));
+    }
+    seen.sort();
+    seen.dedup();
+    assert_eq!(seen.len(), imagegen_core::Family::ALL.len());
+    for gone in ["hoi4.image_plan", "hoi4.image_profiles"] {
+        assert!(tools.iter().all(|t| t["name"] != gone), "{gone} was replaced");
+    }
+    // validate has no way to skip checks and artifacts take no family in review or install
+    let props = |n: &str| {
+        tools.iter().find(|t| t["name"] == n).unwrap()["inputSchema"]["properties"].as_object().unwrap().keys().cloned().collect::<Vec<_>>()
+    };
+    assert!(!props("hoi4.image_validate").contains(&"checks".to_string()) && !props("hoi4.image_validate").contains(&"profile".to_string()));
+    for n in ["hoi4.image_review", "hoi4.image_install"] {
+        assert!(!props(n).iter().any(|k| k == "family" || k == "profile"), "{n}");
+    }
 
     let mut hashes = serde_json::Map::new();
     for t in tools {
@@ -255,6 +296,11 @@ fn handshake_lists_exactly_thirteen_tools_with_stable_schemas() {
     }
     assert_eq!(tools.iter().find(|t| t["name"] == "hoi4.image_status").unwrap()["annotations"]["readOnlyHint"], true);
     assert_eq!(tools.iter().find(|t| t["name"] == "hoi4.image_install").unwrap()["annotations"]["destructiveHint"], true);
+    // the audit only reads the mod and the game
+    let audit = tools.iter().find(|t| t["name"] == "hoi4.image_audit").unwrap();
+    assert_eq!(audit["annotations"]["readOnlyHint"], true);
+    assert_eq!(audit["annotations"]["destructiveHint"], false);
+    assert!(props("hoi4.image_audit").iter().all(|k| ["allowlist", "families", "limit"].contains(&k.as_str())));
 
     // golden schema hashes: a change here is a change to the tool contract and must be deliberate
     let golden = golden_path();
@@ -277,21 +323,25 @@ fn status_never_leaks_the_key_and_bad_arguments_are_rejected() {
     let r = c.call("hoi4.image_status", json!({}));
     assert_ne!(r["isError"], json!(true));
     assert!(!r.to_string().contains("sk-test-synthetic-proto"), "the key value must never appear");
-    assert_eq!(r["structuredContent"]["providers"][2]["configured"], true);
+    let openai = r["structuredContent"]["providers"].as_array().unwrap().iter().find(|p| p["id"] == "openai").expect("openai listed").clone();
+    assert_eq!(openai["configured"], true);
 
     // unknown field: a protocol error or a refused tool call, never a silent accept
-    let r = c.request("tools/call", json!({"name": "hoi4.image_plan", "arguments": {"category": "focus_icon", "feature_slug": "f", "asset": "a", "brief": "x", "surprise": 1}}));
+    let r = c.request(
+        "tools/call",
+        json!({"name": "hoi4.image_icon", "arguments": {"family": "focus", "feature_slug": "f", "asset": "a", "brief": "x", "surprise": 1}}),
+    );
     assert!(r.get("error").is_some() || r["result"]["isError"] == json!(true), "unknown fields must be rejected: {r}");
     // unknown tool
     let r = c.request("tools/call", json!({"name": "hoi4.image_nope", "arguments": {}}));
     assert!(r.get("error").is_some() || r["result"]["isError"] == json!(true));
     // wrong type
-    let r = c.request("tools/call", json!({"name": "hoi4.image_plan", "arguments": {"category": 7}}));
+    let r = c.request("tools/call", json!({"name": "hoi4.image_icon", "arguments": {"family": 7}}));
     assert!(r.get("error").is_some() || r["result"]["isError"] == json!(true));
     // unknown category and a traversal attempt come back as structured refusals
-    let e = c.refused("hoi4.image_plan", json!({"category": "focus_icon", "feature_slug": "../x", "asset": "a", "brief": "x"}));
+    let e = c.refused("hoi4.image_icon", json!({"family": "focus", "feature_slug": "../x", "asset": "a", "brief": "x"}));
     assert_eq!(e["code"], "invalid_argument");
-    let e = c.refused("hoi4.image_plan", json!({"category": "focus_icon", "feature_slug": "f", "asset": "a", "brief": "x", "references": [{"path": "../../outside.png", "role": "style_anchor"}]}));
+    let e = c.refused("hoi4.image_icon", json!({"family": "focus", "feature_slug": "f", "asset": "a", "brief": "x", "references": [{"path": "../../outside.png", "role": "style_anchor"}]}));
     assert_eq!(e["code"], "path_rejected");
     assert!(e["retry_class"].is_string());
 }
@@ -303,8 +353,10 @@ fn the_whole_loop_runs_over_stdio() {
     let mut c = Client::start(dir.path(), mock.port);
     c.initialize();
 
-    let plan = c.ok("hoi4.image_plan", json!({"category": "focus_icon", "feature_slug": "iron_pact", "asset": "steel_gate", "brief": "a riveted steel gate"}));
-    assert_eq!(plan["model"], "gpt-image-2.5-flare");
+    let plan =
+        c.ok("hoi4.image_icon", json!({"family": "focus", "feature_slug": "iron_pact", "asset": "steel_gate", "brief": "a riveted steel gate"}));
+    assert_eq!(plan["generated"], false);
+    assert_eq!(plan["plan"]["model"], "gpt-image-2.5-flare");
     let plan_id = plan["plan_id"].as_str().unwrap().to_string();
 
     let gen = c.ok("hoi4.image_generate", json!({"plan_id": plan_id, "idempotency_key": "proto-1"}));
@@ -332,14 +384,15 @@ fn the_whole_loop_runs_over_stdio() {
     assert!(pr["content"].as_array().unwrap().iter().any(|b| b["type"] == "image" && b["mimeType"] == "image/png"), "{pr}");
     assert!(dir.path().join(pr["structuredContent"]["sheet"].as_str().unwrap()).exists());
 
-    let profile = c.ok("hoi4.image_profiles", json!({"id": "focus_icon"}));
-    let answers: serde_json::Map<String, Value> = profile["profile"]["rubric_questions"].as_array().unwrap().iter().map(|q| (q["key"].as_str().unwrap().to_string(), json!(true))).collect();
+    let profile = c.ok("hoi4.image_families", json!({"family": "focus"}));
+    let answers: serde_json::Map<String, Value> =
+        profile["family"]["rubric_questions"].as_array().unwrap().iter().map(|q| (q["key"].as_str().unwrap().to_string(), json!(true))).collect();
     let rev = c.ok("hoi4.image_review", json!({"target": art, "verdict": "approved", "reviewer": "protocol test", "answers": answers}));
     let approval = rev["approval_id"].as_str().unwrap().to_string();
 
     let inst = c.ok("hoi4.image_install", json!({"target": art, "approval_id": approval}));
-    assert_eq!(inst["final_files"][0]["path"], "gfx/interface/goals/iron_pact/goal_steel_gate.dds");
-    let dds = std::fs::read(dir.path().join("gfx/interface/goals/iron_pact/goal_steel_gate.dds")).unwrap();
+    assert_eq!(inst["final_files"][0]["path"], "gfx/interface/goals/iron_pact/focus_steel_gate.dds");
+    let dds = std::fs::read(dir.path().join("gfx/interface/goals/iron_pact/focus_steel_gate.dds")).unwrap();
     assert_eq!(&dds[0..4], b"DDS ");
     assert_eq!(dds.len(), 128 + 100 * 88 * 4);
 
@@ -347,7 +400,7 @@ fn the_whole_loop_runs_over_stdio() {
     let before = sha256_hex(&dds);
     let e = c.refused("hoi4.image_install", json!({"target": art, "approval_id": approval}));
     assert_eq!(e["code"], "final_path_exists");
-    assert_eq!(sha256_hex(&std::fs::read(dir.path().join("gfx/interface/goals/iron_pact/goal_steel_gate.dds")).unwrap()), before);
+    assert_eq!(sha256_hex(&std::fs::read(dir.path().join("gfx/interface/goals/iron_pact/focus_steel_gate.dds")).unwrap()), before);
 
     // the ledger verifies and shows the lineage
     let l = c.ok("hoi4.image_ledger", json!({"artifact_id": art, "lineage": true}));
@@ -365,8 +418,9 @@ fn a_running_generation_can_be_cancelled_from_a_second_request() {
     let dir = project(mock.port);
     let mut c = Client::start(dir.path(), mock.port);
     c.initialize();
-    let plan = c.ok("hoi4.image_plan", json!({"category": "focus_icon", "feature_slug": "f", "asset": "a", "brief": "x"}));
-    let gen_id = c.send_request("tools/call", json!({"name": "hoi4.image_generate", "arguments": {"plan_id": plan["plan_id"], "idempotency_key": "slow-1"}}));
+    let plan = c.ok("hoi4.image_icon", json!({"family": "focus", "feature_slug": "f", "asset": "a", "brief": "x"}));
+    let gen_id =
+        c.send_request("tools/call", json!({"name": "hoi4.image_generate", "arguments": {"plan_id": plan["plan_id"], "idempotency_key": "slow-1"}}));
     std::thread::sleep(Duration::from_millis(600));
     let cancel_id = c.send_request("tools/call", json!({"name": "hoi4.image_cancel", "arguments": {"idempotency_key": "slow-1"}}));
     let cancel = c.wait_for(cancel_id, Duration::from_secs(20));
@@ -402,4 +456,50 @@ fn a_missing_project_is_a_clean_startup_error() {
     assert!(!out.status.success());
     assert!(out.stdout.is_empty(), "stdout is reserved for protocol messages");
     assert!(String::from_utf8_lossy(&out.stderr).contains("cannot open the project"));
+}
+
+#[test]
+fn a_group_tool_refuses_another_groups_family_over_the_wire() {
+    let mock = MockOpenAi::start(Duration::from_millis(0));
+    let dir = project(mock.port);
+    let mut c = Client::start(dir.path(), mock.port);
+    c.initialize();
+    let base = json!({"feature_slug": "f", "asset": "a", "brief": "x"});
+    for (tool, family) in [
+        ("hoi4.image_icon", "report_event"),
+        ("hoi4.image_picture", "focus"),
+        ("hoi4.image_flag", "decision"),
+        ("hoi4.image_unit", "leader_portrait"),
+    ] {
+        let mut args = base.clone();
+        args["family"] = json!(family);
+        let r = c.request("tools/call", json!({"name": tool, "arguments": args}));
+        let refused = r["result"]["isError"] == json!(true);
+        assert!(r.get("error").is_some() || refused, "{tool} accepted {family}: {r}");
+        if refused {
+            assert_eq!(r["result"]["structuredContent"]["error"]["code"], "family_not_in_group");
+        }
+    }
+    // the right group answers with a free plan and spends nothing
+    let mut args = base.clone();
+    args["family"] = json!("report_event");
+    let plan = c.ok("hoi4.image_picture", args);
+    assert_eq!(plan["generated"], false);
+    assert_eq!(plan["plan"]["canvas"], json!([210, 176]));
+    assert_eq!(mock.hits.load(Ordering::SeqCst), 0);
+}
+
+#[test]
+fn the_hosted_mode_never_offers_the_chatgpt_login() {
+    // HOI4 Factory's hosted tool profile starts the server this way (decision D-12a)
+    let mock = MockOpenAi::start(Duration::from_millis(0));
+    let dir = project(mock.port);
+    let mut c = Client::start_with(dir.path(), mock.port, &["--mode", "hosted"]);
+    c.initialize();
+    let s = c.call("hoi4.image_status", json!({}));
+    let login = &s["structuredContent"]["chatgpt_login"];
+    assert_eq!(login["enabled"], false, "{s}");
+    assert_eq!(login["state"], "not available in hosted mode");
+    let providers = s["structuredContent"]["providers"].as_array().unwrap();
+    assert!(providers.iter().all(|p| p["id"] != "chatgpt_login"), "the login route is not registered at all");
 }

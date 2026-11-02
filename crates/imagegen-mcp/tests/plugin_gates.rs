@@ -1,8 +1,8 @@
-//! The ChatGPT-login plugin's gates, seen through the engine.
+//! The ChatGPT-login provider under decision D-12a, seen through the engine.
 //!
-//! Without the cargo feature, a project that asks for the plugin gets nothing and is told why. With the feature
-//! (run `cargo test -p imagegen-mcp --features unofficial-chatgpt-login`), the plugin registers only when the config
-//! flag, the environment acknowledgement and a local mode all hold. No request is made in either case.
+//! It is part of every build and registers in local modes without any flag, config entry or environment
+//! acknowledgement. Signed in, it is the default provider. In hosted mode it is never registered and can never be
+//! selected, whatever the project file asks for. No request is made.
 
 mod common;
 
@@ -13,70 +13,94 @@ use imagegen_core::config::MapEnv;
 use imagegen_core::hashing::FixedClock;
 use imagegen_mcp::{Engine, RunMode};
 use imagegen_providers::transport::FixtureTransport;
+use provider_chatgpt_login::store::{CredentialStore, Credentials};
 
-fn open(config: &str, ack: bool, mode: RunMode) -> (tempfile::TempDir, Engine) {
+fn open(config: &str, mode: RunMode, signed_in: bool, extra: &[(&str, &str)]) -> (tempfile::TempDir, Engine) {
     let dir = temp_project(config);
     let no_game = dir.path().join("no-game").display().to_string();
-    let auth = dir.path().join("chatgpt-auth.json").display().to_string();
-    let mut pairs = vec![("HOI4_GAME_DIR", no_game.as_str()), ("HOI4_IMAGEGEN_CHATGPT_AUTH", auth.as_str())];
-    if ack {
-        pairs.push(("HOI4_IMAGEGEN_ACCEPT_UNOFFICIAL", "1"));
+    let auth = dir.path().join("chatgpt-auth.json");
+    if signed_in {
+        // SYNTHETIC credentials
+        CredentialStore::at(&auth)
+            .save(&Credentials {
+                access: "access-synthetic".into(),
+                refresh: None,
+                account_id: Some("acct".into()),
+                expires_ms: None,
+                last_refresh: "t".into(),
+            })
+            .unwrap();
     }
-    let engine = Engine::open(dir.path(), Arc::new(MapEnv::from_pairs(&pairs)), Arc::new(FixtureTransport::new()), Arc::new(FixedClock(1_793_404_800)), mode).unwrap();
+    let auth = auth.display().to_string();
+    let mut pairs = vec![("HOI4_GAME_DIR", no_game.as_str()), ("HOI4_IMAGEGEN_CHATGPT_AUTH", auth.as_str())];
+    pairs.extend_from_slice(extra);
+    let engine =
+        Engine::open(dir.path(), Arc::new(MapEnv::from_pairs(&pairs)), Arc::new(FixtureTransport::new()), Arc::new(FixedClock(1_793_404_800)), mode)
+            .unwrap();
     (dir, engine)
 }
 
-const ENABLED: &str = "[providers.chatgpt_login]\nenabled = true\n";
-
-#[cfg(not(feature = "unofficial-chatgpt-login"))]
-#[test]
-fn a_default_build_ignores_the_request_and_says_why() {
-    let (_d, e) = open(ENABLED, true, RunMode::LocalStdio);
-    assert!(!e.plugin.compiled && !e.plugin.enabled);
-    assert_eq!(e.plugin.state, "not compiled in");
-    assert!(e.plugin.reasons[0].contains("does not contain the plugin"), "{:?}", e.plugin.reasons);
-    assert!(e.registry.get("chatgpt_login").is_none());
-    let s = e.status();
-    assert_eq!(s["chatgpt_login"]["compiled"], false);
-    let err = e
-        .plan(serde_json::from_value(serde_json::json!({"category": "focus_icon", "feature_slug": "f", "asset": "a", "brief": "x", "provider": "chatgpt_login"})).unwrap())
-        .unwrap_err();
-    assert_eq!(err.code, "provider_not_found");
-    // not asking for it: no noise
-    let (_d2, e2) = open("", false, RunMode::LocalStdio);
-    assert!(e2.plugin.reasons.is_empty());
+fn plan(e: &Engine, provider: Option<&str>) -> Result<serde_json::Value, imagegen_mcp::EngineError> {
+    let mut p = serde_json::json!({"family": "focus", "feature_slug": "f", "asset": "a", "brief": "an iron wall"});
+    if let Some(id) = provider {
+        p["provider"] = serde_json::Value::String(id.to_string());
+    }
+    e.plan(serde_json::from_value(p).unwrap()).map(|v| serde_json::to_value(v).unwrap())
 }
 
-#[cfg(feature = "unofficial-chatgpt-login")]
 #[test]
-fn every_gate_is_needed_when_the_feature_is_compiled_in() {
-    // nothing asked, nothing acknowledged
-    let (_d, e) = open("", false, RunMode::LocalStdio);
-    assert!(e.plugin.compiled && !e.plugin.enabled);
-    assert_eq!(e.plugin.reasons.len(), 2, "{:?}", e.plugin.reasons);
-    assert!(e.registry.get("chatgpt_login").is_none());
-
-    // the project file alone cannot switch it on
-    let (_d, e) = open(ENABLED, false, RunMode::LocalStdio);
-    assert!(!e.plugin.enabled);
-    assert!(e.plugin.reasons.iter().any(|r| r.contains("HOI4_IMAGEGEN_ACCEPT_UNOFFICIAL")), "{:?}", e.plugin.reasons);
-    assert!(e.registry.get("chatgpt_login").is_none());
-
-    // the environment alone cannot either
-    let (_d, e) = open("", true, RunMode::LocalStdio);
-    assert!(!e.plugin.enabled && e.plugin.reasons.iter().any(|r| r.contains("enabled = true")));
-
-    // a hosted mode is refused even with both
-    let (_d, e) = open(ENABLED, true, RunMode::Hosted);
-    assert!(!e.plugin.enabled && e.plugin.reasons.iter().any(|r| r.contains("hosted")), "{:?}", e.plugin.reasons);
-    assert!(e.registry.get("chatgpt_login").is_none());
-
-    // both gates and a local mode: registered, but not signed in, so not configured, and it never reports a price
+fn local_builds_register_it_without_any_flag() {
     for mode in [RunMode::LocalStdio, RunMode::Cli] {
-        let (_d, e) = open(ENABLED, true, mode);
-        assert!(e.plugin.enabled, "{:?}", e.plugin.reasons);
-        let p = e.registry.get("chatgpt_login").expect("registered");
-        assert!(!p.is_configured(), "no credential file exists yet");
-        assert_eq!(e.status()["chatgpt_login"]["enabled"], true);
+        let (_d, e) = open("", mode, false, &[]);
+        assert!(e.plugin.compiled && e.plugin.enabled, "{:?}", e.plugin.reasons);
+        assert!(!e.plugin.signed_in);
+        assert!(e.plugin.reasons[0].contains("hoi4-imagegen login"));
+        assert!(e.registry.get("chatgpt_login").is_some());
+        assert_eq!(e.status()["chatgpt_login"]["model"], "gpt-6-luna at high reasoning effort");
     }
+}
+
+#[test]
+fn signed_in_it_is_the_default_provider_and_an_explicit_request_still_wins() {
+    let (_d, e) = open("", RunMode::LocalStdio, true, &[("OPENAI_API_KEY", "sk-test-synthetic")]);
+    assert!(e.plugin.signed_in);
+    let p = plan(&e, None).unwrap();
+    assert_eq!(p["provider"], "chatgpt_login", "{p}");
+    assert_eq!(p["model"], "gpt-6-luna");
+    let p = plan(&e, Some("openai")).unwrap();
+    assert_eq!(p["provider"], "openai");
+}
+
+#[test]
+fn not_signed_in_the_next_configured_provider_is_used_and_none_means_a_sign_in_hint() {
+    let (_d, e) = open("", RunMode::LocalStdio, false, &[("OPENAI_API_KEY", "sk-test-synthetic")]);
+    assert_eq!(plan(&e, None).unwrap()["provider"], "openai");
+    let (_d, e) = open("", RunMode::LocalStdio, false, &[]);
+    let err = plan(&e, None).unwrap_err();
+    assert!(err.message.contains("hoi4-imagegen login"), "{}", err.message);
+}
+
+#[test]
+fn the_login_route_refuses_any_other_model() {
+    let (_d, e) = open("", RunMode::LocalStdio, true, &[]);
+    let mut p =
+        serde_json::json!({"family": "focus", "feature_slug": "f", "asset": "a", "brief": "x", "provider": "chatgpt_login", "model": "gpt-6-astra"});
+    let r = e.plan(serde_json::from_value(p.clone()).unwrap());
+    assert!(r.is_err(), "a different model must be refused at plan time");
+    p["model"] = "gpt-6-luna".into();
+    assert!(e.plan(serde_json::from_value(p).unwrap()).is_ok());
+}
+
+#[test]
+fn hosted_mode_can_never_select_it_even_signed_in_and_asked_for() {
+    assert!(imagegen_mcp::plugin::refuses_hosted(RunMode::Hosted));
+    assert!(!imagegen_mcp::plugin::refuses_hosted(RunMode::LocalStdio));
+    let (_d, e) = open("[defaults]\nprovider = \"chatgpt_login\"\n", RunMode::Hosted, true, &[]);
+    assert!(!e.plugin.enabled && e.plugin.reasons[0].contains("hosted"), "{:?}", e.plugin.reasons);
+    assert!(e.registry.get("chatgpt_login").is_none());
+    let err = plan(&e, Some("chatgpt_login")).unwrap_err();
+    assert_eq!(err.code, "provider_not_found");
+    assert!(err.message.contains("hosted"), "{}", err.message);
+    let err = plan(&e, None).unwrap_err();
+    assert!(!err.message.is_empty());
 }

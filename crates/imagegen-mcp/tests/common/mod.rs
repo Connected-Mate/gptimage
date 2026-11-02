@@ -45,7 +45,13 @@ pub fn harness(config: &str, env: &[(&str, &str)]) -> Harness {
     let no_game = dir.path().join("no-game").display().to_string();
     let mut pairs: Vec<(&str, &str)> = env.to_vec();
     pairs.push(("HOI4_GAME_DIR", &no_game));
-    let engine = Engine::open(dir.path(), Arc::new(MapEnv::from_pairs(&pairs)), fixture.clone(), Arc::new(FixedClock(1_793_404_800)), RunMode::Cli).unwrap();
+    // never touch the developer's real ChatGPT sign-in: the provider gets a private file store per test
+    let auth = dir.path().join("chatgpt-auth.json").display().to_string();
+    if !pairs.iter().any(|(k, _)| *k == "HOI4_IMAGEGEN_CHATGPT_AUTH") {
+        pairs.push(("HOI4_IMAGEGEN_CHATGPT_AUTH", &auth));
+    }
+    let engine =
+        Engine::open(dir.path(), Arc::new(MapEnv::from_pairs(&pairs)), fixture.clone(), Arc::new(FixedClock(1_793_404_800)), RunMode::Cli).unwrap();
     Harness { dir, engine, fixture }
 }
 
@@ -87,6 +93,9 @@ impl Harness {
     pub fn queue_generation(&self, png: &[u8]) {
         self.fixture.clear_route(Method::Post, "/v1/images/generations");
         self.fixture.respond(Method::Post, "/v1/images/generations", 200, &[("x-request-id", "req_synthetic")], openai_ok(png));
+        // a plan that found style references sends them, and OpenAI takes references on the edits endpoint
+        self.fixture.clear_route(Method::Post, "/v1/images/edits");
+        self.fixture.respond(Method::Post, "/v1/images/edits", 200, &[("x-request-id", "req_synthetic")], openai_ok(png));
     }
 
     pub fn queue_edit(&self, png: &[u8]) {
@@ -108,7 +117,7 @@ impl Harness {
 
     pub fn plan_focus(&self, asset: &str) -> Value {
         let req = serde_json::from_value(json!({
-            "category": "focus_icon", "feature_slug": "iron_pact", "asset": asset,
+            "family": "focus", "feature_slug": "iron_pact", "asset": asset,
             "brief": "a riveted steel gate under a red banner", "provider": "openai", "quality": "low"
         }))
         .unwrap();
@@ -119,10 +128,7 @@ impl Harness {
     pub fn make_processed(&self, asset: &str, key: &str) -> (Value, String, String) {
         self.queue_generation(&synthetic_icon_png());
         let plan = self.plan_focus(asset);
-        let gen = self
-            .engine
-            .generate(serde_json::from_value(json!({"plan_id": plan["plan_id"], "idempotency_key": key})).unwrap())
-            .unwrap();
+        let gen = self.engine.generate(serde_json::from_value(json!({"plan_id": plan["plan_id"], "idempotency_key": key})).unwrap()).unwrap();
         let cand = gen["candidates"][0]["candidate_id"].as_str().unwrap().to_string();
         let proc = self.engine.process(serde_json::from_value(json!({"candidate_id": cand})).unwrap()).unwrap();
         let pid = proc["artifact_id"].as_str().unwrap().to_string();
@@ -148,7 +154,7 @@ impl Harness {
     pub fn approve_all(&self, id: &str) -> String {
         assert_eq!(self.validate(id)["status"], "pass", "{:#}", self.validate(id));
         self.preview(id);
-        self.approve(id, "focus_icon_v1")["approval_id"].as_str().unwrap().to_string()
+        self.approve(id, "icon_v1")["approval_id"].as_str().unwrap().to_string()
     }
 
     pub fn install(&self, id: &str, approval: &str, extra: Value) -> Result<Value, imagegen_mcp::EngineError> {

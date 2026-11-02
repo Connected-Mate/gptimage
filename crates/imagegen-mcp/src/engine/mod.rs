@@ -1,22 +1,25 @@
-//! The operations behind the thirteen tools. The MCP server and the CLI both call this, so a tool and its
+//! The operations behind the tools. The MCP server and the CLI both call this, so a tool and its
 //! command-line twin can never drift apart.
 
 use std::collections::HashMap;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
-use imagegen_core::category::{Automation, Category};
 use imagegen_core::config::{Config, EnvSource};
 use imagegen_core::error::{Error as CoreError, RetryClass};
+use imagegen_core::family::{Automation, Family};
 use imagegen_core::fsio::ProjectFs;
 use imagegen_core::hashing::{sha256_hex, Clock};
 use imagegen_core::ledger::Ledger;
 use imagegen_core::profile::{Profile, ProfileSet};
-use imagegen_core::records::{kind, CandidateRecord, ProcessedRecord, ProfileRef};
+use imagegen_core::records::{kind, CandidateRecord, CompanionRecord, ProcessedRecord, ProfileRef};
 use imagegen_providers::types::{CancelToken, JobRef, ProviderError, Sleeper};
 use imagegen_providers::{ErrorKind, HttpTransport, ProviderRegistry};
 use serde_json::Value;
 
+pub mod audit;
+pub mod autostyle;
+pub mod finish;
 pub mod generate;
 pub mod install;
 pub mod misc;
@@ -227,8 +230,19 @@ impl Engine {
         })
     }
 
-    pub(crate) fn profile(&self, id: &str) -> EResult<&Profile> {
-        self.profiles.get(id).ok_or_else(|| EngineError::new("not_found", format!("no profile '{id}'"), RetryClass::Terminal))
+    /// The effective profile of a family.
+    pub(crate) fn family_profile(&self, family: Family) -> EResult<&Profile> {
+        self.profiles.for_family(family).ok_or_else(|| EngineError::new("not_found", format!("no profile for family {family}"), RetryClass::Terminal))
+    }
+
+    /// The profile of an artifact: always its own family's, never a caller's choice.
+    pub(crate) fn profile_of(&self, a: &Artifact) -> EResult<&Profile> {
+        self.family_profile(a.family)
+    }
+
+    /// What the install gate expects of the records of an artifact.
+    pub(crate) fn gate_expect(&self, family: Family) -> EResult<imagegen_core::gate::GateExpect> {
+        Ok(imagegen_core::gate::GateExpect::for_profile(self.family_profile(family)?))
     }
 
     pub(crate) fn profile_ref(&self, p: &Profile) -> ProfileRef {
@@ -239,31 +253,31 @@ impl Engine {
         imagegen_core::config::find_game_dir(&self.config, &*self.env)
     }
 
-    /// Refuse categories the project or the profile does not allow, for a given provider (decision D3).
-    pub(crate) fn check_category_policy(&self, profile: &Profile, provider: &str) -> EResult<()> {
-        if self.config.policy.forbidden_categories.contains(&profile.category) {
+    /// Refuse families the project or the profile does not allow, for a given provider (decision D3).
+    pub(crate) fn check_family_policy(&self, profile: &Profile, provider: &str) -> EResult<()> {
+        if self.config.policy.forbidden_families.contains(&profile.family) {
             return Err(EngineError::refused(
-                "category_forbidden_by_project",
-                format!("this project's policy.forbidden_categories lists {}; no provider may generate it", profile.category),
+                "family_forbidden_by_project",
+                format!("this project's policy.forbidden_families lists {}; no provider may generate it", profile.family),
                 RetryClass::Terminal,
             ));
         }
         match profile.imagegen.automation {
             Automation::Generate => Ok(()),
             Automation::ImportOnly => Err(EngineError::refused(
-                "category_import_only",
+                "family_import_only",
                 format!(
                     "{} is built by another kit tool. Bring its output under the ledger with hoi4.image_process (import), then validate, review and install it",
-                    profile.category
+                    profile.family
                 ),
                 RetryClass::Terminal,
             )),
             Automation::UserRunOnly if provider == "comfyui" => Ok(()),
             Automation::UserRunOnly => Err(EngineError::refused(
-                "category_user_run_only",
+                "family_user_run_only",
                 format!(
                     "{} is user-run: only a ComfyUI endpoint you configured may generate it (decision D3). Import the result with hoi4.image_process instead",
-                    profile.category
+                    profile.family
                 ),
                 RetryClass::RequiresAuthorization,
             )),
@@ -294,8 +308,8 @@ pub struct Artifact {
     pub path: String,
     /// Hash recorded when it was written.
     pub recorded_sha256: String,
-    /// Category.
-    pub category: Category,
+    /// Family.
+    pub family: Family,
     /// Feature folder.
     pub feature_slug: String,
     /// Asset name.
@@ -308,6 +322,15 @@ pub struct Artifact {
     pub root_id: String,
     /// Provider that made the root candidate (`import` for imports).
     pub provider: String,
+    /// The record of a processed artifact (its recipe and companions).
+    pub record: Option<ProcessedRecord>,
+}
+
+impl Artifact {
+    /// Companion images installed with the artifact.
+    pub fn companions(&self) -> &[CompanionRecord] {
+        self.record.as_ref().map(|r| r.companions.as_slice()).unwrap_or(&[])
+    }
 }
 
 impl Engine {
@@ -328,45 +351,90 @@ impl Engine {
             .and_then(|e| serde_json::from_value::<ProcessedRecord>(e.data.clone()).ok())
         {
             let root_id = imagegen_core::naming::ArtifactId::parse(&p.source_id)?.raw_id();
-            let root = find_candidate(&root_id).ok_or_else(|| EngineError::new("ledger_error", format!("the root candidate {root_id} of {id} is missing from the ledger"), RetryClass::Terminal))?;
+            let root = find_candidate(&root_id).ok_or_else(|| {
+                EngineError::new("ledger_error", format!("the root candidate {root_id} of {id} is missing from the ledger"), RetryClass::Terminal)
+            })?;
+            if root.family != p.family || p.profile.id != p.family.as_str() {
+                return Err(EngineError::refused(
+                    "GFX-FAMILY-MISMATCH",
+                    format!(
+                        "the records of {id} disagree about its family ({} against {}); an asset keeps the family it was planned as",
+                        root.family, p.family
+                    ),
+                    RetryClass::Terminal,
+                ));
+            }
+            let recorded = imagegen_core::chain::bundle_sha256(&p.sha256, &p.companions);
             return Ok(Artifact {
                 id: id.to_string(),
                 processed: true,
-                asset_id: p.asset_id,
-                path: p.path,
-                recorded_sha256: p.sha256,
-                category: root.category,
+                asset_id: p.asset_id.clone(),
+                path: p.path.clone(),
+                recorded_sha256: recorded,
+                family: p.family,
                 feature_slug: root.feature_slug,
                 asset: root.asset,
-                profile: p.profile,
+                profile: p.profile.clone(),
                 canvas: p.canvas,
                 root_id,
                 provider: root.provider,
+                record: Some(p),
             });
         }
         if let Some(c) = find_candidate(id) {
+            if c.profile.id != c.family.as_str() {
+                return Err(EngineError::refused(
+                    "GFX-FAMILY-MISMATCH",
+                    format!("candidate {id} is a {} but was recorded against profile {}", c.family, c.profile.id),
+                    RetryClass::Terminal,
+                ));
+            }
             return Ok(Artifact {
                 id: id.to_string(),
                 processed: false,
                 asset_id: c.asset_id,
                 path: c.path,
                 recorded_sha256: c.sha256,
-                category: c.category,
+                family: c.family,
                 feature_slug: c.feature_slug,
                 asset: c.asset,
                 profile: c.profile,
                 canvas: c.canvas,
                 root_id: id.to_string(),
                 provider: c.provider,
+                record: None,
             });
         }
         Err(EngineError::new("not_found", format!("no candidate or processed artifact '{id}' in the ledger"), RetryClass::Terminal))
     }
 
-    /// Read an artifact's file and hash it.
+    /// Read an artifact's file and hash it. With companions the hash covers the main file and every companion
+    /// ([`imagegen_core::chain::bundle_sha256`]), so a validation, a review or an approval of "the file" is of all
+    /// the files an install will write.
     pub(crate) fn read_artifact(&self, a: &Artifact) -> EResult<(Vec<u8>, String)> {
         let bytes = self.fs.read(&a.path, 64 * 1024 * 1024)?;
-        let sha = sha256_hex(&bytes);
+        if a.companions().is_empty() {
+            let sha = sha256_hex(&bytes);
+            return Ok((bytes, sha));
+        }
+        let mut found: Vec<CompanionRecord> = Vec::new();
+        for c in a.companions() {
+            let data = self.fs.read(&c.path, 64 * 1024 * 1024).map_err(|e| match e {
+                CoreError::NotFound(_) => EngineError::refused(
+                    "companion_missing",
+                    format!("{} is missing: it belongs to {} ({}). Restore it or process the source candidate again", c.path, a.id, c.key),
+                    RetryClass::RefreshPreconditions,
+                ),
+                other => other.into(),
+            })?;
+            found.push(CompanionRecord { sha256: sha256_hex(&data), ..c.clone() });
+        }
+        let sha = imagegen_core::chain::bundle_sha256(&sha256_hex(&bytes), &found);
         Ok((bytes, sha))
+    }
+
+    /// The companion images of an artifact with their bytes.
+    pub(crate) fn read_companions(&self, a: &Artifact) -> EResult<Vec<(CompanionRecord, Vec<u8>)>> {
+        a.companions().iter().map(|c| Ok((c.clone(), self.fs.read(&c.path, 64 * 1024 * 1024)?))).collect()
     }
 }

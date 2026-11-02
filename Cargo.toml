@@ -7,18 +7,17 @@ members = [
     "crates/imagegen-cli",
     "crates/provider-chatgpt-login",
 ]
-# The opt-in ChatGPT-login plugin is a workspace member (so it shares the lock file and can be
-# tested with `-p provider-chatgpt-login`) but it is NOT a default member, and no default build
-# depends on it. See docs/unofficial-chatgpt-login.md and crates/imagegen-mcp/tests/plugin_isolation.rs.
+# Every crate is part of the default build, the ChatGPT-login provider included (decision D-12a).
 default-members = [
     "crates/imagegen-core",
     "crates/imagegen-providers",
     "crates/imagegen-mcp",
     "crates/imagegen-cli",
+    "crates/provider-chatgpt-login",
 ]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 rust-version = "1.88"
 license = "MIT"
@@ -39,6 +38,11 @@ thiserror = "2"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "io-std", "io-util", "time", "sync"] }
 toml = "1"
 ureq = { version = "3", default-features = true }
+
+# The shared HOI4 engine (klimPaskov/hoi4-agent-tools, Apache-2.0, publish = false). One pin for both crates: the
+# merge commit of hoi4-agent-tools PR #73 (sprite index, trace and audit) on main.
+hoi4-syntax = { git = "https://github.com/klimPaskov/hoi4-agent-tools", rev = "313c2aa100d01f0d393664ad558f92b17bae1727", package = "hoi4-syntax" }
+hoi4-engine = { git = "https://github.com/klimPaskov/hoi4-agent-tools", rev = "313c2aa100d01f0d393664ad558f92b17bae1727", package = "hoi4-engine" }
 
 imagegen-core = { path = "crates/imagegen-core" }
 imagegen-providers = { path = "crates/imagegen-providers" }

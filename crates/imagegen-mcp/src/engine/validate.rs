@@ -9,7 +9,10 @@ use imagegen_core::naming::ArtifactId;
 use imagegen_core::pixels::{decode, DecodeLimits};
 use imagegen_core::profile::Profile;
 use imagegen_core::records::{kind, ValidatedRecord};
-use imagegen_core::validate::{validate_container, validate_image, Finding, Level, Options, Status};
+use imagegen_core::validate::{check_set_hash, style_check, validate_container, validate_image, Finding, Level, Options, Status, StyleModel};
+use std::collections::HashMap;
+
+use imagegen_core::family::Family;
 use serde_json::{json, Value};
 
 use crate::api::ValidateParams;
@@ -25,17 +28,22 @@ impl Engine {
             return Err(EngineError::invalid("give 1 to 200 targets"));
         }
         let mut results = Vec::new();
+        let mut styles = StyleModels::default();
         for target in &p.targets {
             if target.ends_with('/') || target.ends_with('\\') {
                 for rel in self.list_folder(target)? {
-                    results.push(self.validate_path(&rel, &p)?);
+                    results.push(self.validate_path(&rel, &p, &mut styles)?);
                 }
             } else if self.fs.exists(target) && !looks_like_artifact(target) {
-                results.push(self.validate_path(target, &p)?);
+                results.push(self.validate_path(target, &p, &mut styles)?);
             } else if looks_like_artifact(target) {
-                results.push(self.validate_artifact(target, &p)?);
+                results.push(self.validate_artifact(target, &p, &mut styles)?);
             } else {
-                return Err(EngineError::new("not_found", format!("'{target}' is neither a file in the project nor an artifact id"), RetryClass::Terminal));
+                return Err(EngineError::new(
+                    "not_found",
+                    format!("'{target}' is neither a file in the project nor an artifact id"),
+                    RetryClass::Terminal,
+                ));
             }
         }
         let failed = results.iter().filter(|r| r["status"] == "fail").count();
@@ -66,22 +74,27 @@ impl Engine {
         Ok(files)
     }
 
-    fn profile_for_path(&self, p: &ValidateParams) -> EResult<&Profile> {
-        let id = p.profile.as_deref().ok_or_else(|| EngineError::invalid("validating a file needs profile (a profile id or category such as focus_icon)"))?;
-        self.profiles
-            .get(id)
-            .or_else(|| id.parse().ok().and_then(|c| self.profiles.for_category(c)))
-            .ok_or_else(|| EngineError::new("not_found", format!("no profile '{id}'"), RetryClass::Terminal))
+    fn family_for_path(&self, p: &ValidateParams) -> EResult<&Profile> {
+        let family = p.family.ok_or_else(|| EngineError::invalid("validating a file needs family (for example focus); artifacts use their own"))?;
+        self.family_profile(family)
     }
 
-    fn validate_path(&self, rel: &str, p: &ValidateParams) -> EResult<Value> {
-        let profile = self.profile_for_path(p)?;
+    fn validate_path(&self, rel: &str, p: &ValidateParams, styles: &mut StyleModels) -> EResult<Value> {
+        let profile = self.family_for_path(p)?;
         let bytes = self.fs.read(rel, 64 * 1024 * 1024)?;
-        let checks = p.checks.clone().unwrap_or_else(|| profile.imagegen.checks.clone());
+        let checks = profile.imagegen.checks.clone();
         let canvas = if profile.canvas == [0, 0] { p.canvas } else { None };
-        let (status, mut findings, extra) = run_checks(&bytes, rel, profile, &checks, canvas);
+        let style = styles.get(self, profile, &checks);
+        let (status, mut findings, extra) = run_checks(&bytes, rel, profile, &checks, canvas, style);
         // installed art should be in the ledger
-        let installed_by_us = self.ledger.entries()?.iter().any(|e| e.kind == kind::INSTALLED && e.data.get("files").and_then(Value::as_array).map(|f| f.iter().any(|x| x.get("path").and_then(Value::as_str) == Some(rel))).unwrap_or(false));
+        let installed_by_us = self.ledger.entries()?.iter().any(|e| {
+            e.kind == kind::INSTALLED
+                && e.data
+                    .get("files")
+                    .and_then(Value::as_array)
+                    .map(|f| f.iter().any(|x| x.get("path").and_then(Value::as_str) == Some(rel)))
+                    .unwrap_or(false)
+        });
         if !installed_by_us && rel.starts_with("gfx/") {
             findings.push(Finding {
                 code: "GFX-PROVENANCE-MISSING".into(),
@@ -94,20 +107,56 @@ impl Engine {
         Ok(result_json(rel, rel, &sha256_hex(&bytes), status, &findings, &checks, profile, &extra))
     }
 
-    fn validate_artifact(&self, id: &str, p: &ValidateParams) -> EResult<Value> {
+    fn validate_artifact(&self, id: &str, p: &ValidateParams, styles: &mut StyleModels) -> EResult<Value> {
         ArtifactId::parse(id)?;
         let artifact = self.artifact(id)?;
-        let profile = self.profile(&artifact.profile.id)?;
+        if let Some(f) = p.family {
+            if f != artifact.family {
+                return Err(EngineError::refused(
+                    "GFX-FAMILY-MISMATCH",
+                    format!("{id} is a {} and can only be validated as a {}, not as a {f}", artifact.family, artifact.family),
+                    RetryClass::Terminal,
+                ));
+            }
+        }
+        let profile = self.profile_of(&artifact)?;
         let (bytes, sha) = self.read_artifact(&artifact)?;
-        let checks = p.checks.clone().unwrap_or_else(|| profile.imagegen.checks.clone());
+        // the full check set of the family always runs: there is no way to ask for fewer
+        let checks = profile.imagegen.checks.clone();
         let canvas = if profile.canvas == [0, 0] { Some(artifact.canvas) } else { None };
-        let (status, findings, extra) = run_checks(&bytes, &artifact.path, profile, &checks, canvas);
+        let style = styles.get(self, profile, &checks);
+        let (_, mut findings, extra) = run_checks(&bytes, &artifact.path, profile, &checks, canvas, style);
         let mut notes = extra;
+        // the family's processing must be on record: a processed artifact whose chain lacks a required stage fails
+        if let Some(rec) = &artifact.record {
+            for problem in imagegen_core::chain::audit(rec, profile) {
+                findings.push(Finding {
+                    code: "GFX-CHAIN-INCOMPLETE".into(),
+                    level: Level::Error,
+                    message: problem,
+                    frame: None,
+                    evidence: json!({"recipe": rec.recipe.as_ref().map(|r| json!({"id": r.id, "version": r.version}))}),
+                });
+            }
+            // every companion image (achievement states, flag sizes) is checked as the family, at its own size
+            for c in &rec.companions {
+                let data = self.fs.read(&c.path, 64 * 1024 * 1024)?;
+                // the style model describes the main image only: companion states (grey, smaller sizes) skip it
+                let (_, more, _) = run_checks(&data, &c.path, profile, &checks, Some(c.size), None);
+                findings.extend(more.into_iter().map(|mut f| {
+                    f.message = format!("[{}] {}", c.key, f.message);
+                    f
+                }));
+            }
+            notes["companions"] = json!(rec.companions.iter().map(|c| json!({"key": c.key, "path": c.path, "size": c.size})).collect::<Vec<_>>());
+        }
+        let status = if findings.iter().any(|f| f.level == Level::Error) { Status::Fail } else { Status::Pass };
         if sha != artifact.recorded_sha256 {
             notes["file_changed_since_recorded"] = json!(true);
         }
         if !artifact.processed {
-            notes["note"] = json!("This is a raw candidate. It is expected to fail the size check until hoi4.image_process has fitted it to the canvas.");
+            notes["note"] =
+                json!("This is a raw candidate. It is expected to fail the size check until hoi4.image_process has fitted it to the canvas.");
         }
         if self.profile_ref(profile).hash != artifact.profile.hash {
             notes["profile_changed_since_made"] = json!(true);
@@ -120,6 +169,8 @@ impl Engine {
             Some(&artifact.id),
             ValidatedRecord {
                 target: artifact.id.clone(),
+                family: artifact.family,
+                check_set_hash: check_set_hash(&checks),
                 sha256: sha.clone(),
                 status,
                 errors,
@@ -134,7 +185,14 @@ impl Engine {
 }
 
 /// Decode and check one file's bytes.
-fn run_checks(bytes: &[u8], name: &str, profile: &Profile, checks: &[String], canvas: Option<[u32; 2]>) -> (Status, Vec<Finding>, Value) {
+fn run_checks(
+    bytes: &[u8],
+    name: &str,
+    profile: &Profile,
+    checks: &[String],
+    canvas: Option<[u32; 2]>,
+    style: Option<Option<&StyleModel>>,
+) -> (Status, Vec<Finding>, Value) {
     let file_name = name.rsplit(['/', '\\']).next().unwrap_or(name);
     let mut findings = validate_container(bytes, file_name, profile, checks);
     let mut extra = json!({});
@@ -147,6 +205,23 @@ fn run_checks(bytes: &[u8], name: &str, profile: &Profile, checks: &[String], ca
                 extra["pixels_sha256"] = json!(report.pixels_sha256);
                 extra["frames"] = json!(report.frames);
                 findings.extend(report.findings);
+                // the style check compares with the family's own style distribution; it can warn, never fail
+                match style {
+                    Some(Some(model)) => {
+                        let f = style_check(&img, model);
+                        extra["style"] = match &f {
+                            Some(f) => {
+                                json!({"available": true, "tier": model.tier, "tier_name": model.tier_name, "verdict": f.code, "numbers": f.evidence})
+                            }
+                            None => json!({"available": true, "verdict": "image has no visible pixel"}),
+                        };
+                        findings.extend(f);
+                    }
+                    Some(None) => {
+                        extra["style"] = json!({"available": false, "reason": "no source tier (pinned style, the mod's shelf copy, the mod's own assets, vanilla) has 3 usable images for this family"});
+                    }
+                    None => {}
+                }
             }
             Err(e) => findings.push(Finding {
                 code: "GFX-UNREADABLE".into(),
@@ -162,7 +237,16 @@ fn run_checks(bytes: &[u8], name: &str, profile: &Profile, checks: &[String], ca
 }
 
 #[allow(clippy::too_many_arguments)]
-fn result_json(target: &str, path: &str, sha: &str, status: Status, findings: &[Finding], checks: &[String], profile: &Profile, extra: &Value) -> Value {
+fn result_json(
+    target: &str,
+    path: &str,
+    sha: &str,
+    status: Status,
+    findings: &[Finding],
+    checks: &[String],
+    profile: &Profile,
+    extra: &Value,
+) -> Value {
     let errors = findings.iter().filter(|f| f.level == Level::Error).count();
     let warnings = findings.iter().filter(|f| f.level == Level::Warning).count();
     let mut v = json!({
@@ -174,6 +258,9 @@ fn result_json(target: &str, path: &str, sha: &str, status: Status, findings: &[
         "warnings": warnings,
         "findings": findings,
         "checks": checks,
+        "family": profile.family,
+        "group": profile.family.group(),
+        "check_set_hash": check_set_hash(checks),
         "profile": {"id": profile.id, "canvas": profile.canvas, "frames": profile.frames, "rubric": profile.imagegen.rubric},
         "visual_review": "pending: run hoi4.image_preview and hoi4.image_review",
     });
@@ -183,4 +270,20 @@ fn result_json(target: &str, path: &str, sha: &str, status: Status, findings: &[
         }
     }
     v
+}
+
+/// Style models per family for one validation call: each family's sources are scanned once.
+#[derive(Default)]
+struct StyleModels {
+    by_family: HashMap<Family, Option<StyleModel>>,
+}
+
+impl StyleModels {
+    /// `None` when the family's check set has no `style` check; `Some(None)` when no tier could supply a model.
+    fn get(&mut self, engine: &Engine, profile: &Profile, checks: &[String]) -> Option<Option<&StyleModel>> {
+        if !checks.iter().any(|c| c == "style") {
+            return None;
+        }
+        Some(self.by_family.entry(profile.family).or_insert_with(|| engine.style_model(profile)).as_ref())
+    }
 }

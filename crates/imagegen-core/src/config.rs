@@ -10,8 +10,8 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-use crate::category::Category;
 use crate::error::{Error, Result};
+use crate::family::Family;
 use crate::profile::RowOverride;
 
 /// Relative path of the state folder inside a project.
@@ -58,19 +58,20 @@ impl EnvSource for MapEnv {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct PolicyConfig {
-    /// Decision D4: sending installed-game or kit-shelf (Paradox) art to a provider as a reference.
-    /// Off by default; opt-in per project.
-    pub allow_vanilla_references: bool,
+    /// Deprecated and ignored. Decision D4 was amended on 2026-11-01: vanilla art may always be sent to a provider
+    /// as a reference. The key is still accepted so existing files keep loading; `hoi4.image_status` says it has no effect.
+    pub allow_vanilla_references: Option<bool>,
     /// Categories this project never generates, whatever the provider (a project overlay, for
     /// example Chaos Redux never generates historical leaders).
-    pub forbidden_categories: Vec<Category>,
+    #[serde(alias = "forbidden_categories")]
+    pub forbidden_families: Vec<Family>,
     /// A single provider call whose estimate exceeds this needs `approve_cost`.
     pub max_usd_per_call: f64,
 }
 
 impl Default for PolicyConfig {
     fn default() -> Self {
-        PolicyConfig { allow_vanilla_references: false, forbidden_categories: Vec::new(), max_usd_per_call: 1.0 }
+        PolicyConfig { allow_vanilla_references: None, forbidden_families: Vec::new(), max_usd_per_call: 1.0 }
     }
 }
 
@@ -102,6 +103,19 @@ pub struct DefaultsConfig {
     pub provider: Option<String>,
 }
 
+/// Where the engine-level recipes find the Paradox-derived templates the mod's copy of the asset skill ships.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct TemplatesConfig {
+    /// Project-relative folder that holds `portraits/advisors/advisor_template.png` and
+    /// `icons/achievements/template/`. Without it the first `.claude/skills/*/assets/*/` folder that has them is used
+    /// (the kit names its folder `vanilla_reference`, Chaos Redux `gfx_references`).
+    pub dir: Option<String>,
+    /// Project-relative path of the YuNet face detector model. Without it the first
+    /// `.claude/skills/*/tools/models/face_detection_yunet_2026may.onnx` is used.
+    pub face_model: Option<String>,
+}
+
 /// The parsed config file.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
@@ -112,6 +126,8 @@ pub struct Config {
     pub kit_profiles: Option<String>,
     /// Policy.
     pub policy: PolicyConfig,
+    /// Template and model locations.
+    pub templates: TemplatesConfig,
     /// Defaults.
     pub defaults: DefaultsConfig,
     /// Provider settings by provider id.
@@ -189,8 +205,8 @@ mod tests {
     #[test]
     fn defaults_are_safe() {
         let c = Config::default();
-        assert!(!c.policy.allow_vanilla_references, "D4: vanilla references are off by default");
-        assert!(c.policy.forbidden_categories.is_empty());
+        assert_eq!(c.policy.allow_vanilla_references, None, "the deprecated D4 key is unset by default");
+        assert!(c.policy.forbidden_families.is_empty());
         assert_eq!(c.policy.max_usd_per_call, 1.0);
     }
 
@@ -202,11 +218,15 @@ kit_profiles = ".tools/gfx/profiles.json"
 
 [policy]
 allow_vanilla_references = true
-forbidden_categories = ["leader_portrait"]
+forbidden_families = ["leader_portrait"]
 max_usd_per_call = 0.25
 
 [defaults]
 provider = "comfyui"
+
+[templates]
+dir = ".claude/skills/hoi4-feature-assets/assets/gfx_references"
+face_model = "models/yunet.onnx"
 
 [providers.openai]
 model = "gpt-image-2.5-flare"
@@ -216,33 +236,37 @@ quality = "low"
 endpoint = "http://127.0.0.1:8188"
 workflow = ".hoi4-imagegen/comfyui/text_to_image.api.json"
 
-[profiles.focus_icon]
+[profiles.focus]
 canvas = [94, 86]
 margin = 2
 "#;
         let c = Config::parse(text).unwrap();
-        assert!(c.policy.allow_vanilla_references);
-        assert_eq!(c.policy.forbidden_categories, vec![Category::LeaderPortrait]);
+        assert_eq!(c.policy.allow_vanilla_references, Some(true), "still readable, but ignored");
+        assert_eq!(c.policy.forbidden_families, vec![Family::LeaderPortrait]);
         assert_eq!(c.provider("openai").model.as_deref(), Some("gpt-image-2.5-flare"));
         assert_eq!(c.provider("comfyui").endpoint.as_deref(), Some("http://127.0.0.1:8188"));
-        assert_eq!(c.profiles["focus_icon"].canvas, Some([94, 86]));
+        assert_eq!(c.profiles["focus"].canvas, Some([94, 86]));
         assert_eq!(c.defaults.provider.as_deref(), Some("comfyui"));
+        assert_eq!(c.templates.dir.as_deref(), Some(".claude/skills/hoi4-feature-assets/assets/gfx_references"));
+        assert_eq!(c.templates.face_model.as_deref(), Some("models/yunet.onnx"));
+        assert!(Config::default().templates.dir.is_none());
     }
 
     #[test]
     fn typos_in_safety_keys_are_errors_not_silent() {
         assert!(Config::parse("[policy]\nallow_vanilla_reference = true\n").is_err());
-        assert!(Config::parse("[policy]\nforbidden_categories = [\"not_a_category\"]\n").is_err());
+        assert!(Config::parse("[policy]\nforbidden_families = [\"not_a_family\"]\n").is_err());
         assert!(Config::parse("surprise = 1\n").is_err());
+        assert!(Config::parse("[templates]\ndirectory = \"x\"\n").is_err());
     }
 
     #[test]
     fn load_reads_the_file_or_defaults() {
         let dir = tempfile::tempdir().unwrap();
-        assert!(!Config::load(dir.path()).unwrap().policy.allow_vanilla_references);
+        assert_eq!(Config::load(dir.path()).unwrap().policy.allow_vanilla_references, None);
         std::fs::create_dir_all(dir.path().join(STATE_DIR)).unwrap();
         std::fs::write(dir.path().join(CONFIG_PATH), "[policy]\nallow_vanilla_references = true\n").unwrap();
-        assert!(Config::load(dir.path()).unwrap().policy.allow_vanilla_references);
+        assert_eq!(Config::load(dir.path()).unwrap().policy.allow_vanilla_references, Some(true));
         std::fs::write(dir.path().join(CONFIG_PATH), "[policy\n").unwrap();
         assert!(Config::load(dir.path()).is_err());
     }
@@ -259,8 +283,11 @@ margin = 2
         // an explicit setting that points nowhere is "not found", not a fallback to another install
         let missing = MapEnv::from_pairs(&[("HOI4_GAME_DIR", "/definitely/not/here")]);
         assert_eq!(find_game_dir(&Config::default(), &missing), None);
-        let cfg = Config::parse("game_dir = \"/also/not/here\"
-").unwrap();
+        let cfg = Config::parse(
+            "game_dir = \"/also/not/here\"
+",
+        )
+        .unwrap();
         assert_eq!(find_game_dir(&cfg, &MapEnv::default()), None);
     }
 }

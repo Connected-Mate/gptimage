@@ -16,17 +16,13 @@ path = "src/lib.rs"
 name = "hoi4-imagegen"
 path = "src/main.rs"
 
-[features]
-default = []
-# Adds the `chatgpt-login` subcommands. Off by default; see docs/unofficial-chatgpt-login.md.
-unofficial-chatgpt-login = ["imagegen-mcp/unofficial-chatgpt-login", "dep:provider-chatgpt-login"]
-
 [dependencies]
 clap.workspace = true
 imagegen-core.workspace = true
 imagegen-mcp.workspace = true
 imagegen-providers.workspace = true
-provider-chatgpt-login = { workspace = true, optional = true }
+provider-chatgpt-login.workspace = true
+serde.workspace = true
 serde_json.workspace = true
 
 [dev-dependencies]

@@ -17,8 +17,8 @@ use crate::common::{basis, check_model, data_url, descriptor_from, parse_data_ur
 use crate::sizing::{choose_size, nearest_ratio, tier_size};
 use crate::transport::{send, HostPolicy, HttpRequest, HttpTransport, Method};
 use crate::types::{
-    CallContext, CostEstimate, CostModel, ErrorKind, Funding, ImageProvider, ImageRequest, JobRef, ModelInfo, ProviderDescriptor,
-    ProviderError, ProviderOutput, Reconciled, SizeRule,
+    CallContext, CostEstimate, CostModel, ErrorKind, Funding, ImageProvider, ImageRequest, JobRef, ModelInfo, ProviderDescriptor, ProviderError,
+    ProviderOutput, Reconciled, SizeRule,
 };
 
 /// Default queue host.
@@ -114,17 +114,17 @@ impl FalProvider {
             return Err(status_error(resp.status, &resp.body, &self.secrets()));
         }
         let v = serde_json::from_slice(&resp.body).map_err(|e| {
-            ProviderError::new(ErrorKind::MalformedResponse, RetryClass::SafeSameInputs, format!("{url} did not return JSON: {e}")).with_status(resp.status)
+            ProviderError::new(ErrorKind::MalformedResponse, RetryClass::SafeSameInputs, format!("{url} did not return JSON: {e}"))
+                .with_status(resp.status)
         })?;
         Ok((resp.status, v))
     }
 
     /// Fetch a finished result and download its image.
     fn fetch_result(&self, job: &JobRef, model: &ModelInfo, req_cost: Option<f64>) -> Result<ProviderOutput, ProviderError> {
-        let url = job
-            .response_url
-            .clone()
-            .ok_or_else(|| ProviderError::new(ErrorKind::MalformedResponse, RetryClass::Terminal, "the job has no response URL").with_job(job.clone()))?;
+        let url = job.response_url.clone().ok_or_else(|| {
+            ProviderError::new(ErrorKind::MalformedResponse, RetryClass::Terminal, "the job has no response URL").with_job(job.clone())
+        })?;
         let (_, v) = self.json_get(&url).map_err(|e| e.with_job(job.clone()))?;
         let image_url = v
             .pointer("/images/0/url")
@@ -171,12 +171,18 @@ impl FalProvider {
             return Err(status_error(resp.status, &resp.body, &self.secrets()));
         }
         let v: Value = serde_json::from_slice(&resp.body).map_err(|e| {
-            ProviderError::new(ErrorKind::MalformedResponse, RetryClass::ReconcileFirst, format!("the submit response is not JSON ({e}); a job may exist"))
+            ProviderError::new(
+                ErrorKind::MalformedResponse,
+                RetryClass::ReconcileFirst,
+                format!("the submit response is not JSON ({e}); a job may exist"),
+            )
         })?;
         let id = v
             .get("request_id")
             .and_then(Value::as_str)
-            .ok_or_else(|| ProviderError::new(ErrorKind::MalformedResponse, RetryClass::ReconcileFirst, "the submit response has no request_id; a job may exist"))?
+            .ok_or_else(|| {
+                ProviderError::new(ErrorKind::MalformedResponse, RetryClass::ReconcileFirst, "the submit response has no request_id; a job may exist")
+            })?
             .to_string();
         let url_of = |k: &str| v.get(k).and_then(Value::as_str).map(str::to_string);
         let job = JobRef {
@@ -188,10 +194,10 @@ impl FalProvider {
             model: endpoint,
         };
         ctx.notify(&job);
-        let status_url = job
-            .status_url
-            .clone()
-            .ok_or_else(|| ProviderError::new(ErrorKind::MalformedResponse, RetryClass::ReconcileFirst, "the submit response has no status_url").with_job(job.clone()))?;
+        let status_url = job.status_url.clone().ok_or_else(|| {
+            ProviderError::new(ErrorKind::MalformedResponse, RetryClass::ReconcileFirst, "the submit response has no status_url")
+                .with_job(job.clone())
+        })?;
         for _ in 0..self.max_polls {
             if ctx.cancel.is_cancelled() {
                 let _ = self.cancel(&job, ctx);
@@ -204,12 +210,8 @@ impl FalProvider {
                 }
                 "IN_QUEUE" | "IN_PROGRESS" => ctx.sleeper.sleep(self.poll_interval),
                 other => {
-                    return Err(ProviderError::new(
-                        ErrorKind::ServerError,
-                        RetryClass::ReconcileFirst,
-                        format!("the job reported status '{other}'"),
-                    )
-                    .with_job(job))
+                    return Err(ProviderError::new(ErrorKind::ServerError, RetryClass::ReconcileFirst, format!("the job reported status '{other}'"))
+                        .with_job(job))
                 }
             }
         }

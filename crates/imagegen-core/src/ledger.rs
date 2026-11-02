@@ -74,7 +74,15 @@ struct LockGuard(PathBuf);
 
 impl Drop for LockGuard {
     fn drop(&mut self) {
-        let _ = fs::remove_file(&self.0);
+        // On Windows the removal can fail for a moment (another thread's failed open still holds a handle). A lock
+        // that stays behind blocks every later append for a minute, so the removal is retried.
+        for _ in 0..200 {
+            match fs::remove_file(&self.0) {
+                Ok(()) => return,
+                Err(e) if e.kind() == ErrorKind::NotFound => return,
+                Err(_) => std::thread::sleep(Duration::from_millis(2)),
+            }
+        }
     }
 }
 
@@ -217,9 +225,10 @@ impl Ledger {
 
     /// The generate, edit or import entry that used an idempotency key.
     pub fn find_idempotency(&self, key: &str) -> Result<Option<Entry>> {
-        Ok(self.entries()?.into_iter().find(|e| {
-            matches!(e.kind.as_str(), "generated" | "edited") && e.data.get("idempotency_key").and_then(Value::as_str) == Some(key)
-        }))
+        Ok(self
+            .entries()?
+            .into_iter()
+            .find(|e| matches!(e.kind.as_str(), "generated" | "edited") && e.data.get("idempotency_key").and_then(Value::as_str) == Some(key)))
     }
 
     /// Highest version number ever allocated for an asset (so a deleted file's number is not reused).
@@ -241,7 +250,9 @@ impl Ledger {
         for _ in 0..1000 {
             let parent = entries
                 .iter()
-                .find(|e| e.artifact_id.as_deref() == Some(cur.as_str()) && matches!(e.kind.as_str(), "generated" | "edited" | "imported" | "processed"))
+                .find(|e| {
+                    e.artifact_id.as_deref() == Some(cur.as_str()) && matches!(e.kind.as_str(), "generated" | "edited" | "imported" | "processed")
+                })
                 .and_then(|e| e.data.get("parent").or_else(|| e.data.get("source_id")))
                 .and_then(Value::as_str)
                 .map(str::to_string);

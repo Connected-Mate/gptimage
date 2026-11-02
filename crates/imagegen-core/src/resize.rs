@@ -10,7 +10,7 @@ use crate::pixels::Rgba;
 const PI: f64 = std::f64::consts::PI;
 
 /// Sine from range reduction plus a Taylor series; identical on every platform.
-fn det_sin(x: f64) -> f64 {
+pub(crate) fn det_sin(x: f64) -> f64 {
     let two_pi = 2.0 * PI;
     let mut r = x - two_pi * (x / two_pi).round();
     if r > PI {
@@ -140,8 +140,8 @@ pub fn resize_lanczos3(src: &Rgba, new_w: u32, new_h: u32) -> Result<Rgba> {
             if a8 <= 0.0 {
                 out.data[o..o + 4].copy_from_slice(&[0, 0, 0, 0]);
             } else {
-                for c in 0..3 {
-                    out.data[o + c] = ((acc[c] / a).clamp(0.0, 1.0) * 255.0).round() as u8;
+                for (dst, v) in out.data[o..o + 3].iter_mut().zip(&acc) {
+                    *dst = ((v / a).clamp(0.0, 1.0) * 255.0).round() as u8;
                 }
                 out.data[o + 3] = a8 as u8;
             }

@@ -66,14 +66,13 @@ fn panel(content: &Rgba, bg: &str) -> Rgba {
     p
 }
 
-/// Compose the sheet. Panels flow left to right and wrap before they exceed the row width.
-pub fn compose(img: &Rgba, references: &[Rgba]) -> imagegen_core::Result<Sheet> {
+/// Compose the sheet. Panels flow left to right and wrap before they exceed the row width. `companions` are the
+/// other images an install writes with the main one (the achievement states, the smaller flag sizes): each gets a
+/// native panel so the reviewer sees every file that will be written.
+pub fn compose(img: &Rgba, references: &[Rgba], companions: &[(String, Rgba)]) -> imagegen_core::Result<Sheet> {
     let longest = img.width.max(img.height).max(1);
     let scale = (512 / longest).clamp(1, 6);
-    let mut panels: Vec<(String, Rgba)> = vec![
-        ("native on dark".into(), panel(img, "dark")),
-        ("native on light".into(), panel(img, "light")),
-    ];
+    let mut panels: Vec<(String, Rgba)> = vec![("native on dark".into(), panel(img, "dark")), ("native on light".into(), panel(img, "light"))];
     if scale > 1 {
         let big = upscale_nearest(img, scale);
         panels.push((format!("{scale}x on dark"), panel(&big, "dark")));
@@ -81,6 +80,9 @@ pub fn compose(img: &Rgba, references: &[Rgba]) -> imagegen_core::Result<Sheet> 
         panels.push((format!("{scale}x on checker"), panel(&big, "checker")));
     } else {
         panels.push(("on checker".into(), panel(img, "checker")));
+    }
+    for (key, c) in companions {
+        panels.push((format!("native {} on dark", key.trim_start_matches('_')), panel(c, "dark")));
     }
     let ref_height = (img.height * scale).clamp(32, 256);
     for (i, r) in references.iter().take(3).enumerate() {
@@ -113,10 +115,14 @@ pub fn compose(img: &Rgba, references: &[Rgba]) -> imagegen_core::Result<Sheet> 
 impl Engine {
     /// Write a contact sheet and record it. Returns the report and the sheet bytes.
     pub fn preview_with_image(&self, p: &PreviewParams) -> EResult<(Value, Vec<u8>)> {
+        let mut companion_imgs: Vec<(String, Rgba)> = Vec::new();
         let (img, rel_source, sha, artifact, refs_dir) = if super::looks_like_artifact(&p.target) {
             let a = self.artifact(&p.target)?;
             let (bytes, sha) = self.read_artifact(&a)?;
             let (img, _) = decode(&bytes, Some(&a.path), DecodeLimits::default())?;
+            for (c, data) in self.read_companions(&a)? {
+                companion_imgs.push((c.key.clone(), decode(&data, Some(&c.path), DecodeLimits::default())?.0));
+            }
             let dir = format!("docs/assets/{}/contact_sheets", a.feature_slug);
             (img, a.path.clone(), sha, Some(a), dir)
         } else {
@@ -129,7 +135,7 @@ impl Engine {
             Some(a) => self.root_references(&a.root_id),
             None => Vec::new(),
         };
-        let sheet = compose(&img, &refs).map_err(EngineError::from)?;
+        let sheet = compose(&img, &refs, &companion_imgs).map_err(EngineError::from)?;
         let stem = match &artifact {
             Some(a) => format!("{}-preview", a.id.replace('.', "_")),
             None => format!("{}-preview", rel_source.rsplit('/').next().unwrap_or("file").split('.').next().unwrap_or("file")),
@@ -173,15 +179,17 @@ impl Engine {
         else {
             return Vec::new();
         };
-        load_refs(&self.fs, self.game_dir().as_deref(), &self.config.policy, &rec)
+        load_refs(&self.fs, self.game_dir().as_deref(), &rec)
     }
 }
 
-fn load_refs(fs: &ProjectFs, game: Option<&std::path::Path>, policy: &imagegen_core::config::PolicyConfig, rec: &CandidateRecord) -> Vec<Rgba> {
+/// References shown beside a candidate on its contact sheet. Paradox art is left out: the sheet is written into the
+/// mod, and the tool never copies vanilla art there.
+fn load_refs(fs: &ProjectFs, game: Option<&std::path::Path>, rec: &CandidateRecord) -> Vec<Rgba> {
     rec.references
         .iter()
-        .filter(|r| r.role != imagegen_core::refs::RefRole::EditTarget)
-        .filter_map(|r| load_reference(fs, game, policy, &ReferenceInput { path: r.path.clone(), role: r.role }).ok())
+        .filter(|r| r.role != imagegen_core::refs::RefRole::EditTarget && !r.origin.is_vanilla())
+        .filter_map(|r| load_reference(fs, game, &ReferenceInput { path: r.path.clone(), role: r.role }).ok())
         .filter_map(|l| decode(&l.png, None, DecodeLimits::default()).ok().map(|(i, _)| i))
         .collect()
 }
@@ -209,7 +217,7 @@ mod tests {
 
     #[test]
     fn sheet_has_native_and_enlarged_panels_on_three_backgrounds() {
-        let s = compose(&icon(), &[]).unwrap();
+        let s = compose(&icon(), &[], &[]).unwrap();
         // 512 / 33 = 15, clamped to the 6x ceiling
         assert_eq!(s.panels, vec!["native on dark", "native on light", "6x on dark", "6x on light", "6x on checker"]);
         let (img, _) = decode(&s.png, None, DecodeLimits::default()).unwrap();
@@ -220,17 +228,18 @@ mod tests {
     #[test]
     fn native_panel_keeps_the_exact_pixels() {
         let icon = icon();
-        let s = compose(&icon, &[]).unwrap();
+        let s = compose(&icon, &[], &[]).unwrap();
         let (sheet, _) = decode(&s.png, None, DecodeLimits::default()).unwrap();
         // first panel: PAD offset, exact pixels
         assert_eq!(sheet.px(PAD + 10, PAD + 10), icon.px(10, 10));
-        assert_eq!(sheet.px(PAD + 0, PAD + 0), DARK, "transparent pixels show the dark background");
+        assert_eq!(sheet.px(PAD, PAD), DARK, "transparent pixels show the dark background");
     }
 
     #[test]
     fn references_are_added_and_large_images_wrap() {
         let reference = Rgba::filled(100, 88, [30, 90, 30, 255]);
-        let s = compose(&Rgba::filled(397, 153, [90, 90, 90, 255]), &[reference.clone(), reference.clone(), reference.clone(), reference]).unwrap();
+        let s =
+            compose(&Rgba::filled(397, 153, [90, 90, 90, 255]), &[reference.clone(), reference.clone(), reference.clone(), reference], &[]).unwrap();
         assert_eq!(s.panels.iter().filter(|p| p.starts_with("reference")).count(), 3, "at most three references");
         assert!(s.size[0] <= MAX_ROW + 520, "{:?}", s.size);
         assert!(s.size[1] > 153 * 2, "wide panels wrap onto a second row: {:?}", s.size);
@@ -238,6 +247,6 @@ mod tests {
 
     #[test]
     fn one_pixel_images_do_not_panic() {
-        assert!(compose(&Rgba::filled(1, 1, [1, 2, 3, 255]), &[]).is_ok());
+        assert!(compose(&Rgba::filled(1, 1, [1, 2, 3, 255]), &[], &[]).is_ok());
     }
 }

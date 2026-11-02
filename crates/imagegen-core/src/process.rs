@@ -79,6 +79,54 @@ pub enum Op {
         /// Background R, G, B.
         background: [u8; 3],
     },
+    /// Accept the image only when it is exactly `width` x `height` and change nothing. This is the finishing
+    /// step of finished art that was imported at its final size: the size requirement is still recorded and
+    /// enforced, the pixels are not touched.
+    Conform {
+        /// Required width.
+        width: u32,
+        /// Required height.
+        height: u32,
+    },
+    /// The report-event card (sepia, grain, tilt, soft shadow) on a transparent 210x176 canvas, from a picture of
+    /// any size. The grain seed is derived from the candidate's SHA-256, so a candidate always gives one card.
+    ReportCard {
+        /// Grain seed.
+        seed: i64,
+    },
+    /// Two-frame strip: the fitted icon, then the same icon with the selected-state stroke and glow
+    /// (faction and agency logos).
+    SelectedFrame {
+        /// Frames in the strip; two.
+        frames: u32,
+    },
+    /// Two-frame strip: the fitted icon, then the same icon with its colour mixed 45 percent toward luminance
+    /// (building icons).
+    DisabledFrame {
+        /// Frames in the strip; two.
+        frames: u32,
+    },
+}
+
+impl Op {
+    /// The snake_case name of the operation (the `op` tag).
+    pub fn name(&self) -> &'static str {
+        match self {
+            Op::CropToAspect { .. } => "crop_to_aspect",
+            Op::TrimToSubject { .. } => "trim_to_subject",
+            Op::FitSubject { .. } => "fit_subject",
+            Op::Resize { .. } => "resize",
+            Op::CoverResize { .. } => "cover_resize",
+            Op::Defringe { .. } => "defringe",
+            Op::ChromaKey { .. } => "chroma_key",
+            Op::Grayscale => "grayscale",
+            Op::FlattenOn { .. } => "flatten_on",
+            Op::Conform { .. } => "conform",
+            Op::ReportCard { .. } => "report_card",
+            Op::SelectedFrame { .. } => "selected_frame",
+            Op::DisabledFrame { .. } => "disabled_frame",
+        }
+    }
 }
 
 fn default_min_alpha() -> u8 {
@@ -107,7 +155,7 @@ pub struct StepRecord {
 }
 
 /// Version string of the processing code recorded with every step.
-pub const ENGINE_VERSION: &str = concat!("imagegen-core/", env!("CARGO_PKG_VERSION"), "/process-1");
+pub const ENGINE_VERSION: &str = concat!("imagegen-core/", env!("CARGO_PKG_VERSION"), "/process-2");
 
 /// Apply one operation.
 pub fn apply(img: &Rgba, op: &Op) -> Result<Rgba> {
@@ -127,14 +175,72 @@ pub fn apply(img: &Rgba, op: &Op) -> Result<Rgba> {
         Op::ChromaKey { key, tolerance } => Ok(chroma_key(img, *key, *tolerance)),
         Op::Grayscale => Ok(grayscale(img)),
         Op::FlattenOn { background } => Ok(flatten_on(img, *background)),
+        Op::Conform { width, height } => {
+            if (img.width, img.height) != (*width, *height) {
+                return Err(Error::Invalid(format!(
+                    "the art is {}x{} but must be exactly {width}x{height} to be accepted as it is",
+                    img.width, img.height
+                )));
+            }
+            Ok(img.clone())
+        }
+        Op::ReportCard { seed } => {
+            crate::recipes::report_card::report_card(img, &crate::recipes::report_card::ReportCardParams { seed: *seed, ..Default::default() })
+        }
+        Op::SelectedFrame { frames } => crate::recipes::frames::selected_strip(img, *frames),
+        Op::DisabledFrame { frames } => crate::recipes::frames::disabled_strip(img, *frames),
+    }
+}
+
+/// Largest enlargement an icon family tolerates in a fit or resize step. A bigger factor invents detail an
+/// icon never had, which is what turns a small wrong-family image into a "valid" icon.
+pub const ICON_MAX_UPSCALE: f64 = 1.25;
+
+/// Error code of a refused enlargement.
+pub const UPSCALE_CODE: &str = "GFX-UPSCALE-LIMIT";
+
+/// The enlargement factor a step would apply to `img` (above 1 enlarges), when it scales at all.
+pub fn upscale_factor(img: &Rgba, op: &Op) -> Option<f64> {
+    match op {
+        Op::Resize { width, height } => Some((f64::from(*width) / f64::from(img.width)).max(f64::from(*height) / f64::from(img.height))),
+        Op::CoverResize { width, height } => {
+            let c = crop_to_aspect(img, *width, *height).ok()?;
+            Some((f64::from(*width) / f64::from(c.width)).max(f64::from(*height) / f64::from(c.height)))
+        }
+        Op::FitSubject { width, height, margin, min_alpha } => {
+            if *margin * 2 >= *width || *margin * 2 >= *height {
+                return None;
+            }
+            let b = img.alpha_bbox(*min_alpha)?;
+            let (sw, sh) = (f64::from(b[2] - b[0]), f64::from(b[3] - b[1]));
+            let (aw, ah) = (f64::from(*width - 2 * margin), f64::from(*height - 2 * margin));
+            Some((aw / sw).min(ah / sh))
+        }
+        _ => None,
     }
 }
 
 /// Run a chain and record every step.
 pub fn run_chain(img: &Rgba, ops: &[Op]) -> Result<(Rgba, Vec<StepRecord>)> {
+    run_chain_limited(img, ops, None)
+}
+
+/// Run a chain and refuse any step that enlarges its input by more than `max_upscale`.
+pub fn run_chain_limited(img: &Rgba, ops: &[Op], max_upscale: Option<f64>) -> Result<(Rgba, Vec<StepRecord>)> {
     let mut current = img.clone();
     let mut records = Vec::with_capacity(ops.len());
     for op in ops {
+        if let (Some(limit), Some(factor)) = (max_upscale, upscale_factor(&current, op)) {
+            if factor > limit + 1e-9 {
+                return Err(Error::refused(
+                    UPSCALE_CODE,
+                    format!(
+                        "this step would enlarge the image {factor:.2} times, above the {limit:.2} times an icon family allows. Upscaling invents detail: bring a larger source or generate the asset"
+                    ),
+                    crate::error::RetryClass::Terminal,
+                ));
+            }
+        }
         let input_sha256 = sha256_hex(&current.data);
         let next = apply(&current, op)?;
         records.push(StepRecord {
@@ -279,13 +385,12 @@ pub fn defringe(img: &Rgba, erosion: u32, spill_mask: Option<&[bool]>) -> Result
     // boundary band: not inside a 2-pixel erosion of (alpha >= 240)
     let solid: Vec<bool> = (0..n).map(|i| alpha(i) >= 240).collect();
     let inner = erode_cross(&solid, w, h, 2);
-    let rim: Vec<bool> = (0..n)
-        .map(|i| {
-            alpha_out[i] < 255 || (alpha_out[i] > 0 && is_chroma(px(i), 40) && !inner[i]) || spill(i)
-        })
-        .collect();
+    let rim: Vec<bool> = (0..n).map(|i| alpha_out[i] < 255 || (alpha_out[i] > 0 && is_chroma(px(i), 40) && !inner[i]) || spill(i)).collect();
 
-    let nearest = nearest_core(&core, w, h);
+    // only rim pixels that stay visible need a colour: a fully transparent pixel never shows, and every later step
+    // resizes with premultiplied alpha
+    let want: Vec<bool> = (0..n).map(|i| rim[i] && alpha_out[i] > 0).collect();
+    let nearest = nearest_core(&core, w, h, &want);
     let mut out = img.clone();
     for i in 0..n {
         if rim[i] {
@@ -316,29 +421,63 @@ fn erode_cross(mask: &[bool], w: i64, h: i64, iterations: u32) -> Vec<bool> {
     cur
 }
 
-/// For every pixel, the index of the nearest core pixel by squared Euclidean distance (ties resolved by
-/// scan order so the result is deterministic). Brute force is fine at HOI4 icon sizes; large inputs are
-/// bounded by the decode limits and are processed once.
-fn nearest_core(core: &[bool], w: i64, h: i64) -> Vec<Option<usize>> {
-    let cores: Vec<(i64, i64, usize)> = (0..h)
-        .flat_map(|y| (0..w).map(move |x| (x, y)))
-        .filter(|(x, y)| core[(y * w + x) as usize])
-        .map(|(x, y)| (x, y, (y * w + x) as usize))
-        .collect();
+/// For each pixel where `want` is true, the index of the nearest core pixel by squared Euclidean distance, ties
+/// resolved by scan order (the lowest index), so the result is deterministic and equals a brute-force search.
+///
+/// The search grows square rings around the pixel until a core pixel is found at distance `d`, then finishes every
+/// ring that can still hold a pixel at distance `d` or less. Cost is about the squared distance to the nearest
+/// core pixel, so it stays fast on large provider images; the old brute force compared every pixel with every core
+/// pixel and took minutes on a 1340x1174 icon.
+fn nearest_core(core: &[bool], w: i64, h: i64, want: &[bool]) -> Vec<Option<usize>> {
     let mut out = vec![None; (w * h) as usize];
+    if !core.iter().any(|c| *c) {
+        return out;
+    }
+    let max_r = w.max(h);
     for y in 0..h {
         for x in 0..w {
+            let i = (y * w + x) as usize;
+            if !want[i] {
+                continue;
+            }
             let mut best: Option<(i64, usize)> = None;
-            for (cx, cy, idx) in &cores {
-                let d = (cx - x) * (cx - x) + (cy - y) * (cy - y);
-                if best.map(|(bd, _)| d < bd).unwrap_or(true) {
-                    best = Some((d, *idx));
-                    if d == 0 {
+            let mut r = 0i64;
+            while r <= max_r {
+                // stop once no pixel on ring r can be nearer than the best found (the closest point of ring r is r away)
+                if let Some((bd, _)) = best {
+                    if r * r > bd {
                         break;
                     }
                 }
+                let (x0, x1, y0, y1) = (x - r, x + r, y - r, y + r);
+                let mut visit = |cx: i64, cy: i64| {
+                    if cx < 0 || cy < 0 || cx >= w || cy >= h {
+                        return;
+                    }
+                    let idx = (cy * w + cx) as usize;
+                    if !core[idx] {
+                        return;
+                    }
+                    let d = (cx - x) * (cx - x) + (cy - y) * (cy - y);
+                    if best.map(|(bd, bi)| d < bd || (d == bd && idx < bi)).unwrap_or(true) {
+                        best = Some((d, idx));
+                    }
+                };
+                if r == 0 {
+                    visit(x, y);
+                } else {
+                    for cx in x0..=x1 {
+                        visit(cx, y0);
+                        visit(cx, y1);
+                    }
+                    for cy in (y0 + 1)..y1 {
+                        visit(x0, cy);
+                        visit(x1, cy);
+                    }
+                }
+                r += 1;
             }
-            out[(y * w + x) as usize] = best.map(|(_, i)| i);
+            out[i] = best.map(|(_, idx)| idx);
         }
     }
     out
@@ -401,6 +540,41 @@ fn flatten_on(img: &Rgba, bg: [u8; 3]) -> Rgba {
 mod tests {
     use super::*;
 
+    #[test]
+    fn the_ring_search_finds_exactly_what_a_brute_force_search_finds() {
+        // deterministic pseudo-random masks, including ties and sparse cores far from most pixels
+        let mut seed = 0x2545_f491_u64;
+        let mut next = || {
+            seed ^= seed << 13;
+            seed ^= seed >> 7;
+            seed ^= seed << 17;
+            seed
+        };
+        for (w, h, density) in [(17i64, 11i64, 3u64), (40, 23, 50), (31, 31, 400), (9, 40, 7)] {
+            let core: Vec<bool> = (0..w * h).map(|_| next() % density == 0).collect();
+            if !core.iter().any(|c| *c) {
+                continue;
+            }
+            let want = vec![true; (w * h) as usize];
+            let fast = nearest_core(&core, w, h, &want);
+            for y in 0..h {
+                for x in 0..w {
+                    let mut best: Option<(i64, usize)> = None;
+                    for cy in 0..h {
+                        for cx in 0..w {
+                            let idx = (cy * w + cx) as usize;
+                            let d = (cx - x) * (cx - x) + (cy - y) * (cy - y);
+                            if core[idx] && best.map(|(bd, _)| d < bd).unwrap_or(true) {
+                                best = Some((d, idx));
+                            }
+                        }
+                    }
+                    assert_eq!(fast[(y * w + x) as usize], best.map(|(_, i)| i), "{w}x{h} at {x},{y}");
+                }
+            }
+        }
+    }
+
     fn disc(size: u32) -> Rgba {
         let mut img = Rgba::new(size, size);
         let c = f64::from(size) / 2.0;
@@ -451,10 +625,7 @@ mod tests {
     #[test]
     fn chain_records_hashes_and_is_deterministic() {
         let img = disc(120);
-        let ops = vec![
-            Op::TrimToSubject { min_alpha: 16 },
-            Op::FitSubject { width: 65, height: 67, margin: 2, min_alpha: 16 },
-        ];
+        let ops = vec![Op::TrimToSubject { min_alpha: 16 }, Op::FitSubject { width: 65, height: 67, margin: 2, min_alpha: 16 }];
         let (a, rec_a) = run_chain(&img, &ops).unwrap();
         let (b, rec_b) = run_chain(&img, &ops).unwrap();
         assert_eq!(a, b);
@@ -492,6 +663,56 @@ mod tests {
     }
 
     #[test]
+    fn conform_accepts_the_exact_size_and_changes_nothing() {
+        let img = Rgba::filled(6, 4, [1, 2, 3, 200]);
+        assert_eq!(apply(&img, &Op::Conform { width: 6, height: 4 }).unwrap(), img);
+        assert!(apply(&img, &Op::Conform { width: 6, height: 5 }).is_err());
+        let (out, rec) = run_chain(&img, &[Op::Conform { width: 6, height: 4 }]).unwrap();
+        assert_eq!(out, img);
+        assert_eq!(rec[0].input_sha256, rec[0].output_sha256, "a conform step leaves the pixels alone");
+    }
+
+    #[test]
+    fn report_card_op_is_deterministic_seeded_and_has_transparent_corners() {
+        let mut photo = Rgba::new(300, 200);
+        for y in 0..200 {
+            for x in 0..300 {
+                photo.set_px(x, y, [(x % 251) as u8, (y % 241) as u8, ((x * y) % 239) as u8, 255]);
+            }
+        }
+        let a = apply(&photo, &Op::ReportCard { seed: 7 }).unwrap();
+        assert_eq!((a.width, a.height), (210, 176));
+        assert_eq!(a, apply(&photo, &Op::ReportCard { seed: 7 }).unwrap());
+        assert_ne!(a, apply(&photo, &Op::ReportCard { seed: 8 }).unwrap(), "the seed changes the grain");
+        let (w, h) = (a.width - 1, a.height - 1);
+        assert_eq!([a.alpha(0, 0), a.alpha(w, 0), a.alpha(0, h), a.alpha(w, h)], [0, 0, 0, 0]);
+        assert_eq!(a.alpha(105, 88), 255);
+        // the op serialises with the snake_case tag
+        assert_eq!(serde_json::to_value(Op::ReportCard { seed: 7 }).unwrap(), serde_json::json!({"op": "report_card", "seed": 7}));
+    }
+
+    #[test]
+    fn frame_ops_build_two_frame_strips_and_serialise_like_the_others() {
+        let icon = disc(64);
+        let sel = apply(&icon, &Op::SelectedFrame { frames: 2 }).unwrap();
+        assert_eq!((sel.width, sel.height), (128, 64));
+        assert_eq!(sel.split_frames(2).unwrap()[0], icon);
+        let dis = apply(&icon, &Op::DisabledFrame { frames: 2 }).unwrap();
+        assert_eq!((dis.width, dis.height), (128, 64));
+        assert_ne!(dis.split_frames(2).unwrap()[1], icon);
+        assert!(apply(&icon, &Op::SelectedFrame { frames: 3 }).is_err());
+        let v = serde_json::to_value(Op::DisabledFrame { frames: 2 }).unwrap();
+        assert_eq!(v, serde_json::json!({"op": "disabled_frame", "frames": 2}));
+        assert_eq!(serde_json::from_value::<Op>(serde_json::json!({"op": "selected_frame", "frames": 2})).unwrap(), Op::SelectedFrame { frames: 2 });
+        assert!(serde_json::from_value::<Op>(serde_json::json!({"op": "selected_frame", "frames": 2, "x": 1})).is_err());
+        for op in [Op::Conform { width: 1, height: 1 }, Op::ReportCard { seed: 1 }, Op::SelectedFrame { frames: 2 }, Op::DisabledFrame { frames: 2 }]
+        {
+            let tag = serde_json::to_value(&op).unwrap()["op"].as_str().unwrap().to_string();
+            assert_eq!(tag, op.name(), "name() is the serde tag");
+        }
+    }
+
+    #[test]
     fn defringe_removes_magenta_rim() {
         // opaque green-ish disc whose edge ring is magenta contamination
         let mut img = Rgba::new(40, 40);
@@ -513,5 +734,36 @@ mod tests {
         // errors on fully opaque or empty input
         assert!(apply(&Rgba::filled(4, 4, [1, 2, 3, 255]), &Op::Defringe { erosion: 1 }).is_err());
         assert!(apply(&Rgba::new(4, 4), &Op::Defringe { erosion: 1 }).is_err());
+    }
+}
+
+#[cfg(test)]
+mod upscale_tests {
+    use super::*;
+
+    fn blob(w: u32, h: u32) -> Rgba {
+        Rgba::filled(w, h, [10, 20, 30, 255])
+    }
+
+    #[test]
+    fn enlarging_beyond_the_limit_is_refused_and_shrinking_is_free() {
+        let small = blob(40, 40);
+        let err = run_chain_limited(&small, &[Op::Resize { width: 64, height: 64 }], Some(ICON_MAX_UPSCALE)).unwrap_err();
+        assert_eq!(err.code(), UPSCALE_CODE);
+        // 40 -> 50 is exactly 1.25 times: allowed
+        assert!(run_chain_limited(&small, &[Op::Resize { width: 50, height: 50 }], Some(ICON_MAX_UPSCALE)).is_ok());
+        assert!(run_chain_limited(&blob(200, 200), &[Op::Resize { width: 64, height: 64 }], Some(ICON_MAX_UPSCALE)).is_ok());
+        // without a limit nothing changes (pictures may enlarge)
+        assert!(run_chain(&small, &[Op::Resize { width: 64, height: 64 }]).is_ok());
+    }
+
+    #[test]
+    fn fit_and_cover_steps_are_limited_too() {
+        let small = blob(30, 30);
+        let fit = Op::FitSubject { width: 64, height: 64, margin: 2, min_alpha: 16 };
+        assert_eq!(run_chain_limited(&small, &[fit], Some(ICON_MAX_UPSCALE)).unwrap_err().code(), UPSCALE_CODE);
+        let cover = Op::CoverResize { width: 100, height: 60 };
+        assert_eq!(run_chain_limited(&small, &[cover], Some(ICON_MAX_UPSCALE)).unwrap_err().code(), UPSCALE_CODE);
+        assert!(upscale_factor(&small, &Op::Grayscale).is_none());
     }
 }

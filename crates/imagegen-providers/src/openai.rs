@@ -10,14 +10,12 @@ use imagegen_core::config::ProviderConfig;
 use imagegen_core::error::RetryClass;
 use serde_json::{json, Value};
 
-use crate::common::{
-    b64_decode, basis, check_model, data_url, descriptor_from, megapixels, per_image_price, status_error, ApiKey,
-};
+use crate::common::{b64_decode, basis, check_model, data_url, descriptor_from, megapixels, per_image_price, status_error, ApiKey};
 use crate::sizing::choose_size;
 use crate::transport::{redact, send, HostPolicy, HttpRequest, HttpTransport};
 use crate::types::{
-    AlphaSupport, CallContext, CostEstimate, CostModel, ErrorKind, Funding, ImageProvider, ImageRequest, ProviderDescriptor,
-    ProviderError, ProviderOutput,
+    AlphaSupport, CallContext, CostEstimate, CostModel, ErrorKind, Funding, ImageProvider, ImageRequest, ProviderDescriptor, ProviderError,
+    ProviderOutput,
 };
 
 /// Default API base.
@@ -37,7 +35,13 @@ pub struct OpenAiProvider {
 impl OpenAiProvider {
     /// Build the adapter. `policy` decides which hosts it may reach (the registry widens it only for a base URL
     /// the user explicitly allowed).
-    pub fn new(cfg: ProviderConfig, key: Option<String>, transport: Arc<dyn HttpTransport>, policy: HostPolicy, safety_identifier: Option<String>) -> Self {
+    pub fn new(
+        cfg: ProviderConfig,
+        key: Option<String>,
+        transport: Arc<dyn HttpTransport>,
+        policy: HostPolicy,
+        safety_identifier: Option<String>,
+    ) -> Self {
         let base = cfg.base_url.clone().unwrap_or_else(|| DEFAULT_BASE.to_string()).trim_end_matches('/').to_string();
         OpenAiProvider {
             desc: descriptor_from(include_str!("../data/openai.json")),
@@ -110,14 +114,15 @@ impl OpenAiProvider {
             return Err(status_error(resp.status, &resp.body, &secrets));
         }
         let malformed = |why: &str| {
-            ProviderError::new(ErrorKind::MalformedResponse, RetryClass::ReconcileFirst, format!("{why}. The request was accepted, so a charge may have been made: check the account before repeating it"))
-                .with_status(200)
+            ProviderError::new(
+                ErrorKind::MalformedResponse,
+                RetryClass::ReconcileFirst,
+                format!("{why}. The request was accepted, so a charge may have been made: check the account before repeating it"),
+            )
+            .with_status(200)
         };
         let v: Value = serde_json::from_slice(&resp.body).map_err(|e| malformed(&format!("the response is not valid JSON ({e})")))?;
-        let b64 = v
-            .pointer("/data/0/b64_json")
-            .and_then(Value::as_str)
-            .ok_or_else(|| malformed("the response has no data[0].b64_json"))?;
+        let b64 = v.pointer("/data/0/b64_json").and_then(Value::as_str).ok_or_else(|| malformed("the response has no data[0].b64_json"))?;
         let image = b64_decode(b64)?;
         let format = v.get("output_format").and_then(Value::as_str).unwrap_or("png");
         let usage = v.get("usage").cloned();
@@ -191,14 +196,19 @@ impl ImageProvider for OpenAiProvider {
         let model = check_model(&self.desc, req)?;
         let quality = self.quality(req);
         let (w, h) = self.prepare(req)?;
-        let (usd, q) = per_image_price(&model.cost, Some(&quality)).ok_or_else(|| {
-            ProviderError::unsupported(format!("{} has no price for quality '{quality}' in the table", model.id))
-        })?;
+        let (usd, q) = per_image_price(&model.cost, Some(&quality))
+            .ok_or_else(|| ProviderError::unsupported(format!("{} has no price for quality '{quality}' in the table", model.id)))?;
         // table prices are for about 1 MP; larger outputs scale linearly
         let scale = megapixels(w, h).max(1.0);
         let proxy = matches!(model.cost, CostModel::UnpublishedProxy { .. });
         let basis_text = if let CostModel::UnpublishedProxy { proxy_of, .. } = &model.cost {
-            basis("OpenAI", &format!("{q} quality, using the {proxy_of} row as a proxy because {} has no published per-image price; tokens settle the real figure", model.id))
+            basis(
+                "OpenAI",
+                &format!(
+                    "{q} quality, using the {proxy_of} row as a proxy because {} has no published per-image price; tokens settle the real figure",
+                    model.id
+                ),
+            )
         } else {
             basis("OpenAI", &format!("{} {q} quality at about 1 MP", model.id))
         };

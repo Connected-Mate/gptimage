@@ -1,23 +1,30 @@
 //! `hoi4.image_plan`: a dry run that costs nothing and fixes everything a generation will use.
 
-use imagegen_core::category::Category;
 use imagegen_core::error::RetryClass;
 use imagegen_core::export;
+use imagegen_core::family::{Family, Group};
 use imagegen_core::naming::{self, asset_id};
 use imagegen_core::plan::{aspect_of, build_prompt, plan_path, GenerationPlan, Plan, PlanEstimate, PlanPaths, PlanRequest};
 use imagegen_core::profile::Background;
 use imagegen_core::records::{kind, RefSummary};
 use imagegen_core::refs::{self, LoadedRef, RefRole, ReferenceInput};
+use imagegen_core::reuse;
 use imagegen_core::style;
+use imagegen_core::stylesrc;
 use imagegen_providers::types::{AlphaSupport, ImageRequest, ModelStatus};
 use serde_json::json;
 
+use crate::api::{GenerateParams, GroupFollowUp};
+
 use super::{EResult, Engine, EngineError};
+
+/// Default provider order when a plan names none (decision D-12a and the maintainer's answer of 2026-11-01).
+pub const PROVIDER_ORDER: [&str; 5] = ["chatgpt_login", "openai", "gemini", "fal", "comfyui"];
 
 impl Engine {
     /// Resolve and store a plan.
     pub fn plan(&self, req: PlanRequest) -> EResult<Plan> {
-        export::validate_asset_name(req.category, &req.asset)?;
+        export::validate_asset_name(req.family, &req.asset)?;
         naming::validate_snake("feature slug", &req.feature_slug)?;
         let brief = req.brief.trim().to_string();
         if brief.is_empty() || brief.chars().count() > 4000 || brief.chars().any(|c| c.is_control() && c != '\n' && c != '\t') {
@@ -25,20 +32,20 @@ impl Engine {
         }
         let profile = self
             .profiles
-            .for_category(req.category)
-            .ok_or_else(|| EngineError::new("not_found", format!("no profile for {}", req.category), RetryClass::Terminal))?
+            .for_family(req.family)
+            .ok_or_else(|| EngineError::new("not_found", format!("no profile for {}", req.family), RetryClass::Terminal))?
             .clone();
 
         let canvas = match (profile.canvas, req.canvas) {
             ([0, 0], Some(c)) if (1..=4096).contains(&c[0]) && (1..=4096).contains(&c[1]) => c,
             ([0, 0], Some(_)) => return Err(EngineError::invalid("canvas sides must be 1 to 4096")),
-            ([0, 0], None) => return Err(EngineError::invalid(format!("{} has no fixed canvas: pass canvas [width, height]", req.category))),
+            ([0, 0], None) => return Err(EngineError::invalid(format!("{} has no fixed canvas: pass canvas [width, height]", req.family))),
             (p, None) => p,
             (p, Some(c)) if c == p => p,
             (p, Some(_)) => {
                 return Err(EngineError::invalid(format!(
                     "{} has a fixed canvas of {}x{}; to use another, override the profile in .hoi4-imagegen/config.toml or the kit's profiles.json",
-                    req.category, p[0], p[1]
+                    req.family, p[0], p[1]
                 )))
             }
         };
@@ -46,8 +53,8 @@ impl Engine {
         let style_profile = match &req.style {
             Some(name) => {
                 let s = style::load(&self.fs, name)?;
-                if !s.applies_to(req.category) {
-                    return Err(EngineError::invalid(format!("style '{name}' does not apply to {}", req.category)));
+                if !s.applies_to(req.family) {
+                    return Err(EngineError::invalid(format!("style '{name}' does not apply to {}", req.family)));
                 }
                 s.verify_references(&self.fs)?;
                 Some(s)
@@ -55,56 +62,107 @@ impl Engine {
             None => None,
         };
 
-        // provider: named, the style's, the project default, or the only configured one. Never a silent fallback.
+        // provider: named, the style's, the project default, then the first ready one in the fixed order (a
+        // signed-in ChatGPT login first, decision D-12a). The choice is reported in the plan.
         let provider_id = req
             .provider
             .clone()
             .or_else(|| style_profile.as_ref().and_then(|s| s.provider.clone()))
             .or_else(|| self.config.defaults.provider.clone())
             .or_else(|| {
-                let c = self.registry.configured_ids();
-                (c.len() == 1).then(|| c[0].clone())
+                let configured = self.registry.configured_ids();
+                PROVIDER_ORDER.iter().find(|id| configured.iter().any(|c| c == *id)).map(|s| s.to_string())
             })
             .ok_or_else(|| {
-                EngineError::invalid(format!(
-                    "name a provider: configured providers are [{}]; set defaults.provider in .hoi4-imagegen/config.toml to choose one for the project",
-                    self.registry.configured_ids().join(", ")
-                ))
+                EngineError::invalid(
+                    "no image provider is ready: run `hoi4-imagegen login` to sign in with your ChatGPT account, or set an API key (OPENAI_API_KEY, GEMINI_API_KEY, FAL_KEY) or a ComfyUI endpoint",
+                )
             })?;
-        self.check_category_policy(&profile, &provider_id)?;
+        self.check_family_policy(&profile, &provider_id)?;
         let provider = self.registry.get(&provider_id).ok_or_else(|| {
-            let why = self.registry.problems().get(&provider_id).cloned().unwrap_or_else(|| format!("known providers: {}", self.registry.ids().join(", ")));
+            let why =
+                self.registry.problems().get(&provider_id).cloned().unwrap_or_else(|| format!("known providers: {}", self.registry.ids().join(", ")));
             EngineError::new("provider_not_found", format!("provider '{provider_id}' is not available ({why})"), RetryClass::Terminal)
         })?;
 
-        // references: the style's pinned ones first, then the caller's
+        // references, mod first (maintainer decision of 2026-11-01): the pinned style, the mod's copy of the asset
+        // skill's shelf, the mod's own assets, then vanilla. The tier is chosen from the files alone, so the
+        // provider's limit (which depends on the model) only trims the list afterwards.
         let game = self.game_dir();
-        let mut inputs: Vec<ReferenceInput> = Vec::new();
-        if let Some(s) = &style_profile {
-            inputs.extend(s.references.iter().map(|r| ReferenceInput { path: r.path.clone(), role: RefRole::StyleAnchor }));
+        let pinned = self.pinned_style_for(req.family, style_profile.as_ref());
+        let mut sources = self.resolve_style(&profile, pinned.as_ref(), stylesrc::DEFAULT_SEND, false);
+        let explicit_model = req.model.clone().or_else(|| style_profile.as_ref().and_then(|s| s.model.clone()));
+        let explicit_refs = req.references.len();
+        let wants_refs = explicit_refs > 0 || !sources.send_paths().is_empty();
+        let mut model_id = explicit_model.clone().unwrap_or_else(|| provider.default_model(wants_refs));
+        let model_refs = |m: &str| provider.descriptor().model(m).map(|x| if x.supports_edit { usize::from(x.max_refs) } else { 0 }).unwrap_or(0);
+        let cap = model_refs(&model_id).saturating_sub(explicit_refs).min(stylesrc::DEFAULT_SEND);
+        sources.limit_send(cap, &format!("{provider_id} {model_id} takes at most {} reference images", model_refs(&model_id)));
+        if explicit_model.is_none() && explicit_refs == 0 && sources.send_paths().is_empty() {
+            model_id = provider.default_model(false);
         }
+
+        let mut inputs: Vec<ReferenceInput> =
+            sources.send_paths().into_iter().map(|path| ReferenceInput { path, role: RefRole::StyleAnchor }).collect();
         inputs.extend(req.references.iter().cloned());
         let mut loaded: Vec<LoadedRef> = Vec::new();
         for input in &inputs {
-            loaded.push(refs::load_reference(&self.fs, game.as_deref(), &self.config.policy, input)?);
+            let is_auto = !req.references.contains(input);
+            match refs::load_reference(&self.fs, game.as_deref(), input) {
+                Ok(l) => {
+                    if is_auto {
+                        if let Some(c) = sources.report.chosen.iter_mut().find(|c| c.sent_to_provider && c.path == input.path) {
+                            c.sha256 = l.sha256.clone();
+                        }
+                    }
+                    loaded.push(l);
+                }
+                Err(e) if is_auto => {
+                    // an automatic reference that cannot be read is dropped; only the caller's own references fail a plan
+                    if let Some(c) = sources.report.chosen.iter_mut().find(|c| c.sent_to_provider && c.path == input.path) {
+                        c.sent_to_provider = false;
+                        c.reason = format!("{} (not sent: {e})", c.reason);
+                    }
+                }
+                Err(e) => return Err(e.into()),
+            }
         }
         refs::check_set_caps(&loaded)?;
+        // a reference that is the candidate itself must not be another family's installed art
+        for r in loaded.iter().filter(|r| r.role == RefRole::EditTarget) {
+            let (img, _) = imagegen_core::pixels::decode(&r.png, None, imagegen_core::pixels::DecodeLimits::default())?;
+            reuse::ensure_no_cross_family_reuse(
+                &self.fs,
+                &self.profiles,
+                req.family,
+                &reuse::pixel_hash(&img),
+                &format!("the edit target {}", r.path),
+            )?;
+        }
 
-        let model_id = req
-            .model
-            .clone()
-            .or_else(|| style_profile.as_ref().and_then(|s| s.model.clone()))
-            .unwrap_or_else(|| provider.default_model(!loaded.is_empty()));
+        if provider_id == "chatgpt_login" && model_id != provider_chatgpt_login::MODEL {
+            return Err(EngineError::invalid(format!(
+                "the ChatGPT-login route runs only {} at {} reasoning effort (maintainer decision); '{model_id}' cannot be used with it",
+                provider_chatgpt_login::MODEL,
+                provider_chatgpt_login::REASONING_EFFORT
+            )));
+        }
         let quality = req.quality.clone().or_else(|| self.config.provider(&provider_id).quality);
         let transparent = req.transparent.unwrap_or(profile.imagegen.background == Background::Transparent);
-        let prompt = build_prompt(&profile, canvas, &brief, style_profile.as_ref(), &loaded, transparent);
+        // what the model is asked for: the canvas, or a different shape when the recipe needs one (a tall portrait for the advisor card)
+        let source_canvas = profile.imagegen.source_canvas.filter(|c| *c != canvas);
+        let ask = source_canvas.unwrap_or(canvas);
+        // finishing that needs the mod's templates is refused now, before anything is spent
+        self.check_finishing_resources(imagegen_core::chain::recipe_of(&profile))?;
+        let prompt_style = style_profile.as_ref().or(pinned.as_ref());
+        let prompt = build_prompt(&profile, ask, &brief, prompt_style, &loaded, transparent, sources.report.style_paragraph.as_deref());
 
         let probe = ImageRequest {
             model: model_id.clone(),
             prompt: prompt.text.clone(),
             negative: prompt.negative.clone(),
-            width: canvas[0],
-            height: canvas[1],
+            width: ask[0],
+            height: ask[1],
             transparent,
             quality: quality.clone(),
             refs: loaded
@@ -148,6 +206,19 @@ impl Engine {
                 warnings.push(format!("{model_id} documents transparent backgrounds as a preview; the pixels are checked either way"));
             }
         }
+        if profile.family.group() == Group::Portrait && profile.family != Family::AdvisorCard {
+            warnings.push(
+                "portraits of real people: providers may refuse or treat images of real people differently, and the Steam warranty covers personal rights. Prefer stylised portraits and never edit photographs of identifiable living people (docs/rules-and-terms.md)".into(),
+            );
+            if !self.face_model_available() {
+                warnings.push(
+                    "the YuNet face model was not found in the project (.claude/skills/*/tools/models/), so processing needs portrait_crop to choose the crop by hand".into(),
+                );
+            }
+        }
+        if profile.family == Family::AdvisorCard {
+            warnings.push("advisor portraits of real people: the same likeness caution applies (docs/rules-and-terms.md)".into());
+        }
         if profile.source.starts_with("LOW CONFIDENCE") {
             warnings.push("this profile's canvas has low confidence; confirm the surface before installing".into());
         }
@@ -167,8 +238,13 @@ impl Engine {
                 imagegen_providers::registry::key_env_names(&provider_id, &self.config.provider(&provider_id)).join(" or ")
             ));
         }
-        if loaded.iter().any(|r| r.origin.is_vanilla()) {
-            approvals.push("references include Paradox art; this project opted in with policy.allow_vanilla_references (decision D4)".into());
+        if req.style.is_none() {
+            if let Some(p) = &pinned {
+                warnings.push(format!(
+                    "the project's pinned style '{}' for {} was applied automatically (references and style text)",
+                    p.name, req.family
+                ));
+            }
         }
         if est.usd > self.config.policy.max_usd_per_call {
             approvals.push(format!(
@@ -208,14 +284,19 @@ impl Engine {
             asset_id: asset_id(&req.feature_slug, &req.asset),
             profile: self.profile_ref(&profile),
             canvas,
+            source_canvas,
             frames: profile.frames.max(1),
             provider: provider_id,
             model: model_id,
             quality,
-            generation: GenerationPlan { width: gw, height: gh, transparent, aspect: aspect_of(canvas) },
+            generation: GenerationPlan { width: gw, height: gh, transparent, aspect: aspect_of(ask) },
             prompt,
-            references: loaded.iter().map(|r| RefSummary { path: r.path.clone(), role: r.role, origin: r.origin, sha256: r.sha256.clone() }).collect(),
+            references: loaded
+                .iter()
+                .map(|r| RefSummary { path: r.path.clone(), role: r.role, origin: r.origin, sha256: r.sha256.clone() })
+                .collect(),
             style: req.style.clone(),
+            style_sources: Some(sources.report.clone()),
             style_sha256: match &req.style {
                 Some(n) => Some(imagegen_core::hashing::sha256_hex(&self.fs.read(&style::style_path(n)?, 256 * 1024)?)),
                 None => None,
@@ -236,6 +317,45 @@ impl Engine {
         plan.seal();
         self.store_plan(&plan)?;
         Ok(plan)
+    }
+
+    /// The group tools (`hoi4.image_icon` and the others): plan, and generate when `approve` is set.
+    ///
+    /// The family must belong to the tool's group. This is checked here as well as in the tool's schema, so a
+    /// caller that ignores the schema still cannot make an asset through the wrong tool.
+    pub fn group_request(&self, group: Group, req: PlanRequest, follow: GroupFollowUp) -> EResult<serde_json::Value> {
+        if req.family.group() != group {
+            return Err(EngineError::new(
+                "family_not_in_group",
+                format!(
+                    "{} is a {} family and cannot be made with {}. Use {} (this tool makes: {})",
+                    req.family,
+                    req.family.group(),
+                    group.tool_name(),
+                    req.family.group().tool_name(),
+                    group.family_ids().join(", ")
+                ),
+                RetryClass::Terminal,
+            ));
+        }
+        let plan = self.plan(req)?;
+        let plan_json = serde_json::to_value(&plan).map_err(|e| EngineError::new("internal", e.to_string(), RetryClass::Terminal))?;
+        if !follow.approve {
+            return Ok(json!({
+                "generated": false,
+                "plan_id": plan.plan_id,
+                "plan": plan_json,
+                "next": "Nothing was spent. Call this tool again with approve = true and an idempotency_key to generate, or pass the plan_id to hoi4.image_generate."
+            }));
+        }
+        let key = follow
+            .idempotency_key
+            .clone()
+            .filter(|k| !k.trim().is_empty())
+            .ok_or_else(|| EngineError::invalid("approve = true needs an idempotency_key"))?;
+        let generation =
+            self.generate(GenerateParams { plan_id: plan.plan_id.clone(), idempotency_key: key, approve_cost: Some(follow.approve_cost) })?;
+        Ok(json!({"generated": true, "plan_id": plan.plan_id, "plan": plan_json, "generation": generation}))
     }
 
     fn store_plan(&self, plan: &Plan) -> EResult<()> {
@@ -261,10 +381,13 @@ impl Engine {
             return Err(EngineError::invalid(format!("'{plan_id}' is not a plan id (plan- and 16 hex digits)")));
         }
         let bytes = self.fs.read(&plan_path(plan_id), 4 * 1024 * 1024).map_err(|e| match e {
-            imagegen_core::Error::NotFound(_) => EngineError::new("not_found", format!("no stored plan {plan_id}; run hoi4.image_plan first"), RetryClass::Terminal),
+            imagegen_core::Error::NotFound(_) => {
+                EngineError::new("not_found", format!("no stored plan {plan_id}; run hoi4.image_plan first"), RetryClass::Terminal)
+            }
             other => other.into(),
         })?;
-        let plan: Plan = serde_json::from_slice(&bytes).map_err(|e| EngineError::new("plan_unreadable", format!("plan {plan_id} is not readable: {e}"), RetryClass::Terminal))?;
+        let plan: Plan = serde_json::from_slice(&bytes)
+            .map_err(|e| EngineError::new("plan_unreadable", format!("plan {plan_id} is not readable: {e}"), RetryClass::Terminal))?;
         if !plan.is_intact() || plan.plan_id != plan_id {
             return Err(EngineError::refused(
                 "plan_changed",
@@ -276,7 +399,7 @@ impl Engine {
     }
 }
 
-/// Convenience for tests and the CLI: a category by id string.
-pub fn parse_category(s: &str) -> EResult<Category> {
-    s.parse::<Category>().map_err(EngineError::from)
+/// Convenience for tests and the CLI: a family by id string.
+pub fn parse_family(s: &str) -> EResult<Family> {
+    s.parse::<Family>().map_err(EngineError::from)
 }

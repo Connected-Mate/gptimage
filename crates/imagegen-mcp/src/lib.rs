@@ -7,6 +7,7 @@
 
 pub mod api;
 pub mod engine;
+pub mod keyenv;
 pub mod plugin;
 pub mod server;
 

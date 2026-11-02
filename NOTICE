@@ -14,11 +14,22 @@ source is in this repository's git history, not in its working tree. The files i
 crates/provider-chatgpt-login port upstream's src/auth.js, src/login.js and
 src/codex.js to Rust and carry a header saying so.
 
+The sprite audit and the lossless `.gfx` registration link two crates of the shared HOI4 engine:
+
+  klimPaskov/hoi4-agent-tools  https://github.com/klimPaskov/hoi4-agent-tools
+  crates hoi4-syntax and hoi4-engine (engine/crates/syntax, engine/crates/engine)
+  Copyright (c) 2026 klimPaskov and hoi4-agent-tools contributors
+  Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+  Used as an unmodified Git dependency pinned in the workspace Cargo.toml. Linked into the
+  binaries, it stays under the Apache License 2.0; this repository's own code stays MIT.
+
 Not covered by this license:
 
   * Hearts of Iron IV and its artwork belong to Paradox Interactive. This tool reads
-    file headers of an installed game for calibration and never copies game files.
-    Sending Paradox art to an image provider as a reference is a per-project opt-in.
+    an installed game's files for calibration and style statistics and never copies
+    game files into a mod.
+    Paradox art may be sent to an image provider as a style reference, and this tool
+    records every reference it sends. See docs/rules-and-terms.md.
   * Images produced with a provider are subject to that provider's terms. This
     project makes no statement about the rights in generated art.
   * Third-party Rust crates keep their own licenses (MIT or Apache-2.0 in the default

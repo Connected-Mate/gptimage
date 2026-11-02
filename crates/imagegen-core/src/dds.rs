@@ -31,7 +31,17 @@ pub fn write_a8r8g8b8(img: &Rgba) -> Vec<u8> {
         w * 4,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // reserved1[11]
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0, // reserved1[11]
         32,
         DDPF_RGB | DDPF_ALPHAPIXELS,
         0,
@@ -41,7 +51,10 @@ pub fn write_a8r8g8b8(img: &Rgba) -> Vec<u8> {
         0x0000_00FF,
         0xFF00_0000,
         DDSCAPS_TEXTURE,
-        0, 0, 0, 0, // caps2, caps3, caps4, reserved2
+        0,
+        0,
+        0,
+        0, // caps2, caps3, caps4, reserved2
     ];
     let mut out = Vec::with_capacity(HEADER_LEN + img.data.len());
     out.extend_from_slice(b"DDS ");
@@ -142,7 +155,17 @@ pub fn canonical_problems(bytes: &[u8]) -> Vec<String> {
         info.width.wrapping_mul(4),
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
         32,
         65,
         0,
@@ -152,7 +175,10 @@ pub fn canonical_problems(bytes: &[u8]) -> Vec<String> {
         0x0000_00FF,
         0xFF00_0000,
         0x1000,
-        0, 0, 0, 0,
+        0,
+        0,
+        0,
+        0,
     ];
     let names = ["size", "flags", "height", "width", "pitch"];
     for (i, want) in expected.iter().enumerate() {
@@ -173,10 +199,7 @@ pub fn canonical_problems(bytes: &[u8]) -> Vec<String> {
 pub fn decode(bytes: &[u8]) -> Result<Rgba> {
     let info = parse_header(bytes)?;
     if info.format != DdsFormat::A8R8G8B8 {
-        return Err(Error::Image(format!(
-            "only uncompressed A8R8G8B8 DDS can be decoded, this file is {:?}",
-            info.format
-        )));
+        return Err(Error::Image(format!("only uncompressed A8R8G8B8 DDS can be decoded, this file is {:?}", info.format)));
     }
     if info.width == 0 || info.height == 0 || info.width > 16384 || info.height > 16384 {
         return Err(Error::Image(format!("implausible DDS size {}x{}", info.width, info.height)));

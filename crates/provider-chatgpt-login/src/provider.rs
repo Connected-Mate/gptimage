@@ -1,8 +1,10 @@
 //! The provider: refresh the token, call the undocumented responses endpoint, read the image out of the stream.
 //!
-//! Rust port of Connected-Mate/gptimage `src/codex.js` (MIT, commit dfb4948). The request is reconstructed from
-//! that file; it has never been sent from this repository (no test or tool here contacts the backend).
+//! Rust port of Connected-Mate/gptimage `src/codex.js` (MIT, commit dfb4948), plus the fixed model and reasoning
+//! effort (maintainer decision, 2026-11-01): every request asks for gpt-6-luna at high effort, and a response that
+//! does not report both is refused, so a silent downgrade can never produce an asset.
 
+use std::path::PathBuf;
 use std::sync::Arc;
 
 use imagegen_core::config::EnvSource;
@@ -12,14 +14,22 @@ use imagegen_providers::common::{b64, b64_decode, data_url, status_error};
 use imagegen_providers::sizing::choose_size;
 use imagegen_providers::transport::{send, HostPolicy, HttpRequest, HttpTransport};
 use imagegen_providers::types::{
-    AlphaSupport, CallContext, CostEstimate, CostModel, ErrorKind, Funding, ImageProvider, ImageRequest, ModelInfo, ModelStatus,
-    ProviderDescriptor, ProviderError, ProviderOutput, SizeRule, TABLES_RETRIEVED,
+    AlphaSupport, CallContext, CostEstimate, CostModel, ErrorKind, Funding, ImageProvider, ImageRequest, ModelInfo, ModelStatus, ProviderDescriptor,
+    ProviderError, ProviderOutput, SizeRule, TABLES_RETRIEVED,
 };
 use serde_json::{json, Value};
 
 use crate::oauth::{self, account_id, expiry_ms, parse_tokens, refresh_request};
-use crate::store::{default_path, CredentialStore, Credentials};
-use crate::{BACKEND_URL, DEFAULT_MODEL, HOSTS, ORIGINATOR};
+use crate::store::{CredentialStore, Credentials};
+use crate::{BACKEND_URL, HOSTS, MODEL, ORIGINATOR, REASONING_EFFORT};
+
+/// Environment variable naming a folder where raw backend responses are saved, to build recorded-real fixtures.
+pub const RECORD_ENV: &str = "HOI4_IMAGEGEN_RECORD_RESPONSES";
+
+/// Start of a parse error for an image the provider's safety system refused.
+pub const MODERATION_PREFIX: &str = "moderation_blocked: ";
+/// Start of a parse error for an image call that failed for another reason.
+pub const FAILED_PREFIX: &str = "image_generation_failed: ";
 
 /// Refresh this long before the token expires.
 const EXPIRY_MARGIN_MS: u64 = 60_000;
@@ -34,20 +44,24 @@ pub struct ChatGptLoginProvider {
     policy: HostPolicy,
     clock: Arc<dyn Clock>,
     model: String,
+    record_dir: Option<PathBuf>,
 }
 
 impl ChatGptLoginProvider {
-    /// Build from the environment: the credential file location comes from [`default_path`].
-    pub fn from_environment(env: &dyn EnvSource, transport: Arc<dyn HttpTransport>) -> Self {
-        Self::new(CredentialStore::at(default_path(env)), transport, Arc::new(SystemClock), DEFAULT_MODEL.to_string())
+    /// Build from the environment: the operating system credential store (see [`CredentialStore::for_environment`]).
+    pub fn from_environment(env: &dyn EnvSource, transport: Arc<dyn HttpTransport>) -> Result<Self, String> {
+        let mut p = Self::new(CredentialStore::for_environment(env)?, transport, Arc::new(SystemClock));
+        p.record_dir = env.get(RECORD_ENV).map(PathBuf::from);
+        Ok(p)
     }
 
     /// Build with explicit parts (tests).
-    pub fn new(store: CredentialStore, transport: Arc<dyn HttpTransport>, clock: Arc<dyn Clock>, model: String) -> Self {
+    pub fn new(store: CredentialStore, transport: Arc<dyn HttpTransport>, clock: Arc<dyn Clock>) -> Self {
+        let model = MODEL.to_string();
         let desc = ProviderDescriptor {
             id: "chatgpt_login".into(),
-            display_name: "ChatGPT login (UNOFFICIAL, personal use only)".into(),
-            doc_url: "docs/unofficial-chatgpt-login.md".into(),
+            display_name: "ChatGPT login (your own plan; local only)".into(),
+            doc_url: "docs/chatgpt-login.md".into(),
             retrieved: TABLES_RETRIEVED.into(),
             env_vars: vec![],
             hosts: HOSTS.iter().map(|h| h.to_string()).collect(),
@@ -63,11 +77,11 @@ impl ChatGptLoginProvider {
                 async_job: false,
                 supports_edit: true,
                 edit_model: None,
-                notes: "Not a stable image model: the slug carries the hosted image tool of an undocumented backend and can rotate. No mask, no documented alpha (transparency is proven from pixels), no usage report.".into(),
+                notes: "Fixed to gpt-6-luna at high reasoning effort (maintainer decision); the backend must echo both or the image is refused. The backend's own image tool chooses its model, quality and size, so this route cannot force image quality; what it chose is recorded per image. No mask, no documented alpha (transparency is proven from pixels), no usage report.".into(),
             }],
-            terms_note: "Unofficial. Impersonates the Codex CLI against an undocumented endpoint; may break or be blocked without notice; account consequences are yours. Not for servers, not for sharing tokens.".into(),
+            terms_note: "Presents itself as the Codex CLI to a backend OpenAI does not document for other tools; may break or be blocked without notice; account consequences are yours. Local only: never hosted, never shared.".into(),
         };
-        ChatGptLoginProvider { desc, store, transport, policy: HostPolicy::api(&HOSTS), clock, model }
+        ChatGptLoginProvider { desc, store, transport, policy: HostPolicy::api(&HOSTS), clock, model, record_dir: None }
     }
 
     /// A valid access token and account id, refreshing and saving when needed.
@@ -76,16 +90,19 @@ impl ChatGptLoginProvider {
             .store
             .load()
             .map_err(|e| ProviderError::new(ErrorKind::NotConfigured, RetryClass::RequiresAuthorization, e))?
-            .ok_or_else(|| ProviderError::not_configured("not signed in: run `hoi4-imagegen chatgpt-login login`"))?;
+            .ok_or_else(|| ProviderError::not_configured("not signed in: run `hoi4-imagegen login`"))?;
         let now_ms = (self.clock.now_secs().max(0) as u64) * 1000;
         let expired = creds.expires_ms.map(|e| now_ms + EXPIRY_MARGIN_MS >= e).unwrap_or(false);
         if !expired {
             return Ok(creds);
         }
-        let refresh = creds
-            .refresh
-            .clone()
-            .ok_or_else(|| ProviderError::new(ErrorKind::Auth, RetryClass::RequiresAuthorization, "the access token expired and there is no refresh token: sign in again"))?;
+        let refresh = creds.refresh.clone().ok_or_else(|| {
+            ProviderError::new(
+                ErrorKind::Auth,
+                RetryClass::RequiresAuthorization,
+                "the access token expired and there is no refresh token: sign in again",
+            )
+        })?;
         let resp = send(&*self.transport, &self.policy, &refresh_request(&refresh))?;
         if resp.status != 200 {
             return Err(status_error(resp.status, &resp.body, &[refresh, creds.access.clone()]));
@@ -116,7 +133,8 @@ impl ChatGptLoginProvider {
             tool["size"] = json!(format!("{w}x{h}"));
         }
         json!({
-            "model": req.model,
+            "model": self.model,
+            "reasoning": {"effort": REASONING_EFFORT},
             "instructions": INSTRUCTIONS,
             "input": [{"role": "user", "content": content}],
             "tools": [tool],
@@ -128,7 +146,10 @@ impl ChatGptLoginProvider {
 
     fn call(&self, req: &ImageRequest) -> Result<ProviderOutput, ProviderError> {
         if req.model != self.model {
-            return Err(ProviderError::unsupported(format!("this provider serves '{}', not '{}'", self.model, req.model)));
+            return Err(ProviderError::unsupported(format!(
+                "the ChatGPT-login route runs only {} at {} reasoning effort (maintainer decision); '{}' was requested",
+                self.model, REASONING_EFFORT, req.model
+            )));
         }
         let size = self.prepare(req).ok();
         let creds = self.credentials()?;
@@ -145,54 +166,189 @@ impl ChatGptLoginProvider {
         match resp.status {
             200 => {}
             401 => {
-                return Err(ProviderError::new(ErrorKind::Auth, RetryClass::RequiresAuthorization, "the backend rejected the token (401): sign in again").with_status(401));
+                return Err(ProviderError::new(
+                    ErrorKind::Auth,
+                    RetryClass::RequiresAuthorization,
+                    "the backend rejected the token (401): sign in again",
+                )
+                .with_status(401));
             }
             429 => {
-                return Err(ProviderError::new(ErrorKind::RateLimited, RetryClass::SafeSameInputs, "rate limited by the ChatGPT plan (429): wait and retry").with_status(429));
+                return Err(ProviderError::new(
+                    ErrorKind::RateLimited,
+                    RetryClass::SafeSameInputs,
+                    "rate limited by the ChatGPT plan (429): wait and retry",
+                )
+                .with_status(429));
             }
             s => return Err(status_error(s, &resp.body, &secrets)),
         }
         let text = String::from_utf8_lossy(&resp.body);
-        let b64_png = parse_sse(&text).map_err(|e| ProviderError::new(ErrorKind::MalformedResponse, RetryClass::ReconcileFirst, e))?;
+        self.record(&text);
+        let outcome = parse_sse(&text).map_err(|e| {
+            if let Some(d) = e.strip_prefix(MODERATION_PREFIX) {
+                ProviderError::new(
+                    ErrorKind::ModerationBlocked,
+                    RetryClass::Terminal,
+                    format!("the provider's safety system refused this image; change the brief or the references and plan again ({d})"),
+                )
+            } else if let Some(d) = e.strip_prefix(FAILED_PREFIX) {
+                ProviderError::new(ErrorKind::BadRequest, RetryClass::Terminal, format!("the image call failed: {d}"))
+            } else {
+                ProviderError::new(ErrorKind::MalformedResponse, RetryClass::ReconcileFirst, e)
+            }
+        })?;
+        let (model, effort) = verify_model(&outcome)?;
+        let mut notes = vec![format!("ran on {model} at {effort} reasoning effort, as reported by the backend; usage is not reported")];
+        if let Some(meta) = outcome.image_meta.as_object() {
+            if let Some(m) = &outcome.image_tool_model {
+                notes.push(format!("image tool model (chosen by the backend): {m}"));
+            }
+            for k in ["size", "quality", "background", "output_format"] {
+                if let Some(v) = meta.get(k).and_then(Value::as_str) {
+                    notes.push(format!("image {k}: {v}"));
+                }
+            }
+            if let Some(v) = meta.get("revised_prompt").and_then(Value::as_str) {
+                notes.push(format!("revised prompt: {v}"));
+            }
+        }
         Ok(ProviderOutput {
-            image: b64_decode(&b64_png)?,
+            image: b64_decode(&outcome.image_b64)?,
             mime: "image/png".into(),
-            provider_request_id: None,
-            usage: None,
+            provider_request_id: outcome.response_id.clone(),
+            usage: outcome.usage.clone(),
             actual_usd: None,
             usage_unknown: true,
-            model_echo: Some(self.model.clone()),
-            notes: vec!["generated through an unofficial backend; usage is not reported".into()],
+            model_echo: Some(model),
+            notes,
             job: None,
         })
     }
+
+    /// Save the raw response for fixtures when [`RECORD_ENV`] names a folder. Never fails the call.
+    fn record(&self, text: &str) {
+        let Some(dir) = &self.record_dir else { return };
+        if std::fs::create_dir_all(dir).is_err() {
+            return;
+        }
+        let name = format!("chatgpt-login-{}.sse", self.clock.now_rfc3339().replace([':', '-'], ""));
+        let _ = std::fs::write(dir.join(name), text.as_bytes());
+    }
 }
 
-/// Find the first image result in an SSE stream. Surfaces backend error events instead of waiting for the end.
-pub fn parse_sse(stream: &str) -> Result<String, String> {
+/// What a response stream said.
+#[derive(Debug, Clone, Default)]
+pub struct SseOutcome {
+    /// The base64 PNG.
+    pub image_b64: String,
+    /// `response.model`, as reported.
+    pub model: Option<String>,
+    /// `response.reasoning.effort`, as reported.
+    pub effort: Option<String>,
+    /// `response.id`.
+    pub response_id: Option<String>,
+    /// The image call item without its result (size, quality, revised prompt and so on).
+    pub image_meta: Value,
+    /// `response.usage`, when present.
+    pub usage: Option<Value>,
+    /// The model of the backend's hosted image tool, as listed in `response.tools` (it renders the pixels).
+    pub image_tool_model: Option<String>,
+}
+
+/// Read a response stream: the first image result, plus the model and effort the backend reports in its response
+/// events. Surfaces backend error events instead of waiting for the end.
+pub fn parse_sse(stream: &str) -> Result<SseOutcome, String> {
     let normalized = stream.replace("\r\n", "\n");
+    let mut out = SseOutcome::default();
+    let mut image: Option<String> = None;
     for raw in normalized.split("\n\n") {
         let data: String = raw.lines().filter_map(|l| l.strip_prefix("data:")).map(str::trim).collect::<Vec<_>>().join("");
         if data.is_empty() || data == "[DONE]" {
             continue;
         }
-        let Ok(v) = serde_json::from_str::<Value>(&data) else { continue };
+        let Ok(v) = serde_json::from_str::<Value>(&data) else {
+            continue;
+        };
+        if let Some(r) = v.get("response") {
+            if let Some(m) = r.get("model").and_then(Value::as_str) {
+                out.model = Some(m.to_string());
+            }
+            if let Some(e) = r.pointer("/reasoning/effort").and_then(Value::as_str) {
+                out.effort = Some(e.to_string());
+            }
+            if let Some(id) = r.get("id").and_then(Value::as_str) {
+                out.response_id = Some(id.to_string());
+            }
+            if let Some(u) = r.get("usage").filter(|u| !u.is_null()) {
+                out.usage = Some(u.clone());
+            }
+            if let Some(m) = r
+                .get("tools")
+                .and_then(Value::as_array)
+                .and_then(|t| t.iter().find(|x| x["type"] == "image_generation"))
+                .and_then(|x| x.get("model"))
+                .and_then(Value::as_str)
+            {
+                out.image_tool_model = Some(m.to_string());
+            }
+        }
         match v.get("type").and_then(Value::as_str) {
-            Some("response.output_item.done") => {
+            Some("response.output_item.done") if image.is_none() => {
+                // a refused or failed image call: the backend then answers in text, and the stream has no image
+                if v.pointer("/item/type").and_then(Value::as_str) == Some("image_generation_call")
+                    && v.pointer("/item/status").and_then(Value::as_str) == Some("failed")
+                {
+                    let detail = match v.pointer("/item/error") {
+                        Some(Value::String(s)) => s.clone(),
+                        Some(other) => other.to_string(),
+                        None => "no detail".into(),
+                    };
+                    let kind = if detail.contains("moderation_blocked") { MODERATION_PREFIX } else { FAILED_PREFIX };
+                    return Err(format!("{kind}{detail}"));
+                }
                 if v.pointer("/item/type").and_then(Value::as_str) == Some("image_generation_call") {
                     if let Some(result) = v.pointer("/item/result").and_then(Value::as_str) {
-                        return Ok(result.to_string());
+                        image = Some(result.to_string());
+                        let mut meta = v["item"].clone();
+                        if let Some(o) = meta.as_object_mut() {
+                            o.remove("result");
+                        }
+                        out.image_meta = meta;
                     }
                 }
             }
             Some("response.failed") | Some("error") => {
-                let msg = v.pointer("/response/error/message").or_else(|| v.pointer("/error/message")).and_then(Value::as_str).unwrap_or("unknown backend error");
+                let msg = v
+                    .pointer("/response/error/message")
+                    .or_else(|| v.pointer("/error/message"))
+                    .and_then(Value::as_str)
+                    .unwrap_or("unknown backend error");
                 return Err(format!("backend error: {msg}"));
             }
             _ => {}
         }
     }
-    Err("the stream ended without an image_generation result".into())
+    out.image_b64 = image.ok_or("the stream ended without an image_generation result")?;
+    Ok(out)
+}
+
+/// Refuse anything that did not run on gpt-6-luna at high effort, or that does not say what it ran on.
+pub fn verify_model(o: &SseOutcome) -> Result<(String, String), ProviderError> {
+    let refuse = |msg: String| ProviderError::new(ErrorKind::Unsupported, RetryClass::Terminal, msg);
+    let model = o.model.clone().ok_or_else(|| {
+        refuse(format!("the backend did not report which model ran, so the image cannot be shown to come from {MODEL}; it was not used"))
+    })?;
+    if model != MODEL && !model.starts_with(&format!("{MODEL}-")) {
+        return Err(refuse(format!("the backend ran '{model}' instead of {MODEL}; the image was not used (no fallback is allowed)")));
+    }
+    let effort = o.effort.clone().ok_or_else(|| {
+        refuse(format!("the backend did not report the reasoning effort, so {REASONING_EFFORT} effort cannot be shown; the image was not used"))
+    })?;
+    if effort != REASONING_EFFORT {
+        return Err(refuse(format!("the backend ran at '{effort}' reasoning effort instead of {REASONING_EFFORT}; the image was not used")));
+    }
+    Ok((model, effort))
 }
 
 impl ImageProvider for ChatGptLoginProvider {
@@ -219,7 +375,9 @@ impl ImageProvider for ChatGptLoginProvider {
     fn estimate(&self, _req: &ImageRequest) -> Result<CostEstimate, ProviderError> {
         Ok(CostEstimate {
             usd: 0.0,
-            basis: "ChatGPT plan quota: there is no per-image price and no usage report, so spend is recorded as unknown and no operator allowance is ever charged".into(),
+            basis:
+                "ChatGPT plan quota: there is no per-image price and no usage report, so spend is recorded as unknown and no operator allowance is ever charged"
+                    .into(),
             usage_unknown: true,
             funding: Funding::PlanQuota,
         })
@@ -279,7 +437,7 @@ mod tests {
 
     fn request() -> ImageRequest {
         ImageRequest {
-            model: DEFAULT_MODEL.into(),
+            model: MODEL.into(),
             prompt: "an iron wall".into(),
             negative: vec![],
             width: 100,
@@ -298,27 +456,71 @@ mod tests {
         if let Some(c) = creds {
             store.save(&c).unwrap();
         }
-        ChatGptLoginProvider::new(store, fixture, Arc::new(FixedClock(now)), DEFAULT_MODEL.into())
+        ChatGptLoginProvider::new(store, fixture, Arc::new(FixedClock(now)))
     }
 
     fn creds(expires_ms: Option<u64>) -> Credentials {
-        Credentials { access: "access-synthetic-1".into(), refresh: Some("refresh-synthetic-1".into()), account_id: Some("acct-synthetic".into()), expires_ms, last_refresh: "t".into() }
+        Credentials {
+            access: "access-synthetic-1".into(),
+            refresh: Some("refresh-synthetic-1".into()),
+            account_id: Some("acct-synthetic".into()),
+            expires_ms,
+            last_refresh: "t".into(),
+        }
     }
 
     fn sse(png_b64: &str) -> String {
         format!(
-            "event: response.created\ndata: {{\"type\":\"response.created\"}}\n\n: keepalive\n\ndata: {{\"type\":\"response.output_item.done\",\"item\":{{\"type\":\"image_generation_call\",\"result\":\"{png_b64}\"}}}}\n\ndata: [DONE]\n\n"
+            "event: response.created\ndata: {{\"type\":\"response.created\",\"response\":{{\"id\":\"resp_synthetic\",\"model\":\"gpt-6-luna\",\"reasoning\":{{\"effort\":\"high\"}}}}}}\n\n: keepalive\n\ndata: {{\"type\":\"response.output_item.done\",\"item\":{{\"type\":\"image_generation_call\",\"size\":\"1024x1024\",\"result\":\"{png_b64}\"}}}}\n\ndata: [DONE]\n\n"
         )
     }
 
     #[test]
     fn sse_parsing_finds_the_image_and_surfaces_errors() {
-        assert_eq!(parse_sse(&sse("QUJD")).unwrap(), "QUJD");
-        assert_eq!(parse_sse(&sse("QUJD").replace('\n', "\r\n")).unwrap(), "QUJD", "CRLF streams parse too");
-        assert!(parse_sse("data: {\"type\":\"response.failed\",\"response\":{\"error\":{\"message\":\"quota\"}}}\n\n").unwrap_err().contains("quota"));
+        let o = parse_sse(&sse("QUJD")).unwrap();
+        assert_eq!(
+            (o.image_b64.as_str(), o.model.as_deref(), o.effort.as_deref(), o.response_id.as_deref()),
+            ("QUJD", Some("gpt-6-luna"), Some("high"), Some("resp_synthetic"))
+        );
+        assert_eq!(o.image_meta["size"], "1024x1024");
+        assert!(o.image_meta.get("result").is_none(), "the image itself is not kept in the metadata");
+        assert_eq!(parse_sse(&sse("QUJD").replace('\n', "\r\n")).unwrap().image_b64, "QUJD", "CRLF streams parse too");
+        assert!(parse_sse("data: {\"type\":\"response.failed\",\"response\":{\"error\":{\"message\":\"quota\"}}}\n\n")
+            .unwrap_err()
+            .contains("quota"));
         assert!(parse_sse("data: {\"type\":\"error\",\"error\":{\"message\":\"boom\"}}\n\n").unwrap_err().contains("boom"));
         assert!(parse_sse("data: [DONE]\n\n").is_err());
         assert!(parse_sse("data: not json\n\n").is_err());
+    }
+
+    #[test]
+    fn only_gpt_6_luna_at_high_effort_is_accepted_and_silence_is_refused() {
+        let ok = parse_sse(&sse("QUJD")).unwrap();
+        assert_eq!(verify_model(&ok).unwrap(), ("gpt-6-luna".to_string(), "high".to_string()));
+        let snapshot = SseOutcome { model: Some("gpt-6-luna-2026-10-01".into()), ..ok.clone() };
+        assert!(verify_model(&snapshot).is_ok(), "a dated snapshot of the same model is the same model");
+        for (model, effort, needle) in [
+            (Some("gpt-6-astra"), Some("high"), "instead of gpt-6-luna"),
+            (Some("gpt-6-lunar"), Some("high"), "instead of gpt-6-luna"),
+            (None, Some("high"), "did not report which model"),
+            (Some("gpt-6-luna"), Some("medium"), "instead of high"),
+            (Some("gpt-6-luna"), None, "did not report the reasoning effort"),
+        ] {
+            let o = SseOutcome { model: model.map(String::from), effort: effort.map(String::from), ..ok.clone() };
+            let e = verify_model(&o).unwrap_err();
+            assert!(e.message.contains(needle), "{model:?}/{effort:?}: {}", e.message);
+            assert_eq!(e.retry, RetryClass::Terminal, "no retry and no fallback");
+        }
+    }
+
+    #[test]
+    fn a_downgraded_response_never_becomes_an_image() {
+        let d = dir();
+        let fixture = Arc::new(FixtureTransport::new());
+        fixture.respond(Method::Post, "/backend-api/codex/responses", 200, &[], sse("QUJD").replace("\"effort\":\"high\"", "\"effort\":\"low\""));
+        let p = provider(&d, fixture, Some(creds(None)), 0);
+        let e = p.generate(&request(), &CallContext::new()).unwrap_err();
+        assert!(e.message.contains("instead of high"), "{}", e.message);
     }
 
     #[test]
@@ -328,7 +530,8 @@ mod tests {
         let mut r = request();
         r.edit = Some(EditSpec { base_png: vec![1], mask_png: None });
         let body = p.build_body(&r, Some((928, 816)));
-        assert_eq!(body["model"], "gpt-5.5");
+        assert_eq!(body["model"], "gpt-6-luna");
+        assert_eq!(body["reasoning"], json!({"effort": "high"}));
         assert_eq!(body["stream"], true);
         assert_eq!(body["store"], false);
         assert_eq!(body["tool_choice"], json!({"type": "image_generation"}));
@@ -360,7 +563,13 @@ mod tests {
     fn an_expired_token_is_refreshed_and_saved_in_our_own_file() {
         let d = dir();
         let fixture = Arc::new(FixtureTransport::new());
-        fixture.respond(Method::Post, "/oauth/token", 200, &[], br#"{"access_token":"access-synthetic-2","refresh_token":"refresh-synthetic-2","expires_in":3600}"#.to_vec());
+        fixture.respond(
+            Method::Post,
+            "/oauth/token",
+            200,
+            &[],
+            br#"{"access_token":"access-synthetic-2","refresh_token":"refresh-synthetic-2","expires_in":3600}"#.to_vec(),
+        );
         fixture.respond(Method::Post, "/backend-api/codex/responses", 200, &[], sse("QUJD"));
         let p = provider(&d, fixture.clone(), Some(creds(Some(1_000))), 1_793_404_800);
         p.generate(&request(), &CallContext::new()).unwrap();

@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: "1"
+
+jobs:
+  rust:
+    name: Rust (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-14, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.97.1"
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Format
+        run: cargo fmt --all -- --check
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: Tests
+        run: cargo test --workspace --no-fail-fast --locked
+
+  parity:
+    name: Python parity (kit tools)
+    runs-on: ubuntu-latest
+    env:
+      IMAGEGEN_REQUIRE_PARITY: "1"
+      HOI4_KIT_DIR: ${{ github.workspace }}/kit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: klimPaskov/Agentic-HOI4-Modding
+          path: kit
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install --upgrade pip && pip install pillow numpy opencv-python-headless
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.97.1"
+      - uses: Swatinem/rust-cache@v2
+      - name: Parity tests
+        run: cargo test -p imagegen-core --locked --test kit_parity --test recipe_parity -- --nocapture

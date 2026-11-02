@@ -1,4 +1,4 @@
-//! The rmcp stdio server: thirteen tools named `hoi4.image_*`.
+//! The rmcp stdio server: nineteen tools named `hoi4.image_*`.
 //!
 //! Every tool runs on a blocking worker so a slow provider call never stalls the protocol loop, which is what
 //! lets `hoi4.image_cancel` arrive while a generation is in flight. Failures are tool results with
@@ -15,10 +15,9 @@ use serde_json::Value;
 
 use crate::api::*;
 use crate::engine::{EResult, Engine};
-use imagegen_core::plan::PlanRequest;
 
 /// Instructions shown to the client at start-up.
-pub const INSTRUCTIONS: &str = "HOI4 graphical assets. Work one asset at a time through this loop: hoi4.image_status (what is configured), hoi4.image_profiles (canvas, rubric and evidence for the category), hoi4.image_plan (a free dry run with the cost), hoi4.image_generate (one paid call per variant), hoi4.image_process (deterministic crop, fit, alpha), hoi4.image_validate (deterministic checks), hoi4.image_preview (contact sheet; look at the native-size panels), hoi4.image_review (rubric answers; an approval returns an approval_id), hoi4.image_install (writes the DDS or TGA and a sprite handoff). Install refuses unless validation passed, a review approved this exact file and the hashes are unchanged. Transparency must be proven by pixels, never by the prompt. Outputs are versioned and never overwritten; hoi4.image_ledger shows which references, settings and outputs belong together. Keys are read from environment variables only.";
+pub const INSTRUCTIONS: &str = "HOI4 graphical assets. Work one asset at a time: hoi4.image_status (what is configured), hoi4.image_families (every family's measured canvas, naming, checks and rubric), then the generation tool of the asset's group with a required family: hoi4.image_icon, hoi4.image_picture, hoi4.image_portrait, hoi4.image_flag, hoi4.image_unit or hoi4.image_interface. Called without approve it returns a free plan; with approve and an idempotency_key it plans and generates (one paid call per variant). The family is fixed from the plan on: hoi4.image_process (the family's own processing always runs and cannot be skipped or replaced: callers may add only the pre-steps chroma_key, crop_to_aspect, defringe and trim_to_subject; import needs a family and refuses another family's size or pixels), hoi4.image_validate (the family's full check set), hoi4.image_preview (contact sheet; look at the native-size panels), hoi4.image_review (rubric answers; an approval returns an approval_id) and hoi4.image_install (writes the DDS or TGA and a sprite handoff) all use the artifact's own family and take no family argument for it. Install refuses unless validation ran the full check set and passed, a review approved this exact file and the hashes are unchanged. Transparency must be proven by pixels, never by the prompt. Outputs are versioned and never overwritten; hoi4.image_ledger shows which references, settings and outputs belong together. hoi4.image_audit (read only) traces which sprites and textures the mod already uses for which family and reports reuse, missing and mis-sized art. Keys are read from environment variables only.";
 
 /// The server.
 #[derive(Clone)]
@@ -58,17 +57,17 @@ impl ImageServer {
     }
 
     #[tool(
-        name = "hoi4.image_profiles",
-        description = "List category profiles or get one with its evidence, canvas, frames, margins, checks, final file paths and the review rubric questions. With calibrate = true, compare the profiles with the installed game's file headers and return the proposed diff (nothing is written).",
+        name = "hoi4.image_families",
+        description = "List every asset family or get one: group and tool, measured canvas and frames (vanilla 1.19.4.1 counts), accepted sizes, the mod's override of them, naming and folder, checks, review rubric questions, final file paths and the family's style sources: the tiers found with counts (pinned style, the mod's asset-folder copy, the mod's own assets, vanilla), the references a plan would send with the reason for each, the measured style statistics and the drift threshold. With calibrate = true, compare the families with the installed game's file headers and return the proposed diff (nothing is written).",
         annotations(read_only_hint = true, open_world_hint = false)
     )]
-    async fn profiles(&self, Parameters(p): Parameters<ProfilesParams>) -> Result<CallToolResult, ErrorData> {
-        self.run(move |e| e.profiles_info(p)).await
+    async fn families(&self, Parameters(p): Parameters<FamiliesParams>) -> Result<CallToolResult, ErrorData> {
+        self.run(move |e| e.families_info(p)).await
     }
 
     #[tool(
         name = "hoi4.image_references",
-        description = "Manage reference images and project style profiles: list, add (with role and rights note), approve, and list, get or save style profiles whose references are pinned by SHA-256. Paradox art (installed game or the kit's vanilla shelf) is refused unless the project opted in.",
+        description = "Manage reference images and project style profiles: list, add (with role and rights note), approve, and list, get or save style profiles whose references are pinned by SHA-256. Plans also pick style references automatically, mod first, then vanilla. Paradox art may be sent to a provider and its origin is recorded.",
         annotations(read_only_hint = false, destructive_hint = false, idempotent_hint = false, open_world_hint = false)
     )]
     async fn references(&self, Parameters(p): Parameters<ReferencesParams>) -> Result<CallToolResult, ErrorData> {
@@ -76,17 +75,86 @@ impl ImageServer {
     }
 
     #[tool(
-        name = "hoi4.image_plan",
-        description = "Dry run, no spend: resolve the profile, prompt text, references (by hash), provider, model, generation size, cost estimate with its basis, output paths and the approvals needed. Returns a plan_id that hoi4.image_generate executes. The same inputs give the same plan.",
-        annotations(read_only_hint = false, destructive_hint = false, idempotent_hint = true, open_world_hint = false)
+        name = "hoi4.image_icon",
+        description = "Make single-frame transparent icons: focus, idea_spirit, idea_concern, officer_corps_spirit, decision (and missions), decision_category_icon, state_modifier, special_project_icon, raid, mio_department, mio_trait, mio_policy, bop_side, medal, agency_upgrade, operation_icon, commander_trait, personal_trait, doctrine. family is required and its schema lists only this tool's families: it alone selects canvas, frames, naming, references, processing and validation, and is fixed from here on. Without approve it is a free dry run that returns a plan_id (prompt, references by hash, provider, model, size, cost, output paths). With approve = true and an idempotency_key it plans and generates in one call, one paid call per variant, each stored unchanged as a new versioned candidate. Another group's family is refused.",
+        annotations(read_only_hint = false, destructive_hint = false, idempotent_hint = true, open_world_hint = true)
     )]
-    async fn plan(&self, Parameters(p): Parameters<PlanRequest>) -> Result<CallToolResult, ErrorData> {
-        self.run(move |e| e.plan(p).map(|pl| serde_json::to_value(pl).unwrap_or(Value::Null))).await
+    async fn image_icon(&self, Parameters(p): Parameters<IconRequest>) -> Result<CallToolResult, ErrorData> {
+        self.run(move |e| {
+            let (req, follow) = p.into_parts();
+            e.group_request(IconRequest::GROUP, req, follow)
+        })
+        .await
+    }
+
+    #[tool(
+        name = "hoi4.image_picture",
+        description = "Make pictures and card art: report_event, news_event, decision_category_picture, operation_picture, technology, achievement. family is required and its schema lists only this tool's families: it alone selects canvas, frames, naming, references, processing and validation, and is fixed from here on. Without approve it is a free dry run that returns a plan_id (prompt, references by hash, provider, model, size, cost, output paths). With approve = true and an idempotency_key it plans and generates in one call, one paid call per variant, each stored unchanged as a new versioned candidate. Another group's family is refused.",
+        annotations(read_only_hint = false, destructive_hint = false, idempotent_hint = true, open_world_hint = true)
+    )]
+    async fn image_picture(&self, Parameters(p): Parameters<PictureRequest>) -> Result<CallToolResult, ErrorData> {
+        self.run(move |e| {
+            let (req, follow) = p.into_parts();
+            e.group_request(PictureRequest::GROUP, req, follow)
+        })
+        .await
+    }
+
+    #[tool(
+        name = "hoi4.image_portrait",
+        description = "Make portraits: leader_portrait, commander_portrait, operative_portrait, scientist_portrait (cropped around a detected face to 156x210) and advisor_card (composited into the mod's advisor frame template). family is required and its schema lists only this tool's families: it alone selects canvas, frames, naming, references, processing and validation, and is fixed from here on. Without approve it is a free dry run that returns a plan_id (prompt, references by hash, provider, model, size, cost, output paths). With approve = true and an idempotency_key it plans and generates in one call, one paid call per variant, each stored unchanged as a new versioned candidate. Another group's family is refused.",
+        annotations(read_only_hint = false, destructive_hint = false, idempotent_hint = true, open_world_hint = true)
+    )]
+    async fn image_portrait(&self, Parameters(p): Parameters<PortraitRequest>) -> Result<CallToolResult, ErrorData> {
+        self.run(move |e| {
+            let (req, follow) = p.into_parts();
+            e.group_request(PortraitRequest::GROUP, req, follow)
+        })
+        .await
+    }
+
+    #[tool(
+        name = "hoi4.image_flag",
+        description = "Make country flags: flag (the whole 82x52, 41x26 and 10x7 ladder of one tag and ideology). family is required and its schema lists only this tool's families: it alone selects canvas, frames, naming, references, processing and validation, and is fixed from here on. Without approve it is a free dry run that returns a plan_id (prompt, references by hash, provider, model, size, cost, output paths). With approve = true and an idempotency_key it plans and generates in one call, one paid call per variant, each stored unchanged as a new versioned candidate. Another group's family is refused.",
+        annotations(read_only_hint = false, destructive_hint = false, idempotent_hint = true, open_world_hint = true)
+    )]
+    async fn image_flag(&self, Parameters(p): Parameters<FlagRequest>) -> Result<CallToolResult, ErrorData> {
+        self.run(move |e| {
+            let (req, follow) = p.into_parts();
+            e.group_request(FlagRequest::GROUP, req, follow)
+        })
+        .await
+    }
+
+    #[tool(
+        name = "hoi4.image_unit",
+        description = "Make frame-strip and unit art: building, faction_logo and agency_logo are generated as one icon and the tool builds the two-frame strip (selected or disabled second frame); counter_large, counter_small and division_emblem are import-only because their second frame is different art. family is required and its schema lists only this tool's families: it alone selects canvas, frames, naming, references, processing and validation, and is fixed from here on. Without approve it is a free dry run that returns a plan_id (prompt, references by hash, provider, model, size, cost, output paths). With approve = true and an idempotency_key it plans and generates in one call, one paid call per variant, each stored unchanged as a new versioned candidate. Another group's family is refused.",
+        annotations(read_only_hint = false, destructive_hint = false, idempotent_hint = true, open_world_hint = true)
+    )]
+    async fn image_unit(&self, Parameters(p): Parameters<UnitRequest>) -> Result<CallToolResult, ErrorData> {
+        self.run(move |e| {
+            let (req, follow) = p.into_parts();
+            e.group_request(UnitRequest::GROUP, req, follow)
+        })
+        .await
+    }
+
+    #[tool(
+        name = "hoi4.image_interface",
+        description = "Make interface art: modifier_stat_icon, gui_texture and super_event (the mod defines their canvas). family is required and its schema lists only this tool's families: it alone selects canvas, frames, naming, references, processing and validation, and is fixed from here on. Without approve it is a free dry run that returns a plan_id (prompt, references by hash, provider, model, size, cost, output paths). With approve = true and an idempotency_key it plans and generates in one call, one paid call per variant, each stored unchanged as a new versioned candidate. Another group's family is refused.",
+        annotations(read_only_hint = false, destructive_hint = false, idempotent_hint = true, open_world_hint = true)
+    )]
+    async fn image_interface(&self, Parameters(p): Parameters<InterfaceRequest>) -> Result<CallToolResult, ErrorData> {
+        self.run(move |e| {
+            let (req, follow) = p.into_parts();
+            e.group_request(InterfaceRequest::GROUP, req, follow)
+        })
+        .await
     }
 
     #[tool(
         name = "hoi4.image_generate",
-        description = "Execute a plan: one paid provider call per variant, each stored unchanged as a new versioned candidate (never overwritten). Repeating an idempotency_key returns the stored candidate instead of paying again. Candidates are raw: process, validate, preview, review and install them next.",
+        description = "Execute a plan returned by a group tool: one paid provider call per variant, each stored unchanged as a new versioned candidate (never overwritten). Repeating an idempotency_key returns the stored candidate instead of paying again. Candidates are raw: process, validate, preview, review and install them next.",
         annotations(read_only_hint = false, destructive_hint = false, idempotent_hint = true, open_world_hint = true)
     )]
     async fn generate(&self, Parameters(p): Parameters<GenerateParams>) -> Result<CallToolResult, ErrorData> {
@@ -104,7 +172,7 @@ impl ImageServer {
 
     #[tool(
         name = "hoi4.image_process",
-        description = "Run the deterministic chain on a candidate (trim, fit with margin, crop to aspect, Lanczos resize, defringe, grayscale), or import existing art from another tool or by hand. Writes a processed artifact and records every step with input and output hashes. Refuses to invent transparency: an opaque source cannot become a transparent icon.",
+        description = "Run the candidate's own family's processing: optional pre-steps from the caller (only chroma_key, crop_to_aspect, defringe, trim_to_subject), then the family's mandatory finishing, which the tool always appends and the caller cannot replace, shorten or skip (fit and flatten; the report-event card; the selected or disabled second frame of logos and buildings; the advisor card from the mod's template; the achievement's grey and not-eligible states on the template backgrounds; the face-detected portrait crop; the three flag sizes). Or import existing art with a required family (refused when its size belongs to another family or its pixels are an asset already installed for another); strip families also take one file per frame in import.frames. Writes a processed artifact with its companion images and records every step, the recipe id and version, with input and output hashes: validation and install refuse an artifact whose record lacks a required stage. Refuses to invent transparency: an opaque source cannot become a transparent icon.",
         annotations(read_only_hint = false, destructive_hint = false, idempotent_hint = false, open_world_hint = false)
     )]
     async fn process(&self, Parameters(p): Parameters<ProcessParams>) -> Result<CallToolResult, ErrorData> {
@@ -113,7 +181,7 @@ impl ImageServer {
 
     #[tool(
         name = "hoi4.image_validate",
-        description = "Deterministic checks (size, alpha, opaque canvas, ghosting, chroma fringe, margins, fill, fake checkerboard, frames, DDS or TGA layout) on artifacts, files or folders, with stable finding codes. Records the result for artifacts, which install requires. A pass says nothing about style or composition: that is hoi4.image_review.",
+        description = "The family's full set of deterministic checks, never fewer (size, alpha, opaque canvas, ghosting, chroma fringe, margins, fill, fake checkerboard, frames, DDS or TGA layout) on artifacts (their own family), or on files and folders with a family, with stable finding codes. Records the result and the check-set hash for artifacts, which install requires. A pass says nothing about style or composition: that is hoi4.image_review.",
         annotations(read_only_hint = false, destructive_hint = false, idempotent_hint = true, open_world_hint = false)
     )]
     async fn validate(&self, Parameters(p): Parameters<ValidateParams>) -> Result<CallToolResult, ErrorData> {
@@ -143,7 +211,7 @@ impl ImageServer {
 
     #[tool(
         name = "hoi4.image_review",
-        description = "Record the visual review of an exact file against the profile's rubric. An approval needs a passing validation, a preview of this file and every rubric answer true, and returns the approval_id install requires. Use changes_requested or rejected otherwise.",
+        description = "Record the visual review of an exact file against the family's rubric. An approval needs a passing validation, a preview of this file and every rubric answer true, and returns the approval_id install requires. Use changes_requested or rejected otherwise.",
         annotations(read_only_hint = false, destructive_hint = false, idempotent_hint = false, open_world_hint = false)
     )]
     async fn review(&self, Parameters(p): Parameters<ReviewParams>) -> Result<CallToolResult, ErrorData> {
@@ -169,6 +237,15 @@ impl ImageServer {
     }
 
     #[tool(
+        name = "hoi4.image_audit",
+        description = "Audit the mod's existing sprites and textures with the shared HOI4 engine: the sprite index and the trace of every content slot (focus icons, idea and advisor pictures, decisions, event pictures, portraits and the other families) to its sprite and texture. Returns the traced uses per family and findings grouped by code: GFX-FAMILY-REUSE (a sprite or texture used by two families, a warning, with every use), GFX-TEXTURE-MISSING, GFX-SPRITE-UNDEFINED, GFX-FOCUS-SHINE-MISSING, GFX-CANVAS-SIZE (a texture whose header size is not one of its family's accepted sizes, from file headers only) and GFX-CARD-CORNERS (a report event card with an opaque corner, the only check that decodes pixels). Existing reuse is a warning; intentional aliases go in an allowlist file (default .hoi4-imagegen/audit-allowlist.json). Read only: nothing is written to the mod or the game.",
+        annotations(read_only_hint = true, destructive_hint = false, idempotent_hint = true, open_world_hint = false)
+    )]
+    async fn audit(&self, Parameters(p): Parameters<AuditParams>) -> Result<CallToolResult, ErrorData> {
+        self.run(move |e| e.audit(p)).await
+    }
+
+    #[tool(
         name = "hoi4.image_cancel",
         description = "Cancel a running generation by idempotency key (providers with job ids are asked to stop), or settle a job a crashed run left behind: reconcile = true asks the provider what became of it and stores the image if it finished. Synchronous providers cannot be interrupted once the request is sent.",
         annotations(read_only_hint = false, destructive_hint = false, idempotent_hint = true, open_world_hint = true)
@@ -187,12 +264,17 @@ impl ServerHandler for ImageServer {
     }
 }
 
-/// Names of the thirteen tools, in documentation order.
-pub const TOOL_NAMES: [&str; 13] = [
+/// Names of the nineteen tools, in documentation order.
+pub const TOOL_NAMES: [&str; 19] = [
     "hoi4.image_status",
-    "hoi4.image_profiles",
+    "hoi4.image_families",
     "hoi4.image_references",
-    "hoi4.image_plan",
+    "hoi4.image_icon",
+    "hoi4.image_picture",
+    "hoi4.image_portrait",
+    "hoi4.image_flag",
+    "hoi4.image_unit",
+    "hoi4.image_interface",
     "hoi4.image_generate",
     "hoi4.image_edit",
     "hoi4.image_process",
@@ -201,5 +283,6 @@ pub const TOOL_NAMES: [&str; 13] = [
     "hoi4.image_review",
     "hoi4.image_install",
     "hoi4.image_ledger",
+    "hoi4.image_audit",
     "hoi4.image_cancel",
 ];

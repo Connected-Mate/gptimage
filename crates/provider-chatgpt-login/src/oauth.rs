@@ -316,7 +316,9 @@ mod tests {
     #[test]
     fn jwt_claims_are_decoded_without_verification() {
         // SYNTHETIC token: made up for the tests
-        let t = fake_jwt(&serde_json::json!({"exp": 2_000_000_000u64, "https://api.openai.com/auth": {"chatgpt_account_id": "acct-synthetic", "chatgpt_plan_type": "plus"}}));
+        let t = fake_jwt(
+            &serde_json::json!({"exp": 2_000_000_000u64, "https://api.openai.com/auth": {"chatgpt_account_id": "acct-synthetic", "chatgpt_plan_type": "plus"}}),
+        );
         assert_eq!(account_id(&t).as_deref(), Some("acct-synthetic"));
         assert_eq!(plan_type(&t).as_deref(), Some("plus"));
         assert_eq!(expiry_ms(&t), Some(2_000_000_000_000));

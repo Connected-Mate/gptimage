@@ -46,12 +46,15 @@ impl Rgba {
     pub fn from_raw(width: u32, height: u32, data: Vec<u8>) -> Result<Self> {
         let expected = width as usize * height as usize * 4;
         if width == 0 || height == 0 || data.len() != expected {
-            return Err(Error::Image(format!(
-                "pixel buffer has {} bytes, expected {expected} for {width}x{height}",
-                data.len()
-            )));
+            return Err(Error::Image(format!("pixel buffer has {} bytes, expected {expected} for {width}x{height}", data.len())));
         }
         Ok(Rgba { width, height, data })
+    }
+
+    /// Width and height.
+    #[inline]
+    pub fn size(&self) -> (u32, u32) {
+        (self.width, self.height)
     }
 
     /// Pixel at (x, y).
@@ -83,10 +86,7 @@ impl Rgba {
     /// Copy a rectangle. The rectangle must lie inside the image.
     pub fn crop(&self, x: u32, y: u32, w: u32, h: u32) -> Result<Rgba> {
         if w == 0 || h == 0 || x + w > self.width || y + h > self.height {
-            return Err(Error::Image(format!(
-                "crop {w}x{h}+{x}+{y} is outside {}x{}",
-                self.width, self.height
-            )));
+            return Err(Error::Image(format!("crop {w}x{h}+{x}+{y} is outside {}x{}", self.width, self.height)));
         }
         let mut out = Rgba::new(w, h);
         for row in 0..h {
@@ -153,11 +153,8 @@ impl Rgba {
 
     /// Split a horizontal strip into `count` equal frames.
     pub fn split_frames(&self, count: u32) -> Result<Vec<Rgba>> {
-        if count == 0 || self.width % count != 0 {
-            return Err(Error::Image(format!(
-                "width {} does not divide into {count} frames",
-                self.width
-            )));
+        if count == 0 || !self.width.is_multiple_of(count) {
+            return Err(Error::Image(format!("width {} does not divide into {count} frames", self.width)));
         }
         let fw = self.width / count;
         (0..count).map(|i| self.crop(i * fw, 0, fw, self.height)).collect()
@@ -313,8 +310,7 @@ pub fn decode(bytes: &[u8], file_name_hint: Option<&str>, limits: DecodeLimits) 
             lim.max_image_height = Some(limits.max_dimension);
             lim.max_alloc = Some(limits.max_pixels * 8);
             reader.limits(lim);
-            let dynimg: DynamicImage =
-                reader.decode().map_err(|e| Error::Image(format!("cannot decode {}: {e}", other.name())))?;
+            let dynimg: DynamicImage = reader.decode().map_err(|e| Error::Image(format!("cannot decode {}: {e}", other.name())))?;
             let rgba = dynimg.into_rgba8();
             Rgba::from_raw(rgba.width(), rgba.height(), rgba.into_raw())?
         }
@@ -325,10 +321,7 @@ pub fn decode(bytes: &[u8], file_name_hint: Option<&str>, limits: DecodeLimits) 
 
 fn check_dimensions(w: u32, h: u32, limits: &DecodeLimits) -> Result<()> {
     if w == 0 || h == 0 || w > limits.max_dimension || h > limits.max_dimension {
-        return Err(Error::Image(format!(
-            "image is {w}x{h}; each side must be 1 to {} pixels",
-            limits.max_dimension
-        )));
+        return Err(Error::Image(format!("image is {w}x{h}; each side must be 1 to {} pixels", limits.max_dimension)));
     }
     if u64::from(w) * u64::from(h) > limits.max_pixels {
         return Err(Error::Image(format!("image has {} pixels, the limit is {}", u64::from(w) * u64::from(h), limits.max_pixels)));

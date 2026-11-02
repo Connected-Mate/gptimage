@@ -1,85 +1,63 @@
-# Kit integration (proposal)
+# Kit integration
 
-Status: **proposed, nothing in the kit has been changed.** The kit's `.tools/gfx/profiles.json` stays the single owner of canvas sizes, accepted sizes, margins, frames and evidence. `gfx.py` reads only `canvas`, `accepted`, `margin` and `frames` from a row and ignores other keys, so the optional `imagegen` object below is safe next to it. This repository reads the same file (built-in vanilla-measured defaults underneath, project overrides on top) and reports the difference with `hoi4-imagegen calibrate`.
+The [Agentic HOI4 Modding Kit](https://github.com/klimPaskov/Agentic-HOI4-Modding) and this repository work together. This page says what the integration is, how the pieces connect, and what is still pending. The kit is a separate repository, so check its `main` for the current state.
+
+## What the integration is
+
+* **Profile rows.** The kit's `.tools/gfx/profiles.json` has one row per family, 40 rows in all, with the canvas for new art, accepted sizes, minimum margin, frame count and the vanilla evidence for each number. The values are the sizes measured on HOI4 1.19.4.1. The kit stays the single owner of those sizes. This repository reads the same file over its built-in defaults (also measured from 1.19.4.1) and under the project's own overrides, and reports the difference with `hoi4-imagegen calibrate`.
+* **`family_ids.json`.** `.tools/gfx/family_ids.json` is the kit's list of the 40 family ids. The kit's `shelf` check verifies that its profiles, shelf catalog and shelf builder input name exactly that list.
+* **The shelf.** The kit's asset skill ships a vanilla reference shelf (`assets/vanilla_reference/` with a `CATALOG.md` that lists the canvas of every family). A mod's copy of the shelf is style tier 2, and the advisor, achievement and portrait templates and the YuNet face model come from the mod's copy of the same skill (see the README).
+* **Skills and agents.** The kit's `hoi4-imagegen` skill (a downstream copy of `skill/hoi4-imagegen/SKILL.md` in this repository) and its icon, portrait and generated-feature-art agents call the `hoi4.image_*` tools. They pick the `family`, run the loop and never build a second image pipeline. The kit's `hoi4-feature-assets` skill keeps the source, naming and handoff rules that the loop follows.
+* **HOI4 Mod Setup.** Setup installs the release binary per project and writes the project-level MCP entry under the server id `hoi4_imagegen`. The kit's setup manifest lists the skill and the runtime.
+
+Changes to the skill are made here first and copied to the kit. The two copies should differ only in kit-specific lines (the kit's copy points to `hoi4-feature-assets`, `hoi4-frame-animation` and the kit's own tools).
+
+## Still pending
+
+* The kit's rewrite of its `hoi4-imagegen` skill and its profile and shelf work were on the kit branch `claude/hoi4-imagegen` when this page was written. Check that they are merged.
+* `hoi4.image_audit` runs the shared engine's sprite trace (hoi4-agent-tools) over the whole mod and reports cross-family reuse as a warning, with a per-mod allowlist. New reuse is refused at import and install.
+* This repository does not read `family_ids.json`. Its own list of 40 families is in the code, and a test keeps it equal to the measurement data. A check that the two lists agree is not built.
+* The kit's profile rows carry geometry only. None has an `imagegen` object yet, so every family uses the built-in sprite, naming and check defaults.
+* Nothing here has been checked in game. That needs a user-operated session.
 
 ## Row names
 
-A row named `focus`, `decision`, `idea`, `category`, `report`, `news`, `counter-large` or `counter-small` maps to the category of the same meaning (these are the names `gfx.py` already uses). Any other row name that is a category id (`tech_icon_small`, `mio_icon`, `agency_logo`, `officer_spirit`, `event_super`, `leader_portrait`, `flag_set`, `tech_icon_medium`, `decision_category_picture`) maps to that category. An unknown name becomes a `custom` profile.
+A row named `focus`, `decision`, `idea` (spirits), `category` (decision category icons), `report`, `news`, `counter-large` or `counter-small` maps to the family of the same meaning (these are the names `gfx.py` uses). Any other row name that is a family id (`idea_spirit`, `advisor_card`, `technology`, and the rest of the 40) maps to that family. A row with any other name is ignored with a note. There is no `custom` family, because an asset without a family cannot be checked or kept apart from the others.
 
 ## The `imagegen` object
 
-All keys optional; each overrides the built-in default for that row.
+`gfx.py` reads only `canvas`, `accepted`, `margin`, `frames` and `off_size_level` from a row and ignores other keys, so the optional `imagegen` object is safe next to it. All its keys are optional, and each overrides the built-in default for that row.
 
 | Key | Meaning |
 |---|---|
-| `automation` | `generate`, `import_only` (another kit tool builds the art) or `user_run_only` |
+| `automation` | `generate` (generated, processed, validated and installed here), `import_only` (another step makes the art, as for the counters and the division emblem) or `user_run_only` (a person runs the generator) |
 | `background` | `transparent` or `opaque` |
 | `container` | `dds` (uncompressed A8R8G8B8, one mip) or `tga` |
-| `folder`, `prefix` | Final folder and file prefix with `{feature_slug}`, `{asset}` placeholders |
+| `folder`, `prefix`, `alt_prefixes` | Final folder and file prefix with `{feature_slug}`, `{asset}` placeholders; other prefixes the game accepts (focus accepts `goal_`) |
 | `sprite` | `{gfx_file, name, companions}`; companions may include `shine` |
 | `variants` | Extra size variants as `[{name, canvas, folder}]` (flags have three) |
-| `checks` | Deterministic checks to run |
+| `checks` | Deterministic checks of the family (every one always runs; `hoi4.image_validate` cannot skip any) |
+| `companion_files` | Companion file suffixes the engine expects (`_grey`, `_not_eligible`, `_small`) |
 | `reference_dirs` | Folders of approved references |
-| `rubric` | Review rubric id |
+| `rubric` | Review rubric id (one per group: `icon_v1`, `picture_v1`, `portrait_v1`, `flag_v1`, `unit_v1`, `interface_v1`) |
 | `prompt` | `{rules, negative}` sentence lists; `{w}` and `{h}` are replaced by the canvas |
 | `grayscale` | Convert to black and white (news pictures) |
+| `source_canvas` | Size the model is asked for when it is not the canvas (the advisor card is made from a tall 156x210 portrait) |
 
-## Proposed rows
+The processing recipe of a family (`icon`, `report_card`, `achievement`...) is not a profile key: it follows from the family and cannot be overridden, so a kit row cannot switch the finishing off. Templates and the face model are found inside the project (`.claude/skills/*/assets/*/`, `.claude/skills/*/tools/models/`) or through `[templates] dir` and `face_model` in `.hoi4-imagegen/config.toml`.
 
-Canvas values are the vanilla-measured defaults (HOI4 1.19.3.0 header survey). They change the kit's focus convention from 94x86 to 100x88, idea from 64x64 to 65x67 and decision from 32x32 to 33x32: that is a maintainer decision, recorded as "vanilla-measured, overridable per project" in the expansion plan.
+## Rows
+
+The built-in defaults are the vanilla-measured values of HOI4 1.19.4.1 (`crates/imagegen-core/data/vanilla-measurement.json`), one row per family. A kit row overrides any of them. A mod keeps the sizes it chose (for example 94x86 for focus, 64x64 for ideas and 32x32 for decisions) by listing them in its own `.tools/gfx/profiles.json`, and `hoi4.image_families` then shows the override next to the vanilla value. Examples:
 
 ```json
 "focus": {
-  "canvas": [100, 88], "accepted": [[100, 88], [102, 90], [99, 88], [98, 88]], "margin": 2, "frames": 1,
-  "source": "HOI4 1.19.3.0 header survey: 2,681 of 2,849 focus_* DDS are 100x88. Margin is a review default.",
-  "imagegen": {
-    "automation": "generate", "background": "transparent", "container": "dds",
-    "folder": "gfx/interface/goals/{feature_slug}", "prefix": "goal_",
-    "sprite": {"gfx_file": "interface/{feature_slug}_goals.gfx", "name": "GFX_{prefix}{asset}", "companions": ["shine"]},
-    "checks": ["size", "alpha", "opaque_canvas", "fringe", "margin", "fill", "checker", "ghost", "dds"],
-    "rubric": "focus_icon_v1"
-  }
+  "canvas": [94, 86], "accepted": [[94, 86], [100, 88]], "margin": 2, "frames": 1,
+  "source": "project decision D1",
+  "imagegen": {"prefix": "goal_"}
 },
-"idea": {
-  "canvas": [65, 67], "accepted": [[65, 67], [60, 68], [64, 64], [65, 64]], "margin": 1, "frames": 1,
-  "source": "2,866 idea_* DDS: 65x67 43.6%, 60x68 35.8%, 64x64 17.6%.",
-  "imagegen": {"folder": "gfx/interface/ideas/{feature_slug}", "prefix": "idea_",
-    "sprite": {"gfx_file": "interface/{feature_slug}_ideas.gfx", "name": "GFX_{prefix}{asset}"}, "rubric": "idea_icon_v1"}
-},
-"decision": {
-  "canvas": [33, 32], "accepted": [[33, 32], [38, 35], [38, 38], [38, 37], [33, 31], [32, 32]], "margin": 1, "frames": 1,
-  "source": "503 decision_* DDS: 33x32 is 236 files; 32x32 under 5.",
-  "imagegen": {"folder": "gfx/interface/decisions/{feature_slug}", "prefix": "decision_",
-    "sprite": {"gfx_file": "interface/{feature_slug}_decisions.gfx", "name": "GFX_{prefix}{asset}"}, "rubric": "decision_icon_v1"}
-},
-"tech_icon_small": {"canvas": [64, 64], "accepted": [[64, 64], [62, 62]], "margin": 2, "frames": 1,
-  "source": "1,318 technology DDS: 64x64 is the most common size (328)."},
-"tech_icon_medium": {"canvas": [146, 54], "accepted": [[146, 54], [131, 52], [132, 52]], "margin": 2, "frames": 1,
-  "source": "LOW CONFIDENCE: 146x54 269 files, 131x52 55; the kit's 132x52 is not among the top sizes."},
-"mio_icon": {"canvas": [48, 48], "accepted": [[48, 48], [60, 60], [63, 63]], "margin": 2, "frames": 1,
-  "source": "425 MIO textures: 48x48 381, 60x60 20, 63x63 4."},
-"agency_logo": {"canvas": [117, 119], "accepted": [[117, 119]], "margin": 2, "frames": 2,
-  "source": "about 70 agency logos are 233x119 or 234x119 with noOfFrames = 2.", "imagegen": {"automation": "import_only"}},
-"officer_spirit": {"canvas": [45, 45], "accepted": [[45, 45]], "margin": 1, "frames": 1,
-  "source": "149 of 222 officer corps spirits are 45x45."},
-"event_super": {"canvas": [457, 328], "accepted": [[457, 328]], "margin": 0, "frames": 1,
-  "source": "Not vanilla: the optional Super Events runtime template (457x328)."}
+"idea_spirit": {"canvas": [64, 64], "accepted": [[64, 64], [60, 68]], "margin": 1, "frames": 1, "source": "project decision D2"},
+"gui_texture": {"canvas": [300, 100], "accepted": [[300, 100]], "margin": 0, "frames": 1, "source": "the mod's own window art"}
 ```
 
-`hoi4-imagegen calibrate` re-measures all of these against the installed game, so the numbers can be refreshed rather than trusted.
-
-## Other kit changes this implies (not made)
-
-* `HOI4_MOD_SETUP:IMAGE_GENERATION_PROVIDER` marker text in `hoi4-icon-artist`, `hoi4-generated-feature-art`, `hoi4-portrait-creator`, `hoi4-feature-assets/SKILL.md` and `references/generation-and-review.md`: describe this route and the selected provider. `hoi4-portrait-creator` uses it only for fictional portraits and for validating user-run output.
-* `hoi4-feature-assets` sections 5, 11, 24 and 25: one line each pointing at the MCP. The DDS and handoff rules stay authoritative.
-* Skill: add `skill/hoi4-imagegen/` from this repository (4.6 KB) as a kit workflow component, with `examples/recipes.md` as its reference.
-* D3 and D4 wording in the asset skills: a configured ComfyUI endpoint may be used for any asset; vanilla art is a reference only when the project opts in.
-* Remove, after this MCP covers OpenAI, Gemini, ComfyUI and fal: the vendored Node gptimage copy, `default_provider = "gptimage"`, the `vertex_imagen` route (Imagen is discontinued) and the `gpt-image-1` text in `docs/image-generation-providers.md` (shut down 2026-10-23).
-
-## What remains for later phases
-
-* **HOI4 Mod Setup component:** a pinned release-binary component kind (decision: Setup release-binary component, not npm), manifest entries `mcp.hoi4_imagegen`, client config entries for each client with empty `env`, and credential access through Setup's keyring references (this phase reads environment variables only).
-* **CI:** build and test on Windows, macOS arm64, Linux amd64 and arm64; `cargo deny` for licenses; the plugin isolation test on the release binaries; a model-id drift job.
-* **Releases:** signed SHA-256 checksums for Windows x64, macOS arm64, Linux amd64 and arm64; SBOM and attestations.
-* **Publishing:** creating `klimPaskov/hoi4-imagegen-mcp` is an outward action; nothing was created or pushed.
-* **Evidence still missing:** real-provider recordings, the in-game check (shine sprite), macOS and Linux runs, the rights research (Paradox, Steam and provider output terms).
+`gui_texture` and `super_event` have no vanilla texture to measure, so a mod defines their canvas this way (or per request with `canvas`). `hoi4-imagegen calibrate` re-measures the families against the installed game, and `hoi4-imagegen families` lists every family with its measured spec and the mod's override.

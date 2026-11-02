@@ -8,19 +8,20 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::category::Category;
+use crate::family::Family;
 use crate::hashing::{canonical_hash, sha256_hex};
 use crate::profile::Profile;
 use crate::records::{ProfileRef, RefSummary};
 use crate::refs::{LoadedRef, ReferenceInput};
 use crate::style::StyleProfile;
+use crate::stylesrc::StyleReport;
 
 /// What a caller asks for.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct PlanRequest {
-    /// Asset category.
-    pub category: Category,
+    /// Asset family. The only thing that selects canvas, frames, naming, references, processing and validation.
+    pub family: Family,
     /// Feature folder name (snake_case).
     pub feature_slug: String,
     /// Asset name (snake_case; a country tag for flags).
@@ -51,7 +52,7 @@ pub struct PlanRequest {
     /// Quality tier where the model has tiers.
     #[serde(default)]
     pub quality: Option<String>,
-    /// Canvas for categories that have none (`custom`, `gui_texture`).
+    /// Canvas for families that have none (`gui_texture`, `super_event`): the mod defines it.
     #[serde(default)]
     pub canvas: Option<[u32; 2]>,
 }
@@ -131,6 +132,9 @@ pub struct Plan {
     pub profile: ProfileRef,
     /// Canvas per frame.
     pub canvas: [u32; 2],
+    /// Size the model is asked for when it is not the canvas (an advisor card is made from a tall portrait).
+    #[serde(default)]
+    pub source_canvas: Option<[u32; 2]>,
     /// Frames in the strip.
     pub frames: u32,
     /// Provider id.
@@ -149,6 +153,9 @@ pub struct Plan {
     pub style: Option<String>,
     /// Hash of the style file content.
     pub style_sha256: Option<String>,
+    /// Where the automatic style references came from: tiers, chosen references with reasons, statistics.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub style_sources: Option<StyleReport>,
     /// Estimate.
     pub estimate: PlanEstimate,
     /// Output paths.
@@ -203,9 +210,10 @@ pub fn build_prompt(
     style: Option<&StyleProfile>,
     refs: &[LoadedRef],
     transparent: bool,
+    measured_style: Option<&str>,
 ) -> PromptPlan {
     let subst = |s: &str| s.replace("{w}", &canvas[0].to_string()).replace("{h}", &canvas[1].to_string());
-    let mut text = format!("Create one Hearts of Iron IV {}: {}\n", profile.category.label(), brief.trim());
+    let mut text = format!("Create one Hearts of Iron IV {}: {}\n", profile.family.label(), brief.trim());
     text.push_str("\nRequirements:\n");
     for rule in &profile.imagegen.prompt.rules {
         text.push_str(&format!("- {}\n", subst(rule)));
@@ -213,19 +221,23 @@ pub fn build_prompt(
     if transparent && !profile.imagegen.prompt.rules.iter().any(|r| r.to_ascii_lowercase().contains("transparent")) {
         text.push_str("- Real transparent background (alpha), not a drawn checkerboard.\n");
     }
-    if let Some(s) = style {
-        if !s.description.is_empty() || !s.prompt_fragments.is_empty() || !s.palette_notes.is_empty() {
-            text.push_str("\nStyle:\n");
-            if !s.description.is_empty() {
-                text.push_str(&format!("- {}\n", s.description));
-            }
-            for f in &s.prompt_fragments {
-                text.push_str(&format!("- {f}\n"));
-            }
-            if !s.palette_notes.is_empty() {
-                text.push_str(&format!("- Palette: {}\n", s.palette_notes));
-            }
+    let note = style.filter(|s| !s.description.is_empty() || !s.prompt_fragments.is_empty() || !s.palette_notes.is_empty());
+    if note.is_some() || measured_style.is_some() {
+        text.push_str("\nStyle:\n");
+    }
+    if let Some(s) = note {
+        if !s.description.is_empty() {
+            text.push_str(&format!("- {}\n", s.description));
         }
+        for f in &s.prompt_fragments {
+            text.push_str(&format!("- {f}\n"));
+        }
+        if !s.palette_notes.is_empty() {
+            text.push_str(&format!("- Palette: {}\n", s.palette_notes));
+        }
+    }
+    if let Some(m) = measured_style {
+        text.push_str(&format!("- {m}\n"));
     }
     if !refs.is_empty() {
         text.push_str("\nReference images, in the order attached:\n");
@@ -247,7 +259,11 @@ pub fn build_prompt(
 /// Aspect ratio of a canvas reduced to lowest terms, as `w:h`.
 pub fn aspect_of(canvas: [u32; 2]) -> String {
     fn gcd(a: u32, b: u32) -> u32 {
-        if b == 0 { a } else { gcd(b, a % b) }
+        if b == 0 {
+            a
+        } else {
+            gcd(b, a % b)
+        }
     }
     let g = gcd(canvas[0].max(1), canvas[1].max(1));
     format!("{}:{}", canvas[0] / g, canvas[1] / g)
@@ -261,14 +277,14 @@ mod tests {
 
     fn plan() -> Plan {
         let set = ProfileSet::builtin();
-        let prof = set.for_category(Category::FocusIcon).unwrap();
-        let prompt = build_prompt(prof, [100, 88], "an iron wall", None, &[], true);
+        let prof = set.for_family(Family::Focus).unwrap();
+        let prompt = build_prompt(prof, [100, 88], "an iron wall", None, &[], true, None);
         let mut p = Plan {
             plan_id: String::new(),
             plan_hash: String::new(),
             created: "2026-10-31T00:00:00Z".into(),
             request: PlanRequest {
-                category: Category::FocusIcon,
+                family: Family::Focus,
                 feature_slug: "iron".into(),
                 asset: "wall".into(),
                 brief: "an iron wall".into(),
@@ -283,8 +299,9 @@ mod tests {
                 canvas: None,
             },
             asset_id: "iron.wall".into(),
-            profile: ProfileRef { id: "focus_icon".into(), hash: "h".into(), kit_sha256: None },
+            profile: ProfileRef { id: "focus".into(), hash: "h".into(), kit_sha256: None },
             canvas: [100, 88],
+            source_canvas: None,
             frames: 1,
             provider: "openai".into(),
             model: "gpt-image-2.5-flare".into(),
@@ -294,7 +311,15 @@ mod tests {
             references: vec![],
             style: None,
             style_sha256: None,
-            estimate: PlanEstimate { usd_per_call: 0.006, calls: 1, usd: 0.006, basis: "test".into(), usage_unknown: false, funding: "user_key".into() },
+            style_sources: None,
+            estimate: PlanEstimate {
+                usd_per_call: 0.006,
+                calls: 1,
+                usd: 0.006,
+                basis: "test".into(),
+                usage_unknown: false,
+                funding: "user_key".into(),
+            },
             paths: PlanPaths {
                 candidate_dir: "docs/assets/iron/source_png".into(),
                 processed_dir: "docs/assets/iron/processed_png".into(),
@@ -347,7 +372,7 @@ mod tests {
     #[test]
     fn prompt_includes_rules_style_references_and_negatives() {
         let set = ProfileSet::builtin();
-        let prof = set.for_category(Category::FocusIcon).unwrap();
+        let prof = set.for_family(Family::Focus).unwrap();
         let style = StyleProfile {
             schema: 1,
             name: "oil".into(),
@@ -355,7 +380,7 @@ mod tests {
             prompt_fragments: vec!["Visible brush strokes.".into()],
             negative_rules: vec!["neon colours".into()],
             palette_notes: "earth tones".into(),
-            categories: vec![],
+            families: vec![],
             references: vec![],
             provider: None,
             model: None,
@@ -375,14 +400,37 @@ mod tests {
             notes: vec![],
             png: vec![],
         };
-        let p = build_prompt(prof, [100, 88], "a steel gate", Some(&style), &[r], true);
+        let p = build_prompt(prof, [100, 88], "a steel gate", Some(&style), &[r], true, Some("Match the mod's focus art: muted palette."));
         assert!(p.text.contains("national focus icon: a steel gate"));
         assert!(p.text.contains("100x88"));
         assert!(p.text.contains("Aged oil painting.") && p.text.contains("Visible brush strokes.") && p.text.contains("earth tones"));
         assert!(p.text.contains("1. style anchor"));
+        assert!(p.text.contains("- Palette: earth tones\n- Match the mod's focus art: muted palette.\n"));
         assert!(p.text.contains("neon colours") && p.text.contains("a drawn checkerboard pattern"));
         assert_eq!(p.sha256, sha256_hex(p.text.as_bytes()));
-        assert_eq!(p, build_prompt(prof, [100, 88], "a steel gate", Some(&style), &[LoadedRef { path: "references/a.png".into(), role: RefRole::StyleAnchor, origin: RefOrigin::Project, source_sha256: "s".into(), source_format: "png".into(), sha256: "x".into(), width: 1, height: 1, notes: vec![], png: vec![] }], true));
+        assert_eq!(
+            p,
+            build_prompt(
+                prof,
+                [100, 88],
+                "a steel gate",
+                Some(&style),
+                &[LoadedRef {
+                    path: "references/a.png".into(),
+                    role: RefRole::StyleAnchor,
+                    origin: RefOrigin::Project,
+                    source_sha256: "s".into(),
+                    source_format: "png".into(),
+                    sha256: "x".into(),
+                    width: 1,
+                    height: 1,
+                    notes: vec![],
+                    png: vec![]
+                }],
+                true,
+                Some("Match the mod's focus art: muted palette.")
+            )
+        );
     }
 
     #[test]

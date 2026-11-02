@@ -16,19 +16,12 @@ path = "src/lib.rs"
 name = "hoi4-imagegen-mcp"
 path = "src/main.rs"
 
-[features]
-default = []
-# Opt-in, local-only, personal-use provider that talks to an undocumented backend. Off by default, never part of
-# a default or hosted build (decision D-12). Enabling it also needs a config flag, an environment
-# acknowledgement and local stdio mode; see docs/unofficial-chatgpt-login.md.
-unofficial-chatgpt-login = ["dep:provider-chatgpt-login"]
-
 [dependencies]
 base64.workspace = true
 clap.workspace = true
 imagegen-core.workspace = true
 imagegen-providers.workspace = true
-provider-chatgpt-login = { workspace = true, optional = true }
+provider-chatgpt-login.workspace = true
 rmcp.workspace = true
 schemars.workspace = true
 serde.workspace = true
@@ -37,3 +30,12 @@ tokio.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true
+
+[target.'cfg(windows)'.dependencies]
+keyring = { version = "3.6", default-features = false, features = ["windows-native"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+keyring = { version = "3.6", default-features = false, features = ["apple-native"] }
+
+[target.'cfg(all(unix, not(target_os = "macos")))'.dependencies]
+keyring = { version = "3.6", default-features = false, features = ["sync-secret-service", "crypto-rust", "vendored"] }

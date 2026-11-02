@@ -88,8 +88,8 @@ pub struct CandidateRecord {
     pub candidate_id: String,
     /// `feature.asset`
     pub asset_id: String,
-    /// Category.
-    pub category: crate::category::Category,
+    /// Family.
+    pub family: crate::family::Family,
     /// Feature folder name.
     pub feature_slug: String,
     /// Asset name.
@@ -138,6 +138,47 @@ pub struct CandidateRecord {
     pub note: Option<String>,
 }
 
+/// An engine-level finishing stage that ran (a template composite, a face crop, the flag sizes).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct FinisherRecord {
+    /// Stage name (`advisor_card`, `achievement_triplet`, `extract_portrait`, `flag_ladder`).
+    pub name: String,
+    /// SHA-256 of the pixels the stage received.
+    pub input_sha256: String,
+    /// SHA-256 of the main image it produced.
+    pub output_sha256: String,
+    /// What the stage used and decided: template hashes, the detected face box, the audit result.
+    pub detail: Value,
+}
+
+/// The recipe a processed artifact went through. Validation and the install gate refuse an artifact whose
+/// recipe is not its family's, or whose chain lacks one of the family's required stages.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct RecipeRecord {
+    /// Recipe id (`icon`, `report_card`, `achievement`...).
+    pub id: String,
+    /// Recipe version.
+    pub version: u32,
+    /// Engine-level stages that ran after the steps, in order.
+    pub finishers: Vec<FinisherRecord>,
+}
+
+/// An image that belongs to a processed artifact and is installed with it: the achievement variants, the smaller
+/// flag sizes.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct CompanionRecord {
+    /// Which companion (`_grey`, `_not_eligible`, `medium`, `small`).
+    pub key: String,
+    /// Project-relative path of the companion PNG.
+    pub path: String,
+    /// SHA-256 of the file.
+    pub sha256: String,
+    /// SHA-256 of the decoded pixels.
+    pub pixels_sha256: String,
+    /// Pixel size.
+    pub size: [u32; 2],
+}
+
 /// A processed artifact.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct ProcessedRecord {
@@ -147,6 +188,8 @@ pub struct ProcessedRecord {
     pub source_id: String,
     /// `feature.asset`
     pub asset_id: String,
+    /// Family of the source candidate (the lock: it can never change).
+    pub family: crate::family::Family,
     /// Run number for this source.
     pub run: u32,
     /// Effective canvas per frame.
@@ -163,6 +206,12 @@ pub struct ProcessedRecord {
     pub steps: Vec<StepRecord>,
     /// Profile used.
     pub profile: ProfileRef,
+    /// The recipe and its engine-level stages. Missing in records made before recipes were recorded.
+    #[serde(default)]
+    pub recipe: Option<RecipeRecord>,
+    /// Companion images installed with this artifact.
+    #[serde(default)]
+    pub companions: Vec<CompanionRecord>,
 }
 
 /// A validation run.
@@ -170,6 +219,11 @@ pub struct ProcessedRecord {
 pub struct ValidatedRecord {
     /// Artifact id (or the path for files outside the ledger).
     pub target: String,
+    /// Family the validation ran as: the artifact's own, or the one named for a plain file.
+    pub family: crate::family::Family,
+    /// Hash of the check set that ran (`validate::check_set_hash`). The gate compares it with the family's
+    /// full set, so a validation that skipped a check cannot open it.
+    pub check_set_hash: String,
     /// SHA-256 of the validated file.
     pub sha256: String,
     /// Result.
@@ -203,6 +257,8 @@ pub enum Verdict {
 pub struct ReviewedRecord {
     /// Artifact reviewed.
     pub target: String,
+    /// Family of the artifact when it was reviewed.
+    pub family: crate::family::Family,
     /// SHA-256 of the file the reviewer saw.
     pub sha256: String,
     /// Verdict.
@@ -237,6 +293,8 @@ pub struct InstalledFile {
 pub struct InstalledRecord {
     /// Artifact installed.
     pub target: String,
+    /// Family the files were installed as. The reuse guard reads this.
+    pub family: crate::family::Family,
     /// `handoff` or `register`.
     pub mode: String,
     /// Files written.

@@ -22,15 +22,21 @@ struct Args {
     /// The mod project folder. Everything the server reads or writes stays inside it.
     #[arg(long, env = "HOI4_IMAGEGEN_PROJECT_ROOT", default_value = ".")]
     project_root: PathBuf,
-    /// How the server is run. Only a local stdio server is supported.
-    #[arg(long, default_value = "local-stdio", value_parser = ["local-stdio"])]
+    /// How the server is run: `local-stdio` (a client on the user's machine) or `hosted` (HOI4 Factory's hosted
+    /// tool profile: the ChatGPT-login provider is never registered and keys come only from the environment).
+    #[arg(long, default_value = "local-stdio", value_parser = ["local-stdio", "hosted"])]
     mode: String,
 }
 
 #[tokio::main]
 async fn main() -> ExitCode {
     let args = Args::parse();
-    let engine = match Engine::open(&args.project_root, Arc::new(ProcessEnv), Arc::new(UreqTransport::new()), Arc::new(SystemClock), RunMode::LocalStdio) {
+    let hosted = args.mode == "hosted";
+    // a hosted server never reads a user's credential store
+    let env: Arc<dyn imagegen_core::config::EnvSource> =
+        if hosted { Arc::new(ProcessEnv) } else { Arc::new(imagegen_mcp::keyenv::SetupKeyEnv::new(ProcessEnv)) };
+    let mode = if hosted { RunMode::Hosted } else { RunMode::LocalStdio };
+    let engine = match Engine::open(&args.project_root, env, Arc::new(UreqTransport::new()), Arc::new(SystemClock), mode) {
         Ok(e) => e,
         Err(e) => {
             eprintln!("hoi4-imagegen-mcp: cannot open the project at {}: {e}", args.project_root.display());
