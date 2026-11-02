@@ -976,7 +976,7 @@ dependencies = [
 [[package]]
 name = "hoi4-engine"
 version = "0.1.0"
-source = "git+https://github.com/klimPaskov/hoi4-agent-tools?rev=cf1f8d8#cf1f8d876ed8d0bb10b644b19767fc7a42f9f9c6"
+source = "git+https://github.com/klimPaskov/hoi4-agent-tools?rev=313c2aa100d01f0d393664ad558f92b17bae1727#313c2aa100d01f0d393664ad558f92b17bae1727"
 dependencies = [
  "hoi4-syntax",
  "rayon",
@@ -988,7 +988,7 @@ dependencies = [
 [[package]]
 name = "hoi4-syntax"
 version = "0.1.0"
-source = "git+https://github.com/klimPaskov/hoi4-agent-tools?rev=cf1f8d8#cf1f8d876ed8d0bb10b644b19767fc7a42f9f9c6"
+source = "git+https://github.com/klimPaskov/hoi4-agent-tools?rev=313c2aa100d01f0d393664ad558f92b17bae1727#313c2aa100d01f0d393664ad558f92b17bae1727"
 dependencies = [
  "serde",
 ]

@@ -39,10 +39,10 @@ tokio = { version = "1", features = ["rt-multi-thread", "macros", "io-std", "io-
 toml = "1"
 ureq = { version = "3", default-features = true }
 
-# The shared HOI4 engine (klimPaskov/hoi4-agent-tools, Apache-2.0, publish = false). One pin for both crates: branch
-# claude/sprite-trace, PR #73. The parent repins to the merge commit on main once that PR lands.
-hoi4-syntax = { git = "https://github.com/klimPaskov/hoi4-agent-tools", rev = "cf1f8d8", package = "hoi4-syntax" }
-hoi4-engine = { git = "https://github.com/klimPaskov/hoi4-agent-tools", rev = "cf1f8d8", package = "hoi4-engine" }
+# The shared HOI4 engine (klimPaskov/hoi4-agent-tools, Apache-2.0, publish = false). One pin for both crates: the
+# merge commit of hoi4-agent-tools PR #73 (sprite index, trace and audit) on main.
+hoi4-syntax = { git = "https://github.com/klimPaskov/hoi4-agent-tools", rev = "313c2aa100d01f0d393664ad558f92b17bae1727", package = "hoi4-syntax" }
+hoi4-engine = { git = "https://github.com/klimPaskov/hoi4-agent-tools", rev = "313c2aa100d01f0d393664ad558f92b17bae1727", package = "hoi4-engine" }
 
 imagegen-core = { path = "crates/imagegen-core" }
 imagegen-providers = { path = "crates/imagegen-providers" }
