@@ -24,16 +24,10 @@ pub fn setup_field(var: &str) -> Option<&'static str> {
         "IDEOGRAM_API_KEY" => Some("ideogram_api_key"),
         "RECRAFT_API_KEY" => Some("recraft_api_key"),
         "LEONARDO_API_KEY" => Some("leonardo_api_key"),
-        "ADOBE_IMS_TOKEN" => Some("adobe_ims_token"),
-        "ADOBE_SERVICE_API_KEY" => Some("adobe_service_api_key"),
         "XAI_API_KEY" => Some("xai_api_key"),
         "TOGETHER_API_KEY" => Some("together_api_key"),
         "OPENROUTER_API_KEY" => Some("openrouter_api_key"),
         "OPENAI_COMPATIBLE_API_KEY" => Some("openai_compatible_api_key"),
-        "AZURE_API_KEY" => Some("azure_api_key"),
-        "AWS_ACCESS_KEY_ID" => Some("aws_access_key_id"),
-        "AWS_SECRET_ACCESS_KEY" => Some("aws_secret_access_key"),
-        "AWS_SESSION_TOKEN" => Some("aws_session_token"),
         "HF_TOKEN" => Some("hf_token"),
         _ => None,
     }
@@ -78,7 +72,7 @@ mod tests {
         assert_eq!(setup_field("FAL_KEY"), Some("fal_key"));
         assert_eq!(setup_field("COMFYUI_API_KEY"), Some("comfyui_api_key"));
         assert_eq!(setup_field("REPLICATE_API_TOKEN"), Some("replicate_api_token"));
-        assert_eq!(setup_field("AWS_SECRET_ACCESS_KEY"), Some("aws_secret_access_key"));
+        assert_eq!(setup_field("AWS_SECRET_ACCESS_KEY"), None, "Bedrock is deferred");
         assert_eq!(setup_field("HF_TOKEN"), Some("hf_token"));
         assert_eq!(setup_field("HOME"), None);
         assert_eq!(setup_account("fal_key"), "credential://image_generation_api_key/hoi4_imagegen_fal_key");

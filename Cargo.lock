@@ -1120,12 +1120,10 @@ name = "imagegen-providers"
 version = "0.2.2"
 dependencies = [
  "base64 0.22.1",
- "hmac",
  "imagegen-core",
  "schemars",
  "serde",
  "serde_json",
- "sha2",
  "tempfile",
  "thiserror",
  "ureq",

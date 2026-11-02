@@ -33,13 +33,10 @@ pub fn key_env_names(provider: &str, cfg: &ProviderConfig) -> Vec<String> {
         "ideogram" => vec!["IDEOGRAM_API_KEY".into()],
         "recraft" => vec!["RECRAFT_API_KEY".into()],
         "leonardo" => vec!["LEONARDO_API_KEY".into()],
-        "firefly" => vec!["ADOBE_IMS_TOKEN".into()],
         "xai" => vec!["XAI_API_KEY".into()],
         "together" => vec!["TOGETHER_API_KEY".into()],
         "openrouter" => vec!["OPENROUTER_API_KEY".into()],
         "openai_compatible" => vec!["OPENAI_COMPATIBLE_API_KEY".into()],
-        "foundry" => vec!["AZURE_API_KEY".into()],
-        "bedrock" => vec!["AWS_ACCESS_KEY_ID".into()],
         "huggingface" => vec!["HF_TOKEN".into()],
         _ => vec![],
     }
@@ -135,8 +132,6 @@ impl ProviderRegistry {
         crate::ideogram::register(&mut reg, config, env, transport.clone());
         crate::recraft::register(&mut reg, config, env, transport.clone());
         crate::sdwebui::register(&mut reg, config, env, transport.clone());
-        crate::bedrock::register(&mut reg, config, env, transport.clone());
-        crate::firefly::register(&mut reg, config, env, transport.clone());
         if enabled("comfyui") {
             let cfg = config.provider("comfyui");
             if cfg.endpoint.is_some() {

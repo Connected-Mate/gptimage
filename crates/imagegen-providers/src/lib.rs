@@ -9,12 +9,10 @@
 // ProviderError carries the redacted request context every caller reports; boxing it would only move the cost.
 #![allow(clippy::result_large_err)]
 
-pub mod bedrock;
 pub mod bfl;
 pub mod comfyui;
 pub mod common;
 pub mod fal;
-pub mod firefly;
 pub mod gemini;
 pub mod ideogram;
 pub mod leonardo;
