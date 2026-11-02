@@ -87,9 +87,33 @@ A chain is the caller's optional pre-steps followed by the family's mandatory fi
 | `advisor_card` | `advisor_card` | flatten, then the portrait is composited into the mod's advisor template, with an alpha-coverage audit that fails closed | one 65x67 DDS |
 | `portrait` | the four portraits | flatten, then a head-and-shoulders crop to 156x210 found with YuNet face detection (pure-Rust `tract-onnx`, model from the mod's skill copy). `portrait_crop` sets the crop by hand | one opaque DDS |
 | `flag` | `flag` | flatten, then the 82x52, 41x26 and 10x7 ladder | three TGA, bottom-left origin |
-| `selected_strip` | `faction_logo`, `agency_logo` | fit with a margin, then frame 2 as the selected state | one two-frame DDS |
-| `landmark_strip` | `building` | fit, then frame 2 as the ruined landmark, made from a second candidate of the same asset (`hoi4.image_edit` on the first, passed as `second_frame_candidate`) | one two-frame DDS |
-| `imported_art` | `counter_large`, `counter_small`, `division_emblem` | import only: the exact strip, or one file per frame in `import.frames` | one DDS |
+| `selected_strip` | `faction_logo`, `agency_logo` | fit with a margin, then frame 2 as the selected state. A faction logo also gets its 32x32 `_miniature` | one two-frame DDS, plus the miniature for a faction logo |
+| `landmark_strip` | `building` | fit, then frame 2 as the ruined landmark, made from a second candidate of the same asset (`hoi4.image_edit` on the first, passed as `second_frame_candidate`). A 64x64 landmark also gets the 32x32 `_small` strip | one or two two-frame DDS |
+| `imported_art` | `counter_large`, `counter_small`, `division_emblem` | import only: the exact strip, or one file per frame in `import.frames`. The on-map counter also gets its text icon, the division emblem its 30x12 small symbol | one DDS, or two |
+
+A medal is made as one 56x84 frame, registered as `GFX_medal_icon_<asset>_large`, and its 28x42 `GFX_medal_icon_<asset>` is derived from it.
+
+### Names the game looks up
+
+Every sprite name follows Hearts of Iron IV 1.19.4.1, and `crates/imagegen-core/src/lookup.rs` records the vanilla evidence for each family. Where script names the sprite in full (a focus `icon = GFX_focus_<asset>`), the name is free and the install result gives the exact text to write. Where the game builds the name, the tool builds the same one, and the install result's `script` field says what to write:
+
+| Family | The game looks up | Script |
+|---|---|---|
+| `idea_spirit`, `idea_concern` | `GFX_idea_<key>` | `picture = <asset>` |
+| `officer_corps_spirit` | `GFX_idea_<idea key>` | name the spirit idea `<asset>` |
+| `decision`, `decision_category_icon`, `decision_category_picture` | `GFX_decision_<key>`, `GFX_decision_category_<key>`, `GFX_decision_cat_picture_<key>` | `icon = <asset>` or `picture = <asset>` |
+| `raid` | `GFX_raid_type_icon_<raid type>` | name the raid type `<asset>` |
+| `commander_trait`, `personal_trait` | `GFX_trait_<trait key>` | name the trait `<asset>` |
+| `technology` | `GFX_<technology key>_medium` | name the technology `<asset>` |
+| `counter_large` | `GFX_unit_<sub-unit key>_icon_medium`, two frames | name the sub-unit `<asset>` (its key, not its `sprite`) |
+| `counter_small` | `GFX_unit_<sub-unit key>_icon_medium_white` and the text icon `GFX_unit_<sub-unit key>_icon_small`, two frames each | name the sub-unit `<asset>` |
+| `division_emblem` | `GFX_div_templ_<n>_large` and `GFX_div_templ_<n>_small` | none: the player picks symbol `<n>` |
+| `faction_logo` | the logo and `<logo>_miniature` | `icon = GFX_faction_logo_<asset>` |
+| `medal` | `GFX_medal_icon_<x>` and `GFX_medal_icon_<x>_large` | `icon = GFX_medal_icon_<asset>` with `frame = 1` |
+| `building` | `GFX_<x>_icon_small` (province window) and `GFX_<x>_icon` (raid window) | `special_icon = GFX_<asset>_icon_small` |
+| `modifier_stat_icon` | the name a `.gui` gives, upper case like vanilla | `spriteType = "GFX_MODIFIER_<ASSET>"` |
+
+A division emblem's number `<n>` is one past the highest of vanilla's numbers (0 to 43 and 65 to 121) and every number the mod's `interface/*.gfx` files or an earlier install already use. Install records it in the asset record. Achievements and flags have no sprite: the game loads them by file name.
 
 Art that already has its final accepted size is taken as it is when imported, which the chain records as `conform`. Counters and division emblems are not generated, because their second frame is different art. Every other family is generated end to end.
 
@@ -164,15 +188,15 @@ Details, the sign-in steps and the recorded evidence are in [docs/chatgpt-login.
 
 ## Install
 
-The releases are on GitHub: <https://github.com/klimPaskov/hoi4-imagegen-mcp/releases>. Version 0.2.1 has one archive per platform:
+The releases are on GitHub: <https://github.com/klimPaskov/hoi4-imagegen-mcp/releases>. Version 0.2.2 has one archive per platform:
 
 | Platform | Archive |
 |---|---|
-| Windows x64 | `hoi4-imagegen-v0.2.1-x86_64-pc-windows-msvc.zip` |
-| macOS arm64 | `hoi4-imagegen-v0.2.1-aarch64-apple-darwin.tar.gz` |
-| macOS x64 | `hoi4-imagegen-v0.2.1-x86_64-apple-darwin.tar.gz` |
-| Linux x64 | `hoi4-imagegen-v0.2.1-x86_64-unknown-linux-gnu.tar.gz` |
-| Linux arm64 | `hoi4-imagegen-v0.2.1-aarch64-unknown-linux-gnu.tar.gz` |
+| Windows x64 | `hoi4-imagegen-v0.2.2-x86_64-pc-windows-msvc.zip` |
+| macOS arm64 | `hoi4-imagegen-v0.2.2-aarch64-apple-darwin.tar.gz` |
+| macOS x64 | `hoi4-imagegen-v0.2.2-x86_64-apple-darwin.tar.gz` |
+| Linux x64 | `hoi4-imagegen-v0.2.2-x86_64-unknown-linux-gnu.tar.gz` |
+| Linux arm64 | `hoi4-imagegen-v0.2.2-aarch64-unknown-linux-gnu.tar.gz` |
 
 Each archive holds both programs, `LICENSE`, `NOTICE`, `README.md` and `UPSTREAM.md`. The release also has a `SHA256SUMS` file. The binaries are **unsigned**, so Windows SmartScreen and macOS Gatekeeper may warn. The archives and `SHA256SUMS` carry GitHub build attestations. To check a download:
 

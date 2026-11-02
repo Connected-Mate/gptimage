@@ -85,7 +85,8 @@ impl Engine {
         let mut companions: Vec<(String, Rgba)> = Vec::new();
         for f in &plan.finishers {
             let input_sha256 = main.pixels_sha256();
-            let made = self.run_finisher(*f, &main, p.portrait_crop, second.as_ref().map(|(id, img)| (id.as_str(), img)))?;
+            let made =
+                self.run_finisher(*f, &main, p.portrait_crop, second.as_ref().map(|(id, img)| (id.as_str(), img)), &profile, artifact.canvas)?;
             finishers.push(FinisherRecord {
                 name: f.name().to_string(),
                 input_sha256,

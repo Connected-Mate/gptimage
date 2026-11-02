@@ -2,6 +2,7 @@
 
 use crate::error::{Error, Result};
 use crate::family::Family;
+use crate::lookup::{derived_companions, lookup_of};
 use crate::naming::{expand, validate_flag_name, validate_snake};
 use crate::pixels::Rgba;
 use crate::profile::{Container, Profile};
@@ -72,16 +73,71 @@ pub fn final_files(profile: &Profile, canvas: [u32; 2], feature_slug: &str, asse
             container: profile.imagegen.container,
         });
     }
+    // companions the game looks up next to the main sprite (small emblem, text icon, miniature, half size)
+    for d in derived_companions(profile.family, canvas) {
+        let dir = match d.folder {
+            Some(pattern) => expand(pattern, feature_slug, asset, &prefix)?,
+            None => folder.to_string(),
+        };
+        let name = expand(d.file, feature_slug, asset, &prefix)?;
+        files.push(FinalFile {
+            rel: format!("{}/{name}.{ext}", dir.trim_end_matches('/')),
+            variant: Some(d.key.to_string()),
+            canvas: d.strip(),
+            container: profile.imagegen.container,
+        });
+    }
     Ok(files)
+}
+
+/// Replace `{n}` (the division template symbol number) in a pattern.
+fn with_number(pattern: &str, number: Option<u32>) -> Result<String> {
+    if !pattern.contains("{n}") {
+        return Ok(pattern.to_string());
+    }
+    let n = number.ok_or_else(|| Error::Invalid(format!("the sprite name '{pattern}' needs a division template number, and none was chosen")))?;
+    Ok(pattern.replace("{n}", &n.to_string()))
+}
+
+/// The main sprite name. A landmark made at the small 32x32 frame is the province window's `_small` sprite.
+pub fn main_sprite_name(profile: &Profile, canvas: [u32; 2], feature_slug: &str, asset: &str, number: Option<u32>) -> Result<Option<String>> {
+    let Some(spec) = &profile.imagegen.sprite else { return Ok(None) };
+    let prefix = resolved_prefix(profile, feature_slug, asset)?;
+    let mut name = expand(&with_number(&spec.name, number)?, feature_slug, asset, &prefix)?;
+    if profile.family == Family::Building && canvas == [32, 32] && !name.ends_with("_small") {
+        name.push_str("_small");
+    }
+    Ok(Some(name))
+}
+
+/// What the mod's script writes so the game finds the installed art, with the names filled in.
+pub fn script_usage(profile: &Profile, canvas: [u32; 2], feature_slug: &str, asset: &str, number: Option<u32>) -> Result<String> {
+    let sprite = main_sprite_name(profile, canvas, feature_slug, asset, number)?.unwrap_or_default();
+    let mut text = lookup_of(profile.family).script.replace("{sprite}", &sprite).replace("{asset}", asset);
+    if let Some(n) = number {
+        text = text.replace("{n}", &n.to_string());
+    }
+    Ok(text)
 }
 
 /// Sprite entries and the suggested `.gfx` file (project-relative, under `interface/`).
 /// Returns `None` for families the engine loads by file name (flags, achievements).
-pub fn sprite_entries(profile: &Profile, feature_slug: &str, asset: &str, files: &[FinalFile]) -> Result<Option<(String, Vec<SpriteEntry>)>> {
+///
+/// `number` is the division template symbol number of a division emblem (`GFX_div_templ_<n>_large`); other
+/// families pass `None`.
+pub fn sprite_entries(
+    profile: &Profile,
+    feature_slug: &str,
+    asset: &str,
+    files: &[FinalFile],
+    number: Option<u32>,
+) -> Result<Option<(String, Vec<SpriteEntry>)>> {
     let Some(spec) = &profile.imagegen.sprite else { return Ok(None) };
     let main = files.first().ok_or_else(|| Error::Invalid("no final files".into()))?;
+    let frames = profile.frames.max(1);
+    let canvas = [main.canvas[0] / frames, main.canvas[1]];
     let prefix = resolved_prefix(profile, feature_slug, asset)?;
-    let name = expand(&spec.name, feature_slug, asset, &prefix)?;
+    let name = main_sprite_name(profile, canvas, feature_slug, asset, number)?.unwrap_or_default();
     let gfx_file = expand(&spec.gfx_file, feature_slug, asset, &prefix)?;
     let mut entries = vec![if profile.frames > 1 { framed_sprite(&name, &main.rel, profile.frames) } else { plain_sprite(&name, &main.rel) }];
     for companion in &spec.companions {
@@ -89,6 +145,14 @@ pub fn sprite_entries(profile: &Profile, feature_slug: &str, asset: &str, files:
             "shine" => entries.push(shine_sprite(&name, &main.rel)?),
             other => return Err(Error::Config(format!("unknown sprite companion '{other}'"))),
         }
+    }
+    for d in derived_companions(profile.family, canvas) {
+        let file = files
+            .iter()
+            .find(|f| f.variant.as_deref() == Some(d.key))
+            .ok_or_else(|| Error::Invalid(format!("the {} companion file of {asset} is missing", d.key)))?;
+        let cname = expand(&with_number(d.sprite, number)?, feature_slug, asset, &prefix)?;
+        entries.push(if d.frames > 1 { framed_sprite(&cname, &file.rel, d.frames) } else { plain_sprite(&cname, &file.rel) });
     }
     Ok(Some((gfx_file, entries)))
 }
@@ -142,7 +206,7 @@ mod tests {
         assert_eq!(files.len(), 1);
         assert_eq!(files[0].rel, "gfx/interface/goals/iron_pact/focus_steel_will.dds");
         assert_eq!(files[0].canvas, [100, 88]);
-        let (gfx, entries) = sprite_entries(&prof, "iron_pact", "steel_will", &files).unwrap().unwrap();
+        let (gfx, entries) = sprite_entries(&prof, "iron_pact", "steel_will", &files, None).unwrap().unwrap();
         assert_eq!(gfx, "interface/iron_pact_goals.gfx");
         let names: Vec<_> = entries.iter().map(|e| e.name.as_str()).collect();
         assert_eq!(names, vec!["GFX_focus_steel_will", "GFX_focus_steel_will_shine"]);
@@ -159,7 +223,7 @@ mod tests {
         assert_eq!(rels, vec!["gfx/flags/IRP_fascism.tga", "gfx/flags/medium/IRP_fascism.tga", "gfx/flags/small/IRP_fascism.tga"]);
         assert_eq!(files[2].canvas, [10, 7]);
         assert!(final_files(&prof, prof.canvas, "iron_pact", "irp").is_err(), "flag names must be tags");
-        assert!(sprite_entries(&prof, "iron_pact", "IRP", &files).unwrap().is_none());
+        assert!(sprite_entries(&prof, "iron_pact", "IRP", &files, None).unwrap().is_none());
         let img = Rgba::filled(82, 52, [200, 20, 20, 255]);
         let small = export_bytes(&img, &files[2], [82, 52]).unwrap();
         let info = tga::parse_header(&small).unwrap();
@@ -179,7 +243,7 @@ mod tests {
             vec!["gfx/achievements/hold_the_line.dds", "gfx/achievements/hold_the_line_grey.dds", "gfx/achievements/hold_the_line_not_eligible.dds"]
         );
         assert_eq!(files[1].variant.as_deref(), Some("_grey"));
-        assert!(sprite_entries(&prof, "iron_pact", "hold_the_line", &files).unwrap().is_none());
+        assert!(sprite_entries(&prof, "iron_pact", "hold_the_line", &files, None).unwrap().is_none());
     }
 
     #[test]
@@ -188,7 +252,7 @@ mod tests {
             let prof = p(f);
             let canvas = if prof.needs_mod_canvas() { [64, 64] } else { prof.canvas };
             let files = final_files(&prof, canvas, "iron_pact", asset).unwrap();
-            sprite_entries(&prof, "iron_pact", asset, &files).unwrap().unwrap().1[0].name.clone()
+            sprite_entries(&prof, "iron_pact", asset, &files, None).unwrap().unwrap().1[0].name.clone()
         };
         assert_eq!(name_of(Family::IdeaSpirit, "iron_will"), "GFX_idea_iron_will");
         assert_eq!(name_of(Family::AdvisorCard, "gen_smith"), "GFX_idea_gen_smith");
@@ -197,7 +261,7 @@ mod tests {
         assert_eq!(name_of(Family::StateModifier, "bunkers"), "GFX_modifiers_bunkers");
         assert_eq!(name_of(Family::Technology, "rifle_tech"), "GFX_rifle_tech_medium");
         assert_eq!(name_of(Family::AgencyLogo, "north"), "GFX_intelligence_agency_logo_north");
-        assert_eq!(name_of(Family::CounterSmall, "inf"), "GFX_unit_inf_icon_small");
+        assert_eq!(name_of(Family::CounterSmall, "inf"), "GFX_unit_inf_icon_medium_white");
     }
 
     #[test]
@@ -205,11 +269,229 @@ mod tests {
         let prof = p(Family::CounterLarge);
         let files = final_files(&prof, prof.canvas, "iron_pact", "inf").unwrap();
         assert_eq!(files[0].canvas, [152, 42]);
-        let (_, entries) = sprite_entries(&prof, "iron_pact", "inf", &files).unwrap().unwrap();
+        let (_, entries) = sprite_entries(&prof, "iron_pact", "inf", &files, None).unwrap().unwrap();
         assert!(entries[0].text.contains("noOfFrames = 2"));
         let prof = p(Family::Focus);
         let files = final_files(&prof, prof.canvas, "iron_pact", "x").unwrap();
-        assert!(!sprite_entries(&prof, "iron_pact", "x", &files).unwrap().unwrap().1[0].text.contains("noOfFrames"));
+        assert!(!sprite_entries(&prof, "iron_pact", "x", &files, None).unwrap().unwrap().1[0].text.contains("noOfFrames"));
+    }
+
+    /// One row per family: asset name, the division template number, then every sprite the install registers as
+    /// (name, texture, noOfFrames), main first. The patterns are the vanilla ones (see `lookup.rs` for the
+    /// evidence); a family loaded by file name lists its files with an empty sprite name.
+    #[allow(clippy::type_complexity)]
+    fn expected(f: Family) -> (&'static str, Option<u32>, Vec<(&'static str, &'static str, u32)>) {
+        use Family::*;
+        let one = |name, tex| vec![(name, tex, 1)];
+        match f {
+            Focus => (
+                "steel_will",
+                None,
+                vec![
+                    ("GFX_focus_steel_will", "gfx/interface/goals/iron_pact/focus_steel_will.dds", 1),
+                    ("GFX_focus_steel_will_shine", "gfx/interface/goals/iron_pact/focus_steel_will.dds", 1),
+                ],
+            ),
+            IdeaSpirit => ("iron_will", None, one("GFX_idea_iron_will", "gfx/interface/ideas/iron_pact/idea_iron_will.dds")),
+            IdeaConcern => ("steelworks", None, one("GFX_idea_steelworks", "gfx/interface/ideas/iron_pact/concerns/idea_steelworks.dds")),
+            OfficerCorpsSpirit => {
+                ("grit_spirit", None, one("GFX_idea_grit_spirit", "gfx/interface/officer_corp/spirits/iron_pact/spirit_grit_spirit.dds"))
+            }
+            Decision => ("rally", None, one("GFX_decision_rally", "gfx/interface/decisions/iron_pact/decision_rally.dds")),
+            DecisionCategoryIcon => (
+                "council",
+                None,
+                one("GFX_decision_category_council", "gfx/interface/decisions/iron_pact/category_icons/decision_category_council.dds"),
+            ),
+            DecisionCategoryPicture => (
+                "council",
+                None,
+                one("GFX_decision_cat_picture_council", "gfx/interface/decisions/iron_pact/category_pictures/decision_cat_picture_council.dds"),
+            ),
+            StateModifier => ("bunkers", None, one("GFX_modifiers_bunkers", "gfx/interface/state_modifiers/iron_pact/modifiers_bunkers.dds")),
+            SpecialProjectIcon => ("rail_gun", None, one("GFX_sp_rail_gun", "gfx/interface/special_project/project_icons/iron_pact/sp_rail_gun.dds")),
+            Raid => {
+                ("bridge_raid", None, one("GFX_raid_type_icon_bridge_raid", "gfx/interface/military_raids/iron_pact/raid_type_icon_bridge_raid.dds"))
+            }
+            MioDepartment => (
+                "arms",
+                None,
+                one("GFX_mio_department_arms", "gfx/interface/military_industrial_organization/department_icons/iron_pact/mio_department_arms.dds"),
+            ),
+            MioTrait => (
+                "rugged",
+                None,
+                one("GFX_mio_trait_rugged", "gfx/interface/military_industrial_organization/trait_icons/iron_pact/mio_trait_rugged.dds"),
+            ),
+            MioPolicy => (
+                "quotas",
+                None,
+                one("GFX_mio_policy_quotas", "gfx/interface/military_industrial_organization/policy_icons/iron_pact/mio_policy_quotas.dds"),
+            ),
+            BopSide => ("hawks", None, one("GFX_bop_hawks", "gfx/interface/bop/iron_pact/bop_hawks.dds")),
+            Medal => (
+                "valour",
+                None,
+                vec![
+                    ("GFX_medal_icon_valour_large", "gfx/interface/medals/iron_pact/medal_icon_valour.dds", 1),
+                    ("GFX_medal_icon_valour", "gfx/interface/medals/iron_pact/medal_icon_valour_small.dds", 1),
+                ],
+            ),
+            AgencyUpgrade => ("codebook", None, one("GFX_agency_codebook", "gfx/interface/operatives/icons/iron_pact/agency_codebook.dds")),
+            OperationIcon => ("night_drop", None, one("GFX_phase_night_drop_small", "gfx/interface/operations/iron_pact/icons/phase_night_drop.dds")),
+            OperationPicture => ("night_drop", None, one("GFX_phase_night_drop", "gfx/interface/operations/iron_pact/pictures/phase_night_drop.dds")),
+            CommanderTrait => ("stubborn", None, one("GFX_trait_stubborn", "gfx/interface/traits/iron_pact/trait_stubborn.dds")),
+            PersonalTrait => ("gambler", None, one("GFX_trait_gambler", "gfx/interface/traits/iron_pact/personal/trait_gambler.dds")),
+            Doctrine => ("deep_battle", None, one("GFX_doctrine_deep_battle", "gfx/interface/doctrines/iron_pact/doctrine_deep_battle.dds")),
+            ReportEvent => ("border_clash", None, one("GFX_report_event_border_clash", "gfx/event_pictures/iron_pact/report_event_border_clash.dds")),
+            NewsEvent => ("border_clash", None, one("GFX_news_event_border_clash", "gfx/event_pictures/iron_pact/news_event_border_clash.dds")),
+            Technology => ("rifle_tech", None, one("GFX_rifle_tech_medium", "gfx/interface/technologies/iron_pact/rifle_tech.dds")),
+            Achievement => (
+                "hold_the_line",
+                None,
+                vec![
+                    ("", "gfx/achievements/hold_the_line.dds", 1),
+                    ("", "gfx/achievements/hold_the_line_grey.dds", 1),
+                    ("", "gfx/achievements/hold_the_line_not_eligible.dds", 1),
+                ],
+            ),
+            LeaderPortrait => ("marshal", None, one("GFX_portrait_marshal", "gfx/leaders/iron_pact/portrait_marshal.dds")),
+            CommanderPortrait => ("marshal", None, one("GFX_portrait_marshal", "gfx/leaders/iron_pact/commanders/portrait_marshal.dds")),
+            OperativePortrait => ("agent", None, one("GFX_portrait_agent", "gfx/leaders/iron_pact/operatives/portrait_agent.dds")),
+            ScientistPortrait => ("doctor", None, one("GFX_portrait_doctor", "gfx/leaders/iron_pact/scientists/portrait_doctor.dds")),
+            AdvisorCard => ("minister", None, one("GFX_idea_minister", "gfx/interface/ideas/iron_pact/advisors/idea_minister.dds")),
+            Flag => ("IRP", None, vec![("", "gfx/flags/IRP.tga", 1), ("", "gfx/flags/medium/IRP.tga", 1), ("", "gfx/flags/small/IRP.tga", 1)]),
+            CounterLarge => (
+                "mountain_rangers",
+                None,
+                vec![("GFX_unit_mountain_rangers_icon_medium", "gfx/interface/counters/divisions_large/iron_pact/unit_mountain_rangers.dds", 2)],
+            ),
+            CounterSmall => (
+                "mountain_rangers",
+                None,
+                vec![
+                    (
+                        "GFX_unit_mountain_rangers_icon_medium_white",
+                        "gfx/interface/counters/divisions_small/iron_pact/onmap_unit_mountain_rangers.dds",
+                        2,
+                    ),
+                    ("GFX_unit_mountain_rangers_icon_small", "gfx/texticons/iron_pact/unit_mountain_rangers_icon_small.dds", 2),
+                ],
+            ),
+            DivisionEmblem => (
+                "wolf",
+                Some(122),
+                vec![
+                    ("GFX_div_templ_122_large", "gfx/interface/counters/division_templates_large/iron_pact/custom_wolf.dds", 1),
+                    ("GFX_div_templ_122_small", "gfx/interface/counters/division_templates_small/iron_pact/custom_wolf.dds", 1),
+                ],
+            ),
+            Building => (
+                "iron_gate",
+                None,
+                vec![
+                    ("GFX_iron_gate_icon", "gfx/interface/buildings/iron_pact/building_iron_gate.dds", 2),
+                    ("GFX_iron_gate_icon_small", "gfx/interface/buildings/iron_pact/building_iron_gate_small.dds", 2),
+                ],
+            ),
+            FactionLogo => (
+                "iron_pact",
+                None,
+                vec![
+                    ("GFX_faction_logo_iron_pact", "gfx/interface/factions/faction_logos/iron_pact/faction_logo_iron_pact.dds", 2),
+                    (
+                        "GFX_faction_logo_iron_pact_miniature",
+                        "gfx/interface/factions/faction_logos/iron_pact/faction_logo_iron_pact_miniature.dds",
+                        1,
+                    ),
+                ],
+            ),
+            AgencyLogo => {
+                ("north", None, vec![("GFX_intelligence_agency_logo_north", "gfx/interface/operatives/agencies/iron_pact/agency_logo_north.dds", 2)])
+            }
+            ModifierStatIcon => ("army_speed", None, one("GFX_MODIFIER_ARMY_SPEED", "gfx/interface/modifiers/iron_pact/modifier_army_speed.dds")),
+            GuiTexture => ("panel", None, one("GFX_gui_panel", "gfx/interface/iron_pact/gui_panel.dds")),
+            SuperEvent => ("victory", None, one("GFX_super_event_victory", "gfx/super_events/iron_pact/super_event_victory.dds")),
+        }
+    }
+
+    #[test]
+    fn every_family_registers_the_vanilla_name_frames_and_path() {
+        for f in Family::ALL.iter().copied() {
+            let prof = p(f);
+            let canvas = if prof.needs_mod_canvas() { [64, 64] } else { prof.canvas };
+            let (asset, number, want) = expected(f);
+            let files = final_files(&prof, canvas, "iron_pact", asset).unwrap();
+            match sprite_entries(&prof, "iron_pact", asset, &files, number).unwrap() {
+                Some((gfx, entries)) => {
+                    assert!(gfx.starts_with("interface/") && gfx.ends_with(".gfx"), "{f}: {gfx}");
+                    let got: Vec<(String, String, u32)> = entries
+                        .iter()
+                        .map(|e| {
+                            let tex = e.text.split("texturefile = \"").nth(1).and_then(|t| t.split('"').next()).unwrap_or("").to_string();
+                            let frames =
+                                e.text.split("noOfFrames = ").nth(1).and_then(|t| t.split_whitespace().next()).map_or(1, |n| n.parse().unwrap());
+                            (e.name.clone(), tex, frames)
+                        })
+                        .collect();
+                    let want: Vec<(String, String, u32)> = want.iter().map(|(n, t, fr)| (n.to_string(), t.to_string(), *fr)).collect();
+                    assert_eq!(got, want, "{f}");
+                    // every file the install writes is registered by a sprite, and every sprite's texture is written
+                    let mut rels: Vec<&str> = files.iter().map(|x| x.rel.as_str()).collect();
+                    rels.sort_unstable();
+                    rels.dedup();
+                    let mut texs: Vec<&str> = want.iter().map(|w| w.1.as_str()).collect();
+                    texs.sort_unstable();
+                    texs.dedup();
+                    assert_eq!(rels, texs, "{f}");
+                    // the strip of every file matches the frames its sprite declares
+                    for (file, w) in files.iter().zip(want.iter().filter(|w| !w.0.ends_with("_shine"))) {
+                        assert_eq!(file.canvas[0] % w.2, 0, "{f}: {} does not divide into {} frames", file.rel, w.2);
+                    }
+                    // the script text names the main sprite or the short key, fully expanded
+                    let script = script_usage(&prof, canvas, "iron_pact", asset, number).unwrap();
+                    assert!(script.contains(&want[0].0) || script.contains(asset), "{f}: {script}");
+                    assert!(!script.contains('{'), "{f}: unexpanded placeholder in {script}");
+                }
+                None => {
+                    let rels: Vec<&str> = files.iter().map(|x| x.rel.as_str()).collect();
+                    let want: Vec<&str> = want.iter().map(|w| w.1).collect();
+                    assert_eq!(rels, want, "{f}");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn the_short_key_families_hand_the_agent_the_short_key() {
+        let usage = |f: Family, asset: &str| {
+            let prof = p(f);
+            script_usage(&prof, prof.canvas, "iron_pact", asset, None).unwrap()
+        };
+        assert_eq!(usage(Family::IdeaSpirit, "iron_will"), "idea: picture = iron_will");
+        assert_eq!(usage(Family::Decision, "rally"), "decision: icon = rally");
+        assert_eq!(usage(Family::DecisionCategoryIcon, "council"), "decision category: icon = council");
+        assert_eq!(usage(Family::DecisionCategoryPicture, "council"), "decision category: picture = council");
+        assert!(usage(Family::CounterLarge, "mountain_rangers").contains("name the sub-unit mountain_rangers"));
+        assert!(usage(Family::Technology, "rifle_tech").contains("name the technology rifle_tech"));
+        assert!(usage(Family::Focus, "steel_will").contains("icon = GFX_focus_steel_will"));
+        assert!(usage(Family::Medal, "valour").contains("icon = GFX_medal_icon_valour with frame = 1"));
+        let prof = p(Family::DivisionEmblem);
+        assert!(script_usage(&prof, prof.canvas, "iron_pact", "wolf", Some(130)).unwrap().contains("symbol 130"));
+    }
+
+    #[test]
+    fn a_small_landmark_is_the_small_sprite_alone_and_an_emblem_needs_its_number() {
+        let prof = p(Family::Building);
+        let files = final_files(&prof, [32, 32], "iron_pact", "iron_gate").unwrap();
+        assert_eq!(files.len(), 1);
+        let (_, entries) = sprite_entries(&prof, "iron_pact", "iron_gate", &files, None).unwrap().unwrap();
+        assert_eq!(entries.len(), 1);
+        assert_eq!(entries[0].name, "GFX_iron_gate_icon_small");
+        assert!(entries[0].text.contains("noOfFrames = 2"));
+        let prof = p(Family::DivisionEmblem);
+        let files = final_files(&prof, prof.canvas, "iron_pact", "wolf").unwrap();
+        assert!(sprite_entries(&prof, "iron_pact", "wolf", &files, None).is_err(), "no number, no symbol name");
     }
 
     #[test]

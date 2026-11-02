@@ -307,6 +307,12 @@ pub struct InstalledRecord {
     pub replaced: Vec<ReplacedFile>,
     /// Approval used.
     pub approval_id: String,
+    /// Division template symbol number of a division emblem (`GFX_div_templ_<n>_large`), chosen at install.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub division_template_number: Option<u32>,
+    /// What the mod's script writes so the game finds the art, with the names filled in.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub script: Option<String>,
 }
 
 /// A file that an approved replace overwrote.

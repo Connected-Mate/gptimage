@@ -56,7 +56,8 @@ pub fn validate_flag_name(value: &str) -> Result<()> {
     Ok(())
 }
 
-/// Expand `{feature_slug}`, `{asset}` and `{prefix}` in a pattern. Unknown placeholders are an error.
+/// Expand `{feature_slug}`, `{asset}`, `{ASSET}` (the asset name in upper case, for the vanilla
+/// `GFX_MODIFIER_<KEY>` convention) and `{prefix}` in a pattern. Unknown placeholders are an error.
 pub fn expand(pattern: &str, feature_slug: &str, asset: &str, prefix: &str) -> Result<String> {
     let mut out = String::new();
     let mut rest = pattern;
@@ -67,6 +68,7 @@ pub fn expand(pattern: &str, feature_slug: &str, asset: &str, prefix: &str) -> R
         match &after[..end] {
             "feature_slug" => out.push_str(feature_slug),
             "asset" => out.push_str(asset),
+            "ASSET" => out.push_str(&asset.to_ascii_uppercase()),
             "prefix" => out.push_str(prefix),
             other => return Err(Error::Invalid(format!("unknown placeholder '{{{other}}}' in pattern '{pattern}'"))),
         }
@@ -165,6 +167,7 @@ mod tests {
             expand("gfx/interface/goals/{feature_slug}/{prefix}{asset}", "iron", "wall", "goal_").unwrap(),
             "gfx/interface/goals/iron/goal_wall"
         );
+        assert_eq!(expand("GFX_MODIFIER_{ASSET}", "iron", "army_speed", "").unwrap(), "GFX_MODIFIER_ARMY_SPEED");
         assert!(expand("{nope}", "a", "b", "c").is_err());
         assert!(expand("{asset", "a", "b", "c").is_err());
     }

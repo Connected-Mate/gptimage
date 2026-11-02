@@ -158,7 +158,16 @@ fn every_family_runs_its_own_finishing_without_being_asked() {
         ("focus", "wall", &subject, json!({}), vec!["trim_to_subject", "fit_subject"], vec![], vec![], [100, 88]),
         ("news_event", "gazette", &photo, json!({}), vec!["flatten_on", "cover_resize", "grayscale"], vec![], vec![], [397, 153]),
         ("report_event", "briefing", &photo, json!({}), vec!["flatten_on", "report_card"], vec![], vec![], [210, 176]),
-        ("faction_logo", "pact", &subject, json!({}), vec!["fit_subject", "selected_frame"], vec![], vec![], [200, 100]),
+        (
+            "faction_logo",
+            "pact",
+            &subject,
+            json!({}),
+            vec!["fit_subject", "selected_frame"],
+            vec!["derived_companions"],
+            vec!["miniature"],
+            [200, 100],
+        ),
         ("agency_logo", "bureau", &subject, json!({}), vec!["fit_subject", "selected_frame"], vec![], vec![], [234, 119]),
         ("flag", "IRP", &photo, json!({}), vec!["flatten_on"], vec!["flag_ladder"], vec!["medium", "small"], [82, 52]),
         (
@@ -827,4 +836,83 @@ fn the_kits_face_model_finds_a_face_in_a_vanilla_portrait() {
             assert!(e.message.contains("portrait_crop"));
         }
     }
+}
+
+// ------------------------------------------------------------------ (f) the names and companions the game looks up
+
+/// An imported 76x42 emblem or 30x12-frame counter, drawn as a filled shape.
+fn shape(w: u32, h: u32, frames: u32, rgb: [u8; 3]) -> Rgba {
+    let mut img = Rgba::new(w * frames, h);
+    for f in 0..frames {
+        for y in h / 6..h - h / 6 {
+            for x in w / 4..w - w / 4 {
+                img.set_px(f * w + x, y, [rgb[0], rgb[1], rgb[2], 255]);
+            }
+        }
+    }
+    img
+}
+
+fn import_and_install(h: &Harness, family: &str, asset: &str, img: &Rgba) -> Value {
+    let rel = format!("incoming/{asset}.png");
+    put(h, &rel, img);
+    let p = h
+        .engine
+        .process(serde_json::from_value(json!({"import": {"path": rel, "family": family, "feature_slug": "iron_pact", "asset": asset}})).unwrap())
+        .unwrap_or_else(|e| panic!("{family}: {e}"));
+    assert_eq!(p["chain"]["complete"], true, "{family}: {:#}", p["chain"]);
+    let id = p["artifact_id"].as_str().unwrap().to_string();
+    let approval = approve(h, &id, family);
+    h.install(&id, &approval, json!({"mode": "register"})).unwrap_or_else(|e| panic!("{family}: {e}"))
+}
+
+#[test]
+fn a_division_emblem_takes_the_next_free_symbol_number_with_its_small_symbol() {
+    let h = chain_harness();
+    // the mod already registers symbol 140 for something else
+    std::fs::create_dir_all(h.root().join("interface")).unwrap();
+    std::fs::write(
+        h.root().join("interface/old_emblems.gfx"),
+        "spriteTypes = {\n\tspriteType = { name = \"GFX_div_templ_140_large\" texturefile = \"gfx/x.dds\" }\n}\n",
+    )
+    .unwrap();
+    let out = import_and_install(&h, "division_emblem", "wolf", &shape(76, 42, 1, [70, 110, 80]));
+    assert_eq!(out["division_template_number"], 141, "one past the highest of vanilla (121) and the mod (140)");
+    assert_eq!(out["sprite"]["names"], json!(["GFX_div_templ_141_large", "GFX_div_templ_141_small"]));
+    let files: Vec<&str> = out["final_files"].as_array().unwrap().iter().map(|f| f["path"].as_str().unwrap()).collect();
+    assert_eq!(
+        files,
+        vec![
+            "gfx/interface/counters/division_templates_large/iron_pact/custom_wolf.dds",
+            "gfx/interface/counters/division_templates_small/iron_pact/custom_wolf.dds"
+        ]
+    );
+    let small = dds::decode(&h.read(files[1])).unwrap();
+    assert_eq!((small.width, small.height), (30, 12));
+    let gfx = String::from_utf8(h.read("interface/iron_pact_counters.gfx")).unwrap();
+    assert!(gfx.contains("name = \"GFX_div_templ_141_small\"") && gfx.contains(files[1]), "{gfx}");
+    assert!(out["script"].as_str().unwrap().contains("symbol 141"), "{}", out["script"]);
+    // the number is in the asset record, and the next emblem takes the one after it
+    let record: Value = serde_json::from_slice(&h.read(out["record_path"].as_str().unwrap())).unwrap();
+    assert_eq!(record["last_install"]["division_template_number"], 141);
+    let next = import_and_install(&h, "division_emblem", "bear", &shape(76, 42, 1, [120, 80, 60]));
+    assert_eq!(next["division_template_number"], 142);
+}
+
+#[test]
+fn an_on_map_counter_registers_the_vanilla_name_and_its_text_icon() {
+    let h = chain_harness();
+    let out = import_and_install(&h, "counter_small", "mountain_rangers", &shape(30, 12, 2, [190, 190, 190]));
+    assert_eq!(out["sprite"]["names"], json!(["GFX_unit_mountain_rangers_icon_medium_white", "GFX_unit_mountain_rangers_icon_small"]));
+    let gfx = String::from_utf8(h.read("interface/iron_pact_counters.gfx")).unwrap();
+    assert_eq!(gfx.matches("noOfFrames = 2").count(), 2, "{gfx}");
+    let icon = dds::decode(&h.read("gfx/texticons/iron_pact/unit_mountain_rangers_icon_small.dds")).unwrap();
+    assert_eq!((icon.width, icon.height), (60, 12));
+    let px = icon.px(15, 6);
+    assert!(px[1] > px[0] && px[0] == px[2], "frame 1 of the text icon is tinted green: {px:?}");
+    assert_eq!(icon.px(45, 6), [190, 190, 190, 255], "frame 2 is kept");
+    assert!(out["script"].as_str().unwrap().contains("name the sub-unit mountain_rangers"));
+    // the battalion icon is GFX_unit_<key>_icon_medium
+    let out = import_and_install(&h, "counter_large", "mountain_rangers", &shape(76, 42, 2, [90, 120, 90]));
+    assert_eq!(out["sprite"]["names"], json!(["GFX_unit_mountain_rangers_icon_medium"]));
 }

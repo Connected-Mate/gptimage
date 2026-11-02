@@ -22,6 +22,11 @@
 //! | `advisor_card` v1 | advisor card | `advisor_card` (or `conform` for a finished 65x67 card) |
 //! | `achievement` v1 | achievement | `fit_subject`, `achievement_triplet` |
 //! | `flag` v1 | flag | `flatten_on`, `flag_ladder` |
+//!
+//! Families whose sprite the game looks up together with a companion (the division emblem's small symbol, the
+//! on-map counter's text icon, the faction logo's miniature, a landmark's small strip, a medal's small strip) end
+//! with the `derived_companions` finisher, whatever the recipe; the record must then carry each companion
+//! ([`crate::lookup::derived_companions`]).
 
 use crate::error::{Error, Result, RetryClass};
 use crate::family::Family;
@@ -155,6 +160,8 @@ pub enum Finisher {
     FlagLadder,
     /// The second frame of a landmark strip from a second candidate (the ruined state), fitted the same way.
     SecondFrame,
+    /// The companions the game looks up next to the main sprite, derived from the finished main art.
+    DerivedCompanions,
 }
 
 impl Finisher {
@@ -166,6 +173,7 @@ impl Finisher {
             Finisher::ExtractPortrait => "extract_portrait",
             Finisher::FlagLadder => "flag_ladder",
             Finisher::SecondFrame => "second_frame",
+            Finisher::DerivedCompanions => "derived_companions",
         }
     }
 }
@@ -321,7 +329,18 @@ pub fn plan_finishing(profile: &Profile, canvas: [u32; 2], img: &Rgba, imported:
             finishers.push(Finisher::FlagLadder);
         }
     }
+    if !crate::lookup::derived_companions(profile.family, canvas).is_empty() {
+        finishers.push(Finisher::DerivedCompanions);
+    }
     Ok(ChainPlan { ops, finishers })
+}
+
+/// Keys of every companion image a processed record of this family and canvas must carry: the recipe's, then the
+/// derived companions the game looks up.
+pub fn companion_keys_of(profile: &Profile, canvas: [u32; 2]) -> Vec<&'static str> {
+    let mut keys: Vec<&'static str> = recipe_of(profile).companion_keys().to_vec();
+    keys.extend(crate::lookup::derived_companions(profile.family, canvas).iter().map(|d| d.key));
+    keys
 }
 
 /// Stages a processed record must show, in order. Each stage lists the names that satisfy it. A single `conform`
@@ -373,6 +392,18 @@ pub fn audit(rec: &ProcessedRecord, profile: &Profile) -> Vec<String> {
     for key in recipe.companion_keys() {
         if !companions.contains(key) {
             problems.push(format!("the record lacks the companion image {key} that {} needs", recipe.id()));
+        }
+    }
+    for d in crate::lookup::derived_companions(profile.family, rec.canvas) {
+        match rec.companions.iter().find(|c| c.key == d.key) {
+            None => problems.push(format!(
+                "the record lacks the {} companion the game looks up next to {}'s sprite; process the source candidate again",
+                d.key, profile.family
+            )),
+            Some(c) if c.size != d.strip() => {
+                problems.push(format!("the {} companion is {}x{}, the game needs {}x{}", d.key, c.size[0], c.size[1], d.strip()[0], d.strip()[1]))
+            }
+            Some(_) => {}
         }
     }
     let last_out = r.finishers.last().map(|f| f.output_sha256.as_str()).or_else(|| rec.steps.last().map(|s| s.output_sha256.as_str()));
@@ -517,7 +548,11 @@ mod tests {
         let building = prof(Family::Building);
         let plan = plan_finishing(&building, building.canvas, &blob(), false, false, "").unwrap();
         assert!(matches!(plan.ops.last().unwrap(), Op::FitSubject { .. }), "frame 1 is fitted by the chain");
-        assert_eq!(plan.finishers, vec![Finisher::SecondFrame], "frame 2 (the ruined landmark) comes from a second candidate");
+        assert_eq!(
+            plan.finishers,
+            vec![Finisher::SecondFrame, Finisher::DerivedCompanions],
+            "frame 2 (the ruined landmark) comes from a second candidate, then the small strip is derived"
+        );
         let counter = prof(Family::CounterLarge);
         assert_eq!(
             plan_finishing(&counter, counter.canvas, &Rgba::new(152, 42), true, false, "").unwrap().ops,
@@ -603,7 +638,7 @@ mod tests {
                     path: format!("{k}.png"),
                     sha256: "c".into(),
                     pixels_sha256: "c".into(),
-                    size: [1, 1],
+                    size: crate::lookup::derived_companion(profile.family, k).map_or([1, 1], |d| d.strip()),
                 })
                 .collect(),
         }
@@ -642,10 +677,29 @@ mod tests {
     fn audit_wants_every_stage_of_a_strip_one_conform_covers_both_and_companions_are_required() {
         let logo = prof(Family::FactionLogo);
         let fit = Op::FitSubject { width: 100, height: 100, margin: 10, min_alpha: 16 };
-        assert!(audit(&record(&logo, &[fit.clone(), Op::SelectedFrame { frames: 2 }], &[], &[], ""), &logo).is_empty());
-        assert!(!audit(&record(&logo, &[fit], &[], &[], ""), &logo).is_empty(), "the frame step cannot be skipped");
-        assert!(!audit(&record(&logo, &[Op::SelectedFrame { frames: 2 }], &[], &[], ""), &logo).is_empty(), "the fit cannot be skipped");
-        assert!(audit(&record(&logo, &[Op::Conform { width: 200, height: 100 }], &[], &[], ""), &logo).is_empty());
+        let mini: &[&str] = &["miniature"];
+        let derive: &[&str] = &["derived_companions"];
+        assert!(audit(&record(&logo, &[fit.clone(), Op::SelectedFrame { frames: 2 }], derive, mini, ""), &logo).is_empty());
+        assert!(!audit(&record(&logo, std::slice::from_ref(&fit), derive, mini, ""), &logo).is_empty(), "the frame step cannot be skipped");
+        assert!(!audit(&record(&logo, &[Op::SelectedFrame { frames: 2 }], derive, mini, ""), &logo).is_empty(), "the fit cannot be skipped");
+        assert!(audit(&record(&logo, &[Op::Conform { width: 200, height: 100 }], derive, mini, ""), &logo).is_empty());
+        // the miniature the game looks up next to the logo is required, at 32x32
+        let missing = audit(&record(&logo, &[fit, Op::SelectedFrame { frames: 2 }], &[], &[], ""), &logo);
+        assert!(missing.iter().any(|m| m.contains("miniature")), "{missing:?}");
+        let mut wrong = record(&logo, &[Op::Conform { width: 200, height: 100 }], derive, mini, "");
+        wrong.companions[0].size = [16, 16];
+        assert!(audit(&wrong, &logo).iter().any(|m| m.contains("32x32")));
+        // the division emblem's small symbol and the on-map counter's text icon likewise
+        let emblem = prof(Family::DivisionEmblem);
+        let conform = [Op::Conform { width: 76, height: 42 }];
+        assert!(audit(&record(&emblem, &conform, derive, &["small"], ""), &emblem).is_empty());
+        assert!(!audit(&record(&emblem, &conform, &[], &[], ""), &emblem).is_empty());
+        let counter = prof(Family::CounterSmall);
+        let conform = [Op::Conform { width: 60, height: 12 }];
+        assert!(audit(&record(&counter, &conform, derive, &["text_icon"], ""), &counter).is_empty());
+        assert!(!audit(&record(&counter, &conform, &[], &[], ""), &counter).is_empty());
+        assert_eq!(companion_keys_of(&counter, counter.canvas), vec!["text_icon"]);
+        assert_eq!(companion_keys_of(&prof(Family::Achievement), [64, 64]), vec!["_grey", "_not_eligible"]);
         let ach = prof(Family::Achievement);
         let fit = Op::FitSubject { width: 64, height: 64, margin: 2, min_alpha: 16 };
         assert!(audit(&record(&ach, std::slice::from_ref(&fit), &["achievement_triplet"], &["_grey", "_not_eligible"], ""), &ach).is_empty());

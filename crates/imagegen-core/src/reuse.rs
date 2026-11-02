@@ -265,6 +265,8 @@ mod tests {
             gfx_file: None,
             replaced: vec![],
             approval_id: "apr".into(),
+            division_template_number: None,
+            script: None,
         };
         ledger.append(kind::INSTALLED, Some("f.a"), Some("f.a-v1-p1"), &rec).unwrap();
         let hits = find_cross_family_reuse(&fs, Family::Decision, &pixel_hash(&img)).unwrap();

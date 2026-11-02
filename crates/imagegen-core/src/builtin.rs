@@ -229,8 +229,8 @@ fn rows() -> Vec<Row> {
             ..base(SpecialProjectIcon, [161, 98], &[[161, 98]], "gfx/interface/special_project/project_icons/{feature_slug}", "sp_", "interface/special_projects/{feature_slug}_projects.gfx")
         },
         Row {
-            note: "Only the 32x32 raid icons are generated; the wide banner strips in the same folder are interface pieces.",
-            ..base(Raid, [32, 32], &[[32, 32]], "gfx/interface/military_raids/{feature_slug}", "raid_", "interface/{feature_slug}_raids.gfx")
+            note: "Only the 32x32 raid icons are generated; the wide banner strips in the same folder are interface pieces. The 32x32 icon is the raid's map icon, which the game looks up as GFX_raid_type_icon_<raid type> (24 of the 25 vanilla ones are 32x32), so the asset name is the raid type key, or the raid sets custom_map_icon to the sprite.",
+            ..base(Raid, [32, 32], &[[32, 32]], "gfx/interface/military_raids/{feature_slug}", "raid_type_icon_", "interface/{feature_slug}_raids.gfx")
         },
         Row {
             note: "Vanilla sprite names are free-form (GFX_military_industrial_organization_*, GFX_mio_*); this tool names them GFX_mio_department_<asset>.",
@@ -249,15 +249,17 @@ fn rows() -> Vec<Row> {
             ..base(BopSide, [72, 88], &[[72, 88]], "gfx/interface/bop/{feature_slug}", "bop_", "interface/{feature_slug}_bop.gfx")
         },
         Row {
-            note: "Single-frame 16x28 medal. Vanilla also ships 4, 7 and 2-frame medal strips selected by `frame = N`; those are not generated here. Script references are GFX_medal_icon_*.",
-            ..base(Medal, [16, 28], &[[16, 28]], "gfx/interface/medals/{feature_slug}", "medal_icon_", "interface/{feature_slug}_medals.gfx")
+            sprite: Some(("interface/{feature_slug}_medals.gfx", "GFX_medal_icon_{asset}_large", &[])),
+            note: "A unit medal: script names GFX_medal_icon_<x> with frame = N, and every vanilla GFX_medal_icon_* has a GFX_medal_icon_*_large twin at twice the size (28x42 and 56x84 frames). This tool makes one 56x84 frame registered as the _large sprite and derives the 28x42 GFX_medal_icon_<asset> from it, the way vanilla's small strips are its large ones downscaled; script uses frame = 1. The measured dominant 16x28 files are older medal sprites that no vanilla script or GUI names.",
+            ..base(Medal, [56, 84], &[[56, 84]], "gfx/interface/medals/{feature_slug}", "medal_icon_", "interface/{feature_slug}_medals.gfx")
         },
         Row {
             note: "Vanilla names these GFX_agency_*.",
             ..base(AgencyUpgrade, [68, 68], &[[68, 68]], "gfx/interface/operatives/icons/{feature_slug}", "agency_", "interface/{feature_slug}_agency_upgrades.gfx")
         },
         Row {
-            note: "LOW CONFIDENCE. The operation folder mixes 210x176 pictures (operation_picture), 59x58 phase icons, 48x48 and 85x85 art. The icon family takes 59x58, which ties 210x176 for most files; confirm the intended surface in game before relying on it.",
+            sprite: Some(("interface/{feature_slug}_operations.gfx", "GFX_phase_{asset}_small", &[])),
+            note: "The 59x58 operation phase icon: an operation phase's icon names it in full, and all 73 vanilla ones are GFX_phase_<x>_small at 59x58, beside the phase's 210x176 picture GFX_phase_<x> (operation_picture). The folder also holds 48x48 and 85x85 operation icons.",
             ..base(OperationIcon, [59, 58], &[[59, 58], [48, 48], [85, 85]], "gfx/interface/operations/{feature_slug}/icons", "phase_", "interface/{feature_slug}_operations.gfx")
         },
         Row {
@@ -287,12 +289,12 @@ fn rows() -> Vec<Row> {
             ..base(NewsEvent, [397, 153], &[[397, 153], [396, 153]], "gfx/event_pictures/{feature_slug}", "news_event_", "interface/{feature_slug}_eventpictures.gfx")
         },
         Row {
-            note: "Two vanilla animated strips use noOfFrames = 21 and are not generated here. Vanilla names the files decision_cat_*.",
-            ..base(DecisionCategoryPicture, [114, 101], &[[114, 101]], "gfx/interface/decisions/{feature_slug}/category_pictures", "decision_cat_", "interface/{feature_slug}_decisions.gfx")
+            note: "Two vanilla animated strips use noOfFrames = 21 and are not generated here. A category's picture = x resolves to GFX_decision_cat_picture_x (106 of the 130 vanilla pictures use that name), so the sprite carries that prefix and script may write the short key.",
+            ..base(DecisionCategoryPicture, [114, 101], &[[114, 101]], "gfx/interface/decisions/{feature_slug}/category_pictures", "decision_cat_picture_", "interface/{feature_slug}_decisions.gfx")
         },
         Row {
-            note: "LOW CONFIDENCE. 210x176 ties 59x58 as the most common size of the operation folder; the pixel class of this size alone was not measured, so opacity follows the picture convention. Vanilla names these GFX_operations_*.",
-            ..base(OperationPicture, [210, 176], &[[210, 176]], "gfx/interface/operations/{feature_slug}/pictures", "operations_", "interface/{feature_slug}_operations.gfx")
+            note: "LOW CONFIDENCE. The 210x176 operation phase picture: a phase's picture names it in full, and all 71 vanilla ones are GFX_phase_<x> (GFX_operations_* are the 85x85 and 48x48 operation icons). The pixel class of this size alone was not measured, so opacity follows the picture convention.",
+            ..base(OperationPicture, [210, 176], &[[210, 176]], "gfx/interface/operations/{feature_slug}/pictures", "phase_", "interface/{feature_slug}_operations.gfx")
         },
         Row {
             background: Background::Transparent,
@@ -355,35 +357,35 @@ fn rows() -> Vec<Row> {
         },
         // ---- unit group
         Row {
-            sprite: Some(("interface/{feature_slug}_counters.gfx", "GFX_unit_{asset}_icon", &[])),
-            note: "A strip of two 76x42 frames (152x42). Needs separate art for each frame and the exact vanilla reference, so it is import-only. Sprite pattern follows the measured GFX_unit_*_icon family.",
+            sprite: Some(("interface/{feature_slug}_counters.gfx", "GFX_unit_{asset}_icon_medium", &[])),
+            note: "The battalion icon: a strip of two 76x42 frames (152x42, noOfFrames = 2). Needs separate art for each frame and the exact vanilla reference, so it is import-only. The game looks it up as GFX_unit_<sub-unit key>_icon_medium, so the asset name is the sub-unit key (not its sprite key).",
             ..base(CounterLarge, [76, 42], &[[76, 42]], "gfx/interface/counters/divisions_large/{feature_slug}", "unit_", "")
         },
         Row {
-            sprite: Some(("interface/{feature_slug}_counters.gfx", "GFX_unit_{asset}_icon_small", &[])),
-            note: "A strip of two 30x12 frames (60x12). Import-only like the large counter. The _icon_small sprite suffix is the measured companion pattern.",
-            ..base(CounterSmall, [30, 12], &[[30, 12]], "gfx/interface/counters/divisions_small/{feature_slug}", "unit_", "")
+            sprite: Some(("interface/{feature_slug}_counters.gfx", "GFX_unit_{asset}_icon_medium_white", &[])),
+            note: "The on-map counter: a strip of two 30x12 frames (60x12, noOfFrames = 2), light grey because the game tints it. Import-only like the large counter. The game looks it up as GFX_unit_<sub-unit key>_icon_medium_white; the tooltip text icon GFX_unit_<sub-unit key>_icon_small (60x12, 2 frames, under gfx/texticons) is derived from it: frame 1 tinted green as vanilla's are, frame 2 kept.",
+            ..base(CounterSmall, [30, 12], &[[30, 12]], "gfx/interface/counters/divisions_small/{feature_slug}", "onmap_unit_", "")
         },
         Row {
             frames: 1,
             margin: 1,
-            sprite: Some(("interface/{feature_slug}_counters.gfx", "GFX_div_{prefix}{asset}", &[])),
-            note: "Single frame, 76x42 (the large template emblem). The small 30x12 emblems of the sibling folder are separate assets and are not generated. Vanilla names the files custom_* and the sprites GFX_div_*. Import-only: it needs an exact vanilla reference.",
+            sprite: Some(("interface/{feature_slug}_counters.gfx", "GFX_div_templ_{n}_large", &[])),
+            note: "Single frame, 76x42 (the large division template symbol). The game offers the symbols as GFX_div_templ_<n>_large with GFX_div_templ_<n>_small (30x12); vanilla uses 0-43 and 65-121. Install picks n, the next number after vanilla's 121 and every number the mod or an earlier install already uses, records it, and derives the grey 30x12 small symbol. Import-only: it needs an exact vanilla reference.",
             ..base(DivisionEmblem, [76, 42], &[[76, 42]], "gfx/interface/counters/division_templates_large/{feature_slug}", "custom_", "")
         },
         Row {
             automation: Automation::Generate,
             rules: FRAME_STRIP_RULES,
-            sprite: Some(("interface/buildings/{feature_slug}_landmarks.gfx", "GFX_{prefix}{asset}", &[])),
-            note: "Landmark buildings are two frames: a 64x64 frame (128x64 strip) or a 32x32 frame (64x32 strip). The tool makes frame 2 as a disabled look (colour mixed 45 percent toward grey). Vanilla landmark strips use frame 2 for a ruined state, which no recipe can derive, so frame 2 is this tool's convention, not a measured vanilla look.",
+            sprite: Some(("interface/buildings/{feature_slug}_landmarks.gfx", "GFX_{asset}_icon", &[])),
+            note: "Landmark buildings are two frames: a 64x64 frame (128x64 strip, the raid window's GFX_<x>_icon) or a 32x32 frame (64x32 strip, the province window's GFX_<x>_icon_small, which the building's special_icon names). A 64x64 landmark also gets the small strip, halved frame by frame; one made at 32x32 is the small sprite alone. Frame 2 is the ruined state, a second candidate of the same asset.",
             ..base(Building, [64, 64], &[[64, 64], [32, 32]], "gfx/interface/buildings/{feature_slug}", "building_", "")
         },
         Row {
             automation: Automation::Generate,
             rules: FRAME_STRIP_RULES,
             sprite: Some(("interface/factions/{feature_slug}_factions.gfx", "GFX_{prefix}{asset}", &[])),
-            note: "Two 100x100 frames (200x100 strip). Frame 2 is the selected state (cream stroke and dark-red glow, fitted to 31 vanilla strips) which needs room around the emblem: frame 1 is fitted 10 px inside its frame, the vanilla median, and the glow brings frame 2's margin down to about 2, the minimum checked. The 32x32 single-frame small logo of the same folder is a separate sprite and is not accepted here.",
-            ..base(FactionLogo, [100, 100], &[[100, 100]], "gfx/interface/factions/faction_logos/{feature_slug}", "faction_", "")
+            note: "Two 100x100 frames (200x100 strip). Frame 2 is the selected state (cream stroke and dark-red glow, fitted to 31 vanilla strips) which needs room around the emblem: frame 1 is fitted 10 px inside its frame, the vanilla median, and the glow brings frame 2's margin down to about 2, the minimum checked. The game also loads <sprite>_miniature (32x32, all 31 vanilla logos have one), which is derived from frame 1. Vanilla logos are GFX_faction_logo_<x>.",
+            ..base(FactionLogo, [100, 100], &[[100, 100]], "gfx/interface/factions/faction_logos/{feature_slug}", "faction_logo_", "")
         },
         Row {
             automation: Automation::Generate,
@@ -395,7 +397,8 @@ fn rows() -> Vec<Row> {
         // ---- interface group
         Row {
             margin: 0,
-            note: "Tooltip icons for modifiers (GFX_MODIFIER_* in vanilla; this tool writes the lowercase GFX_modifier_<asset>, which the game resolves case-insensitively).",
+            sprite: Some(("interface/{feature_slug}_modifiers.gfx", "GFX_MODIFIER_{ASSET}", &[])),
+            note: "Modifier icons that GUI elements name in full (spriteType = GFX_MODIFIER_<KEY>); the engine builds no such name. The sprite keeps vanilla's exact case, GFX_MODIFIER_ and the asset name in upper case, like all 159 vanilla ones: nothing in vanilla proves the lookup ignores case.",
             ..base(ModifierStatIcon, [30, 20], &[[30, 20]], "gfx/interface/modifiers/{feature_slug}", "modifier_", "interface/{feature_slug}_modifiers.gfx")
         },
         Row {
@@ -528,7 +531,11 @@ mod tests {
     /// * `operation_icon`: the operation folder ties 210x176 (pictures) with 59x58 (phase icons, 71 files each).
     /// * `counter_large`, `counter_small`: the strips (152x42 and 60x12) are not the most common image of the
     ///   shared counters folder, which also holds single-frame sprites (30x12 and 76x42).
-    const NOT_DOMINANT: &[Family] = &[Family::IdeaConcern, Family::MioPolicy, Family::OperationIcon, Family::CounterLarge, Family::CounterSmall];
+    /// * `medal`: the dominant 16x28 files are older sprites no vanilla script or GUI names. Unit medals are
+    ///   GFX_medal_icon_* strips of 28x42 frames with a GFX_medal_icon_*_large twin of 56x84 frames; the family makes
+    ///   one 56x84 frame, which must be the frame of the measured 224x84 four-frame large strips (checked below).
+    const NOT_DOMINANT: &[Family] =
+        &[Family::IdeaConcern, Family::MioPolicy, Family::OperationIcon, Family::CounterLarge, Family::CounterSmall, Family::Medal];
 
     #[test]
     fn every_family_has_a_row_and_a_source_that_cites_the_measurement() {
@@ -555,6 +562,11 @@ mod tests {
             let (dom, dom_n) = meas.dominant(id).unwrap();
             if NOT_DOMINANT.contains(&f) {
                 let n = meas.count_at(id, s).unwrap_or_else(|| panic!("{f}: {}x{} is not among the measured sizes of {id}", s[0], s[1]));
+                if f == Family::Medal {
+                    let large = meas.count_at(id, [s[0] * 4, s[1]]).unwrap_or(0);
+                    assert!(large >= 10, "medal: only {large} four-frame large strips of {}x{} frames", s[0], s[1]);
+                    continue;
+                }
                 assert!(n >= 20, "{f}: only {n} files at {}x{}", s[0], s[1]);
                 if f == Family::OperationIcon {
                     assert_eq!(n, dom_n, "operation_icon must tie the dominant size (59x58 vs 210x176)");
