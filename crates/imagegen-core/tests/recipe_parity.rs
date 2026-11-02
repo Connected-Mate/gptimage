@@ -323,8 +323,10 @@ fn alpha_rmse(a: &Rgba, template: &[u8]) -> f64 {
 
 #[test]
 fn report_card_alpha_matches_the_vanilla_templates() {
+    // the golden needs the installed game, which no CI runner has: always a plain skip, even when Python parity is
+    // required (IMAGEGEN_REQUIRE_PARITY covers the kit's Python tools, not the game)
     let Some(game) = find_game() else {
-        skip("report_card golden", "the game is not installed (set HOI4_GAME_DIR)");
+        eprintln!("SKIPPED report_card golden: the game is not installed (set HOI4_GAME_DIR); UNAVAILABLE in this run");
         return;
     };
     let dir = game.join("gfx/event_pictures");
