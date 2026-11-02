@@ -27,8 +27,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@master
         with:
+          toolchain: "1.97.1"
           targets: ${{ matrix.target }}
       - name: Build
         run: cargo build --release --locked --target ${{ matrix.target }} -p imagegen-mcp -p imagegen-cli

@@ -22,8 +22,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@master
         with:
+          toolchain: "1.97.1"
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
       - name: Format
@@ -38,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IMAGEGEN_REQUIRE_PARITY: "1"
-      HOI4_IMAGEGEN_KIT_DIR: ${{ github.workspace }}/kit
+      HOI4_KIT_DIR: ${{ github.workspace }}/kit
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
@@ -49,7 +50,9 @@ jobs:
         with:
           python-version: "3.13"
       - run: python -m pip install --upgrade pip && pip install pillow numpy opencv-python-headless
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.97.1"
       - uses: Swatinem/rust-cache@v2
       - name: Parity tests
         run: cargo test -p imagegen-core --locked --test kit_parity --test recipe_parity -- --nocapture
