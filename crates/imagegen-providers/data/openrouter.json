@@ -1,0 +1,66 @@
+{
+  "id": "openrouter",
+  "display_name": "OpenRouter images API",
+  "doc_url": "https://openrouter.ai/docs/features/multimodal/image-generation",
+  "doc_urls": ["https://openrouter.ai/docs/features/multimodal/image-generation"],
+  "retrieved": "2026-11-02",
+  "checked": "2026-11-02",
+  "live_verified": false,
+  "env_vars": ["OPENROUTER_API_KEY"],
+  "hosts": ["openrouter.ai"],
+  "terms_note": "Not live-verified: built from OpenRouter's image generation page (read 2026-11-02), no recorded call. OpenRouter now has a dedicated POST /api/v1/images endpoint, so chat completions with modalities are not used. Prices are per endpoint and change. Only one price is published in the docs, so other models report an unknown estimate and the response's usage.cost settles the real figure. Failed generations are documented as not billed. The rights of each output depend on the model behind it. Check Paradox's and Steam's rules for AI-generated mod assets before publishing.",
+  "models": [
+    {
+      "id": "bytedance-seed/seedream-4.5",
+      "status": { "state": "current" },
+      "recommended": true,
+      "max_refs": 4,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "aspect_tiers", "ratios": ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9"], "tier": "1K" },
+      "cost": { "kind": "per_image", "usd_by_quality": [["default", 0.05]] },
+      "async_job": false,
+      "supports_edit": true,
+      "notes": "$0.05 per output image, the one price the docs state. Input images go in input_references. The count allowed depends on the provider, 4 is an assumption."
+    },
+    {
+      "id": "black-forest-labs/flux.2-pro",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 4,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "aspect_tiers", "ratios": ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9"], "tier": "1K" },
+      "cost": { "kind": "unpublished_proxy", "proxy_usd_by_quality": [], "proxy_of": "none: the docs give no price for this model" },
+      "async_job": false,
+      "supports_edit": true,
+      "notes": "Price unknown in the docs. Check the endpoint list (GET /api/v1/images/models/{id}/endpoints) for the current price."
+    },
+    {
+      "id": "google/gemini-2.5-flash-image",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 4,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "aspect_tiers", "ratios": ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9"], "tier": "1K" },
+      "cost": { "kind": "unpublished_proxy", "proxy_usd_by_quality": [], "proxy_of": "none: the docs give no price for this model" },
+      "async_job": false,
+      "supports_edit": true,
+      "notes": "Price unknown in the docs. Outputs carry Google's SynthID watermark."
+    },
+    {
+      "id": "openai/gpt-image-2",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 4,
+      "mask": false,
+      "alpha": "preview",
+      "sizes": { "kind": "aspect_tiers", "ratios": ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9"], "tier": "1K" },
+      "cost": { "kind": "unpublished_proxy", "proxy_usd_by_quality": [], "proxy_of": "none: the docs show one 16:9 high-quality example costing $0.13, which is not a price table" },
+      "async_job": false,
+      "supports_edit": true,
+      "notes": "Transparent background is a preview on OpenAI's own API, so it is requested through background when the project asks for transparency, and proven from pixels afterwards."
+    }
+  ]
+}
