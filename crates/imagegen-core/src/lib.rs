@@ -22,6 +22,7 @@ pub mod gate;
 pub mod hashing;
 pub mod ledger;
 pub mod lock;
+pub mod lookup;
 pub mod measurement;
 pub mod naming;
 pub mod pixels;

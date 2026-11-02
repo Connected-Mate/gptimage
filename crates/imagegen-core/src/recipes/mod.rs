@@ -15,11 +15,13 @@
 //! | Selected and disabled frame 2 | Rust only, fitted to vanilla | [`frames`] |
 //! | Horizontal frame strips | Rust only | [`strip`] |
 //! | Flatten on colour | Rust only | [`flatten`] |
+//! | Companions the game looks up (small emblem, text icon, miniature, half size) | Rust only, fitted to vanilla | [`derived`] |
 //!
 //! `convert_to_dds.py` is already [`crate::dds::write_a8r8g8b8`].
 
 pub mod achievement;
 pub mod advisor;
+pub mod derived;
 #[cfg(feature = "face-detect")]
 pub mod face;
 pub mod flags;

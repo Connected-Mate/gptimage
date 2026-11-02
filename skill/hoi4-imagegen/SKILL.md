@@ -41,7 +41,7 @@ Use the `hoi4_imagegen` MCP (tools `hoi4.image_*`). It owns canvas sizes, alpha,
 7. `hoi4.image_validate { targets: [artifact] }`. The artifact's own family and its full check set always apply. Fix errors, then validate again. A pass is geometry only.
 8. `hoi4.image_preview`. Look at the native-size panels first, then compare with the reference panels.
 9. `hoi4.image_review`. Answer every rubric question honestly. Approve only if all are true, otherwise `changes_requested`, then `hoi4.image_edit` with a precise instruction and go back to step 6.
-10. `hoi4.image_install { target, approval_id }`. The default `mode: handoff` writes the sprite into `docs/assets/<feature>/gfx_handoff.md`, and the main agent wires `.gfx`.
+10. `hoi4.image_install { target, approval_id }`. The default `mode: handoff` writes the sprite into `docs/assets/<feature>/gfx_handoff.md`, and the main agent wires `.gfx`. The result's `script` field (also in the handoff as "In script") is what the mod's script must say for the game to find the art, for example `picture = <asset>` for an idea, or "name the sub-unit `<asset>`" for a counter. For families whose sprite the game builds from a key (ideas, decisions, traits, technologies, sub-units, raid types), choose the asset name to be that key.
 11. When the feature is done, list in the handoff every asset installed and any `GFX-STYLE-DRIFT` warning.
 
 ## What it refuses (and why)

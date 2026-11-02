@@ -175,7 +175,14 @@ impl Engine {
         }
 
         // ---- sprites
-        let sprites = export::sprite_entries(&profile, &artifact.feature_slug, &artifact.asset, &files)?;
+        // a division emblem is offered by number: the next one after vanilla's and every number already in use
+        let template_number = if artifact.family == imagegen_core::family::Family::DivisionEmblem {
+            Some(self.division_template_number(&artifact.asset_id, &entries)?)
+        } else {
+            None
+        };
+        let sprites = export::sprite_entries(&profile, &artifact.feature_slug, &artifact.asset, &files, template_number)?;
+        let script = export::script_usage(&profile, artifact.canvas, &artifact.feature_slug, &artifact.asset, template_number)?;
         // the mod's own trace: a sprite name or texture the mod already uses for another family is refused (GFX-FAMILY-REUSE)
         let allowlist = self.audit_allowlist(None)?;
         let new_names: Vec<String> = sprites.as_ref().map(|(_, e)| e.iter().map(|x| x.name.clone()).collect()).unwrap_or_default();
@@ -202,7 +209,7 @@ impl Engine {
                 batch.push(PendingWrite { rel: gfx_file.clone(), bytes: new_bytes, replace: existing.is_some() });
             } else {
                 let handoff = format!("docs/assets/{}/gfx_handoff.md", artifact.feature_slug);
-                let mut notes = vec![format!("approved under {} (sha256 {})", p.approval_id, &sha[..12])];
+                let mut notes = vec![format!("approved under {} (sha256 {})", p.approval_id, &sha[..12]), format!("In script: {script}")];
                 if profile.differs_from_vanilla() {
                     notes.push("the canvas differs from the vanilla-measured default; see hoi4.image_families".into());
                 }
@@ -242,6 +249,8 @@ impl Engine {
             gfx_file: gfx_file_out.clone(),
             replaced: replaced.clone(),
             approval_id: p.approval_id.clone(),
+            division_template_number: template_number,
+            script: Some(script.clone()),
         };
         if let Err(e) = self.ledger.append(kind::INSTALLED, Some(&artifact.asset_id), Some(&artifact.id), &record) {
             committed.rollback();
@@ -258,13 +267,64 @@ impl Engine {
             "sprite": {"names": sprite_names, "gfx_file": gfx_file_out, "snippet": snippet, "mode": record.mode,
                        "caveats": sprites.as_ref().map(|(_, e)| e.iter().map(|x| x.caveat.clone()).filter(|c| !c.is_empty()).collect::<Vec<_>>()).unwrap_or_default()},
             "replaced": replaced,
+            "script": script,
+            "division_template_number": template_number,
             "reuse_trace": match &trace_guard {
                 imagegen_core::audit::TraceGuard::Checked => json!("checked"),
                 imagegen_core::audit::TraceGuard::Skipped(why) => json!(format!("skipped: {why}")),
             },
             "record_path": record_path,
-            "next": "Wire the sprite name where the game uses it (the handoff note has the snippet), then verify in game. In-game behaviour is user-operated evidence this tool cannot produce."
+            "next": "Wire the art where the game uses it as the script field says (the handoff note has it and the snippet), then verify in game. In-game behaviour is user-operated evidence this tool cannot produce."
         }))
+    }
+
+    /// The division template symbol number for an emblem: the number an earlier install of the same asset recorded,
+    /// otherwise one past the highest of vanilla's numbers (read from the installed game, or 1.19.4.1's 121 when the
+    /// game is absent), every number the mod's `interface/` `.gfx` files register and every number recorded by
+    /// earlier installs.
+    fn division_template_number(&self, asset_id: &str, entries: &[imagegen_core::ledger::Entry]) -> EResult<u32> {
+        use imagegen_core::lookup::{div_template_numbers, next_div_template_number, VANILLA_DIV_TEMPLATE_MAX};
+        let mut taken: Vec<u32> = Vec::new();
+        for e in entries.iter().filter(|e| e.kind == kind::INSTALLED) {
+            if let Ok(rec) = serde_json::from_value::<InstalledRecord>(e.data.clone()) {
+                if let Some(n) = rec.division_template_number {
+                    if e.asset_id.as_deref() == Some(asset_id) {
+                        return Ok(n);
+                    }
+                    taken.push(n);
+                }
+            }
+        }
+        // the mod's own registrations
+        if let Ok(interface) = self.fs.resolve("interface") {
+            let mut stack = vec![(interface, 0u32)];
+            let mut budget = 4000u32;
+            while let Some((dir, depth)) = stack.pop() {
+                let Ok(rd) = std::fs::read_dir(&dir) else { continue };
+                for ent in rd.flatten() {
+                    if budget == 0 {
+                        break;
+                    }
+                    budget -= 1;
+                    let path = ent.path();
+                    let Ok(ft) = ent.file_type() else { continue };
+                    if ft.is_dir() && depth < 6 {
+                        stack.push((path, depth + 1));
+                    } else if ft.is_file() && path.extension().is_some_and(|x| x.eq_ignore_ascii_case("gfx")) {
+                        if let Ok(bytes) = std::fs::read(&path) {
+                            taken.extend(div_template_numbers(&String::from_utf8_lossy(&bytes)));
+                        }
+                    }
+                }
+            }
+        }
+        let vanilla = self
+            .game_dir()
+            .and_then(|g| std::fs::read(g.join("interface/subuniticons.gfx")).ok())
+            .map(|b| div_template_numbers(&String::from_utf8_lossy(&b)))
+            .and_then(|v| v.into_iter().max())
+            .unwrap_or(VANILLA_DIV_TEMPLATE_MAX);
+        Ok(next_div_template_number(vanilla, taken))
     }
 
     /// The per-asset provenance record, a readable view of the ledger entries for the asset.

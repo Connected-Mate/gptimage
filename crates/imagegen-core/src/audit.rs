@@ -298,7 +298,17 @@ pub fn run_audit(input: &AuditInput) -> Result<AuditReport> {
         if let (Some(w), Some(h)) = (t.width, t.height) {
             if seen_canvas.insert((family, key.clone())) {
                 if let Some(profile) = input.profiles.for_family(family) {
-                    let accepted = profile.accepted_strips();
+                    let mut accepted = profile.accepted_strips();
+                    // a companion the game looks up next to the main sprite has its own size (a medal's small
+                    // strip is what script names, a faction logo's miniature sits beside it)
+                    let frames: Vec<[u32; 2]> = profile.accepted.iter().copied().chain(std::iter::once(profile.canvas)).collect();
+                    for c in frames {
+                        for d in crate::lookup::derived_companions(family, c) {
+                            if !accepted.contains(&d.strip()) {
+                                accepted.push(d.strip());
+                            }
+                        }
+                    }
                     if !accepted.is_empty() {
                         canvas_checked += 1;
                         if !accepted.contains(&[w, h]) {

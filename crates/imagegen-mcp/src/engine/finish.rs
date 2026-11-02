@@ -12,8 +12,10 @@ use imagegen_core::error::RetryClass;
 use imagegen_core::hashing::sha256_hex;
 use imagegen_core::pixels::{decode, DecodeLimits, Rgba};
 use imagegen_core::process::{apply, Op};
+use imagegen_core::profile::Profile;
 use imagegen_core::recipes::achievement::{achievement_triplet, templates_from_pixels, COMPLETED_TEMPLATE_SHA256, GREY_TEMPLATE_SHA256};
 use imagegen_core::recipes::advisor::{advisor_card, AdvisorParams};
+use imagegen_core::recipes::derived;
 use imagegen_core::recipes::flags::flag_ladder;
 use imagegen_core::recipes::pillow::alpha_composite;
 use imagegen_core::recipes::portrait::{extract_portrait, CropChoice, FaceBox, FaceDetector};
@@ -140,8 +142,54 @@ impl Engine {
         img: &Rgba,
         portrait_crop: Option<[i64; 4]>,
         second: Option<(&str, &Rgba)>,
+        profile: &Profile,
+        canvas: [u32; 2],
     ) -> EResult<FinishOutput> {
         match finisher {
+            Finisher::DerivedCompanions => {
+                let mut companions = Vec::new();
+                let mut made = Vec::new();
+                for d in imagegen_core::lookup::derived_companions(profile.family, canvas) {
+                    let c = derived::derive(d.kind, img, profile.frames.max(1)).map_err(|e| {
+                        EngineError::refused(
+                            "companion_derivation_failed",
+                            format!("the {} companion of this {} could not be made: {e}", d.key, profile.family),
+                            RetryClass::Terminal,
+                        )
+                    })?;
+                    if [c.width, c.height] != d.strip() {
+                        return Err(EngineError::refused(
+                            "companion_derivation_failed",
+                            format!(
+                                "the {} companion came out {}x{}, and the game needs {}x{}. The {} canvas is {}x{} (from {}); vanilla's is {}x{}. Fix the canvas (for a kit project, the row in .tools/gfx/profiles.json) and process again",
+                                d.key,
+                                c.width,
+                                c.height,
+                                d.strip()[0],
+                                d.strip()[1],
+                                profile.family,
+                                canvas[0],
+                                canvas[1],
+                                match profile.origin {
+                                    imagegen_core::profile::ProfileOrigin::Builtin => "the built-in table",
+                                    imagegen_core::profile::ProfileOrigin::Kit => "the kit's profiles.json",
+                                    imagegen_core::profile::ProfileOrigin::Project => "the project override",
+                                },
+                                profile.vanilla.as_ref().map_or(0, |v| v.canvas[0]),
+                                profile.vanilla.as_ref().map_or(0, |v| v.canvas[1]),
+                            ),
+                            RetryClass::Terminal,
+                        ));
+                    }
+                    made.push(json!({"key": d.key, "derivation": d.kind.name(), "size": d.strip(), "frames": d.frames}));
+                    companions.push((d.key.to_string(), c));
+                }
+                Ok(FinishOutput {
+                    main: img.clone(),
+                    companions,
+                    detail: json!({"companions": made, "note": "derived from the finished main art; vanilla draws these by hand, so they approximate its look"}),
+                })
+            }
             Finisher::AdvisorCard => {
                 let base =
                     self.find_assets_base(&[ADVISOR_TEMPLATE]).ok_or_else(|| self.templates_missing("an advisor card", &[ADVISOR_TEMPLATE]))?;

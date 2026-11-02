@@ -138,11 +138,23 @@ impl Engine {
                     evidence: json!({"recipe": rec.recipe.as_ref().map(|r| json!({"id": r.id, "version": r.version}))}),
                 });
             }
-            // every companion image (achievement states, flag sizes) is checked as the family, at its own size
+            // every companion image (achievement states, flag sizes) is checked as the family, at its own size; a
+            // companion the game looks up (small emblem, text icon, miniature, small strip) at its own frames and margin
             for c in &rec.companions {
                 let data = self.fs.read(&c.path, 64 * 1024 * 1024)?;
+                let (cprofile, csize) = match imagegen_core::lookup::derived_companion(profile.family, &c.key) {
+                    Some(d) => {
+                        let mut p2 = profile.clone();
+                        p2.frames = d.frames;
+                        p2.margin = d.margin;
+                        p2.canvas = d.frame;
+                        p2.accepted = vec![d.frame];
+                        (p2, d.frame)
+                    }
+                    None => (profile.clone(), c.size),
+                };
                 // the style model describes the main image only: companion states (grey, smaller sizes) skip it
-                let (_, more, _) = run_checks(&data, &c.path, profile, &checks, Some(c.size), None);
+                let (_, more, _) = run_checks(&data, &c.path, &cprofile, &checks, Some(csize), None);
                 findings.extend(more.into_iter().map(|mut f| {
                     f.message = format!("[{}] {}", c.key, f.message);
                     f
