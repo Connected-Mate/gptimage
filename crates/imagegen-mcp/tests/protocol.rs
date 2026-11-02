@@ -105,8 +105,12 @@ struct Client {
 
 impl Client {
     fn start(root: &Path, mock_port: u16) -> Client {
+        Self::start_with(root, mock_port, &[])
+    }
+
+    fn start_with(root: &Path, mock_port: u16, extra: &[&str]) -> Client {
         let mut cmd = Command::new(env!("CARGO_BIN_EXE_hoi4-imagegen-mcp"));
-        cmd.arg("--project-root").arg(root);
+        cmd.arg("--project-root").arg(root).args(extra);
         for var in ["GEMINI_API_KEY", "GOOGLE_API_KEY", "FAL_KEY", "COMFYUI_API_KEY", "HOI4_IMAGEGEN_ALLOWED_HOSTS"] {
             cmd.env_remove(var);
         }
@@ -483,4 +487,19 @@ fn a_group_tool_refuses_another_groups_family_over_the_wire() {
     assert_eq!(plan["generated"], false);
     assert_eq!(plan["plan"]["canvas"], json!([210, 176]));
     assert_eq!(mock.hits.load(Ordering::SeqCst), 0);
+}
+
+#[test]
+fn the_hosted_mode_never_offers_the_chatgpt_login() {
+    // HOI4 Factory's hosted tool profile starts the server this way (decision D-12a)
+    let mock = MockOpenAi::start(Duration::from_millis(0));
+    let dir = project(mock.port);
+    let mut c = Client::start_with(dir.path(), mock.port, &["--mode", "hosted"]);
+    c.initialize();
+    let s = c.call("hoi4.image_status", json!({}));
+    let login = &s["structuredContent"]["chatgpt_login"];
+    assert_eq!(login["enabled"], false, "{s}");
+    assert_eq!(login["state"], "not available in hosted mode");
+    let providers = s["structuredContent"]["providers"].as_array().unwrap();
+    assert!(providers.iter().all(|p| p["id"] != "chatgpt_login"), "the login route is not registered at all");
 }
