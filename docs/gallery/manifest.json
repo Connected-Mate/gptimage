@@ -1,0 +1,1585 @@
+{
+ "about": "Real output of hoi4-imagegen on the ChatGPT-login route (plan quota, no money). Images are the tool's processed files at native size on a dark tile, enlarged by whole numbers with nearest neighbour when small.",
+ "game": "Hearts of Iron IV 1.19.4.1",
+ "generated": "2026-11-02",
+ "images": [
+  {
+   "family": "agency_upgrade",
+   "group": "icon",
+   "tool": "hoi4.image_icon",
+   "image": "docs/gallery/agency_upgrade.webp",
+   "sha256": "a97b981f58597238d63aa5ebaf8406f59ebf6532c4877baa13ec3dafd528fe7d",
+   "encoding": "lossless WebP",
+   "native_size": [
+    68,
+    68
+   ],
+   "enlarged": 4,
+   "asset": "cipher_bureau",
+   "made_by": "hoi4-imagegen",
+   "brief": "A mechanical rotor cipher machine with keys, painted in the dark, muted Hearts of Iron IV style",
+   "prompt": "Create one Hearts of Iron IV intelligence agency upgrade icon: A mechanical rotor cipher machine with keys, painted in the dark, muted Hearts of Iron IV style\n\nRequirements:\n- One centred subject with a strong, simple silhouette that stays readable at 68x68 pixels.\n- Painterly, slightly aged texture in the style of Hearts of Iron IV interface art, with readable contrast.\n- Real transparent background: no backdrop, no frame, no border, no plate behind the subject.\n- Leave a small empty margin around the subject.\n\nStyle:\n- Match the mod's own reference shelf for intelligence agency upgrade icon art: moderately muted, mid-tone palette dominated by black, dark grey and ochre; strong dark outline; crisp, detailed texture; about 47% of the canvas covered by the subject (measured on 15 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text; letters or numbers; watermark or signature; a drawn checkerboard pattern; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "d039084bd65b53ddf077f6e0954400b3d5ad44fa3dc8fa021c7a2d6461cdb181",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1254x1254",
+   "date": "2026-11-02T13:55:14Z",
+   "candidate_id": "gallery.cipher_bureau-v1",
+   "source_pixels_sha256": "e0245b6435d236aaee774b941e6a6f1753db02be2e8dc2c99bdaae215f0994f8",
+   "processed_pixels_sha256": "77cecfa1f90c94b85bd11cea3165061732b41371d31cb3a0ab96d7d24c12d4f5",
+   "recipe": {
+    "id": "icon",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/operatives/icons/gallery/agency_cipher_bureau.dds",
+     "sha256": "0fa808bccd062ea2eb5cce2777a280698efa8756b84e7ecc8a75abf703f72b2d"
+    }
+   ]
+  },
+  {
+   "family": "bop_side",
+   "group": "icon",
+   "tool": "hoi4.image_icon",
+   "image": "docs/gallery/bop_side.webp",
+   "sha256": "01e54213b1beb429ad433c4c1528a65df160bbd8f373720e940c5878a593d741",
+   "encoding": "lossless WebP",
+   "native_size": [
+    72,
+    88
+   ],
+   "enlarged": 3,
+   "asset": "defenders_of_order",
+   "made_by": "hoi4-imagegen",
+   "brief": "A tall heater shield bearing a laurel wreath, upright, painted in the dark, muted Hearts of Iron IV style",
+   "prompt": "Create one Hearts of Iron IV balance of power side icon: A tall heater shield bearing a laurel wreath, upright, painted in the dark, muted Hearts of Iron IV style\n\nRequirements:\n- One centred subject with a strong, simple silhouette that stays readable at 72x88 pixels.\n- Painterly, slightly aged texture in the style of Hearts of Iron IV interface art, with readable contrast.\n- Real transparent background: no backdrop, no frame, no border, no plate behind the subject.\n- Leave a small empty margin around the subject.\n\nStyle:\n- Match the mod's own reference shelf for balance of power side icon art: muted, low-saturation, dark palette dominated by black, dark grey and grey; little or no dark outline; crisp, detailed texture; about 52% of the canvas covered by the subject (measured on 15 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text; letters or numbers; watermark or signature; a drawn checkerboard pattern; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "6d1684735cab09e3eac6b297955fc2de59593fd638fe8ad14dd4e5c9bbbd6000",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1254x1254",
+   "date": "2026-11-02T13:54:44Z",
+   "candidate_id": "gallery.defenders_of_order-v1",
+   "source_pixels_sha256": "1c3ac5a9e96ddb6109b32f22789ac814ff297c4d2abb2588c157d6f1f3f7978d",
+   "processed_pixels_sha256": "ec5b20ed6b8b0186bdd93ead801a7d5504ebc5c0ae88b663cecaa2022170e05d",
+   "recipe": {
+    "id": "icon",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/bop/gallery/bop_defenders_of_order.dds",
+     "sha256": "ca8cd867d8fdaa205f3301a8e91d34383054efdbff0ed34c88f623588770124f"
+    }
+   ]
+  },
+  {
+   "family": "commander_trait",
+   "group": "icon",
+   "tool": "hoi4.image_icon",
+   "image": "docs/gallery/commander_trait.webp",
+   "sha256": "0c11a7aebad3f8f38d7d13922d63e9ec799a7c65b8bbfe60005445e86d492dff",
+   "encoding": "lossless WebP",
+   "native_size": [
+    23,
+    33
+   ],
+   "enlarged": 7,
+   "asset": "armour_expert",
+   "made_by": "hoi4-imagegen",
+   "brief": "A side view of a tank, bold silhouette, painted in the dark, muted Hearts of Iron IV style",
+   "prompt": "Create one Hearts of Iron IV commander trait icon: A side view of a tank, bold silhouette, painted in the dark, muted Hearts of Iron IV style\n\nRequirements:\n- One centred subject with a strong, simple silhouette that stays readable at 23x33 pixels.\n- Painterly, slightly aged texture in the style of Hearts of Iron IV interface art, with readable contrast.\n- Real transparent background: no backdrop, no frame, no border, no plate behind the subject.\n- Leave a small empty margin around the subject.\n\nStyle:\n- Match the mod's own reference shelf for commander trait icon art: moderately muted, dark palette dominated by black, dark grey and grey; strong dark outline; crisp, detailed texture; about 56% of the canvas covered by the subject (measured on 15 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text; letters or numbers; watermark or signature; a drawn checkerboard pattern; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "5e2e5d3fded73dec5fa725906b85bdd4af5bad8b3df5053bc55a647ea912e729",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1047x1502",
+   "date": "2026-11-02T13:55:39Z",
+   "candidate_id": "gallery.armour_expert-v1",
+   "source_pixels_sha256": "df5ad7d74bcbdbc97cf315e9414e96cfd9a68efd942ba6c14e4ad5d4a68fc64e",
+   "processed_pixels_sha256": "1a829cb12f662d67fc04f4e284e11daa48b33c8a512f91fe97ce90b694d09b72",
+   "recipe": {
+    "id": "icon",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/traits/gallery/trait_armour_expert.dds",
+     "sha256": "d754914381d42b15f56acdf44fa07859fe9d03930cce9bcfb3ff51f2f749db3a"
+    }
+   ]
+  },
+  {
+   "family": "decision",
+   "group": "icon",
+   "tool": "hoi4.image_icon",
+   "image": "docs/gallery/decision.webp",
+   "sha256": "35202affd784404d0cd652b722dea356747b304328d847cf8cd1073c88c8decc",
+   "encoding": "lossless WebP",
+   "native_size": [
+    33,
+    32
+   ],
+   "enlarged": 7,
+   "asset": "mobilise_reserves",
+   "made_by": "hoi4-imagegen",
+   "brief": "A rolled call-up poster tied with a cord, one bold simple object, painted in the dark, muted Hearts of Iron IV style",
+   "prompt": "Create one Hearts of Iron IV decision or mission icon: A rolled call-up poster tied with a cord, one bold simple object, painted in the dark, muted Hearts of Iron IV style\n\nRequirements:\n- One centred subject with a strong, simple silhouette that stays readable at 33x32 pixels.\n- Painterly, slightly aged texture in the style of Hearts of Iron IV interface art, with readable contrast.\n- Real transparent background: no backdrop, no frame, no border, no plate behind the subject.\n- Leave a small empty margin around the subject.\n\nStyle:\n- Match the mod's own reference shelf for decision or mission icon art: moderately muted, dark palette dominated by black and brown; partial dark outline; crisp, detailed texture; about 60% of the canvas covered by the subject (measured on 18 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text; letters or numbers; watermark or signature; a drawn checkerboard pattern; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "564e63e9c9245422de8c9a188fc83c7d21186552c0a3e8161ae49ee587476475",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1254x1254",
+   "date": "2026-11-02T13:52:47Z",
+   "candidate_id": "gallery.mobilise_reserves-v1",
+   "source_pixels_sha256": "a664bc3b6b00f23807ceba01dace2335f0942475871feb3aa33da98d7e0b7ae8",
+   "processed_pixels_sha256": "2630c2c8ab58475c4408627f1399bb893dafc57a89878dddb1c3130e87563324",
+   "recipe": {
+    "id": "icon",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/decisions/gallery/decision_mobilise_reserves.dds",
+     "sha256": "ace94813e7501c6235fd35699ca9ba2cae6d4b248eab6f87dc669d4c5a924f11"
+    }
+   ]
+  },
+  {
+   "family": "decision_category_icon",
+   "group": "icon",
+   "tool": "hoi4.image_icon",
+   "image": "docs/gallery/decision_category_icon.webp",
+   "sha256": "66b25d76ad95ab811dca0c26caa4dce0c1a2d28a49585031b41d1e373b75f108",
+   "encoding": "lossless WebP",
+   "native_size": [
+    52,
+    40
+   ],
+   "enlarged": 5,
+   "asset": "military_reforms",
+   "made_by": "hoi4-imagegen",
+   "brief": "A crossed sabre and rifle inside a laurel wreath, bold emblem, painted in the dark, muted Hearts of Iron IV style",
+   "prompt": "Create one Hearts of Iron IV decision category icon: A crossed sabre and rifle inside a laurel wreath, bold emblem, painted in the dark, muted Hearts of Iron IV style\n\nRequirements:\n- One centred subject with a strong, simple silhouette that stays readable at 52x40 pixels.\n- Painterly, slightly aged texture in the style of Hearts of Iron IV interface art, with readable contrast.\n- Real transparent background: no backdrop, no frame, no border, no plate behind the subject.\n- Leave a small empty margin around the subject.\n\nStyle:\n- Match the mod's own reference shelf for decision category icon art: moderately muted, dark palette dominated by black, dark grey and dark red; little or no dark outline; crisp, detailed texture; about 59% of the canvas covered by the subject (measured on 15 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text; letters or numbers; watermark or signature; a drawn checkerboard pattern; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "bb7b9e87405a54b71d97a584ae70011e3b7d5257b93e9173ea2e72b147f85ab5",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1254x1254",
+   "date": "2026-11-02T13:52:57Z",
+   "candidate_id": "gallery.military_reforms-v1",
+   "source_pixels_sha256": "2b4489304c1f8b71f81a786be039b5eeb6778d046bbdebc10b30ce516069fa2a",
+   "processed_pixels_sha256": "2b5b1edce1bf4102b714e47f1cd14ab43b2959977d07270b17af9adf03b97dbb",
+   "recipe": {
+    "id": "icon",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/decisions/gallery/category_icons/decision_category_military_reforms.dds",
+     "sha256": "6a564ca0e2401b325d2c60d536a8840705e796a711c31a81b70e1a56ceba062a"
+    }
+   ]
+  },
+  {
+   "family": "doctrine",
+   "group": "icon",
+   "tool": "hoi4.image_icon",
+   "image": "docs/gallery/doctrine.webp",
+   "sha256": "a84508c636bc1b02582729cd50bf2a1d0be60c30b620eff7028f9433910bcdbf",
+   "encoding": "lossless WebP",
+   "native_size": [
+    64,
+    64
+   ],
+   "enlarged": 4,
+   "asset": "mobile_warfare",
+   "made_by": "hoi4-imagegen",
+   "brief": "Three bold arrows driving forward over broken ground, painted in the dark, muted Hearts of Iron IV style",
+   "prompt": "Create one Hearts of Iron IV doctrine icon: Three bold arrows driving forward over broken ground, painted in the dark, muted Hearts of Iron IV style\n\nRequirements:\n- One centred subject with a strong, simple silhouette that stays readable at 64x64 pixels.\n- Painterly, slightly aged texture in the style of Hearts of Iron IV interface art, with readable contrast.\n- Real transparent background: no backdrop, no frame, no border, no plate behind the subject.\n- Leave a small empty margin around the subject.\n\nStyle:\n- Match the mod's own reference shelf for doctrine icon art: muted, low-saturation, mid-tone palette dominated by black, dark grey and teal; little or no dark outline; crisp, detailed texture; about 46% of the canvas covered by the subject (measured on 15 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text; letters or numbers; watermark or signature; a drawn checkerboard pattern; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "2f4d988cf7cf89c5ce438187d36ffd181864167467cf67239b9c6cf35bafd130",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1254x1254",
+   "date": "2026-11-02T13:56:15Z",
+   "candidate_id": "gallery.mobile_warfare-v1",
+   "source_pixels_sha256": "8b28bcc27f86ee7bd423f9e68379a75bfbfd81cb03c54d658ae97e7996a5f299",
+   "processed_pixels_sha256": "33b1b7755cef8b955ab1bd5b0606f4e7107db72e7e5ec3a6fa5144d4b067b219",
+   "recipe": {
+    "id": "icon",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/doctrines/gallery/doctrine_mobile_warfare.dds",
+     "sha256": "a4f7a94abc2b0b53a5c999c3a1fff610eb1f3d88595ff0b38740f923cd084541"
+    }
+   ]
+  },
+  {
+   "family": "focus",
+   "group": "icon",
+   "tool": "hoi4.image_icon",
+   "image": "docs/gallery/focus.webp",
+   "sha256": "42cd960afb33b1ebc8eb20ebc2b3830b94aa0c78e6eea211485e5a45a1ae8580",
+   "encoding": "lossless WebP",
+   "native_size": [
+    100,
+    88
+   ],
+   "enlarged": 3,
+   "asset": "steel_gate",
+   "made_by": "hoi4-imagegen",
+   "brief": "A heavy riveted steel gate set in a stone fortress wall in a mountain pass, dramatic side light, painted style, 1940s",
+   "prompt": "Create one Hearts of Iron IV national focus icon: A heavy riveted steel gate set in a stone fortress wall in a mountain pass, dramatic side light, painted style, 1940s\n\nRequirements:\n- A strong central symbol that supports the focus's story, with a clear silhouette and aged painterly detail.\n- Readable contrast at 100x88 pixels.\n- Real transparent background: no backdrop, no frame, no border.\n- Leave a small empty margin around the subject.\n\nStyle:\n- Match the mod's own reference shelf for national focus icon art: moderately muted, dark palette dominated by black, dark grey and brown; partial dark outline; crisp, detailed texture; about 65% of the canvas covered by the subject (measured on 18 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text; letters or numbers; watermark or signature; a drawn checkerboard pattern; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "164c37b6a23f9504eb8721d046c7d30320842f08d61a153bc0cbe3446e80b51a",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1337x1176",
+   "date": "2026-11-02T13:51:47Z",
+   "candidate_id": "gallery.steel_gate-v1",
+   "source_pixels_sha256": "e448a141694d02258a806c7a93a1a90be6fb614797941d4a3a9c2447d99d83f5",
+   "processed_pixels_sha256": "44a58cc0a5771f9ac1962cdc2e887872525120e99eb31b297f2886d5037bfb3f",
+   "recipe": {
+    "id": "icon",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/goals/gallery/focus_steel_gate.dds",
+     "sha256": "76d05edd1f95a337f60730a31ceb24b5221b36676ab675265c5dd0a6caf521d4"
+    }
+   ]
+  },
+  {
+   "family": "idea_concern",
+   "group": "icon",
+   "tool": "hoi4.image_icon",
+   "image": "docs/gallery/idea_concern.webp",
+   "sha256": "4b7e5819f5e67a4fac8b55c8682f4ea0ac98d3704c0deaa4bcef58c940f59391",
+   "encoding": "lossless WebP",
+   "native_size": [
+    64,
+    64
+   ],
+   "enlarged": 4,
+   "asset": "ration_crisis",
+   "made_by": "hoi4-imagegen",
+   "brief": "An empty bread basket with a single cracked loaf and a ration card, a national hardship, painted in the dark, muted Hearts of Iron IV style",
+   "prompt": "Create one Hearts of Iron IV industrial concern or manufacturer idea picture: An empty bread basket with a single cracked loaf and a ration card, a national hardship, painted in the dark, muted Hearts of Iron IV style\n\nRequirements:\n- One centred subject with a strong, simple silhouette that stays readable at 64x64 pixels.\n- Painterly, slightly aged texture in the style of Hearts of Iron IV interface art, with readable contrast.\n- Real transparent background: no backdrop, no frame, no border, no plate behind the subject.\n- Leave a small empty margin around the subject.\n\nStyle:\n- Match the mod's own reference shelf for industrial concern or manufacturer idea picture art: moderately muted, mid-tone palette dominated by black, dark grey and grey; little or no dark outline; crisp, detailed texture; about 47% of the canvas covered by the subject (measured on 15 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text; letters or numbers; watermark or signature; a drawn checkerboard pattern; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "44acd86f495a72b7bfea3e51cb0a3dfa22a81c5b16ece042e61804e4414ac812",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1254x1254",
+   "date": "2026-11-02T13:51:48Z",
+   "candidate_id": "gallery.ration_crisis-v1",
+   "source_pixels_sha256": "d9bcd3ff212d27e1a6b7cb71129fcd523386f507b997f7ef54d3bc3daf084fd4",
+   "processed_pixels_sha256": "6e30bccee2b1f5e33b271e78df951836fd193390180b06b6d66915f357f3e8b9",
+   "recipe": {
+    "id": "icon",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/ideas/gallery/concerns/idea_ration_crisis.dds",
+     "sha256": "492e1374bdb3fedbc4624d68f2513c65280e933393eb8809a308a89662725a3b"
+    }
+   ]
+  },
+  {
+   "family": "idea_spirit",
+   "group": "icon",
+   "tool": "hoi4.image_icon",
+   "image": "docs/gallery/idea_spirit.webp",
+   "sha256": "91553bc9284c86cc04bd1ad6e738904827f3a88559efcf63afe558b6d4e73499",
+   "encoding": "lossless WebP",
+   "native_size": [
+    60,
+    68
+   ],
+   "enlarged": 4,
+   "asset": "war_economy",
+   "made_by": "hoi4-imagegen",
+   "brief": "Artillery shells beside a smoking factory chimney, a war economy national spirit, painted in the dark, muted Hearts of Iron IV style",
+   "prompt": "Create one Hearts of Iron IV idea and national spirit picture: Artillery shells beside a smoking factory chimney, a war economy national spirit, painted in the dark, muted Hearts of Iron IV style\n\nRequirements:\n- One centred subject with a strong, simple silhouette that stays readable at 60x68 pixels.\n- Painterly, slightly aged texture in the style of Hearts of Iron IV interface art, with readable contrast.\n- Real transparent background: no backdrop, no frame, no border, no plate behind the subject.\n- Leave a small empty margin around the subject.\n\nStyle:\n- Match the mod's own reference shelf for idea and national spirit picture art: moderately muted, dark palette dominated by black, dark grey and dark red; little or no dark outline; crisp, detailed texture; about 60% of the canvas covered by the subject (measured on 18 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text; letters or numbers; watermark or signature; a drawn checkerboard pattern; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "d5e4167391e5d94410055410e598fa3147fa671f8c76dfbdfd68e2e90687037b",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1254x1254",
+   "date": "2026-11-02T13:51:48Z",
+   "candidate_id": "gallery.war_economy-v1",
+   "source_pixels_sha256": "104a9b1dab451182c2fbcd7820be06d685573c6a89bbd0d51aec22e693079bf1",
+   "processed_pixels_sha256": "126536b77dc0adcfb5c57507005972290cb8e1184c22f4d5d97c8efc44c3fa7d",
+   "recipe": {
+    "id": "icon",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/ideas/gallery/idea_war_economy.dds",
+     "sha256": "8bd02401d71ec369d2b7b63e258340015a25d117c2655659bbba83cb2c384a20"
+    }
+   ]
+  },
+  {
+   "family": "medal",
+   "group": "icon",
+   "tool": "hoi4.image_icon",
+   "image": "docs/gallery/medal.webp",
+   "sha256": "c52bd6e0f99b79d2154836626e55558877751a4b8123e6a50b1e3c7c22a03b73",
+   "encoding": "lossless WebP",
+   "native_size": [
+    56,
+    84
+   ],
+   "enlarged": 3,
+   "asset": "star_of_valor",
+   "made_by": "hoi4-imagegen",
+   "brief": "A bronze star medal hanging from a red and white ribbon, painted in the dark, muted Hearts of Iron IV style",
+   "prompt": "Create one Hearts of Iron IV unit medal icon: A bronze star medal hanging from a red and white ribbon, painted in the dark, muted Hearts of Iron IV style\n\nRequirements:\n- One centred subject with a strong, simple silhouette that stays readable at 56x84 pixels.\n- Painterly, slightly aged texture in the style of Hearts of Iron IV interface art, with readable contrast.\n- Real transparent background: no backdrop, no frame, no border, no plate behind the subject.\n- Leave a small empty margin around the subject.\n\nAvoid: text; letters or numbers; watermark or signature; a drawn checkerboard pattern; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "4a96117cb99c50b6a214dea97a87868f87875df6498eba16a65c941f7a9a4da5",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1024x1536",
+   "date": "2026-11-02T13:54:59Z",
+   "candidate_id": "gallery.star_of_valor-v1",
+   "source_pixels_sha256": "01b0cf40028b7769d51b9c9ea03938b964d8dbe382a652e2a55ff6ddd9c07aeb",
+   "processed_pixels_sha256": "20b4ecc11bc82197fb715dce2e000a3b0cd42d7b99358ffcda75cd2c2857c21a",
+   "recipe": {
+    "id": "icon",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/medals/gallery/medal_icon_star_of_valor.dds",
+     "sha256": "07cfa3fcbf7efdedd7eb6b18da0b5ac411d0fd672545ddf50b03d87458a3ca88"
+    },
+    {
+     "path": "gfx/interface/medals/gallery/medal_icon_star_of_valor_small.dds",
+     "sha256": "b4ccec0599d7db87929fbfb4fa89a1d082ab3b1053833ee71b89204b1716a3ea"
+    }
+   ]
+  },
+  {
+   "family": "mio_department",
+   "group": "icon",
+   "tool": "hoi4.image_icon",
+   "image": "docs/gallery/mio_department.webp",
+   "sha256": "5230e3bf8a5ec3bf8810dbe3403ac86688469ce6d59fd4d96f1159b4d7596ae3",
+   "encoding": "lossless WebP",
+   "native_size": [
+    48,
+    48
+   ],
+   "enlarged": 5,
+   "asset": "tank_design_bureau",
+   "made_by": "hoi4-imagegen",
+   "brief": "A blueprint of a tank with a drafting compass lying on it, painted in the dark, muted Hearts of Iron IV style",
+   "prompt": "Create one Hearts of Iron IV military industrial organization department icon: A blueprint of a tank with a drafting compass lying on it, painted in the dark, muted Hearts of Iron IV style\n\nRequirements:\n- One centred subject with a strong, simple silhouette that stays readable at 48x48 pixels.\n- Painterly, slightly aged texture in the style of Hearts of Iron IV interface art, with readable contrast.\n- Real transparent background: no backdrop, no frame, no border, no plate behind the subject.\n- Leave a small empty margin around the subject.\n\nStyle:\n- Match the mod's own reference shelf for military industrial organization department icon art: moderately muted, dark palette dominated by black, dark grey and dark blue; little or no dark outline; crisp, detailed texture; about 55% of the canvas covered by the subject (measured on 15 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text; letters or numbers; watermark or signature; a drawn checkerboard pattern; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "6eb44dd5605d44611bd10746d019776ed53f29749f834b9159a93a7a8a276502",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1254x1254",
+   "date": "2026-11-02T13:53:54Z",
+   "candidate_id": "gallery.tank_design_bureau-v1",
+   "source_pixels_sha256": "bbf8ad27b8d7bc13d38faf01da9aa2875137d4deb1b476d3e9831a8dce73664a",
+   "processed_pixels_sha256": "5080219d77dcf9ea6fbc9be98ec0f28a68bdcf5e0403c3982a0eb621d5e240c3",
+   "recipe": {
+    "id": "icon",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/military_industrial_organization/department_icons/gallery/mio_department_tank_design_bureau.dds",
+     "sha256": "8335f359d1c6f1f47352e7ce6764f721dacba87f2cdecf29af0955e4fc46ca70"
+    }
+   ]
+  },
+  {
+   "family": "mio_policy",
+   "group": "icon",
+   "tool": "hoi4.image_icon",
+   "image": "docs/gallery/mio_policy.webp",
+   "sha256": "20fe3e36c09a762ae217c907b42f50b4986124c68abf7c03533854b37b34a863",
+   "encoding": "lossless WebP",
+   "native_size": [
+    60,
+    60
+   ],
+   "enlarged": 4,
+   "asset": "mass_production",
+   "made_by": "hoi4-imagegen",
+   "brief": "Wooden crates riding a factory conveyor belt, painted in the dark, muted Hearts of Iron IV style",
+   "prompt": "Create one Hearts of Iron IV military industrial organization policy icon: Wooden crates riding a factory conveyor belt, painted in the dark, muted Hearts of Iron IV style\n\nRequirements:\n- One centred subject with a strong, simple silhouette that stays readable at 60x60 pixels.\n- Painterly, slightly aged texture in the style of Hearts of Iron IV interface art, with readable contrast.\n- Real transparent background: no backdrop, no frame, no border, no plate behind the subject.\n- Leave a small empty margin around the subject.\n\nStyle:\n- Match the mod's own reference shelf for military industrial organization policy icon art: moderately muted, mid-tone palette dominated by black, orange and brown; little or no dark outline; crisp, detailed texture; about 63% of the canvas covered by the subject (measured on 15 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text; letters or numbers; watermark or signature; a drawn checkerboard pattern; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "d6fe8cd393461c2fca861bd7652ab7c470939069fdd6956ddf8a67ca2797494b",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1254x1254",
+   "date": "2026-11-02T13:53:56Z",
+   "candidate_id": "gallery.mass_production-v1",
+   "source_pixels_sha256": "85409b3258c99ecc35795c5d3f04929de39306f079013aa9ec9b7e5ae67b6572",
+   "processed_pixels_sha256": "c5ce2bfc22211afecdb3cd24b35656802812eaa4d8e4a792bfcb44fa7fe18852",
+   "recipe": {
+    "id": "icon",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/military_industrial_organization/policy_icons/gallery/mio_policy_mass_production.dds",
+     "sha256": "d1ff8e81d803c078fe8964a2b8e160ca39f13f09a07a502eddf468483f2de2b3"
+    }
+   ]
+  },
+  {
+   "family": "mio_trait",
+   "group": "icon",
+   "tool": "hoi4.image_icon",
+   "image": "docs/gallery/mio_trait.webp",
+   "sha256": "1e7571824ff43e2e3fb124734a10d398b0293eceea35d921cf8fce99abe76214",
+   "encoding": "lossless WebP",
+   "native_size": [
+    48,
+    48
+   ],
+   "enlarged": 5,
+   "asset": "improved_armour",
+   "made_by": "hoi4-imagegen",
+   "brief": "A thick steel armour plate with welding sparks, painted in the dark, muted Hearts of Iron IV style",
+   "prompt": "Create one Hearts of Iron IV military industrial organization trait icon: A thick steel armour plate with welding sparks, painted in the dark, muted Hearts of Iron IV style\n\nRequirements:\n- One centred subject with a strong, simple silhouette that stays readable at 48x48 pixels.\n- Painterly, slightly aged texture in the style of Hearts of Iron IV interface art, with readable contrast.\n- Real transparent background: no backdrop, no frame, no border, no plate behind the subject.\n- Leave a small empty margin around the subject.\n\nStyle:\n- Match the mod's own reference shelf for military industrial organization trait icon art: moderately muted, dark palette dominated by black, dark grey and grey; little or no dark outline; crisp, detailed texture; about 29% of the canvas covered by the subject (measured on 15 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text; letters or numbers; watermark or signature; a drawn checkerboard pattern; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "3d6f5d5f0a1ba06e4361c31040b31d69157e5605c1de431c36d33ecf37750b0b",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1254x1254",
+   "date": "2026-11-02T13:53:53Z",
+   "candidate_id": "gallery.improved_armour-v1",
+   "source_pixels_sha256": "4761146cdd302d74d8dbd579b682bcbce1a250763beec0929ea82e5c1994eefc",
+   "processed_pixels_sha256": "75127b9d237f6886791929719a091bee537c2fae112c4c15534a6048e66f6ed5",
+   "recipe": {
+    "id": "icon",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/military_industrial_organization/trait_icons/gallery/mio_trait_improved_armour.dds",
+     "sha256": "7e39bda5238bb52dbc9e7c7de7ff7f03ff714825acc9e62d8c1c2904e7f0b883"
+    }
+   ]
+  },
+  {
+   "family": "officer_corps_spirit",
+   "group": "icon",
+   "tool": "hoi4.image_icon",
+   "image": "docs/gallery/officer_corps_spirit.webp",
+   "sha256": "1282237d73c7a0d9849ce75282efb7021b5d806f6c51178ed712ed2fb6860018",
+   "encoding": "lossless WebP",
+   "native_size": [
+    45,
+    45
+   ],
+   "enlarged": 5,
+   "asset": "professional_officers",
+   "made_by": "hoi4-imagegen",
+   "brief": "A peaked officer's cap and a sabre resting on a staff map table, painted in the dark, muted Hearts of Iron IV style",
+   "prompt": "Create one Hearts of Iron IV officer corps spirit icon: A peaked officer's cap and a sabre resting on a staff map table, painted in the dark, muted Hearts of Iron IV style\n\nRequirements:\n- One centred subject with a strong, simple silhouette that stays readable at 45x45 pixels.\n- Painterly, slightly aged texture in the style of Hearts of Iron IV interface art, with readable contrast.\n- Real transparent background: no backdrop, no frame, no border, no plate behind the subject.\n- Leave a small empty margin around the subject.\n\nStyle:\n- Match the mod's own reference shelf for officer corps spirit icon art: moderately muted, dark palette dominated by black, brown and dark grey; little or no dark outline; crisp, detailed texture; about 58% of the canvas covered by the subject (measured on 15 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text; letters or numbers; watermark or signature; a drawn checkerboard pattern; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "a1924f272c2a4e40d2fa2343176e16a242cd9c8a698d7409cfd30d0306df78b5",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1254x1254",
+   "date": "2026-11-02T13:51:46Z",
+   "candidate_id": "gallery.professional_officers-v1",
+   "source_pixels_sha256": "4a19e8dea626af42458e8a581e80ed3dd9aba8fcfac5fbdfdfd989b5e6191ee8",
+   "processed_pixels_sha256": "5c6d4d8e51101789f8758d0983cef1fd07f4702dd94f39a78650702b2d760c78",
+   "recipe": {
+    "id": "icon",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/officer_corp/spirits/gallery/spirit_professional_officers.dds",
+     "sha256": "ef6950235c54540d47c066047842b04c06d562c0685efab85256c0780786ba4d"
+    }
+   ]
+  },
+  {
+   "family": "operation_icon",
+   "group": "icon",
+   "tool": "hoi4.image_icon",
+   "image": "docs/gallery/operation_icon.webp",
+   "sha256": "3ae1e940ed673968c6c71a1858050cf20abc69cd43ce70b05992a86fbf57e165",
+   "encoding": "lossless WebP",
+   "native_size": [
+    59,
+    58
+   ],
+   "enlarged": 4,
+   "asset": "infiltrate_ministry",
+   "made_by": "hoi4-imagegen",
+   "brief": "A leather briefcase with sealed documents and a red wax stamp, painted in the dark, muted Hearts of Iron IV style",
+   "prompt": "Create one Hearts of Iron IV intelligence operation icon: A leather briefcase with sealed documents and a red wax stamp, painted in the dark, muted Hearts of Iron IV style\n\nRequirements:\n- One centred subject with a strong, simple silhouette that stays readable at 59x58 pixels.\n- Painterly, slightly aged texture in the style of Hearts of Iron IV interface art, with readable contrast.\n- Real transparent background: no backdrop, no frame, no border, no plate behind the subject.\n- Leave a small empty margin around the subject.\n\nStyle:\n- Match the mod's own reference shelf for intelligence operation icon art: moderately muted, mid-tone palette dominated by black, brown and white; strong dark outline; crisp, detailed texture; about 66% of the canvas covered by the subject (measured on 18 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text; letters or numbers; watermark or signature; a drawn checkerboard pattern; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "79b5cfa966acc95057dfd7b6d42d124f2f367731e340b4d6a880f8ff8dd44ee6",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1254x1254",
+   "date": "2026-11-02T13:55:40Z",
+   "candidate_id": "gallery.infiltrate_ministry-v1",
+   "source_pixels_sha256": "6c9426dfb819f90ba69960e051f47c9ec8202ba5b37a43b10c7ab87b8c780bbe",
+   "processed_pixels_sha256": "b2a57d3635295c45558ee8ab212dc0afeba1c3036043235e4c13317ab46ce8a0",
+   "recipe": {
+    "id": "icon",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/operations/gallery/icons/phase_infiltrate_ministry.dds",
+     "sha256": "0c0d68641094f9305664c959ddce9c27dcacbe4991b49a923fd9e7e99a2a316d"
+    }
+   ]
+  },
+  {
+   "family": "personal_trait",
+   "group": "icon",
+   "tool": "hoi4.image_icon",
+   "image": "docs/gallery/personal_trait.webp",
+   "sha256": "d8536ed0eee78d0e8c64d3a2dbde6d0b716e73e7c9fbad3fb45bef7859f9ebee",
+   "encoding": "lossless WebP",
+   "native_size": [
+    23,
+    33
+   ],
+   "enlarged": 7,
+   "asset": "iron_will",
+   "made_by": "hoi4-imagegen",
+   "brief": "A clenched gloved fist, bold silhouette, painted in the dark, muted Hearts of Iron IV style",
+   "prompt": "Create one Hearts of Iron IV personal trait icon: A clenched gloved fist, bold silhouette, painted in the dark, muted Hearts of Iron IV style\n\nRequirements:\n- One centred subject with a strong, simple silhouette that stays readable at 23x33 pixels.\n- Painterly, slightly aged texture in the style of Hearts of Iron IV interface art, with readable contrast.\n- Real transparent background: no backdrop, no frame, no border, no plate behind the subject.\n- Leave a small empty margin around the subject.\n\nStyle:\n- Match the mod's own reference shelf for personal trait icon art: moderately muted, mid-tone palette dominated by black, dark grey and grey; partial dark outline; crisp, detailed texture; about 55% of the canvas covered by the subject (measured on 15 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text; letters or numbers; watermark or signature; a drawn checkerboard pattern; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "118fd68b756a7da3a93075c011b140064bc9a5c1d6a16ffe6189528d87de3108",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1254x1254",
+   "date": "2026-11-02T13:55:52Z",
+   "candidate_id": "gallery.iron_will-v1",
+   "source_pixels_sha256": "af78d32fbe6696a6318ff1e7317453f773bb315cd4cba3c81f18d90d447d8d10",
+   "processed_pixels_sha256": "34331374dcb51918b4b4b0c2e52db26d84084c2b8caa194cc5628aca12a28e0c",
+   "recipe": {
+    "id": "icon",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/traits/gallery/personal/trait_iron_will.dds",
+     "sha256": "7f92adc58f17d34b7222862462b89b9254df3e5faac5cff1f5952a000c526c26"
+    }
+   ]
+  },
+  {
+   "family": "raid",
+   "group": "icon",
+   "tool": "hoi4.image_icon",
+   "image": "docs/gallery/raid.webp",
+   "sha256": "e894087cc0cb9a6a69ae7590678a63102b3252caed27ec910a725d1a58cd76da",
+   "encoding": "lossless WebP",
+   "native_size": [
+    32,
+    32
+   ],
+   "enlarged": 7,
+   "asset": "sabotage",
+   "made_by": "hoi4-imagegen",
+   "brief": "A single lit stick of dynamite with a short fuse and a spark, painted in the dark, muted Hearts of Iron IV style",
+   "prompt": "Create one Hearts of Iron IV raid icon: A single lit stick of dynamite with a short fuse and a spark, painted in the dark, muted Hearts of Iron IV style\n\nRequirements:\n- One centred subject with a strong, simple silhouette that stays readable at 32x32 pixels.\n- Painterly, slightly aged texture in the style of Hearts of Iron IV interface art, with readable contrast.\n- Real transparent background: no backdrop, no frame, no border, no plate behind the subject.\n- Leave a small empty margin around the subject.\n\nStyle:\n- Match the mod's own reference shelf for raid icon art: moderately saturated, dark palette dominated by black, yellow and brown; strong dark outline; crisp, detailed texture; about 32% of the canvas covered by the subject (measured on 15 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text; letters or numbers; watermark or signature; a drawn checkerboard pattern; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "1f35a59139d803f5d95c9b4c462b8944acd9ad25658de300f954ac8b6375bdd4",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1254x1254",
+   "date": "2026-11-02T13:53:49Z",
+   "candidate_id": "gallery.sabotage-v1",
+   "source_pixels_sha256": "277ad4664017ba1241f701c99fce41de2b497850bfcf3a2dbc38c89912e16007",
+   "processed_pixels_sha256": "70bb66ca7ef4381c8f236da190c24515ba2982c0467d41a474ed7c14e4a3fdae",
+   "recipe": {
+    "id": "icon",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/military_raids/gallery/raid_type_icon_sabotage.dds",
+     "sha256": "b68d5a90109c366645469f9a24eb0239920af8fdabf7ad1ab51d10f2c0faf42a"
+    }
+   ]
+  },
+  {
+   "family": "special_project_icon",
+   "group": "icon",
+   "tool": "hoi4.image_icon",
+   "image": "docs/gallery/special_project_icon.webp",
+   "sha256": "9cab582a691a83190615a0dc50405453a1f3a52b1c9553eae4eb7a6ab4fb33c6",
+   "encoding": "lossless WebP",
+   "native_size": [
+    161,
+    98
+   ],
+   "enlarged": 2,
+   "asset": "rocket_programme",
+   "made_by": "hoi4-imagegen",
+   "brief": "A tall liquid-fuel rocket on a steel launch gantry at dusk, painted in the dark, muted Hearts of Iron IV style",
+   "prompt": "Create one Hearts of Iron IV special project icon: A tall liquid-fuel rocket on a steel launch gantry at dusk, painted in the dark, muted Hearts of Iron IV style\n\nRequirements:\n- One centred subject drawn in shades of grey only, readable at 161x98 pixels.\n- Painterly, slightly aged texture in the style of Hearts of Iron IV interface art.\n- Real transparent background: no backdrop, no frame, no border.\n- Leave a small empty margin around the subject.\n\nStyle:\n- Match the mod's own reference shelf for special project icon art: muted, low-saturation, bright palette dominated by white; little or no dark outline; smooth, softly shaded surfaces; about 13% of the canvas covered by the subject (measured on 15 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text; letters or numbers; watermark or signature; a drawn checkerboard pattern; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "0355ad163a2a3b6b18854492fcf4175216c405bbfa034e3e3107ba04119828e1",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1608x978",
+   "date": "2026-11-02T13:53:10Z",
+   "candidate_id": "gallery.rocket_programme-v1",
+   "source_pixels_sha256": "7c62757bad4243377290ecdd4090dc83c4183090c364c83fc6d6aa027b6cb197",
+   "processed_pixels_sha256": "3a5704f04846e4fd8ecf1b1ccd25dc2b50f8017af2a7e2924a8f8fbd9b2828e7",
+   "recipe": {
+    "id": "icon",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/special_project/project_icons/gallery/sp_rocket_programme.dds",
+     "sha256": "bf3b0799cf66214a7fd0028cd49ad731a6b0357eb4cbf29ce536250348bc2bc6"
+    }
+   ]
+  },
+  {
+   "family": "state_modifier",
+   "group": "icon",
+   "tool": "hoi4.image_icon",
+   "image": "docs/gallery/state_modifier.webp",
+   "sha256": "426a8f55572e29b993d513365eacdb32c1be158c478e6517e78f9b98f4b0e87b",
+   "encoding": "lossless WebP",
+   "native_size": [
+    32,
+    32
+   ],
+   "enlarged": 7,
+   "asset": "fortified_region",
+   "made_by": "hoi4-imagegen",
+   "brief": "A low concrete bunker with a gun slit, bold simple silhouette, painted in the dark, muted Hearts of Iron IV style",
+   "prompt": "Create one Hearts of Iron IV state or dynamic modifier icon: A low concrete bunker with a gun slit, bold simple silhouette, painted in the dark, muted Hearts of Iron IV style\n\nRequirements:\n- One centred subject with a strong, simple silhouette that stays readable at 32x32 pixels.\n- Painterly, slightly aged texture in the style of Hearts of Iron IV interface art, with readable contrast.\n- Real transparent background: no backdrop, no frame, no border, no plate behind the subject.\n- Leave a small empty margin around the subject.\n\nStyle:\n- Match the mod's own reference shelf for state or dynamic modifier icon art: moderately muted, dark palette dominated by black, dark grey and grey; little or no dark outline; crisp, detailed texture; about 62% of the canvas covered by the subject (measured on 15 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text; letters or numbers; watermark or signature; a drawn checkerboard pattern; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "a0fec0d4ab4867958ad908223d5ae8259e0d6c56b2e822d17bd2cb705309e64c",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1254x1254",
+   "date": "2026-11-02T13:53:02Z",
+   "candidate_id": "gallery.fortified_region-v1",
+   "source_pixels_sha256": "1c06f4f005e73ae2b38e79bbdb6ae0527a730db809a456a3986b97ac25ac26ca",
+   "processed_pixels_sha256": "1e74a7ac3343d5b9ee557615ae9523aecac84e83233d17dfca278b4c0cd07ef6",
+   "recipe": {
+    "id": "icon",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/state_modifiers/gallery/modifiers_fortified_region.dds",
+     "sha256": "1388f4f56389eb777739a3971da5a7073fd1d59d85094a50f97611c742cc37d7"
+    }
+   ]
+  },
+  {
+   "family": "achievement",
+   "group": "picture",
+   "tool": "hoi4.image_picture",
+   "image": "docs/gallery/achievement.webp",
+   "sha256": "bf60a8e2ca10ee2d797fc051df0707934d72f02ff7ef73399ca6ba5f979f2d96",
+   "encoding": "lossless WebP",
+   "native_size": [
+    64,
+    64
+   ],
+   "enlarged": 4,
+   "asset": "hold_the_line",
+   "made_by": "hoi4-imagegen",
+   "brief": "A tattered battle flag planted on a pile of sandbags, painted in the dark, muted Hearts of Iron IV style",
+   "prompt": "Create one Hearts of Iron IV achievement icon: A tattered battle flag planted on a pile of sandbags, painted in the dark, muted Hearts of Iron IV style\n\nRequirements:\n- One original subject, centred, compact and readable at 64x64 pixels, with strong contrast and a simple silhouette.\n- Real transparent background: no achievement frame, no square background, no red cross, no plate behind the subject.\n- Painterly, slightly aged texture in the style of Hearts of Iron IV interface art.\n\nStyle:\n- Match the mod's own reference shelf for achievement icon art: moderately muted, dark palette dominated by dark grey, black and brown; partial dark outline; crisp, detailed texture; about 96% of the canvas covered by the subject (measured on 18 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text; letters or numbers; watermark or signature; a drawn checkerboard pattern; a frame or border; a red cross.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "8e938c177763724c2e1a145eb0b635f8a0a854c9245d5cccbe00d725e84153e4",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1254x1254",
+   "date": "2026-11-02T13:57:53Z",
+   "candidate_id": "gallery.hold_the_line-v1",
+   "source_pixels_sha256": "a2957fa6652daf3e0ff9ed5ac7cabd5e09a96ce50139a091298bd802a1e4cc6a",
+   "processed_pixels_sha256": "551e367c74e0363f738ae1f2b37b9adfcb9b76eb784d35e51b8fd5921980625c",
+   "recipe": {
+    "id": "achievement",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/achievements/hold_the_line.dds",
+     "sha256": "5f68b8a4b53bcdb0603797c9ea35db2935ea5d31d4944e59c942cc82b8280cb4"
+    },
+    {
+     "path": "gfx/achievements/hold_the_line_grey.dds",
+     "sha256": "7ba0c7a3020d996a88fa16cc2b24c541b4e254fff76682ebe8f4ed189f987990"
+    },
+    {
+     "path": "gfx/achievements/hold_the_line_not_eligible.dds",
+     "sha256": "3fa57d7e5ae36e98c21cccf12f897b7b54d9da60ea243d79f21638c0ab63b7cd"
+    }
+   ]
+  },
+  {
+   "family": "decision_category_picture",
+   "group": "picture",
+   "tool": "hoi4.image_picture",
+   "image": "docs/gallery/decision_category_picture.webp",
+   "sha256": "c62c1a437ca3bb801a77793539171e9b4beca1ac55f35befe72330faa0d2e169",
+   "encoding": "lossless WebP",
+   "native_size": [
+    114,
+    101
+   ],
+   "enlarged": 2,
+   "asset": "war_industry",
+   "made_by": "hoi4-imagegen",
+   "brief": "Workers assembling military trucks on a busy factory floor, warm light through high windows, a painted illustration",
+   "prompt": "Create one Hearts of Iron IV decision category picture: Workers assembling military trucks on a busy factory floor, warm light through high windows, a painted illustration\n\nRequirements:\n- A complete scene that fills the whole frame, composed for a 114x101 crop.\n- Period illustration look, painterly, with natural film grain.\n\nStyle:\n- Match the mod's own reference shelf for decision category picture art: moderately muted, mid-tone palette dominated by orange, black and brown; crisp, detailed texture (measured on 15 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text, captions or headlines; watermark or signature; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "a5684922180abeb2449530e26335c6a1da355b9ff966c229db82987e451260ab",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1333x1180",
+   "date": "2026-11-02T13:56:55Z",
+   "candidate_id": "gallery.war_industry-v1",
+   "source_pixels_sha256": "520aed2719e69e51de915c005c94e5322148b2a85b55992aefccab93e1d94f92",
+   "processed_pixels_sha256": "19c94a94d9fccf3a1817ed47b39293002959311dc89af49e66412e43c7d204da",
+   "recipe": {
+    "id": "picture",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/decisions/gallery/category_pictures/decision_cat_picture_war_industry.dds",
+     "sha256": "82a7c92c7fc1c11b8702abd5dd8e62b4ed959087f16edf0e19164edc9681bea2"
+    }
+   ]
+  },
+  {
+   "family": "news_event",
+   "group": "picture",
+   "tool": "hoi4.image_picture",
+   "image": "docs/gallery/news_event.webp",
+   "sha256": "7e8133683872362d424ee3f40eb7270b768c50470436d3643ec4d218bb48bfd4",
+   "encoding": "WebP quality 90",
+   "native_size": [
+    397,
+    153
+   ],
+   "enlarged": 1,
+   "asset": "peace_conference",
+   "made_by": "hoi4-imagegen",
+   "brief": "Delegates seated around a long conference table in an ornate hall with chandeliers, a wide 1930s press photograph",
+   "prompt": "Create one Hearts of Iron IV news event picture: Delegates seated around a long conference table in an ornate hall with chandeliers, a wide 1930s press photograph\n\nRequirements:\n- A black and white press photograph that fills the whole frame, composed for a wide 397x153 crop.\n- Period newspaper look with natural grain.\n\nStyle:\n- Match the mod's own reference shelf for news event picture art: muted, low-saturation, mid-tone palette dominated by dark grey, white and grey; crisp, detailed texture (measured on 18 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text, captions or headlines; watermark or signature; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "c8763dbfd7cd2df29e5d292f6d121cc7a311e4adee782f5a556e152c93754672",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "2020x779",
+   "date": "2026-11-02T13:56:58Z",
+   "candidate_id": "gallery.peace_conference-v1",
+   "source_pixels_sha256": "b7e2f5ecdd09b38d9220be99b79162a5bea6073bce5c0c8c7af7c368397addf0",
+   "processed_pixels_sha256": "95da1e597fbd99bef5e7ea7dc0d403de0a9c39b4701ff7f3189c370109a6a751",
+   "recipe": {
+    "id": "picture",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/event_pictures/gallery/news_event_peace_conference.dds",
+     "sha256": "d47d07011a06cfdcf3784ae83e00326ab80052c803b0b80aebd027b62f55b2be"
+    }
+   ]
+  },
+  {
+   "family": "operation_picture",
+   "group": "picture",
+   "tool": "hoi4.image_picture",
+   "image": "docs/gallery/operation_picture.webp",
+   "sha256": "3cfae2e3c893cb4f8fee0a1ff91ed6b05b218b7c0eca2a14ea1ece8e65551261",
+   "encoding": "lossless WebP",
+   "native_size": [
+    210,
+    176
+   ],
+   "enlarged": 2,
+   "asset": "night_infiltration",
+   "made_by": "hoi4-imagegen",
+   "brief": "Saboteurs rowing a small boat across a harbour at night toward a dockside crane, a painted illustration",
+   "prompt": "Create one Hearts of Iron IV intelligence operation picture: Saboteurs rowing a small boat across a harbour at night toward a dockside crane, a painted illustration\n\nRequirements:\n- A complete scene that fills the whole frame, composed for a 210x176 crop.\n- Period illustration look, painterly, with natural film grain.\n\nStyle:\n- Match the mod's own reference shelf for intelligence operation picture art: muted, low-saturation, mid-tone palette dominated by black, brown and white; little or no dark outline; crisp, detailed texture; about 86% of the canvas covered by the subject (measured on 15 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text, captions or headlines; watermark or signature; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "ac6ea2f6274cd30ef45ee3140b630990ef2736148808774c732db3de383a10ed",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "low",
+   "source_image_size": "1369x1149",
+   "date": "2026-11-02T13:57:14Z",
+   "candidate_id": "gallery.night_infiltration-v1",
+   "source_pixels_sha256": "c80b38220dff16061dcab7cb67f8426bd89b12e9757583cdb28f77a806f1ca05",
+   "processed_pixels_sha256": "ace2fd9732a973073878362f85e0d2391380d8bd53e04d9e09da5ff34797c62c",
+   "recipe": {
+    "id": "picture",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/operations/gallery/pictures/phase_night_infiltration.dds",
+     "sha256": "27dbe3815f1c33d4d2dcf00cfdb529ffdf477174f7efdfa68be1172207c7b46d"
+    }
+   ]
+  },
+  {
+   "family": "report_event",
+   "group": "picture",
+   "tool": "hoi4.image_picture",
+   "image": "docs/gallery/report_event.webp",
+   "sha256": "ac56596dd99e1cb31b8a8648046adb77b60b33cfc883e1a435dba4d2d46e1f28",
+   "encoding": "lossless WebP",
+   "native_size": [
+    210,
+    176
+   ],
+   "enlarged": 2,
+   "asset": "winter_border",
+   "made_by": "hoi4-imagegen",
+   "brief": "Two soldiers in greatcoats at a snowy border checkpoint with a striped barrier, an old photograph",
+   "prompt": "Create one Hearts of Iron IV report event picture: Two soldiers in greatcoats at a snowy border checkpoint with a striped barrier, an old photograph\n\nRequirements:\n- A documentary-style scene that fills the whole frame, composed for a 210x176 crop.\n- The report-card treatment (sepia, grain, tilt, shadow) is applied afterwards by the tool, so do not draw a border, a shadow or a tilt.\n\nStyle:\n- Match the mod's own reference shelf for report event picture art: muted, low-saturation, mid-tone palette dominated by brown, black and orange; little or no dark outline; crisp, detailed texture; about 86% of the canvas covered by the subject (measured on 18 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text, captions or headlines; watermark or signature; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "5f41d1da48b80c763e39b7beaa4a5f15e3829ffccaf579f3d67fc905362749d1",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "low",
+   "source_image_size": "1369x1149",
+   "date": "2026-11-02T13:56:57Z",
+   "candidate_id": "gallery.winter_border-v1",
+   "source_pixels_sha256": "f346682016022d8139aa3630dd090f412fd3a2f077e0393e81a0b64b7d0895b6",
+   "processed_pixels_sha256": "f2c899e7adf56a9109e3a553280c85d9a3c5a490144954bf7fdfa699db2b1893",
+   "recipe": {
+    "id": "report_card",
+    "version": 2
+   },
+   "installed_files": [
+    {
+     "path": "gfx/event_pictures/gallery/report_event_winter_border.dds",
+     "sha256": "eb9e8a5bb816e299e8e27dc12a9ad3ea5461bec69ce56f9ef936a8759f0f5006"
+    }
+   ]
+  },
+  {
+   "family": "technology",
+   "group": "picture",
+   "tool": "hoi4.image_picture",
+   "image": "docs/gallery/technology.webp",
+   "sha256": "b26d66320ab1d7ce19452e8f7092f133cfba7ec18f280bae99b7c46518236e81",
+   "encoding": "lossless WebP",
+   "native_size": [
+    146,
+    54
+   ],
+   "enlarged": 2,
+   "asset": "heavy_tank",
+   "made_by": "hoi4-imagegen",
+   "brief": "A heavy tank seen from the side, long gun, wide tracks, painted in the dark, muted Hearts of Iron IV style",
+   "prompt": "Create one Hearts of Iron IV technology picture: A heavy tank seen from the side, long gun, wide tracks, painted in the dark, muted Hearts of Iron IV style\n\nRequirements:\n- One centred subject with a strong, simple silhouette that stays readable at 146x54 pixels.\n- Painterly, slightly aged texture in the style of Hearts of Iron IV interface art, with readable contrast.\n- Real transparent background: no backdrop, no frame, no border, no plate behind the subject.\n- Leave a small empty margin around the subject.\n\nStyle:\n- Match the mod's own reference shelf for technology picture art: moderately muted, dark palette dominated by black, dark grey and ochre; little or no dark outline; crisp, detailed texture; about 34% of the canvas covered by the subject (measured on 12 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text; letters or numbers; watermark or signature; a drawn checkerboard pattern; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "361cf89c457ae037e8a98ec880a2df3755035104d7601133af1dc7d647962909",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "2062x763",
+   "date": "2026-11-02T13:57:58Z",
+   "candidate_id": "gallery.heavy_tank-v1",
+   "source_pixels_sha256": "164e7ed9095f34c869404dc063ff35827a20bdd623826d105ecd0b6e55dcd8c1",
+   "processed_pixels_sha256": "27f40d430a2d94a5d33365a11b2d9dc8c73c66c6636f4de983f8accfc4dd2ff4",
+   "recipe": {
+    "id": "icon",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/technologies/gallery/heavy_tank.dds",
+     "sha256": "0466b6f38b34cf02701a7535ea5fc4f181207cbcde02bd6399389c4d9d23e139"
+    }
+   ]
+  },
+  {
+   "family": "advisor_card",
+   "group": "portrait",
+   "tool": "hoi4.image_portrait",
+   "image": "docs/gallery/advisor_card.webp",
+   "sha256": "63ab4b0eb0979f3e52ba5d5936668985c24f41ba5c74807fe8d36448cd3cfe2e",
+   "encoding": "lossless WebP",
+   "native_size": [
+    65,
+    67
+   ],
+   "enlarged": 4,
+   "asset": "minister",
+   "made_by": "hoi4-imagegen",
+   "brief": "A fictional government minister in a grey uniform jacket, neutral expression, 1930s portrait",
+   "prompt": "Create one Hearts of Iron IV advisor portrait card: A fictional government minister in a grey uniform jacket, neutral expression, 1930s portrait\n\nRequirements:\n- A head-and-shoulders portrait of one person in the painterly style of Hearts of Iron IV advisor portraits, face and shoulders centred, composed for a tall crop.\n- Period-appropriate clothing and a plain, slightly textured backdrop. The card frame is added afterwards by the tool, so do not draw a frame or border.\n\nStyle:\n- Match the mod's own reference shelf for advisor portrait card art: muted, low-saturation, mid-tone palette dominated by pale orange, black and dark grey; little or no dark outline; crisp, detailed texture; about 75% of the canvas covered by the subject (measured on 16 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text, captions or headlines; watermark or signature; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "6542142f344678d14bd552fb09febada722f8ec2592bb0f6aaeeb027e5dc4339",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "low",
+   "source_image_size": "1024x1536",
+   "date": "2026-11-02T13:59:05Z",
+   "candidate_id": "gallery.minister-v1",
+   "source_pixels_sha256": "ed086758296ce481f3345ade482629d6fbb716487dc17c6ed5bd14d3e0e03179",
+   "processed_pixels_sha256": "260aa3d02b8f0f70854faf37a3d5d1333df6143814c5b3786214ec58aad152af",
+   "recipe": {
+    "id": "advisor_card",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/ideas/gallery/advisors/idea_minister.dds",
+     "sha256": "46c9d8a119d92a6ffb69089d5d56a97dff7269feb3ca43db3043391a25eb4c5d"
+    }
+   ]
+  },
+  {
+   "family": "commander_portrait",
+   "group": "portrait",
+   "tool": "hoi4.image_portrait",
+   "image": "docs/gallery/commander_portrait.webp",
+   "sha256": "66ee237772221ecb0ae01815f930038f59bbafdc71fec6c3970d989590a0aeea",
+   "encoding": "lossless WebP",
+   "native_size": [
+    156,
+    210
+   ],
+   "enlarged": 2,
+   "asset": "general",
+   "made_by": "hoi4-imagegen",
+   "brief": "A fictional general in a peaked cap and a dark greatcoat, stern expression, 1940s painted portrait",
+   "prompt": "Create one Hearts of Iron IV commander portrait: A fictional general in a peaked cap and a dark greatcoat, stern expression, 1940s painted portrait\n\nRequirements:\n- A head-and-shoulders portrait in the painterly style of Hearts of Iron IV portraits, composed for a tall 156x210 crop.\n- Period-appropriate clothing and a plain, slightly textured backdrop.\n\nStyle:\n- Match the mod's own reference shelf for commander portrait art: moderately muted, mid-tone palette dominated by black, white and dark grey; moderate surface detail (measured on 18 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text, captions or headlines; watermark or signature; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "a34542ff4b1daa728b368d7f13185e46991d9c3860bbb2c030e921d632e4641c",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "low",
+   "source_image_size": "1081x1455",
+   "date": "2026-11-02T13:58:14Z",
+   "candidate_id": "gallery.general-v1",
+   "source_pixels_sha256": "eaa6b83715dbef2badd044f21aec2cff128b3b245558e7872e38f6d48bbf1ab7",
+   "processed_pixels_sha256": "04afe6287632fac3e0bbb5c0c915b0fdfc394d9cd23dd37387e7bcf8fad2455c",
+   "recipe": {
+    "id": "portrait",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/leaders/gallery/commanders/portrait_general.dds",
+     "sha256": "88ade4c4dff766698e1a410ee05ec5824e42ea6f292106946fa9cd2c5d81cee9"
+    }
+   ]
+  },
+  {
+   "family": "leader_portrait",
+   "group": "portrait",
+   "tool": "hoi4.image_portrait",
+   "image": "docs/gallery/leader_portrait.webp",
+   "sha256": "48bb1b8e3cefb95a54ecf2e534543aff8be2e6556ccc4a67f62988ad9cf3afa1",
+   "encoding": "lossless WebP",
+   "native_size": [
+    156,
+    210
+   ],
+   "enlarged": 2,
+   "asset": "statesman",
+   "made_by": "hoi4-imagegen",
+   "brief": "A fictional statesman in his fifties, dark double-breasted suit, serious expression, 1930s painted portrait",
+   "prompt": "Create one Hearts of Iron IV leader portrait: A fictional statesman in his fifties, dark double-breasted suit, serious expression, 1930s painted portrait\n\nRequirements:\n- A head-and-shoulders portrait in the painterly style of Hearts of Iron IV portraits, composed for a tall 156x210 crop.\n- Period-appropriate clothing and a plain, slightly textured backdrop.\n\nStyle:\n- Match the mod's own reference shelf for leader portrait art: moderately muted, mid-tone palette dominated by black, white and dark grey; moderate surface detail (measured on 18 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text, captions or headlines; watermark or signature; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "19fa9f36125e44f7b21eb84d9a6559583aadc03ec9c6a5c459382271a3ee9e60",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "low",
+   "source_image_size": "1081x1455",
+   "date": "2026-11-02T13:58:03Z",
+   "candidate_id": "gallery.statesman-v1",
+   "source_pixels_sha256": "2315a256991f32a890b71a5640d3d535b0084eefa9493e396ad1551d4a0f1869",
+   "processed_pixels_sha256": "7e3ed86f6ec60335afbf6f2dad344fa3f0f06174b51e5ea80dcda8c8dc8b3e9f",
+   "recipe": {
+    "id": "portrait",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/leaders/gallery/portrait_statesman.dds",
+     "sha256": "f7c4c2145095e530600aa6414c540cad87f63d2b501ea0995fe6b2e7b230ac0a"
+    }
+   ]
+  },
+  {
+   "family": "operative_portrait",
+   "group": "portrait",
+   "tool": "hoi4.image_portrait",
+   "image": "docs/gallery/operative_portrait.webp",
+   "sha256": "8dd94ed960638e22888d233cce17ded5bcb3794ad1eba157b51fce40f89990b6",
+   "encoding": "lossless WebP",
+   "native_size": [
+    156,
+    210
+   ],
+   "enlarged": 2,
+   "asset": "agent",
+   "made_by": "hoi4-imagegen",
+   "brief": "A fictional woman agent in a beret and a brown trench coat, calm expression, 1940s painted portrait",
+   "prompt": "Create one Hearts of Iron IV operative portrait: A fictional woman agent in a beret and a brown trench coat, calm expression, 1940s painted portrait\n\nRequirements:\n- A head-and-shoulders portrait in the painterly style of Hearts of Iron IV portraits, composed for a tall 156x210 crop.\n- Period-appropriate clothing and a plain, slightly textured backdrop.\n\nStyle:\n- Match the mod's own reference shelf for operative portrait art: moderately muted, dark palette dominated by brown, black and dark grey; moderate surface detail (measured on 15 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text, captions or headlines; watermark or signature; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "0e201c64b5c6611edc3e5d670e94f6384cd7af40631012aabbd856fc913fdd73",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1081x1455",
+   "date": "2026-11-02T13:58:36Z",
+   "candidate_id": "gallery.agent-v1",
+   "source_pixels_sha256": "762b55aae12fcc2ff8c419c2f72fe234a95c1a09411d7c6f6fe20a625d53aa48",
+   "processed_pixels_sha256": "8d6da4addaa8f91dadffdd66839df79ce45a14d40821e1d13046f48ddcf01937",
+   "recipe": {
+    "id": "portrait",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/leaders/gallery/operatives/portrait_agent.dds",
+     "sha256": "338dcf826e41914c8ab230da2b19d221ff402fd5ae36a2d90e228613957524a2"
+    }
+   ]
+  },
+  {
+   "family": "scientist_portrait",
+   "group": "portrait",
+   "tool": "hoi4.image_portrait",
+   "image": "docs/gallery/scientist_portrait.webp",
+   "sha256": "bc45e7d8ad4ab3c2e9023eb997e687df87a2bfb67da927b10ad666913965ebb1",
+   "encoding": "lossless WebP",
+   "native_size": [
+    156,
+    210
+   ],
+   "enlarged": 2,
+   "asset": "physicist",
+   "made_by": "hoi4-imagegen",
+   "brief": "A fictional physicist in a white lab coat and tie, grey hair, thoughtful expression, 1940s painted portrait",
+   "prompt": "Create one Hearts of Iron IV scientist portrait: A fictional physicist in a white lab coat and tie, grey hair, thoughtful expression, 1940s painted portrait\n\nRequirements:\n- A head-and-shoulders portrait in the painterly style of Hearts of Iron IV portraits, composed for a tall 156x210 crop.\n- Period-appropriate clothing and a plain, slightly textured backdrop.\n\nStyle:\n- Match the mod's own reference shelf for scientist portrait art: moderately muted, mid-tone palette dominated by black, dark grey and blue; moderate surface detail (measured on 15 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text, captions or headlines; watermark or signature; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "b83f793e250d236812e2c233670ee51a369e8da49365a2a3db09e8e65bcac6d9",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1080x1456",
+   "date": "2026-11-02T13:58:38Z",
+   "candidate_id": "gallery.physicist-v1",
+   "source_pixels_sha256": "3e96e94d6add355be7a7de772ae9d6efe63af95fcc6f6b08385c59fb267def7f",
+   "processed_pixels_sha256": "3eefa52298d482213a8c0c11d5abdbae20d64f21e7353ca4aca0a6ba08900f47",
+   "recipe": {
+    "id": "portrait",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/leaders/gallery/scientists/portrait_physicist.dds",
+     "sha256": "a150b103bf3715635c1364a7ff49dac135573bca937b917a1246ada8e8ed0d01"
+    }
+   ]
+  },
+  {
+   "family": "flag",
+   "group": "flag",
+   "tool": "hoi4.image_flag",
+   "image": "docs/gallery/flag.webp",
+   "sha256": "1e19bb6d9cbeaba443d6aa7a1ea8c36c0f4e353977be428499218e1bc1b1201e",
+   "encoding": "lossless WebP",
+   "native_size": [
+    82,
+    52
+   ],
+   "enlarged": 3,
+   "asset": "IRP_fascism",
+   "made_by": "hoi4-imagegen",
+   "brief": "A flag with three horizontal bands, green, white and green, and a golden gear in the centre",
+   "prompt": "Create one Hearts of Iron IV country flag: A flag with three horizontal bands, green, white and green, and a golden gear in the centre\n\nRequirements:\n- A flat national flag design with simple shapes that stay readable at 82x52 pixels and at 10x7 pixels.\n- The flag fills the whole frame edge to edge.\n\nStyle:\n- Match the mod's own reference shelf for country flag art: vivid, highly saturated, mid-tone palette dominated by white, red and black; moderate surface detail (measured on 18 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text; a pole or cloth folds; perspective; a border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "1c7ebe1dd66a6b262089490417c7bf9136509c5a2837ddeee3eefa6849659337",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "low",
+   "source_image_size": "1536x1024",
+   "date": "2026-11-02T13:59:42Z",
+   "candidate_id": "gallery.IRP_fascism-v1",
+   "source_pixels_sha256": "92c646cadf821decf0efe97247b436c01e93a95d078f23098691d3f5de421dd7",
+   "processed_pixels_sha256": "ea9b9b5a46cc572f241fdb409a3714e234510001c6def8f4abc6a18e2246ed4f",
+   "recipe": {
+    "id": "flag",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/flags/IRP_fascism.tga",
+     "sha256": "17150eedc796992f37dfb18961a13682258e3957889204c8fac01b0cf4be1dcb"
+    },
+    {
+     "path": "gfx/flags/medium/IRP_fascism.tga",
+     "sha256": "04e12112e76581fe02de3704eff6d039d2c4fdc8a90ef47ba5cdff34538b9d57"
+    },
+    {
+     "path": "gfx/flags/small/IRP_fascism.tga",
+     "sha256": "3cb0228e923c86614f8f104ab217a3bce7e491ae21131e2ff12c550b8056516f"
+    }
+   ]
+  },
+  {
+   "family": "agency_logo",
+   "group": "unit",
+   "tool": "hoi4.image_unit",
+   "image": "docs/gallery/agency_logo.webp",
+   "sha256": "a626d96d3bb1474d850fd4bb1e495faeedcae3a3fafbf40b9d77c17bca897afd",
+   "encoding": "WebP quality 90",
+   "native_size": [
+    234,
+    119
+   ],
+   "enlarged": 1,
+   "asset": "state_security",
+   "made_by": "hoi4-imagegen",
+   "brief": "A round emblem with a five-pointed star containing a watching eye inside a laurel wreath, red and white, painted in the dark, muted Hearts of Iron IV style",
+   "prompt": "Create one Hearts of Iron IV intelligence agency logo: A round emblem with a five-pointed star containing a watching eye inside a laurel wreath, red and white, painted in the dark, muted Hearts of Iron IV style\n\nRequirements:\n- One centred emblem with a strong silhouette that reads at 117x119 pixels, drawn in the style of Hearts of Iron IV faction and interface art.\n- Real transparent background: no backdrop, no frame, no plate. Leave clear space around the emblem: the tool adds the second frame (its highlight or its disabled look) itself.\n\nStyle:\n- Match the mod's own reference shelf for intelligence agency logo art: vivid, highly saturated, mid-tone palette dominated by white, dark red and black; strong dark outline; crisp, detailed texture; about 46% of the canvas covered by the subject (measured on 7 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text; letters or numbers; watermark or signature; a drawn checkerboard pattern; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "d398d26d41e6c9e26c6651fc5f1f04865ab91ace03e370c27697e5f85be63444",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1254x1254",
+   "date": "2026-11-02T13:59:56Z",
+   "candidate_id": "gallery.state_security-v1",
+   "source_pixels_sha256": "c1713873531d5a722722984b34695433ce50b513ef5411c12c255896b45ac660",
+   "processed_pixels_sha256": "542332d02447a86f296c6b09311cbfce03c4a9d20fdafe193433607c15e225de",
+   "recipe": {
+    "id": "selected_strip",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/operatives/agencies/gallery/agency_logo_state_security.dds",
+     "sha256": "a0708604d0a5db58d5368ce6fb4b7a0be96d145e581392f90c35ddce518c9fdb"
+    }
+   ]
+  },
+  {
+   "family": "building",
+   "group": "unit",
+   "tool": "hoi4.image_unit",
+   "image": "docs/gallery/building.webp",
+   "sha256": "0b9ecf6eadef8a403a3851a6681cb54ab9de0d905aaf93fa43d4610afa06f872",
+   "encoding": "lossless WebP",
+   "native_size": [
+    128,
+    64
+   ],
+   "enlarged": 2,
+   "asset": "citadel",
+   "made_by": "hoi4-imagegen",
+   "brief": "A walled citadel with towers on a hilltop, painted in the dark, muted Hearts of Iron IV style",
+   "prompt": "Create one Hearts of Iron IV landmark building icon: A walled citadel with towers on a hilltop, painted in the dark, muted Hearts of Iron IV style\n\nRequirements:\n- One centred emblem with a strong silhouette that reads at 64x64 pixels, drawn in the style of Hearts of Iron IV faction and interface art.\n- Real transparent background: no backdrop, no frame, no plate. Leave clear space around the emblem: the tool adds the second frame (its highlight or its disabled look) itself.\n\nStyle:\n- Match the mod's own reference shelf for landmark building icon art: moderately muted, dark palette dominated by ochre, black and dark grey; partial dark outline; crisp, detailed texture; about 29% of the canvas covered by the subject (measured on 15 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text; letters or numbers; watermark or signature; a drawn checkerboard pattern; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "cc5570e9124d6956901251d4385a77b5de3aefeda53e799fd0c5ec8c877deb02",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1254x1254",
+   "date": "2026-11-02T13:59:30Z",
+   "candidate_id": "gallery.citadel-v1",
+   "source_pixels_sha256": "c19a352e9875d06872e3f113274230d5c119b7a2182a7dc41f4c7a2072dca7cc",
+   "processed_pixels_sha256": "21f92162dece8665a6a16c4ba2e19ef98b84ea1102ed9b064fb78a34c2c06a5a",
+   "recipe": {
+    "id": "landmark_strip",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/buildings/gallery/building_citadel.dds",
+     "sha256": "19c00524dbc6b67da14739d25a11747e1ec0ce073a6e32a5508a85d3f35be841"
+    },
+    {
+     "path": "gfx/interface/buildings/gallery/building_citadel_small.dds",
+     "sha256": "4345e4517d6ed97900a9789f39d3a3814353fe70dec42a8e4cbf36f28f152411"
+    }
+   ]
+  },
+  {
+   "family": "counter_large",
+   "group": "unit",
+   "tool": "hoi4.image_unit",
+   "image": "docs/gallery/counter_large.webp",
+   "sha256": "9d769fa81f6e5ba23babbc127de85024ef23aba1021c416bbe9d7be4b603cdbc",
+   "encoding": "lossless WebP",
+   "native_size": [
+    152,
+    42
+   ],
+   "enlarged": 2,
+   "asset": "combat_engineers",
+   "made_by": "imported art, made on the same ChatGPT login",
+   "brief": "A Hearts of Iron IV style military map counter icon for a combat engineer battalion: bold pure white line-art silhouette of a pickaxe crossed with a rifle, flat, no shading, thick simple strokes, wide composition filling the frame horizontally, genuine transparent background, no text, no frame. | A Hearts of Iron IV style military map counter icon, selected state, for a combat engineer battalion: the same bold line-art silhouette of a pickaxe crossed with a rifle, but drawn in bright warm yellow-white with a soft glowing outline, flat, thick simple strokes, wide composition filling the frame horizontally, genuine transparent background, no text, no frame.",
+   "prompt": [
+    "A Hearts of Iron IV style military map counter icon for a combat engineer battalion: bold pure white line-art silhouette of a pickaxe crossed with a rifle, flat, no shading, thick simple strokes, wide composition filling the frame horizontally, genuine transparent background, no text, no frame.",
+    "A Hearts of Iron IV style military map counter icon, selected state, for a combat engineer battalion: the same bold line-art silhouette of a pickaxe crossed with a rifle, but drawn in bright warm yellow-white with a soft glowing outline, flat, thick simple strokes, wide composition filling the frame horizontally, genuine transparent background, no text, no frame."
+   ],
+   "prompt_sha256": [
+    "52be0189caca5ec8b609805338b118a43ec29e2b39ef2b8ad61cd1e6db977489",
+    "578635db1beed66e1a37203fcdf53271fc74767894834f2d8ab32cfa5b7ec1db"
+   ],
+   "provider": "chatgpt_login (gptimage MCP, the same ChatGPT login)",
+   "model": "ChatGPT subscription image model, quality high, as the gptimage MCP reports no more",
+   "reasoning_effort": null,
+   "image_tool_model": null,
+   "image_quality": "high (requested)",
+   "source_image_size": "1536x1024, 1536x1024",
+   "date": "2026-11-02T13:55:57Z",
+   "candidate_id": null,
+   "source_pixels_sha256": [
+    "31d56b152d42de40286a0728d6998420ef8f1711ba8f69e2589ba3cf86c09226",
+    "76978d85afc6ba93c14f67b0af09763d85db4b9fc4a068c7da09c77ebfa2270d"
+   ],
+   "processed_pixels_sha256": "94506f1decc99e59acadb0aed275d15251a76f1938fea3be352f568289a08424",
+   "recipe": {
+    "id": "imported_art",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/counters/divisions_large/gallery/unit_combat_engineers.dds",
+     "sha256": "587a9890b07593f7a1dfac4bd34b0b05f6a6278aa267441f2a43cf445c82faab"
+    }
+   ]
+  },
+  {
+   "family": "counter_small",
+   "group": "unit",
+   "tool": "hoi4.image_unit",
+   "image": "docs/gallery/counter_small.webp",
+   "sha256": "b8efc614c037e80cf433585c906ab4711e7943c29bc81f1dc86f91068a677777",
+   "encoding": "lossless WebP",
+   "native_size": [
+    60,
+    12
+   ],
+   "enlarged": 4,
+   "asset": "infantry_rifle",
+   "made_by": "imported art, made on the same ChatGPT login",
+   "brief": "A tiny Hearts of Iron IV style on-map unit counter icon for an infantry battalion: a bold pure white silhouette of a WWII bolt-action rifle seen from the side, pointing right, very simple, thick shape readable at 30x12 pixels, very wide composition, flat, genuine transparent background, no text, no frame. | A tiny Hearts of Iron IV style on-map unit counter icon, selected state, for an infantry battalion: the same bold rifle silhouette in bright warm yellow with a soft glow, very simple, thick shape readable at 30x12 pixels, very wide composition, flat, genuine transparent background, no text, no frame.",
+   "prompt": [
+    "A tiny Hearts of Iron IV style on-map unit counter icon for an infantry battalion: a bold pure white silhouette of a WWII bolt-action rifle seen from the side, pointing right, very simple, thick shape readable at 30x12 pixels, very wide composition, flat, genuine transparent background, no text, no frame.",
+    "A tiny Hearts of Iron IV style on-map unit counter icon, selected state, for an infantry battalion: the same bold rifle silhouette in bright warm yellow with a soft glow, very simple, thick shape readable at 30x12 pixels, very wide composition, flat, genuine transparent background, no text, no frame."
+   ],
+   "prompt_sha256": [
+    "e24ab5cf497a61b03f31938e7c2e580844a9930400cde4d69cda67da84b1bde3",
+    "561a08a3cf3f526e20f369096613ee8239a2fca0a6cda39c6a70cd7fc11becb8"
+   ],
+   "provider": "chatgpt_login (gptimage MCP, the same ChatGPT login)",
+   "model": "ChatGPT subscription image model, quality high, as the gptimage MCP reports no more",
+   "reasoning_effort": null,
+   "image_tool_model": null,
+   "image_quality": "high (requested)",
+   "source_image_size": "1983x793, 1983x793",
+   "date": "2026-11-02T13:59:52Z",
+   "candidate_id": null,
+   "source_pixels_sha256": [
+    "a52963706276563b226321e3a319da9d2bf0dff2f592809ff2159f51148a1d5b",
+    "1114b268e883dcfae0d3ba9fbb1895a443c6cfa37acbc34e88cc139f76fa9f5b"
+   ],
+   "processed_pixels_sha256": "4c59e1f1a5ba661436a2560de4e8e0e823a1bf780233500e0579d98cf013004a",
+   "recipe": {
+    "id": "imported_art",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/counters/divisions_small/gallery/onmap_unit_infantry_rifle.dds",
+     "sha256": "0c4120b9edc88e20b64b7863211f7af86e83c1271dca745dbd232deae15bd4d4"
+    },
+    {
+     "path": "gfx/texticons/gallery/unit_infantry_rifle_icon_small.dds",
+     "sha256": "4a75395678abd7c1b16fb968ccbc74f43bc23bc60a0526a42d9be065d6eb6c7a"
+    }
+   ]
+  },
+  {
+   "family": "division_emblem",
+   "group": "unit",
+   "tool": "hoi4.image_unit",
+   "image": "docs/gallery/division_emblem.webp",
+   "sha256": "00400feecb29383bb3e5088a56775c3b0f439be6b6b28454f006934627524afb",
+   "encoding": "lossless WebP",
+   "native_size": [
+    76,
+    42
+   ],
+   "enlarged": 3,
+   "asset": "lightning_shield",
+   "made_by": "imported art, made on the same ChatGPT login",
+   "brief": "A Hearts of Iron IV division designer emblem symbol: a bold stylised lightning bolt cutting through a round shield outline, two flat colours (white and signal red), clean thick shapes, wide composition, genuine transparent background, no text, no frame.",
+   "prompt": "A Hearts of Iron IV division designer emblem symbol: a bold stylised lightning bolt cutting through a round shield outline, two flat colours (white and signal red), clean thick shapes, wide composition, genuine transparent background, no text, no frame.",
+   "prompt_sha256": [
+    "8433f914db16f7cc56f9928387c7454c520a55d6f2e1ad5f5dcae20b9e81a807"
+   ],
+   "provider": "chatgpt_login (gptimage MCP, the same ChatGPT login)",
+   "model": "ChatGPT subscription image model, quality high, as the gptimage MCP reports no more",
+   "reasoning_effort": null,
+   "image_tool_model": null,
+   "image_quality": "high (requested)",
+   "source_image_size": "1536x1024",
+   "date": "2026-11-02T13:58:54Z",
+   "candidate_id": null,
+   "source_pixels_sha256": [
+    "b2f2253d2b5cbfb9ea7ab0b466b5f71049bd743187ba160d0ac6f7700f188f13"
+   ],
+   "processed_pixels_sha256": "22894f77a51ab26e4c880d02b4d8c8f54125c1a2cf68e11795fb521f69ead660",
+   "recipe": {
+    "id": "imported_art",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/counters/division_templates_large/gallery/custom_lightning_shield.dds",
+     "sha256": "e814f4b2a647e6136ff1c2e029a016db9b557f914cd6e1dd081680f16cd80417"
+    },
+    {
+     "path": "gfx/interface/counters/division_templates_small/gallery/custom_lightning_shield.dds",
+     "sha256": "f0b949e0a20124a5a609c80a17f02ea57adc0b5ce61af2150c4a633c7ab91cc1"
+    }
+   ]
+  },
+  {
+   "family": "faction_logo",
+   "group": "unit",
+   "tool": "hoi4.image_unit",
+   "image": "docs/gallery/faction_logo.webp",
+   "sha256": "0e3f931d1d6374ac6ced405f669ecf3e04c5c323b3bd16439dcc87b75dda89c6",
+   "encoding": "lossless WebP",
+   "native_size": [
+    200,
+    100
+   ],
+   "enlarged": 2,
+   "asset": "iron_pact",
+   "made_by": "hoi4-imagegen",
+   "brief": "A round emblem with two crossed swords inside a laurel wreath, red and gold, painted in the dark, muted Hearts of Iron IV style",
+   "prompt": "Create one Hearts of Iron IV faction logo: A round emblem with two crossed swords inside a laurel wreath, red and gold, painted in the dark, muted Hearts of Iron IV style\n\nRequirements:\n- One centred emblem with a strong silhouette that reads at 100x100 pixels, drawn in the style of Hearts of Iron IV faction and interface art.\n- Real transparent background: no backdrop, no frame, no plate. Leave clear space around the emblem: the tool adds the second frame (its highlight or its disabled look) itself.\n\nStyle:\n- Match the mod's own reference shelf for faction logo art: moderately saturated, mid-tone palette dominated by black, dark red and white; partial dark outline; crisp, detailed texture; about 59% of the canvas covered by the subject (measured on 15 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text; letters or numbers; watermark or signature; a drawn checkerboard pattern; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "0fb3e6db63a0285e6f8f0a4d44846439b3966913c704be917f6f59d288bd0837",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1254x1254",
+   "date": "2026-11-02T13:59:34Z",
+   "candidate_id": "gallery.iron_pact-v1",
+   "source_pixels_sha256": "e2bb183d65b5b8b6442577c6b653211f4e2b3705c50e956191f444484acb284f",
+   "processed_pixels_sha256": "cb19666864033cffac50ee3951092ee2520386887bf1f27a701f846eec98e1c0",
+   "recipe": {
+    "id": "selected_strip",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/factions/faction_logos/gallery/faction_logo_iron_pact.dds",
+     "sha256": "ff921d9c561479f2c4447b8b090484870c56516c7b611a48e94eadf034ef6363"
+    },
+    {
+     "path": "gfx/interface/factions/faction_logos/gallery/faction_logo_iron_pact_miniature.dds",
+     "sha256": "5fda4b020164db5b64c941e10aa2414bfcfd75996ad2d2e7fa0c2e40a52ba4fb"
+    }
+   ]
+  },
+  {
+   "family": "gui_texture",
+   "group": "interface",
+   "tool": "hoi4.image_interface",
+   "image": "docs/gallery/gui_texture.webp",
+   "sha256": "9a6f50e0af8383ae10b83ec5ee773ebcb2ce7be1117cd684319739079b5cb6be",
+   "encoding": "WebP quality 90",
+   "native_size": [
+    300,
+    200
+   ],
+   "enlarged": 1,
+   "asset": "panel_leather",
+   "made_by": "hoi4-imagegen",
+   "brief": "A dark brown leather panel with brass corner studs and a thin gold border line, flat front view, no scene, painted in the dark, muted Hearts of Iron IV style",
+   "prompt": "Create one Hearts of Iron IV GUI texture: A dark brown leather panel with brass corner studs and a thin gold border line, flat front view, no scene, painted in the dark, muted Hearts of Iron IV style\n\nRequirements:\n- Match the style of Hearts of Iron IV interface art; the exact size is 300x200 pixels.\n- Real transparent background (alpha), not a drawn checkerboard.\n\nAvoid: text; letters or numbers; watermark or signature; a drawn checkerboard pattern; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "f239ab2fa9ff5d0b4f8d5b12b0b8bc39e89159980273de27748371f4d3cc73da",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1536x1024",
+   "date": "2026-11-02T14:00:27Z",
+   "candidate_id": "gallery.panel_leather-v1",
+   "source_pixels_sha256": "9f6a29af1d6e29ba673d33a56545fa629e38fe9c1e9d730dd42f5b66495c94dc",
+   "processed_pixels_sha256": "526e03db8dbc2986d68c49a9ee99348447220d8d742f76acfdabe777e887f5f0",
+   "recipe": {
+    "id": "icon",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/gallery/gui_panel_leather.dds",
+     "sha256": "2ab045ac2b6f54f6cdca08b334319e7987284f0b434352a428900f5ff2efbdaf"
+    }
+   ]
+  },
+  {
+   "family": "modifier_stat_icon",
+   "group": "interface",
+   "tool": "hoi4.image_interface",
+   "image": "docs/gallery/modifier_stat_icon.webp",
+   "sha256": "288ecc4ac784c4990e39c5e275e9ce645d6facf69f9590d30fcb8914d9c9d54e",
+   "encoding": "lossless WebP",
+   "native_size": [
+    30,
+    20
+   ],
+   "enlarged": 8,
+   "asset": "supply_bonus",
+   "made_by": "hoi4-imagegen",
+   "brief": "A small crate with a green upward arrow, painted in the dark, muted Hearts of Iron IV style",
+   "prompt": "Create one Hearts of Iron IV modifier tooltip stat icon: A small crate with a green upward arrow, painted in the dark, muted Hearts of Iron IV style\n\nRequirements:\n- Match the style of Hearts of Iron IV interface art; the exact size is 30x20 pixels.\n- Real transparent background (alpha), not a drawn checkerboard.\n\nStyle:\n- Match the mod's own reference shelf for modifier tooltip stat icon art: moderately muted, mid-tone palette dominated by black, dark grey and grey; partial dark outline; crisp, detailed texture; about 54% of the canvas covered by the subject (measured on 15 images).\n\nReference images, in the order attached:\n1. style anchor: match its painting style, palette and level of detail\n2. style anchor: match its painting style, palette and level of detail\n3. style anchor: match its painting style, palette and level of detail\n4. style anchor: match its painting style, palette and level of detail\n\nAvoid: text; letters or numbers; watermark or signature; a drawn checkerboard pattern; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "bb16de06f08656d57b8643c65c2eaeefa1120b507c453b230d33d9e702653a7f",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1536x1024",
+   "date": "2026-11-02T14:00:23Z",
+   "candidate_id": "gallery.supply_bonus-v1",
+   "source_pixels_sha256": "13475541a63042e6d2d31d705ba6653b55f8d9c3c089c1bbaa41850823ef8c02",
+   "processed_pixels_sha256": "86ca3d8d57aaaefb793587c5962c0e639efaf1a49d64a079bed3e3c2ef877ddb",
+   "recipe": {
+    "id": "icon",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/interface/modifiers/gallery/modifier_supply_bonus.dds",
+     "sha256": "b00fbe7a8cc6334a59bdf1fd4fb039ea029174bf8880f2c19cc51a2cce66abd5"
+    }
+   ]
+  },
+  {
+   "family": "super_event",
+   "group": "interface",
+   "tool": "hoi4.image_interface",
+   "image": "docs/gallery/super_event.webp",
+   "sha256": "c0a192a2853eaad3a69a2db6ca29cb37a6ed1afcb7708cf12628d59dd005584d",
+   "encoding": "WebP quality 90",
+   "native_size": [
+    457,
+    328
+   ],
+   "enlarged": 1,
+   "asset": "armistice",
+   "made_by": "hoi4-imagegen",
+   "brief": "An armistice signed at a polished table inside a railway carriage, officers in dress uniform, evening light through the windows, a painted illustration",
+   "prompt": "Create one Hearts of Iron IV super event picture: An armistice signed at a polished table inside a railway carriage, officers in dress uniform, evening light through the windows, a painted illustration\n\nRequirements:\n- A complete scene that fills the whole frame, composed for a 457x328 crop.\n- Period illustration look, painterly, with natural film grain.\n\nAvoid: text, captions or headlines; watermark or signature; a frame or border.\n\nProduce exactly one image.\n",
+   "prompt_sha256": "bfdda6eb10b6c3a1cecec1c99c24219e33a6e98485357a11ba2810ee770b2c3d",
+   "provider": "chatgpt_login",
+   "model": "gpt-6-luna",
+   "reasoning_effort": "high",
+   "image_tool_model": "gpt-image-2-codex",
+   "image_quality": "medium",
+   "source_image_size": "1480x1062",
+   "date": "2026-11-02T14:00:51Z",
+   "candidate_id": "gallery.armistice-v1",
+   "source_pixels_sha256": "efcebdaba5b2e380c2967c6e565be175709b51b07b95891359ebbcd6cad4c216",
+   "processed_pixels_sha256": "e16ced74f3bb80747c10b491f37b7d5549d19c61f81d9b625e7286420c7b7108",
+   "recipe": {
+    "id": "picture",
+    "version": 1
+   },
+   "installed_files": [
+    {
+     "path": "gfx/super_events/gallery/super_event_armistice.dds",
+     "sha256": "5dc6ea4886c8a753171aa0770bf8a097d2713652d573d4070d44d46c7a40735a"
+    }
+   ]
+  }
+ ]
+}
