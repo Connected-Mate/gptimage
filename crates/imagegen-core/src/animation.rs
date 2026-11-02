@@ -202,21 +202,69 @@ pub fn glow_strip(bright: &Rgba, frames: u32, dim: f64) -> Result<Rgba> {
     build_strip(&[low, bright.clone()], (bright.width, bright.height))
 }
 
-/// Make an image seamless across its width: within a quarter of the width from either edge it is blended with the
-/// copy shifted by half the width, so the last column runs into the first. The middle half keeps its pixels.
+/// Mean absolute premultiplied difference between the image and itself shifted left by `s` columns, over the
+/// columns that do not wrap.
+fn shift_error(pre: &Rgba, s: usize) -> f64 {
+    let (w, h) = (pre.width as usize, pre.height as usize);
+    let mut sum = 0u64;
+    for y in 0..h {
+        let row = &pre.data[y * w * 4..(y + 1) * w * 4];
+        for x in 0..w - s {
+            for c in 0..4 {
+                sum += u64::from(row[x * 4 + c].abs_diff(row[(x + s) * 4 + c]));
+            }
+        }
+    }
+    sum as f64 / ((w - s).max(1) * h * 4) as f64
+}
+
+/// The horizontal period of a repeating picture: the shift between an eighth and half of the width at which it
+/// matches itself best, when that match is clearly better than a typical shift (below 0.6 of the median error).
+/// `None` for a picture that does not repeat.
+fn pattern_period(pre: &Rgba) -> Option<usize> {
+    let w = pre.width as usize;
+    let lo = (w / 8).max(2);
+    let hi = w / 2;
+    if hi <= lo {
+        return None;
+    }
+    let errs: Vec<(usize, f64)> = (lo..=hi).map(|s| (s, shift_error(pre, s))).collect();
+    let (p, best) = errs.iter().copied().fold((0, f64::MAX), |acc, (s, e)| if e < acc.1 - 1e-9 { (s, e) } else { acc });
+    let med = median(&errs.iter().map(|(_, e)| *e).collect::<Vec<_>>());
+    (best < 0.6 * med).then_some(p)
+}
+
+/// Make an image seamless across its width.
+///
+/// A repeating pattern (a period found by [`pattern_period`]) is first cropped to a whole number of periods and
+/// resampled back to the width, so the width holds the pattern exactly `n` times. Then, within a quarter of the
+/// width from either edge, the image is blended with its copy shifted by a whole number of periods (half the width
+/// for a picture that does not repeat), so the last column runs into the first. For a pattern both copies are in
+/// phase and nothing ghosts. The middle half keeps its pixels.
 pub fn tileable_x(img: &Rgba) -> Result<Rgba> {
     let (w, h) = (img.width as usize, img.height as usize);
     if w < 4 {
         return Err(Error::Invalid(format!("a {w} px wide image cannot be made seamless")));
     }
-    let pre = premultiply(img);
+    let mut pre = premultiply(img);
+    let mut shift = w / 2;
+    if let Some(p) = pattern_period(&pre) {
+        let n = (w / p).max(1);
+        let crop = n * p;
+        if crop < w {
+            let cut = img.crop(0, 0, crop as u32, img.height)?;
+            pre = premultiply(&resize_lanczos3(&cut, img.width, img.height)?);
+        }
+        let period = w as f64 / n as f64;
+        shift = ((((w as f64 / 2.0) / period).round().max(1.0) * period).round() as usize).clamp(1, w - 1);
+    }
     let band = (w as f64 / 4.0).max(1.0);
     let mut out = Rgba::new(img.width, img.height);
     for x in 0..w {
         let d = (x as f64 + 0.5).min(w as f64 - x as f64 - 0.5);
         let t = (d / band).min(1.0);
         let wgt = t * t * (3.0 - 2.0 * t);
-        let xs = (x + w / 2) % w;
+        let xs = (x + shift) % w;
         for y in 0..h {
             let a = &pre.data[(y * w + x) * 4..(y * w + x) * 4 + 4];
             let b = &pre.data[(y * w + xs) * 4..(y * w + xs) * 4 + 4];
@@ -709,6 +757,28 @@ mod tests {
         let seam = m.seam_ratio.unwrap();
         assert!((0.5..1.5).contains(&seam), "seam {seam} {:?}", m.steps);
         assert!(m.palette_drift.iter().all(|d| *d < 2.0), "{m:?}");
+        // a pattern whose period does not divide half the width is blended with a copy in phase, so nothing ghosts:
+        // a repeating picture is left exactly as it was
+        let stripes = |w: u32| {
+            let mut img = Rgba::new(w, 6);
+            for y in 0..6 {
+                for x in 0..w {
+                    let v = if (x + y) % 8 < 4 { 220 } else { 40 };
+                    img.set_px(x, y, [v, 90, 30, 255]);
+                }
+            }
+            img
+        };
+        let whole = stripes(32);
+        assert_eq!(tileable_x(&whole).unwrap(), whole, "a width of whole periods is already seamless");
+        // 36 px is four and a half periods: the pattern is fitted to four periods of 9 px, so it repeats exactly
+        let odd = stripes(36);
+        let seamless = premultiply(&tileable_x(&odd).unwrap());
+        let before = shift_error(&premultiply(&odd), 9);
+        assert!(shift_error(&seamless, 9) < before / 2.0, "{} vs {before}", shift_error(&seamless, 9));
+        let wrap: f64 = (0..6u32).map(|y| f64::from(seamless.px(35, y)[0].abs_diff(seamless.px(0, y)[0]))).sum::<f64>() / 6.0;
+        let inner: f64 = (0..6u32).map(|y| f64::from(seamless.px(17, y)[0].abs_diff(seamless.px(18, y)[0]))).sum::<f64>() / 6.0;
+        assert!(wrap <= inner + 60.0, "the wrap is no harder an edge than an inner one: {wrap} vs {inner}");
         // the next frame after the last is the first again
         let pre = premultiply(&tileable_x(&img).unwrap());
         assert_eq!(unpremultiply(&shift_wrap(&pre, 36.0)), frames[0]);
