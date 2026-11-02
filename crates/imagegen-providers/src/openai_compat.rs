@@ -831,6 +831,33 @@ mod tests {
         assert!(p.edit(&with_edit(req("stabilityai/stable-diffusion-3-medium-diffusers")), &CallContext::new()).is_err());
     }
 
+    /// Recorded-real replay: one real call to the Hugging Face router on 2026-11-02 (the maintainer's free account,
+    /// no payment method, so it could not be charged) with the request this adapter builds. The router accepted
+    /// the token and the route and answered 402 for missing credits. The response is replayed byte for byte from
+    /// `tests/fixtures/huggingface/`. The success path is not live-verified.
+    #[test]
+    fn recorded_real_huggingface_route_and_token_accepted_out_of_credits() {
+        let meta: Value = serde_json::from_str(include_str!("../tests/fixtures/huggingface/recorded.json")).unwrap();
+        assert_eq!(meta["recorded"], "real");
+        let body = include_bytes!("../tests/fixtures/huggingface/response.body").to_vec();
+        let fixture = Arc::new(FixtureTransport::new());
+        fixture.respond(Method::Post, "/hf-inference/models/", 402, &[("content-type", "application/json; charset=utf-8")], body);
+        let p = make(Protocol::HuggingFace, &fixture, Some("hf_test_000000"), ProviderConfig::default());
+        let model = meta["request"]["url"].as_str().unwrap().rsplit("/models/").next().unwrap().to_string();
+        let mut r = req(&model);
+        r.prompt = meta["request"]["body"]["inputs"].as_str().unwrap().to_string();
+        r.width = 512;
+        r.height = 512;
+        // the adapter builds the request that was sent
+        let b = p.build(&r).unwrap();
+        assert_eq!(b.url, meta["request"]["url"].as_str().unwrap());
+        assert_eq!(b.body, meta["request"]["body"]);
+        // and turns the real answer into a clear, non-retried out-of-credits error
+        let err = p.generate(&r, &CallContext::new()).unwrap_err();
+        assert_eq!((err.kind, err.retry), (ErrorKind::RateLimited, RetryClass::RequiresAuthorization));
+        assert!(err.message.contains("HTTP 402") && err.message.contains("credits"), "{}", err.message);
+    }
+
     #[test]
     fn documented_shape_huggingface_json_or_text_answer_is_not_an_image_and_ids_are_checked() {
         for body in [br#"{"error":"Model is loading"}"#.to_vec(), b"plain text".to_vec()] {

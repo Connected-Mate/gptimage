@@ -11,6 +11,7 @@
   "retrieved": "2026-11-02",
   "checked": "2026-11-02",
   "live_verified": false,
+  "live_evidence": "One real call on 2026-11-02 (tests/fixtures/huggingface/recorded.json): the router accepted the token and the route and answered HTTP 402, no remaining credits, on a free account without a payment method. A successful generation is not live-verified.",
   "env_vars": ["HF_TOKEN"],
   "hosts": ["router.huggingface.co"],
   "terms_note": "Not live-verified: built from the task page and the huggingface_hub client source (read 2026-11-02), no recorded call. The route is POST https://router.huggingface.co/hf-inference/models/<model> with {inputs, parameters}, answered with raw image bytes. The task page does not print the URL, it comes from the client source. Free accounts have no included credits, so a call needs a PRO plan or purchased credits. hf-inference is billed by compute time, so the price is unknown. Other providers behind the router (fal-ai, replicate, nscale) use their own request formats and are not used here. Each model has its own license. Check Paradox's and Steam's rules for AI-generated mod assets before publishing.",
