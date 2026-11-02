@@ -80,6 +80,8 @@ impl ChatGptLoginProvider {
                 notes: "Fixed to gpt-6-luna at high reasoning effort (maintainer decision); the backend must echo both or the image is refused. The backend's own image tool chooses its model, quality and size, so this route cannot force image quality; what it chose is recorded per image. No mask, no documented alpha (transparency is proven from pixels), no usage report.".into(),
             }],
             terms_note: "Presents itself as the Codex CLI to a backend OpenAI does not document for other tools; may break or be blocked without notice; account consequences are yours. Local only: never hosted, never shared.".into(),
+            // recorded real responses: docs/evidence/2026-11-01-luna-probe.json and the 40-family run of 2026-11-02
+            live_verified: true,
         };
         ChatGptLoginProvider { desc, store, transport, policy: HostPolicy::api(&HOSTS), clock, model, record_dir: None }
     }

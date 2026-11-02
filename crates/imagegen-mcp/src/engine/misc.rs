@@ -47,6 +47,7 @@ impl Engine {
                 "tables_retrieved": desc.retrieved,
                 "doc_url": desc.doc_url,
                 "terms_note": desc.terms_note,
+                "live_verified": desc.live_verified,
             }));
         }
         if self.config.policy.allow_vanilla_references.is_some() {

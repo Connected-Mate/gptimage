@@ -357,26 +357,29 @@ fn doctor_text(s: &Value) -> String {
         s["server"]["version"].as_str().unwrap_or("?"),
         s["project_root"].as_str().unwrap_or("?")
     ));
-    t.push_str("Providers (keys are read from environment variables only):\n");
+    t.push_str("Providers (keys are read from environment variables or HOI4 Mod Setup's credential store):\n");
     for p in s["providers"].as_array().into_iter().flatten() {
-        let ok = p["configured"] == json!(true);
+        let id = p["id"].as_str().unwrap_or("?");
+        let keys = p["key_env"].as_array().map(|a| a.iter().filter_map(Value::as_str).collect::<Vec<_>>().join(" or ")).unwrap_or_default();
+        let state = if p["configured"] == json!(true) {
+            "ready".to_string()
+        } else if keys.is_empty() {
+            // local servers need an address, not a key
+            format!("set providers.{id}.endpoint")
+        } else {
+            format!("set {keys}")
+        };
         t.push_str(&format!(
-            "  {:<8} {}  default model {}  (tables checked {})\n",
-            p["id"].as_str().unwrap_or("?"),
-            if ok {
-                "ready          ".to_string()
-            } else {
-                format!(
-                    "set {}",
-                    p["key_env"].as_array().map(|a| a.iter().filter_map(Value::as_str).collect::<Vec<_>>().join(" or ")).unwrap_or_default()
-                )
-            },
+            "  {:<17} {}  default model {}  (tables checked {}{})\n",
+            id,
+            state,
             p["default_model"].as_str().unwrap_or("?"),
             p["tables_retrieved"].as_str().unwrap_or("?"),
+            if p["live_verified"] == json!(true) { "" } else { "; not live-verified" },
         ));
     }
     for (id, why) in s["provider_problems"].as_object().into_iter().flatten() {
-        t.push_str(&format!("  {id:<8} NOT AVAILABLE: {}\n", why.as_str().unwrap_or("")));
+        t.push_str(&format!("  {id:<17} NOT AVAILABLE: {}\n", why.as_str().unwrap_or("")));
     }
     for w in s["warnings"].as_array().into_iter().flatten() {
         t.push_str(&format!("  warning: {}\n", w.as_str().unwrap_or("")));
