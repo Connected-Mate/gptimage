@@ -36,7 +36,7 @@ impl Engine {
             .iter()
             .filter(|e| e.kind == kind::VALIDATED && e.artifact_id.as_deref() == Some(artifact.id.as_str()))
             .filter_map(|e| serde_json::from_value::<ValidatedRecord>(e.data.clone()).ok())
-            .last()
+            .next_back()
         {
             checks.push(HashCheck {
                 what: "profile the validation used".into(),

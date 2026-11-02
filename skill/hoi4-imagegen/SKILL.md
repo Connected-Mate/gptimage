@@ -11,7 +11,7 @@ Use the `hoi4_imagegen` MCP (tools `hoi4.image_*`). It owns canvas sizes, alpha,
 * `hoi4.image_status`, `hoi4.image_families` (the catalogue: every family's measured spec, the mod's override, its style sources), `hoi4.image_references`.
 * Six generation tools, one per group, each with a **required** `family` that the schema checks: `hoi4.image_icon`, `hoi4.image_picture`, `hoi4.image_portrait`, `hoi4.image_flag`, `hoi4.image_unit`, `hoi4.image_interface`. Without `approve` they return a free plan. With `approve: true` and an `idempotency_key` they generate.
 * `hoi4.image_generate`, `hoi4.image_edit`, `hoi4.image_process`, `hoi4.image_validate`, `hoi4.image_preview`, `hoi4.image_review`, `hoi4.image_install`, `hoi4.image_ledger`, `hoi4.image_cancel`.
-* A whole-mod reuse audit (`hoi4.image_audit`) is planned and does not exist yet. Do not call it.
+* `hoi4.image_audit` audits the whole mod for cross-family reuse, missing textures, missing focus shine and wrong canvases. Run it before a release or after importing art. Existing reuse is a warning; add intended aliases to `.hoi4-imagegen/audit-allowlist.json`.
 
 ## The 40 families
 * Icon group (`hoi4.image_icon`): `focus`, `idea_spirit`, `idea_concern`, `officer_corps_spirit`, `decision` (also missions), `decision_category_icon`, `state_modifier` (also dynamic modifiers), `special_project_icon`, `raid`, `mio_department`, `mio_trait`, `mio_policy`, `bop_side`, `medal`, `agency_upgrade`, `operation_icon`, `commander_trait`, `personal_trait`, `doctrine`.

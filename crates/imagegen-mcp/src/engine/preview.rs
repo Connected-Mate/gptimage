@@ -232,7 +232,7 @@ mod tests {
         let (sheet, _) = decode(&s.png, None, DecodeLimits::default()).unwrap();
         // first panel: PAD offset, exact pixels
         assert_eq!(sheet.px(PAD + 10, PAD + 10), icon.px(10, 10));
-        assert_eq!(sheet.px(PAD + 0, PAD + 0), DARK, "transparent pixels show the dark background");
+        assert_eq!(sheet.px(PAD, PAD), DARK, "transparent pixels show the dark background");
     }
 
     #[test]

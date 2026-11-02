@@ -529,13 +529,12 @@ impl Engine {
         let intent = entries
             .iter()
             .filter(|e| e.kind == kind::JOB_INTENT)
-            .filter(|e| {
+            .rfind(|e| {
                 let id = e.data.get("job_id").and_then(Value::as_str);
                 let key = e.data.get("idempotency_key").and_then(Value::as_str);
                 (p.job_id.as_deref().is_some() && id == p.job_id.as_deref())
                     || (p.idempotency_key.as_deref().is_some() && key == p.idempotency_key.as_deref())
             })
-            .last()
             .ok_or_else(|| EngineError::new("not_found", "no running or recorded job matches", RetryClass::Terminal))?;
         let job_id = intent.data.get("job_id").and_then(Value::as_str).unwrap_or_default().to_string();
         if ended.contains(&job_id.as_str()) {
@@ -543,8 +542,7 @@ impl Engine {
         }
         let remote: Option<JobRef> = entries
             .iter()
-            .filter(|e| e.kind == kind::JOB_SUBMITTED && e.data.get("job_id").and_then(Value::as_str) == Some(job_id.as_str()))
-            .last()
+            .rfind(|e| e.kind == kind::JOB_SUBMITTED && e.data.get("job_id").and_then(Value::as_str) == Some(job_id.as_str()))
             .and_then(|e| e.data.get("remote").cloned())
             .and_then(|v| serde_json::from_value(v).ok());
         let Some(remote) = remote else {

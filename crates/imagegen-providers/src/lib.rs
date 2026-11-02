@@ -6,6 +6,8 @@
 //! lives in a separate opt-in crate (see docs/chatgpt-login.md) that nothing in this crate depends on.
 
 #![forbid(unsafe_code)]
+// ProviderError carries the redacted request context every caller reports; boxing it would only move the cost.
+#![allow(clippy::result_large_err)]
 
 pub mod comfyui;
 pub mod common;

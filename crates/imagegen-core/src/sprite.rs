@@ -58,7 +58,7 @@ pub fn shine_sprite(icon_name: &str, texture_path: &str) -> Result<SpriteEntry> 
     Ok(SpriteEntry {
         name: format!("{icon_name}_shine"),
         text,
-        caveat: "Shine block copied field for field from vanilla 1.19.4.1 goals_shine.gfx; game behaviour without it is untested.".into(),
+        caveat: "Shine block copied field for field from vanilla 1.19.4.1 goals_shine.gfx; required: a focus without it shows a ? in game (checked on 1.19.4.1, 2026-11-02).".into(),
     })
 }
 
@@ -279,7 +279,7 @@ mod tests {
         assert!(s.text.contains("animationtime = 0.75") && s.text.contains("animationblendmode = \"add\""));
         assert!(s.text.contains("legacy_lazy_load = no"));
         assert!(s.text.contains("animationrotationoffset = { x = 0.0 y = 0.0 }"));
-        assert!(s.caveat.contains("untested"));
+        assert!(s.caveat.contains("required"));
         assert_eq!(s.text.matches('{').count(), s.text.matches('}').count());
     }
 
@@ -523,6 +523,6 @@ mod tests {
     fn handoff_mentions_caveats() {
         let e = vec![plain_sprite("GFX_a", "gfx/a.dds"), shine_sprite("GFX_a", "gfx/a.dds").unwrap()];
         let h = handoff_block("f.a", &["gfx/a.dds".into()], "interface/f_goals.gfx", &e, &["check it".into()]);
-        assert!(h.contains("## f.a") && h.contains("interface/f_goals.gfx") && h.contains("untested") && h.contains("check it"));
+        assert!(h.contains("## f.a") && h.contains("interface/f_goals.gfx") && h.contains("required") && h.contains("check it"));
     }
 }

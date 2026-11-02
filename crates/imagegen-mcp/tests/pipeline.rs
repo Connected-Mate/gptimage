@@ -52,10 +52,10 @@ fn focus_icon_goes_from_plan_to_installed_dds_with_a_shine_sprite() {
     let b = decoded.alpha_bbox(16).unwrap();
     assert!(b[0] >= 2 && b[1] >= 2 && 100 - b[2] >= 2 && 88 - b[3] >= 2, "margins {b:?}");
 
-    // handoff snippet, with the shine companion and the honest caveat
+    // handoff snippet, with the shine companion and the in-game finding that the shine is required
     let handoff = String::from_utf8(h.read("docs/assets/iron_pact/gfx_handoff.md")).unwrap();
     assert!(handoff.contains("GFX_focus_steel_gate") && handoff.contains("GFX_focus_steel_gate_shine"));
-    assert!(handoff.contains("interface/iron_pact_goals.gfx") && handoff.contains("untested"));
+    assert!(handoff.contains("interface/iron_pact_goals.gfx") && handoff.contains("required"));
     assert!(!h.exists("interface/iron_pact_goals.gfx"), "handoff mode must not touch .gfx files");
 
     // provenance
@@ -421,7 +421,7 @@ fn provider_failures_leave_a_clean_trail_and_uncertain_calls_block_blind_retries
     let e = run("k-rl").unwrap_err();
     assert_eq!((code(&e), e.retry), ("provider_rate_limited", imagegen_core::RetryClass::SafeSameInputs));
     assert!(!h.exists("docs/assets/iron_pact/source_png/steel_gate-v1.png"), "a failed call leaves no candidate");
-    let ended = h.engine.ledger.entries().unwrap().into_iter().filter(|e| e.kind == "job_ended").last().unwrap();
+    let ended = h.engine.ledger.entries().unwrap().into_iter().rfind(|e| e.kind == "job_ended").unwrap();
     assert_eq!(ended.data["outcome"], "failed");
     // a failed (not uncertain) attempt may be retried with the same key
     h.fixture.clear_route(Method::Post, "/v1/images/generations");
@@ -436,7 +436,7 @@ fn provider_failures_leave_a_clean_trail_and_uncertain_calls_block_blind_retries
     let e = run2("k-un").unwrap_err();
     assert_eq!(e.retry, imagegen_core::RetryClass::ReconcileFirst);
     // the intent entry is closed as "uncertain", so the same key is allowed again only after a human decision:
-    let ended = h2.engine.ledger.entries().unwrap().into_iter().filter(|e| e.kind == "job_ended").last().unwrap();
+    let ended = h2.engine.ledger.entries().unwrap().into_iter().rfind(|e| e.kind == "job_ended").unwrap();
     assert_eq!(ended.data["outcome"], "uncertain");
 
     // a crash between the intent and any result leaves an unfinished intent that blocks the same key
@@ -522,7 +522,7 @@ fn finished_art_from_another_tool_can_be_imported_validated_and_installed() {
     let mut art = Rgba::new(65, 67);
     for y in 0..67 {
         for x in 0..65 {
-            let corner = (x < 3 || x > 61) && (y < 3 || y > 63);
+            let corner = !(3..=61).contains(&x) && !(3..=63).contains(&y);
             art.set_px(x, y, if corner { [0, 0, 0, 0] } else { [(x * 3) as u8, (y * 3) as u8, 120, 255] });
         }
     }

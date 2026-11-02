@@ -42,7 +42,9 @@ status -> families -> icon | picture | portrait | flag | unit | interface   (fre
 | `hoi4.image_ledger` | Which references, settings and outputs belong together, lineage, and the chain check |
 | `hoi4.image_cancel` | Cancels a running job, or reconciles one that a crashed run left behind |
 
-That is 18 tools. A whole-mod audit tool, `hoi4.image_audit`, is **planned and does not exist yet**. Nothing here depends on it.
+| `hoi4.image_audit` | Audits the whole mod on the shared engine (hoi4-agent-tools): which families use each sprite and texture, cross-family reuse (`GFX-FAMILY-REUSE`, a warning, with a per-mod allowlist), missing textures, undefined sprites, missing focus shine (an error: the game then draws a `?`), wrong canvas sizes and report cards without transparent corners. Read only |
+
+That is 19 tools.
 
 ## Families
 
