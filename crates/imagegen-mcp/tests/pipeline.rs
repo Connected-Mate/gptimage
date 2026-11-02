@@ -249,9 +249,9 @@ fn policy_gates_follow_the_maintainer_decisions() {
         )
     };
     assert_eq!(code(&plan("idea_spirit", "a").unwrap_err()), "family_forbidden_by_project");
-    // every family is generated end to end except the three whose second frame is different art
-    assert_eq!(code(&plan("counter_large", "a").unwrap_err()), "family_import_only");
-    assert_eq!(code(&plan("division_emblem", "a").unwrap_err()), "family_import_only");
+    // every family is generated end to end, the counters and the division symbol too
+    assert!(plan("counter_large", "a").is_ok());
+    assert!(plan("division_emblem", "a").is_ok());
     // the advisor card needs the mod's frame template: refused before anything is spent, naming the paths it looked for
     let e = plan("advisor_card", "a").unwrap_err();
     assert_eq!(code(&e), "templates_missing");

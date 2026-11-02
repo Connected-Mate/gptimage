@@ -113,6 +113,33 @@ const UNIT_RULES: &[&str] = &[
     "Match the style of Hearts of Iron IV unit and faction art; one frame is {w}x{h} pixels and every frame shares that size.",
     "Real transparent background and a clear silhouette at native size.",
 ];
+const COUNTER_RULES: &[&str] = &[
+    "Draw the unit seen from the side as ONE bold, solid black silhouette: a single filled shape with a clear outline, wider than tall, that still reads as the unit when shrunk to a tiny map counter.",
+    "Plain flat white background, or a real transparent one. No ground line, no cast shadow, no scenery, no second object.",
+    "Show inner detail only as a few thin white gaps cut into the black shape (wheels, a hatch, a gap between parts). No grey shading, no colour, no texture.",
+    "Draw only the unit itself: the tool adds the vanilla green or grey material, the lighting, the outline and the NATO box.",
+];
+const COUNTER_NEGATIVE: &[&str] = &[
+    "text, letters or numbers",
+    "a NATO symbol, a box, a frame or a border",
+    "colour, grey shading or gradients",
+    "a ground line, a cast shadow or scenery",
+    "several objects",
+    "watermark or signature",
+];
+const EMBLEM_RULES: &[&str] = &[
+    "One simple emblem (an animal head, a weapon, a heraldic or military sign) as ONE bold, solid black silhouette, centred, compact, readable at {w}x{h} pixels and at 30x12 pixels.",
+    "Plain flat white background, or a real transparent one. No badge, no shield plate, no ring or frame around it unless the ring is the emblem.",
+    "Show inner detail only as a few thin white gaps cut into the black shape (an eye, a line between parts). No grey shading, no colour, no texture.",
+    "The tool adds vanilla's green material, the lighting and the outline itself.",
+];
+const EMBLEM_NEGATIVE: &[&str] = &[
+    "text, letters or numbers",
+    "a frame, a border or a backing plate",
+    "colour, grey shading or gradients",
+    "several objects",
+    "watermark or signature",
+];
 const INTERFACE_RULES: &[&str] = &["Match the style of Hearts of Iron IV interface art; the exact size is {w}x{h} pixels."];
 
 /// Defaults of a group. A row overrides what differs with struct update syntax.
@@ -165,7 +192,6 @@ fn base(family: Family, canvas: [u32; 2], accepted: &'static [[u32; 2]], folder:
         }
         Group::Unit => {
             row.frames = 2;
-            row.automation = Automation::ImportOnly;
             row.checks = UNIT_CHECKS;
             row.rules = UNIT_RULES;
         }
@@ -358,19 +384,25 @@ fn rows() -> Vec<Row> {
         // ---- unit group
         Row {
             sprite: Some(("interface/{feature_slug}_counters.gfx", "GFX_unit_{asset}_icon_medium", &[])),
-            note: "The battalion icon: a strip of two 76x42 frames (152x42, noOfFrames = 2). Needs separate art for each frame and the exact vanilla reference, so it is import-only. The game looks it up as GFX_unit_<sub-unit key>_icon_medium, so the asset name is the sub-unit key (not its sprite key).",
+            rules: COUNTER_RULES,
+            negative: COUNTER_NEGATIVE,
+            note: "The battalion icon: a strip of two 76x42 frames (152x42, noOfFrames = 2). Frame 1 is the unit's side-view silhouette in vanilla's fixed green material (red equals blue, lit from above, a soft black halo), frame 2 the NATO box (the same grey box in all 111 vanilla strips) with the sub-unit's symbol. The model draws only a black silhouette; the unit_counter recipe renders both frames, with the symbol given as counter_symbol or inferred from the asset name. Finished strips can still be imported. The game looks it up as GFX_unit_<sub-unit key>_icon_medium, so the asset name is the sub-unit key (not its sprite key).",
             ..base(CounterLarge, [76, 42], &[[76, 42]], "gfx/interface/counters/divisions_large/{feature_slug}", "unit_", "")
         },
         Row {
             sprite: Some(("interface/{feature_slug}_counters.gfx", "GFX_unit_{asset}_icon_medium_white", &[])),
-            note: "The on-map counter: a strip of two 30x12 frames (60x12, noOfFrames = 2), light grey because the game tints it. Import-only like the large counter. The game looks it up as GFX_unit_<sub-unit key>_icon_medium_white; the tooltip text icon GFX_unit_<sub-unit key>_icon_small (60x12, 2 frames, under gfx/texticons) is derived from it: frame 1 tinted green as vanilla's are, frame 2 kept.",
+            rules: COUNTER_RULES,
+            negative: COUNTER_NEGATIVE,
+            note: "The on-map counter: a strip of two 30x12 frames (60x12, noOfFrames = 2), light grey because the game multiplies it by the country colour. Generated like the large counter: the silhouette is area-averaged down to vanilla's 9 px height and rendered grey with a tight dark halo, frame 2 is the small NATO box. The game looks it up as GFX_unit_<sub-unit key>_icon_medium_white; the tooltip text icon GFX_unit_<sub-unit key>_icon_small (60x12, 2 frames, under gfx/texticons) is derived from it: frame 1 tinted green as vanilla's are, frame 2 kept.",
             ..base(CounterSmall, [30, 12], &[[30, 12]], "gfx/interface/counters/divisions_small/{feature_slug}", "onmap_unit_", "")
         },
         Row {
             frames: 1,
             margin: 1,
             sprite: Some(("interface/{feature_slug}_counters.gfx", "GFX_div_templ_{n}_large", &[])),
-            note: "Single frame, 76x42 (the large division template symbol). The game offers the symbols as GFX_div_templ_<n>_large with GFX_div_templ_<n>_small (30x12); vanilla uses 0-43 and 65-121. Install picks n, the next number after vanilla's 121 and every number the mod or an earlier install already uses, records it, and derives the grey 30x12 small symbol. Import-only: it needs an exact vanilla reference.",
+            note: "Single frame, 76x42 (the large division template symbol). The game offers the symbols as GFX_div_templ_<n>_large with GFX_div_templ_<n>_small (30x12); vanilla uses 0-43 and 65-121. Install picks n, the next number after vanilla's 121 and every number the mod or an earlier install already uses, records it, and derives the grey 30x12 small symbol. The model draws a black silhouette; the division_symbol recipe fits it at vanilla's size (median ink area, centred at 38, 21.5) and renders vanilla's green material. Finished symbols can still be imported.",
+            rules: EMBLEM_RULES,
+            negative: EMBLEM_NEGATIVE,
             ..base(DivisionEmblem, [76, 42], &[[76, 42]], "gfx/interface/counters/division_templates_large/{feature_slug}", "custom_", "")
         },
         Row {
@@ -687,14 +719,14 @@ mod tests {
 
     #[test]
     fn automation_follows_what_the_chain_can_do() {
-        // every family is generated end to end except the three whose second frame is different art
+        // every family is generated end to end: the counters and the division symbol from a silhouette the unit art
+        // recipes finish in vanilla's material
         for (f, p) in by_family() {
-            let want = if matches!(f, Family::CounterLarge | Family::CounterSmall | Family::DivisionEmblem) {
-                Automation::ImportOnly
-            } else {
-                Automation::Generate
-            };
-            assert_eq!(p.imagegen.automation, want, "{f}");
+            assert_eq!(p.imagegen.automation, Automation::Generate, "{f}");
+        }
+        for f in [Family::CounterLarge, Family::CounterSmall, Family::DivisionEmblem] {
+            let rules = by_family()[&f].imagegen.prompt.rules.join(" ");
+            assert!(rules.contains("solid black silhouette") && rules.contains("transparent"), "{f}: {rules}");
         }
         let set = by_family();
         for f in [
