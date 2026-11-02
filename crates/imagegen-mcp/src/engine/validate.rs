@@ -83,7 +83,7 @@ impl Engine {
         let profile = self.family_for_path(p)?;
         let bytes = self.fs.read(rel, 64 * 1024 * 1024)?;
         let checks = profile.imagegen.checks.clone();
-        let canvas = if profile.canvas == [0, 0] { p.canvas } else { None };
+        let canvas = if profile.free_canvas() { p.canvas } else { None };
         let style = styles.get(self, profile, &checks);
         let (status, mut findings, extra) = run_checks(&bytes, rel, profile, &checks, canvas, style);
         // installed art should be in the ledger
@@ -123,7 +123,7 @@ impl Engine {
         let (bytes, sha) = self.read_artifact(&artifact)?;
         // the full check set of the family always runs: there is no way to ask for fewer
         let checks = profile.imagegen.checks.clone();
-        let canvas = if profile.canvas == [0, 0] { Some(artifact.canvas) } else { None };
+        let canvas = (profile.free_canvas() && artifact.canvas != profile.canvas).then_some(artifact.canvas);
         let style = styles.get(self, profile, &checks);
         let (_, mut findings, extra) = run_checks(&bytes, &artifact.path, profile, &checks, canvas, style);
         let mut notes = extra;

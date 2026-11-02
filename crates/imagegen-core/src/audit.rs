@@ -5,6 +5,10 @@
 //! belongs to a known family is checked against that family's accepted sizes from the texture's header (no
 //! pixels are decoded), and the textures of `report_event` are decoded to prove their corners are transparent.
 //!
+//! Animated sprites have no trace family in the engine (a `.gui` element names them), so they get their own pass:
+//! every `frameAnimatedSpriteType` the mod defines must hold a whole number of frames (`GFX-ANIM-FRAMES`), and one
+//! under an animated family's folder must have that family's frame count and effect file.
+//!
 //! Existing reuse is a warning (a mod that shipped it already has it), and a per-mod allowlist silences
 //! intentional aliases. The same trace backs [`ensure_no_trace_reuse`], the cheap pre-install
 //! refusal that stops a new install from making such reuse.
@@ -44,8 +48,15 @@ const MAX_INSTALL_CHECK_ENTRIES: usize = 60_000;
 const MAX_TEXTURE_BYTES: u64 = 8 * 1024 * 1024;
 
 /// The codes the report always lists, even with no finding.
-pub const REPORT_CODES: [&str; 6] =
-    ["GFX-FAMILY-REUSE", "GFX-TEXTURE-MISSING", "GFX-SPRITE-UNDEFINED", "GFX-FOCUS-SHINE-MISSING", "GFX-CANVAS-SIZE", "GFX-CARD-CORNERS"];
+pub const REPORT_CODES: [&str; 7] = [
+    "GFX-FAMILY-REUSE",
+    "GFX-TEXTURE-MISSING",
+    "GFX-SPRITE-UNDEFINED",
+    "GFX-FOCUS-SHINE-MISSING",
+    "GFX-CANVAS-SIZE",
+    "GFX-CARD-CORNERS",
+    "GFX-ANIM-FRAMES",
+];
 
 /// What to audit.
 pub struct AuditInput<'a> {
@@ -149,12 +160,26 @@ pub struct AuditReport {
     pub canvas_checked: usize,
     /// `report_event` textures decoded for the corner check.
     pub alpha_checked: usize,
+    /// The mod's animated sprites checked for whole frames, frame count and effect file.
+    pub animated_checked: usize,
     /// True when any code listed fewer findings than it has.
     pub truncated: bool,
     /// Caveats of this run.
     pub notes: Vec<String>,
     /// Milliseconds spent in this tool's own checks.
     pub checks_ms: u128,
+}
+
+/// The animated family whose install folder holds `texture` (`gfx/interface/animated/<feature>/glows/...`).
+fn animated_family_of(profiles: &ProfileSet, texture: &str) -> Option<Family> {
+    let key = texture_key(texture);
+    Family::ALL.iter().copied().filter(|f| f.group() == crate::family::Group::Animation).find(|f| {
+        profiles.for_family(*f).is_some_and(|p| {
+            let (head, tail) = p.imagegen.folder.split_once("{feature_slug}").unwrap_or((p.imagegen.folder.as_str(), ""));
+            let rest = key.strip_prefix(&head.to_ascii_lowercase()).and_then(|r| r.split_once('/')).map(|(_, r)| r);
+            rest.is_some_and(|r| r.starts_with(tail.trim_start_matches('/').to_ascii_lowercase().as_str()) && r.contains('/'))
+        })
+    })
 }
 
 fn parse_family(f: TraceFamily) -> Option<Family> {
@@ -380,6 +405,59 @@ pub fn run_audit(input: &AuditInput) -> Result<AuditReport> {
         notes.push(format!("the corner check stopped after {MAX_ALPHA_DECODES} report event textures"));
     }
 
+    // animated sprites of the mod: a whole number of frames, and the family's frame count and effect file
+    let mod_layer = ws.target_layer().map(|i| ws.layers[i].name.clone());
+    let mut animated_checked = 0usize;
+    for def in index.effective() {
+        if def.kind != hoi4_engine::sprites::SpriteKind::FrameAnimatedSpriteType || Some(&def.layer) != mod_layer.as_ref() {
+            continue;
+        }
+        let Some(tex) = def.texturefile.as_deref() else { continue };
+        let family = animated_family_of(input.profiles, tex);
+        if !want.is_empty() && !family.is_some_and(|f| want.contains(&f)) {
+            continue;
+        }
+        animated_checked += 1;
+        let mut problems: Vec<String> = Vec::new();
+        let size = index.texture_of(def).and_then(|t| t.header.as_ref()).map(|h| [h.width, h.height]);
+        if let Some([w, _]) = size {
+            if def.frames == 0 || w % def.frames != 0 {
+                problems.push(format!("the {w} px wide strip does not divide into noOfFrames = {}", def.frames));
+            }
+        }
+        if let Some(profile) = family.and_then(|f| input.profiles.for_family(f)) {
+            if def.frames != profile.frames {
+                problems.push(format!("{} strips have {} frames, this one declares {}", profile.family, profile.frames, def.frames));
+            }
+            if let Some(anim) = &profile.imagegen.animation {
+                let want_effect = anim.effect_file.as_deref().map(str::to_ascii_lowercase);
+                if def.effect_file.as_deref().map(str::to_ascii_lowercase) != want_effect {
+                    problems.push(format!(
+                        "{} needs effectFile {}, this one has {}",
+                        profile.family,
+                        anim.effect_file.as_deref().unwrap_or("none"),
+                        def.effect_file.as_deref().unwrap_or("none")
+                    ));
+                }
+            }
+        }
+        if !problems.is_empty() {
+            groups.entry("GFX-ANIM-FRAMES".into()).or_default().push(AuditFinding {
+                code: "GFX-ANIM-FRAMES".into(),
+                severity: "warning".into(),
+                message: format!("{} ({tex}): {}", def.name, problems.join("; ")),
+                path: def.path.clone(),
+                line: def.line,
+                subject: Some(def.name.clone()),
+                families: family.map(|f| vec![f.to_string()]).unwrap_or_default(),
+                uses: Vec::new(),
+                uses_total: None,
+                evidence: Some(json!({"frames": def.frames, "size": size, "effect_file": def.effect_file, "texture": tex})),
+                suggestion: None,
+            });
+        }
+    }
+
     let limit = input.limit.clamp(1, MAX_LIMIT);
     let mut truncated = false;
     let findings: BTreeMap<String, CodeGroup> = groups
@@ -427,6 +505,7 @@ pub fn run_audit(input: &AuditInput) -> Result<AuditReport> {
         findings,
         canvas_checked,
         alpha_checked,
+        animated_checked,
         truncated,
         notes,
         checks_ms: t0.elapsed().as_millis(),

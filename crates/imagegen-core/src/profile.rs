@@ -13,6 +13,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+use crate::animation::{AnimationSpec, Motion};
 use crate::error::{Error, Result};
 use crate::family::{Automation, Family};
 use crate::hashing::{canonical_hash, sha256_hex};
@@ -131,6 +132,9 @@ pub struct ImagegenSpec {
     /// portrait, not from a 65x67 picture).
     #[serde(default)]
     pub source_canvas: Option<[u32; 2]>,
+    /// The `frameAnimatedSpriteType` fields and frame motion of an animated family (`None` for every other one).
+    #[serde(default)]
+    pub animation: Option<AnimationSpec>,
 }
 
 /// The vanilla measurement a default was built from.
@@ -197,6 +201,18 @@ impl Profile {
         out
     }
 
+    /// True when a plan may name its own canvas: families with none, and animated sprites, whose size vanilla takes
+    /// from the GUI element they sit on (66 two-frame glow textures come in 47 sizes).
+    pub fn free_canvas(&self) -> bool {
+        self.needs_mod_canvas() || self.imagegen.animation.is_some()
+    }
+
+    /// True when the model is asked for a transparent background. A blend glow is drawn as light on black instead,
+    /// which the tool turns into alpha: a soft glow is what a model's cut-out alpha renders worst.
+    pub fn source_transparent(&self) -> bool {
+        self.imagegen.background == Background::Transparent && self.imagegen.animation.as_ref().map(|a| a.motion) != Some(Motion::BlendGlow)
+    }
+
     /// True when the effective canvas differs from the vanilla-measured default.
     pub fn differs_from_vanilla(&self) -> bool {
         self.vanilla.as_ref().map(|v| v.canvas != self.canvas).unwrap_or(false)
@@ -237,6 +253,8 @@ pub struct ImagegenOverride {
     pub grayscale: Option<bool>,
     /// Size the model is asked for.
     pub source_canvas: Option<[u32; 2]>,
+    /// Animation fields.
+    pub animation: Option<AnimationSpec>,
 }
 
 /// A kit row or a project override: geometry plus an optional `imagegen` object. Unknown keys are ignored,
@@ -428,6 +446,12 @@ fn merge_imagegen(dst: &mut ImagegenSpec, src: &ImagegenOverride, changed: &mut 
     set!(rubric, "rubric");
     set!(prompt, "prompt");
     set!(grayscale, "grayscale");
+    if let Some(v) = &src.animation {
+        if dst.animation.as_ref() != Some(v) {
+            changed.push("imagegen.animation".to_string());
+        }
+        dst.animation = Some(v.clone());
+    }
     if let Some(v) = src.source_canvas {
         if dst.source_canvas != Some(v) {
             changed.push("imagegen.source_canvas".to_string());

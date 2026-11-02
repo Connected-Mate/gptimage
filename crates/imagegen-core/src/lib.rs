@@ -8,6 +8,7 @@
 
 #![forbid(unsafe_code)]
 
+pub mod animation;
 pub mod audit;
 pub mod builtin;
 pub mod calibrate;

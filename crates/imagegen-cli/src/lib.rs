@@ -215,6 +215,9 @@ pub fn dispatch(engine: &Engine, tool: &str, params: Value) -> Result<Value, Eng
         "hoi4.image_interface" => {
             group(engine, params, bad, |p: imagegen_mcp::api::InterfaceRequest| (imagegen_mcp::api::InterfaceRequest::GROUP, p.into_parts()))
         }
+        "hoi4.image_animation" => {
+            group(engine, params, bad, |p: imagegen_mcp::api::AnimationRequest| (imagegen_mcp::api::AnimationRequest::GROUP, p.into_parts()))
+        }
         "hoi4.image_references" => engine.references(serde_json::from_value(params).map_err(bad)?),
         "hoi4.image_generate" => engine.generate(serde_json::from_value(params).map_err(bad)?),
         "hoi4.image_edit" => engine.edit(serde_json::from_value(params).map_err(bad)?),

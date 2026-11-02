@@ -1,4 +1,4 @@
-//! The rmcp stdio server: nineteen tools named `hoi4.image_*`.
+//! The rmcp stdio server: twenty tools named `hoi4.image_*`.
 //!
 //! Every tool runs on a blocking worker so a slow provider call never stalls the protocol loop, which is what
 //! lets `hoi4.image_cancel` arrive while a generation is in flight. Failures are tool results with
@@ -17,7 +17,7 @@ use crate::api::*;
 use crate::engine::{EResult, Engine};
 
 /// Instructions shown to the client at start-up.
-pub const INSTRUCTIONS: &str = "HOI4 graphical assets. Work one asset at a time: hoi4.image_status (what is configured), hoi4.image_families (every family's measured canvas, naming, checks and rubric), then the generation tool of the asset's group with a required family: hoi4.image_icon, hoi4.image_picture, hoi4.image_portrait, hoi4.image_flag, hoi4.image_unit or hoi4.image_interface. Called without approve it returns a free plan; with approve and an idempotency_key it plans and generates (one paid call per variant). The family is fixed from the plan on: hoi4.image_process (the family's own processing always runs and cannot be skipped or replaced: callers may add only the pre-steps chroma_key, crop_to_aspect, defringe and trim_to_subject; import needs a family and refuses another family's size or pixels), hoi4.image_validate (the family's full check set), hoi4.image_preview (contact sheet; look at the native-size panels), hoi4.image_review (rubric answers; an approval returns an approval_id) and hoi4.image_install (writes the DDS or TGA and a sprite handoff) all use the artifact's own family and take no family argument for it. Install refuses unless validation ran the full check set and passed, a review approved this exact file and the hashes are unchanged. Transparency must be proven by pixels, never by the prompt. Outputs are versioned and never overwritten; hoi4.image_ledger shows which references, settings and outputs belong together. hoi4.image_audit (read only) traces which sprites and textures the mod already uses for which family and reports reuse, missing and mis-sized art. Keys are read from environment variables only.";
+pub const INSTRUCTIONS: &str = "HOI4 graphical assets. Work one asset at a time: hoi4.image_status (what is configured), hoi4.image_families (every family's measured canvas, naming, checks and rubric), then the generation tool of the asset's group with a required family: hoi4.image_icon, hoi4.image_picture, hoi4.image_portrait, hoi4.image_flag, hoi4.image_unit, hoi4.image_interface or hoi4.image_animation. Called without approve it returns a free plan; with approve and an idempotency_key it plans and generates (one paid call per variant). The family is fixed from the plan on: hoi4.image_process (the family's own processing always runs and cannot be skipped or replaced: callers may add only the pre-steps chroma_key, crop_to_aspect, defringe and trim_to_subject; import needs a family and refuses another family's size or pixels), hoi4.image_validate (the family's full check set), hoi4.image_preview (contact sheet; look at the native-size panels), hoi4.image_review (rubric answers; an approval returns an approval_id) and hoi4.image_install (writes the DDS or TGA and a sprite handoff) all use the artifact's own family and take no family argument for it. Install refuses unless validation ran the full check set and passed, a review approved this exact file and the hashes are unchanged. Transparency must be proven by pixels, never by the prompt. Outputs are versioned and never overwritten; hoi4.image_ledger shows which references, settings and outputs belong together. hoi4.image_audit (read only) traces which sprites and textures the mod already uses for which family and reports reuse, missing and mis-sized art. Keys are read from environment variables only.";
 
 /// The server.
 #[derive(Clone)]
@@ -153,6 +153,19 @@ impl ImageServer {
     }
 
     #[tool(
+        name = "hoi4.image_animation",
+        description = "Make animated sprites (frameAnimatedSpriteType, measured from the 160 in vanilla 1.19.4.1): anim_blend_glow (2 frames the engine cross-fades: the model draws the bright glow on black, the tool makes it transparent and derives the dim frame), anim_blend_keyframes (3 blended key frames: this call makes frame 1, hoi4.image_edit of it makes frames 2 and 3, and hoi4.image_process takes them as frame_candidates), anim_scroll (9 frames at 15 fps: the picture is made seamless and scrolls one width per loop) and anim_spin (20 frames at 7 fps: the subject turns a full circle). Only one base frame is generated; the other frames are derived from it, so they cannot drift. Pass canvas [width, height] of one frame to size the strip for the element it sits on. Validation adds the animation check (GFX-ANIM-STATIC, -ALIGN, -SILHOUETTE, -PALETTE, -SEAM, -JUMP); preview writes a frame sheet and a looping GIF; install registers the frameAnimatedSpriteType with noOfFrames, animation_rate_fps, looping, play_on_show and the effect file. Without approve it is a free dry run that returns a plan_id; with approve = true and an idempotency_key it plans and generates in one call. Another group's family is refused.",
+        annotations(read_only_hint = false, destructive_hint = false, idempotent_hint = true, open_world_hint = true)
+    )]
+    async fn image_animation(&self, Parameters(p): Parameters<AnimationRequest>) -> Result<CallToolResult, ErrorData> {
+        self.run(move |e| {
+            let (req, follow) = p.into_parts();
+            e.group_request(AnimationRequest::GROUP, req, follow)
+        })
+        .await
+    }
+
+    #[tool(
         name = "hoi4.image_generate",
         description = "Execute a plan returned by a group tool: one paid provider call per variant, each stored unchanged as a new versioned candidate (never overwritten). Repeating an idempotency_key returns the stored candidate instead of paying again. Candidates are raw: process, validate, preview, review and install them next.",
         annotations(read_only_hint = false, destructive_hint = false, idempotent_hint = true, open_world_hint = true)
@@ -264,8 +277,8 @@ impl ServerHandler for ImageServer {
     }
 }
 
-/// Names of the nineteen tools, in documentation order.
-pub const TOOL_NAMES: [&str; 19] = [
+/// Names of the twenty tools, in documentation order.
+pub const TOOL_NAMES: [&str; 20] = [
     "hoi4.image_status",
     "hoi4.image_families",
     "hoi4.image_references",
@@ -275,6 +288,7 @@ pub const TOOL_NAMES: [&str; 19] = [
     "hoi4.image_flag",
     "hoi4.image_unit",
     "hoi4.image_interface",
+    "hoi4.image_animation",
     "hoi4.image_generate",
     "hoi4.image_edit",
     "hoi4.image_process",

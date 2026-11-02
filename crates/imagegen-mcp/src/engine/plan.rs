@@ -5,7 +5,6 @@ use imagegen_core::export;
 use imagegen_core::family::{Family, Group};
 use imagegen_core::naming::{self, asset_id};
 use imagegen_core::plan::{aspect_of, build_prompt, plan_path, GenerationPlan, Plan, PlanEstimate, PlanPaths, PlanRequest};
-use imagegen_core::profile::Background;
 use imagegen_core::records::{kind, RefSummary};
 use imagegen_core::refs::{self, LoadedRef, RefRole, ReferenceInput};
 use imagegen_core::reuse;
@@ -37,8 +36,8 @@ impl Engine {
             .clone();
 
         let canvas = match (profile.canvas, req.canvas) {
-            ([0, 0], Some(c)) if (1..=4096).contains(&c[0]) && (1..=4096).contains(&c[1]) => c,
-            ([0, 0], Some(_)) => return Err(EngineError::invalid("canvas sides must be 1 to 4096")),
+            (_, Some(c)) if profile.free_canvas() && (1..=4096).contains(&c[0]) && (1..=4096).contains(&c[1]) => c,
+            (_, Some(_)) if profile.free_canvas() => return Err(EngineError::invalid("canvas sides must be 1 to 4096")),
             ([0, 0], None) => return Err(EngineError::invalid(format!("{} has no fixed canvas: pass canvas [width, height]", req.family))),
             (p, None) => p,
             (p, Some(c)) if c == p => p,
@@ -148,7 +147,7 @@ impl Engine {
             )));
         }
         let quality = req.quality.clone().or_else(|| self.config.provider(&provider_id).quality);
-        let transparent = req.transparent.unwrap_or(profile.imagegen.background == Background::Transparent);
+        let transparent = req.transparent.unwrap_or(profile.source_transparent());
         // what the model is asked for: the canvas, or a different shape when the recipe needs one (a tall portrait for the advisor card)
         let source_canvas = profile.imagegen.source_canvas.filter(|c| *c != canvas);
         let ask = source_canvas.unwrap_or(canvas);
@@ -271,7 +270,7 @@ impl Engine {
         normalized.brief = brief;
         normalized.provider = Some(provider_id.clone());
         normalized.model = Some(model_id.clone());
-        normalized.canvas = (profile.canvas == [0, 0]).then_some(canvas);
+        normalized.canvas = (profile.free_canvas() && canvas != profile.canvas).then_some(canvas);
         normalized.transparent = Some(transparent);
         normalized.variants = Some(variants);
         normalized.quality = quality.clone();

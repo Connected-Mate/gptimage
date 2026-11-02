@@ -22,6 +22,10 @@
 //! | `advisor_card` v1 | advisor card | `advisor_card` (or `conform` for a finished 65x67 card) |
 //! | `achievement` v1 | achievement | `fit_subject`, `achievement_triplet` |
 //! | `flag` v1 | flag | `flatten_on`, `flag_ladder` |
+//! | `anim_glow` v1 | blend glow | `flatten_on`, `black_to_alpha`, `fit_subject`, `glow_frames` (or one `conform` for an imported finished strip) |
+//! | `anim_keyframes` v1 | blend key frames | `key_frames`: the base and its `frame_candidates` fitted with one crop and scale (or one `conform`) |
+//! | `anim_scroll` v1 | scroll | `flatten_on`, `cover_resize`, `scroll_frames` (or `flatten_on`, `conform`) |
+//! | `anim_spin` v1 | spin | `spin_frames` (or one `conform`) |
 //!
 //! Families whose sprite the game looks up together with a companion (the division emblem's small symbol, the
 //! on-map counter's text icon, the faction logo's miniature, a landmark's small strip, a medal's small strip) end
@@ -94,6 +98,14 @@ pub enum Recipe {
     Achievement,
     /// Flag ladder.
     Flag,
+    /// Blend glow: light on black to alpha, then the dim frame derived.
+    AnimGlow,
+    /// Blend key frames: the base and its edits fitted together.
+    AnimKeyframes,
+    /// Scrolling strip.
+    AnimScroll,
+    /// Turning strip.
+    AnimSpin,
 }
 
 impl Recipe {
@@ -110,6 +122,10 @@ impl Recipe {
             Recipe::AdvisorCard => "advisor_card",
             Recipe::Achievement => "achievement",
             Recipe::Flag => "flag",
+            Recipe::AnimGlow => "anim_glow",
+            Recipe::AnimKeyframes => "anim_keyframes",
+            Recipe::AnimScroll => "anim_scroll",
+            Recipe::AnimSpin => "anim_spin",
         }
     }
 
@@ -117,6 +133,7 @@ impl Recipe {
     pub fn version(self) -> u32 {
         match self {
             Recipe::ReportCard => crate::recipes::report_card::RECIPE_VERSION,
+            Recipe::AnimGlow | Recipe::AnimKeyframes | Recipe::AnimScroll | Recipe::AnimSpin => crate::animation::RECIPE_VERSION,
             _ => 1,
         }
     }
@@ -142,6 +159,10 @@ pub fn recipe_of(profile: &Profile) -> Recipe {
         Family::AdvisorCard => Recipe::AdvisorCard,
         Family::Achievement => Recipe::Achievement,
         Family::Flag => Recipe::Flag,
+        Family::AnimBlendGlow => Recipe::AnimGlow,
+        Family::AnimBlendKeyframes => Recipe::AnimKeyframes,
+        Family::AnimScroll => Recipe::AnimScroll,
+        Family::AnimSpin => Recipe::AnimSpin,
         _ if profile.imagegen.background == Background::Opaque => Recipe::Picture,
         _ => Recipe::Icon,
     }
@@ -162,6 +183,8 @@ pub enum Finisher {
     SecondFrame,
     /// The companions the game looks up next to the main sprite, derived from the finished main art.
     DerivedCompanions,
+    /// The frames of a blend key-frame strip: the base and its edits, fitted with one shared crop and scale.
+    KeyFrames,
 }
 
 impl Finisher {
@@ -174,6 +197,7 @@ impl Finisher {
             Finisher::FlagLadder => "flag_ladder",
             Finisher::SecondFrame => "second_frame",
             Finisher::DerivedCompanions => "derived_companions",
+            Finisher::KeyFrames => "key_frames",
         }
     }
 }
@@ -328,6 +352,45 @@ pub fn plan_finishing(profile: &Profile, canvas: [u32; 2], img: &Rgba, imported:
             ops.push(Op::FlattenOn { background: FLATTEN_BACKGROUND });
             finishers.push(Finisher::FlagLadder);
         }
+        Recipe::AnimGlow | Recipe::AnimKeyframes | Recipe::AnimScroll | Recipe::AnimSpin => {
+            // imported art of a whole accepted strip is finished art; anything else is the base frame
+            let finished = imported && size[0].is_multiple_of(frames) && accepted_single([size[0] / frames, size[1]]);
+            match recipe {
+                Recipe::AnimScroll => {
+                    ops.push(Op::FlattenOn { background: FLATTEN_BACKGROUND });
+                    if finished {
+                        ops.push(Op::Conform { width: size[0], height: size[1] });
+                    } else {
+                        ops.push(Op::CoverResize { width: canvas[0], height: canvas[1] });
+                        ops.push(Op::ScrollFrames { frames });
+                    }
+                }
+                _ if finished => ops.push(Op::Conform { width: size[0], height: size[1] }),
+                Recipe::AnimGlow => {
+                    ops.push(Op::FlattenOn { background: FLATTEN_BACKGROUND });
+                    ops.push(Op::BlackToAlpha);
+                    ops.push(Op::FitSubject {
+                        width: canvas[0],
+                        height: canvas[1],
+                        margin: profile.margin,
+                        min_alpha: crate::animation::GLOW_MIN_ALPHA,
+                    });
+                    ops.push(Op::GlowFrames { frames, dim: crate::animation::GLOW_DIM_RATIO });
+                }
+                Recipe::AnimKeyframes => {
+                    // the same refusal of an opaque source as every transparent family; the finisher fits the frames
+                    transparent_icon_ops(img, canvas, keyed, profile.margin)?;
+                    finishers.push(Finisher::KeyFrames);
+                }
+                _ => {
+                    let mut clean = transparent_icon_ops(img, canvas, keyed, profile.margin)?;
+                    // the turn fits the subject by its radius itself: keep only the cleaning steps
+                    clean.retain(|o| !matches!(o, Op::FitSubject { .. }));
+                    ops.extend(clean);
+                    ops.push(Op::SpinFrames { width: canvas[0], height: canvas[1], margin: profile.margin, frames, degrees: 360.0 });
+                }
+            }
+        }
     }
     if !crate::lookup::derived_companions(profile.family, canvas).is_empty() {
         finishers.push(Finisher::DerivedCompanions);
@@ -357,6 +420,10 @@ pub fn required_stages(profile: &Profile) -> Vec<Vec<&'static str>> {
         Recipe::AdvisorCard => vec![vec!["advisor_card", "conform"]],
         Recipe::Achievement => vec![vec!["fit_subject", "conform"], vec!["achievement_triplet"]],
         Recipe::Flag => vec![vec!["flatten_on"], vec!["flag_ladder"]],
+        Recipe::AnimGlow => vec![vec!["black_to_alpha", "conform"], vec!["fit_subject", "conform"], vec!["glow_frames", "conform"]],
+        Recipe::AnimKeyframes => vec![vec!["key_frames", "conform"]],
+        Recipe::AnimScroll => vec![vec!["flatten_on"], vec!["cover_resize", "conform"], vec!["scroll_frames", "conform"]],
+        Recipe::AnimSpin => vec![vec!["spin_frames", "conform"]],
     };
     if profile.imagegen.grayscale {
         stages.push(vec!["grayscale"]);

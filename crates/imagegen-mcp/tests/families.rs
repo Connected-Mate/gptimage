@@ -10,7 +10,9 @@ use imagegen_core::family::{Family, Group};
 use imagegen_core::pixels::{decode, encode_png, DecodeLimits, Rgba};
 use imagegen_core::records::{kind, ValidatedRecord};
 use imagegen_core::validate::check_set_hash;
-use imagegen_mcp::api::{FlagRequest, IconRequest, InterfaceRequest, PictureRequest, PortraitRequest, ReviewParams, UnitRequest, ValidateParams};
+use imagegen_mcp::api::{
+    AnimationRequest, FlagRequest, IconRequest, InterfaceRequest, PictureRequest, PortraitRequest, ReviewParams, UnitRequest, ValidateParams,
+};
 use imagegen_mcp::EngineError;
 use serde_json::{json, Value};
 
@@ -297,6 +299,7 @@ fn every_group_tool_refuses_a_family_of_another_group_at_runtime() {
                 Group::Flag => serde_json::from_value::<FlagRequest>(params).unwrap().into_parts(),
                 Group::Unit => serde_json::from_value::<UnitRequest>(params).unwrap().into_parts(),
                 Group::Interface => serde_json::from_value::<InterfaceRequest>(params).unwrap().into_parts(),
+                Group::Animation => serde_json::from_value::<AnimationRequest>(params).unwrap().into_parts(),
             };
             let e = h.engine.group_request(tool_group, req, follow).unwrap_err();
             assert_eq!(code(&e), "family_not_in_group", "{} through {}", family, tool_group.tool_name());
@@ -304,7 +307,7 @@ fn every_group_tool_refuses_a_family_of_another_group_at_runtime() {
             tried += 1;
         }
     }
-    assert_eq!(tried, 6 * 40 - 40);
+    assert_eq!(tried, 7 * 44 - 44);
     // the right group works without spending
     let (req, follow) =
         serde_json::from_value::<IconRequest>(json!({"family": "focus", "feature_slug": "f", "asset": "a", "brief": "x", "provider": "openai"}))
@@ -338,6 +341,7 @@ fn the_family_enum_of_each_tool_schema_lists_exactly_its_group() {
         (Group::Flag, family_enum(schemars::schema_for!(FlagRequest))),
         (Group::Unit, family_enum(schemars::schema_for!(UnitRequest))),
         (Group::Interface, family_enum(schemars::schema_for!(InterfaceRequest))),
+        (Group::Animation, family_enum(schemars::schema_for!(AnimationRequest))),
     ];
     let mut all = Vec::new();
     for (g, listed) in cases {
@@ -355,8 +359,8 @@ fn the_family_enum_of_each_tool_schema_lists_exactly_its_group() {
 fn the_families_tool_reports_measured_specs_and_style_sources() {
     let h = openai_harness();
     let all = h.engine.families_info(serde_json::from_value(json!({})).unwrap()).unwrap();
-    assert_eq!(all["families"].as_array().unwrap().len(), 40);
-    assert_eq!(all["groups"].as_array().unwrap().len(), 6);
+    assert_eq!(all["families"].as_array().unwrap().len(), 44);
+    assert_eq!(all["groups"].as_array().unwrap().len(), 7);
     let one = h.engine.families_info(serde_json::from_value(json!({"family": "idea_spirit"})).unwrap()).unwrap();
     let f = &one["family"];
     assert_eq!(f["canvas"], json!([60, 68]));

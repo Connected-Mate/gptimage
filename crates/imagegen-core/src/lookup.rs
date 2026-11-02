@@ -105,6 +105,7 @@ pub fn lookup_of(family: Family) -> Lookup {
         ModifierStatIcon => l(FullName, "a .gui element: spriteType = \"{sprite}\"", "interface/unitleaderwindow.gui:468 spriteType = \"GFX_MODIFIER_SUPPLY_CONSUMPTION_FACTOR\" -> interface/countryarmyview.gfx:173; hoi4.exe builds no GFX_MODIFIER_ name, and all 159 vanilla ones are upper case", Some("supply_consumption_factor")),
         GuiTexture => l(FullName, "a .gui element: spriteType = \"{sprite}\"", "interface/*.gui name sprites in full", None),
         SuperEvent => l(FullName, "the mod's super event window: spriteType = \"{sprite}\"", "no vanilla super events; a mod's .gui names the sprite in full", None),
+        AnimBlendGlow | AnimBlendKeyframes | AnimScroll | AnimSpin => l(FullName, "a .gui iconType: spriteType = \"{sprite}\" (a frameAnimatedSpriteType plays when the element is shown)", "interface/alerts.gfx:16 GFX_yellow_alert_glow (noOfFrames = 2, buttonstate_blendframes.lua) and interface/leadergroups.gfx:46 GFX_defending_icon_anim_strip (noOfFrames = 20) are named in full by .gui elements", None),
     }
 }
 

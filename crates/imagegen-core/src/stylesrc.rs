@@ -294,7 +294,7 @@ pub fn shelf_folder(f: Family) -> Option<&'static str> {
         FactionLogo => "icons/factions",
         ModifierStatIcon => "icons/modifiers",
         SuperEvent => "event_art/super_event",
-        GuiTexture => return None,
+        GuiTexture | AnimBlendGlow | AnimBlendKeyframes | AnimScroll | AnimSpin => return None,
     })
 }
 
@@ -337,7 +337,7 @@ fn texture_dirs(f: Family) -> Vec<Dir> {
         Building => vec![dir("gfx/interface/buildings", true)],
         FactionLogo => vec![dir("gfx/interface/factions/faction_logos", true).not_end(&["_miniature"])],
         ModifierStatIcon => vec![dir("gfx/interface/modifiers", true).pre(&["modifier_"])],
-        SuperEvent | GuiTexture => vec![],
+        SuperEvent | GuiTexture | AnimBlendGlow | AnimBlendKeyframes | AnimScroll | AnimSpin => vec![],
     }
 }
 
@@ -863,7 +863,9 @@ spriteTypes = {
     #[test]
     fn every_family_but_gui_texture_has_a_shelf_folder() {
         for f in Family::ALL {
-            assert_eq!(shelf_folder(*f).is_none(), *f == Family::GuiTexture, "{f}");
+            // animated strips have no reference shelf: their style is the interface element they sit on
+            let none = *f == Family::GuiTexture || f.group() == crate::family::Group::Animation;
+            assert_eq!(shelf_folder(*f).is_none(), none, "{f}");
         }
         assert_eq!(shelf_folder(Family::Focus), Some("icons/national_focus"));
     }

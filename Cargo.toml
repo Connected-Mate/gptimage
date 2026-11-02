@@ -27,6 +27,7 @@ authors = ["klimPaskov and hoi4-imagegen-mcp contributors"]
 [workspace.dependencies]
 base64 = "0.22"
 clap = { version = "4", features = ["derive", "env"] }
+gif = "0.13"
 image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp"] }
 rmcp = { version = "3.8", default-features = false, features = ["server", "macros", "transport-io"] }
 schemars = "1"
