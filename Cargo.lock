@@ -1067,7 +1067,7 @@ dependencies = [
 
 [[package]]
 name = "imagegen-cli"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "base64 0.22.1",
  "clap",
@@ -1082,7 +1082,7 @@ dependencies = [
 
 [[package]]
 name = "imagegen-core"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "hoi4-engine",
  "hoi4-syntax",
@@ -1099,7 +1099,7 @@ dependencies = [
 
 [[package]]
 name = "imagegen-mcp"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "base64 0.22.1",
  "clap",
@@ -1117,7 +1117,7 @@ dependencies = [
 
 [[package]]
 name = "imagegen-providers"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "base64 0.22.1",
  "imagegen-core",
@@ -1839,7 +1839,7 @@ dependencies = [
 
 [[package]]
 name = "provider-chatgpt-login"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "base64 0.22.1",
  "getrandom 0.4.3",
