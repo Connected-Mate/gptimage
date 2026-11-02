@@ -20,6 +20,7 @@ use imagegen_providers::types::{
 use serde_json::{json, Value};
 
 use crate::oauth::{self, account_id, expiry_ms, parse_tokens, refresh_request};
+use crate::route::{self, Route, RouteGuard, RouteState, RATE_LIMIT_MAX_RETRIES};
 use crate::store::{CredentialStore, Credentials};
 use crate::{BACKEND_URL, HOSTS, MODEL, ORIGINATOR, REASONING_EFFORT};
 
@@ -45,6 +46,16 @@ pub struct ChatGptLoginProvider {
     clock: Arc<dyn Clock>,
     model: String,
     record_dir: Option<PathBuf>,
+    route: Route,
+}
+
+/// What `login-status --check` found.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CheckOutcome {
+    /// The token endpoint accepted a refresh: the sign-in is alive and the new tokens are saved.
+    Accepted,
+    /// The token is not near expiry, so no request was made. There is no cheap, safe backend call to test it with.
+    NotChecked(String),
 }
 
 impl ChatGptLoginProvider {
@@ -83,19 +94,68 @@ impl ChatGptLoginProvider {
             // recorded real responses: docs/evidence/2026-11-01-luna-probe.json and the 40-family run of 2026-11-02
             live_verified: true,
         };
-        ChatGptLoginProvider { desc, store, transport, policy: HostPolicy::api(&HOSTS), clock, model, record_dir: None }
+        let route = Route::new(store.state_dir());
+        ChatGptLoginProvider { desc, store, transport, policy: HostPolicy::api(&HOSTS), clock, model, record_dir: None, route }
     }
 
-    /// A valid access token and account id, refreshing and saving when needed.
-    fn credentials(&self) -> Result<Credentials, ProviderError> {
+    /// The recorded server revocation, as the sentence every report uses. `None` while the sign-in is not known to be revoked.
+    pub fn revocation_notice(&self) -> Option<String> {
+        self.route.state().revoked_message()
+    }
+
+    /// The route's recorded state (revocation, last request, backoff). Holds no secret.
+    pub fn route_state(&self) -> RouteState {
+        self.route.state()
+    }
+
+    fn refuse_if_revoked(&self, state: &RouteState) -> Result<(), ProviderError> {
+        match &state.revoked {
+            Some(r) => Err(route::revoked_error(r)),
+            None => Ok(()),
+        }
+    }
+
+    fn now_secs(&self) -> i64 {
+        self.clock.now_secs()
+    }
+
+    /// `login-status --check`: confirm with the server that the sign-in is still accepted, using only a call this
+    /// provider already makes. The only such call that is cheap and sends no image is the token refresh, so the
+    /// check refreshes when the access token is within a minute of expiry and otherwise makes no request: the
+    /// backend's responses endpoint accepts only generations, and a generation costs plan quota.
+    pub fn check(&self, ctx: &CallContext) -> Result<CheckOutcome, ProviderError> {
+        self.refuse_if_revoked(&self.route.state())?;
+        let guard = self.route.acquire(&ctx.cancel, &*ctx.sleeper)?;
+        self.refuse_if_revoked(&guard.state())?;
         let creds = self
             .store
             .load()
             .map_err(|e| ProviderError::new(ErrorKind::NotConfigured, RetryClass::RequiresAuthorization, e))?
             .ok_or_else(|| ProviderError::not_configured("not signed in: run `hoi4-imagegen login`"))?;
-        let now_ms = (self.clock.now_secs().max(0) as u64) * 1000;
-        let expired = creds.expires_ms.map(|e| now_ms + EXPIRY_MARGIN_MS >= e).unwrap_or(false);
-        if !expired {
+        if !self.near_expiry(&creds) {
+            return Ok(CheckOutcome::NotChecked(
+                "the access token is not near expiry, so no request was made; the only other endpoint this route calls is the image backend, and every call to it is a generation that costs plan quota"
+                    .into(),
+            ));
+        }
+        self.credentials(&guard, "token refresh")?;
+        Ok(CheckOutcome::Accepted)
+    }
+
+    fn near_expiry(&self, creds: &Credentials) -> bool {
+        let now_ms = (self.now_secs().max(0) as u64) * 1000;
+        creds.expires_ms.map(|e| now_ms + EXPIRY_MARGIN_MS >= e).unwrap_or(false)
+    }
+
+    /// A valid access token and account id, refreshing and saving when needed. The caller holds the route lock.
+    fn credentials(&self, guard: &RouteGuard, during: &str) -> Result<Credentials, ProviderError> {
+        let creds = self
+            .store
+            .load()
+            .map_err(|e| ProviderError::new(ErrorKind::NotConfigured, RetryClass::RequiresAuthorization, e))?
+            .ok_or_else(|| ProviderError::not_configured("not signed in: run `hoi4-imagegen login`"))?;
+        let now_ms = (self.now_secs().max(0) as u64) * 1000;
+        if !self.near_expiry(&creds) {
             return Ok(creds);
         }
         let refresh = creds.refresh.clone().ok_or_else(|| {
@@ -107,6 +167,9 @@ impl ChatGptLoginProvider {
         })?;
         let resp = send(&*self.transport, &self.policy, &refresh_request(&refresh))?;
         if resp.status != 200 {
+            if route::is_revocation(resp.status, &resp.body) {
+                return Err(route::revoked_error(&guard.record_revoked(self.now_secs(), resp.status, &resp.body, during)));
+            }
             return Err(status_error(resp.status, &resp.body, &[refresh, creds.access.clone()]));
         }
         let tokens = parse_tokens(&resp.body).map_err(|e| ProviderError::new(ErrorKind::MalformedResponse, RetryClass::Terminal, e))?;
@@ -146,7 +209,7 @@ impl ChatGptLoginProvider {
         })
     }
 
-    fn call(&self, req: &ImageRequest) -> Result<ProviderOutput, ProviderError> {
+    fn call(&self, req: &ImageRequest, ctx: &CallContext) -> Result<ProviderOutput, ProviderError> {
         if req.model != self.model {
             return Err(ProviderError::unsupported(format!(
                 "the ChatGPT-login route runs only {} at {} reasoning effort (maintainer decision); '{}' was requested",
@@ -154,34 +217,60 @@ impl ChatGptLoginProvider {
             )));
         }
         let size = self.prepare(req).ok();
-        let creds = self.credentials()?;
-        let body = self.build_body(req, size);
-        let mut http = HttpRequest::post_json(BACKEND_URL, &body)
-            .header("Authorization", &format!("Bearer {}", creds.access))
-            .header("originator", ORIGINATOR)
-            .header("Accept", "text/event-stream");
-        if let Some(id) = &creds.account_id {
-            http = http.header("chatgpt-account-id", id);
-        }
-        let secrets = vec![creds.access.clone()];
-        let resp = send(&*self.transport, &self.policy, &http)?;
-        match resp.status {
-            200 => {}
-            401 => {
-                return Err(ProviderError::new(
-                    ErrorKind::Auth,
-                    RetryClass::RequiresAuthorization,
-                    "the backend rejected the token (401): sign in again",
-                )
-                .with_status(401));
+        // A recorded revocation ends the call before anything is sent or waited for.
+        self.refuse_if_revoked(&self.route.state())?;
+        // One request at a time on this machine, across processes. Held until this function returns.
+        let guard = self.route.acquire(&ctx.cancel, &*ctx.sleeper)?;
+        let mut retries = 0u32;
+        let (resp, creds) = loop {
+            // the state may have changed while this call waited for the lock
+            self.refuse_if_revoked(&guard.state())?;
+            let wait_until = guard.next_allowed(self.now_secs());
+            guard.wait_until(self.now_secs(), wait_until, &ctx.cancel, &*ctx.sleeper)?;
+            let creds = self.credentials(&guard, "token refresh")?;
+            let body = self.build_body(req, size);
+            let mut http = HttpRequest::post_json(BACKEND_URL, &body)
+                .header("Authorization", &format!("Bearer {}", creds.access))
+                .header("originator", ORIGINATOR)
+                .header("Accept", "text/event-stream");
+            if let Some(id) = &creds.account_id {
+                http = http.header("chatgpt-account-id", id);
             }
-            429 => {
+            // Stamp before sending, so a request that dies mid-flight still spaces out the next one.
+            let now = self.now_secs();
+            guard.update(|s| s.last_request_epoch = Some(now))?;
+            let resp = send(&*self.transport, &self.policy, &http)?;
+            if resp.status == 429 {
+                let failures = guard.state().rate_limit.map(|r| r.failures).unwrap_or(0) + 1;
+                let retry_after_epoch = self.now_secs() + route::backoff_secs(failures);
+                guard.update(|s| s.rate_limit = Some(route::RateLimit { failures, retry_after_epoch }))?;
+                if retries < RATE_LIMIT_MAX_RETRIES {
+                    // Back off (the next loop waits for retry_after_epoch while still holding the lock), then try again.
+                    retries += 1;
+                    continue;
+                }
                 return Err(ProviderError::new(
                     ErrorKind::RateLimited,
                     RetryClass::SafeSameInputs,
-                    "rate limited by the ChatGPT plan (429): wait and retry",
+                    format!(
+                        "rate limited by the ChatGPT plan (429) after {} tries with growing waits; the next try is held back for {} seconds",
+                        retries + 1,
+                        route::backoff_secs(failures)
+                    ),
                 )
                 .with_status(429));
+            }
+            break (resp, creds);
+        };
+        let secrets = vec![creds.access.clone()];
+        match resp.status {
+            200 => {
+                if guard.state().rate_limit.is_some() {
+                    guard.update(|s| s.rate_limit = None)?;
+                }
+            }
+            s if route::is_revocation(s, &resp.body) => {
+                return Err(route::revoked_error(&guard.record_revoked(self.now_secs(), s, &resp.body, "generation")));
             }
             s => return Err(status_error(s, &resp.body, &secrets)),
         }
@@ -385,21 +474,21 @@ impl ImageProvider for ChatGptLoginProvider {
         })
     }
 
-    fn generate(&self, req: &ImageRequest, _ctx: &CallContext) -> Result<ProviderOutput, ProviderError> {
+    fn generate(&self, req: &ImageRequest, ctx: &CallContext) -> Result<ProviderOutput, ProviderError> {
         if req.edit.is_some() {
             return Err(ProviderError::unsupported("generate was called with an edit request"));
         }
-        self.call(req)
+        self.call(req, ctx)
     }
 
-    fn edit(&self, req: &ImageRequest, _ctx: &CallContext) -> Result<ProviderOutput, ProviderError> {
+    fn edit(&self, req: &ImageRequest, ctx: &CallContext) -> Result<ProviderOutput, ProviderError> {
         if req.edit.is_none() {
             return Err(ProviderError::unsupported("edit was called without a base image"));
         }
         if req.edit.as_ref().map(|e| e.mask_png.is_some()).unwrap_or(false) {
             return Err(ProviderError::unsupported("this provider has no mask support"));
         }
-        self.call(req)
+        self.call(req, ctx)
     }
 }
 
@@ -609,7 +698,9 @@ mod tests {
         let fixture = Arc::new(FixtureTransport::new());
         fixture.respond(Method::Post, "/backend-api/codex/responses", 429, &[], "");
         let p = provider(&d4, fixture, Some(creds(None)), 0);
-        assert_eq!(p.generate(&request(), &CallContext::new()).unwrap_err().kind, ErrorKind::RateLimited);
+        // the route backs off between tries; the sleeper only records, so this test does not really wait
+        let ctx = CallContext { sleeper: Arc::new(crate::route::CountingSleeper::default()), ..CallContext::new() };
+        assert_eq!(p.generate(&request(), &ctx).unwrap_err().kind, ErrorKind::RateLimited);
     }
 
     #[test]

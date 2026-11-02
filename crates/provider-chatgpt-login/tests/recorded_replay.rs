@@ -125,7 +125,13 @@ fn rejected_tokens_and_rate_limits_are_reported_plainly() {
     let e = p.generate(&request(), &CallContext::new()).unwrap_err();
     assert_eq!((e.kind, e.retry), (ErrorKind::Auth, RetryClass::RequiresAuthorization));
     let (_d, _f, p) = replay(429, "{\"detail\":\"rate limited\"}".into(), None);
-    assert_eq!(p.generate(&request(), &CallContext::new()).unwrap_err().kind, ErrorKind::RateLimited);
+    // the route backs off between tries; this sleeper only records, so the test does not really wait
+    struct NoSleep;
+    impl imagegen_providers::types::Sleeper for NoSleep {
+        fn sleep(&self, _d: std::time::Duration) {}
+    }
+    let ctx = CallContext { sleeper: Arc::new(NoSleep), ..CallContext::new() };
+    assert_eq!(p.generate(&request(), &ctx).unwrap_err().kind, ErrorKind::RateLimited);
 }
 
 #[test]

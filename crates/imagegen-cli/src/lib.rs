@@ -65,8 +65,12 @@ pub enum Command {
         #[arg(long)]
         accept_risk: bool,
     },
-    /// Show whether you are signed in to ChatGPT. No project needed.
-    LoginStatus,
+    /// Show whether you are signed in to ChatGPT, and whether the server revoked the sign-in. No project needed.
+    LoginStatus {
+        /// Also ask the server (one token refresh, only when the token is near expiry; never a generation).
+        #[arg(long)]
+        check: bool,
+    },
     /// Print the risk note that `login` shows, so a setup tool can show it and then run `login --accept-risk`.
     LoginRiskNote,
     /// Sign out of ChatGPT and remove the stored tokens. No project needed.
@@ -182,7 +186,7 @@ pub struct InstallArgs {
 pub fn account_action(command: &Command) -> Option<(&str, bool)> {
     match command {
         Command::Login { accept_risk } => Some(("login", *accept_risk)),
-        Command::LoginStatus => Some(("status", false)),
+        Command::LoginStatus { check } => Some((if *check { "status-check" } else { "status" }, false)),
         Command::LoginRiskNote => Some(("risk-note", false)),
         Command::Logout => Some(("logout", false)),
         Command::ChatgptLogin { action } => Some((action.as_str(), false)),
@@ -256,7 +260,8 @@ fn pretty(v: &Value) -> String {
 pub fn execute(engine: &Engine, cli: &Cli, out: &mut dyn Write) -> i32 {
     let result: Result<(Value, i32, Option<String>), EngineError> = (|| match &cli.command {
         Command::Doctor => {
-            let s = engine.status();
+            let mut s = engine.status();
+            note_login_revocation(&mut s, &*engine.env);
             let text = doctor_text(&s);
             let broken = s["ledger"]["chain_ok"] == json!(false);
             Ok((s, i32::from(broken), Some(text)))
@@ -328,7 +333,7 @@ pub fn execute(engine: &Engine, cli: &Cli, out: &mut dyn Write) -> i32 {
             };
             Ok((dispatch(engine, tool, parsed)?, 0, None))
         }
-        Command::Login { .. } | Command::LoginStatus | Command::LoginRiskNote | Command::Logout | Command::ChatgptLogin { .. } => {
+        Command::Login { .. } | Command::LoginStatus { .. } | Command::LoginRiskNote | Command::Logout | Command::ChatgptLogin { .. } => {
             let text = account(&cli.command, &*engine.env, &*engine.clock).map_err(EngineError::invalid)?;
             Ok((json!({"result": text}), 0, Some(text)))
         }
@@ -347,6 +352,18 @@ pub fn execute(engine: &Engine, cli: &Cli, out: &mut dyn Write) -> i32 {
             let _ = writeln!(out, "{body}");
             1
         }
+    }
+}
+
+/// When the server revoked the ChatGPT sign-in, say so in the doctor's data and text (the engine's own status only
+/// looks at whether tokens exist). Reads the recorded state only; no network call.
+fn note_login_revocation(s: &mut Value, env: &dyn imagegen_core::config::EnvSource) {
+    let Some(store) = provider_chatgpt_login::store::CredentialStore::for_environment(env).ok() else { return };
+    let state = provider_chatgpt_login::route::Route::new(store.state_dir()).state();
+    if let (Some(msg), Some(r)) = (state.revoked_message(), state.revoked) {
+        s["chatgpt_login"]["state"] = json!(msg);
+        s["chatgpt_login"]["signed_in"] = json!(false);
+        s["chatgpt_login"]["revoked"] = json!({"at": r.at, "code": r.code, "status": r.status});
     }
 }
 
@@ -543,4 +560,36 @@ fn validate_text(v: &Value) -> String {
         v["checked"], v["failed"]
     ));
     t
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use imagegen_core::config::MapEnv;
+    use imagegen_providers::types::{CancelToken, RealSleeper};
+
+    #[test]
+    fn the_doctor_reports_a_server_revoked_sign_in_from_the_recorded_state_alone() {
+        let base = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..").join("..").join(".work");
+        std::fs::create_dir_all(&base).unwrap();
+        let dir = tempfile::Builder::new().prefix("dr").tempdir_in(base).unwrap();
+        let file = dir.path().join("auth.json").display().to_string();
+        let env = MapEnv::from_pairs(&[(provider_chatgpt_login::store::PATH_ENV, file.as_str())]);
+        let route = provider_chatgpt_login::route::Route::new(provider_chatgpt_login::store::CredentialStore::at(&file).state_dir());
+
+        // SYNTHETIC engine status: the engine alone believes the user is signed in
+        let engine_status = || json!({"chatgpt_login": {"model": "gpt-6-luna at high reasoning effort", "state": "signed in; the default local provider", "signed_in": true}});
+        let mut s = engine_status();
+        note_login_revocation(&mut s, &env);
+        assert_eq!(s, engine_status(), "nothing recorded: the doctor is unchanged");
+
+        route.acquire(&CancelToken::new(), &RealSleeper).unwrap().record_revoked(1_793_000_000, 401, b"token_revoked", "generation");
+        let mut s = engine_status();
+        note_login_revocation(&mut s, &env);
+        assert_eq!(s["chatgpt_login"]["signed_in"], json!(false));
+        assert_eq!(s["chatgpt_login"]["revoked"]["code"], json!("token_revoked"));
+        let text = doctor_text(&s);
+        assert!(text.contains("signed out by the server (token revoked at 2026-"), "{text}");
+        assert!(text.contains("run `hoi4-imagegen login` to sign in again"), "{text}");
+    }
 }
