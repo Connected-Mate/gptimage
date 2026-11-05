@@ -40,7 +40,7 @@ Until then the releases page is the place to look: https://github.com/klimPaskov
   <em>Trailer coming soon. Until then, see the <a href="https://github.com/klimPaskov/hoi4-imagegen-mcp/releases">releases</a> and the <a href="docs/families.md">gallery</a>.</em>
 </p>
 
-Focus icons, idea pictures, decision icons, technology pictures, event pictures, portraits, flags, counters, logos and more: 40 asset families, each with the canvas, frames, naming, processing and checks measured from the game itself.
+Focus icons, idea pictures, decision icons, technology pictures, event pictures, portraits, flags, counters, logos, animated sprites and more: 44 asset families, each with the canvas, frames, naming, processing and checks measured from the game itself.
 
 > ### Part of the Agentic HOI4 Modding workflow
 >
@@ -110,7 +110,7 @@ The binaries are unsigned, so Windows SmartScreen and macOS Gatekeeper may warn.
 
 ## Tools
 
-There are 19 tools. Six plan families by group, and each takes a required `family` whose schema lists only that group's families.
+There are 20 tools. Seven plan families by group, and each takes a required `family` whose schema lists only that group's families.
 
 | Tool | What it does |
 |---|---|
@@ -120,6 +120,7 @@ There are 19 tools. Six plan families by group, and each takes a required `famil
 | `hoi4.image_flag` | The country flag in its three sizes |
 | `hoi4.image_unit` | Counters, division emblems, buildings, faction and agency logos |
 | `hoi4.image_interface` | Modifier icons, GUI textures, super events |
+| `hoi4.image_animation` | 4 animated sprite families (`frameAnimatedSpriteType`): a pulsing blend glow, blended key frames, a scrolling strip and a turning icon. One base frame is generated and the other frames are derived from it, so they stay consistent |
 | `hoi4.image_status`, `hoi4.image_families`, `hoi4.image_references` | Providers and setup, the family catalogue, reference images and style profiles |
 | `hoi4.image_generate`, `hoi4.image_edit` | Run a stored plan, refine a candidate |
 | `hoi4.image_process`, `hoi4.image_validate`, `hoi4.image_preview`, `hoi4.image_review` | Processing chain, checks, contact sheet, visual review |
@@ -145,7 +146,7 @@ Before you use the login, know that it calls a ChatGPT backend that OpenAI does 
 ## More
 
 * [How-to](docs/how-to.md): sign in, make a first image, fix problems
-* [Asset gallery](docs/families.md): all 40 families with real examples
+* [Asset gallery](docs/families.md): the 40 still families with real examples, and the [animated sprites](docs/families.md#animated-sprites)
 * [Reference](docs/reference.md): families, processing chains, names the game looks up, style references, validation, install and project config
 * [ChatGPT login](docs/chatgpt-login.md), [rules and terms](docs/rules-and-terms.md), [kit integration](docs/kit-integration.md), [test layers](docs/testing.md), [recipes](examples/recipes.md)
 

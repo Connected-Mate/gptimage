@@ -27,11 +27,13 @@ pub enum Group {
     Unit,
     /// Interface art with a mod-defined or unusual shape.
     Interface,
+    /// Animated multi-frame sprites (`frameAnimatedSpriteType`).
+    Animation,
 }
 
 impl Group {
     /// Every group, in documentation order.
-    pub const ALL: [Group; 6] = [Group::Icon, Group::Picture, Group::Portrait, Group::Flag, Group::Unit, Group::Interface];
+    pub const ALL: [Group; 7] = [Group::Icon, Group::Picture, Group::Portrait, Group::Flag, Group::Unit, Group::Interface, Group::Animation];
 
     /// Stable snake_case id.
     pub fn as_str(self) -> &'static str {
@@ -42,6 +44,7 @@ impl Group {
             Group::Flag => "flag",
             Group::Unit => "unit",
             Group::Interface => "interface",
+            Group::Animation => "animation",
         }
     }
 
@@ -54,6 +57,7 @@ impl Group {
             Group::Flag => "hoi4.image_flag",
             Group::Unit => "hoi4.image_unit",
             Group::Interface => "hoi4.image_interface",
+            Group::Animation => "hoi4.image_animation",
         }
     }
 
@@ -149,6 +153,10 @@ families! {
     ModifierStatIcon => ("modifier_stat_icon", Interface, "modifier tooltip stat icon"),
     GuiTexture => ("gui_texture", Interface, "GUI texture"),
     SuperEvent => ("super_event", Interface, "super event picture"),
+    AnimBlendGlow => ("anim_blend_glow", Animation, "two-frame pulsing glow"),
+    AnimBlendKeyframes => ("anim_blend_keyframes", Animation, "three-frame blended animation"),
+    AnimScroll => ("anim_scroll", Animation, "scrolling animated strip"),
+    AnimSpin => ("anim_spin", Animation, "spinning animated icon"),
 }
 
 impl fmt::Display for Family {
@@ -198,7 +206,7 @@ mod tests {
 
     #[test]
     fn groups_partition_the_families() {
-        assert_eq!(Family::ALL.len(), 40);
+        assert_eq!(Family::ALL.len(), 44);
         let mut total = 0;
         for g in Group::ALL {
             let fams = g.families();
@@ -213,6 +221,8 @@ mod tests {
         assert_eq!(Group::Flag.families(), vec![Family::Flag]);
         assert_eq!(Group::Unit.families().len(), 6);
         assert_eq!(Group::Interface.families().len(), 3);
+        assert_eq!(Group::Animation.families().len(), 4);
+        assert_eq!(Group::Animation.tool_name(), "hoi4.image_animation");
         assert_eq!(Family::Focus.group(), Group::Icon);
         assert_eq!(Family::Achievement.group(), Group::Picture);
         assert_eq!(Family::AdvisorCard.group(), Group::Portrait);

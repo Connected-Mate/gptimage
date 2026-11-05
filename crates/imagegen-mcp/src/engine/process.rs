@@ -92,12 +92,26 @@ impl Engine {
             (Some(id), true) => Some((id.clone(), self.second_frame(&artifact, id, &pre, limit)?)),
             _ => None,
         };
+        if p.frame_candidates.is_some() && !plan.finishers.contains(&Finisher::KeyFrames) {
+            return Err(EngineError::invalid(format!("frame_candidates is for generated anim_blend_keyframes strips, not {}", profile.family)));
+        }
+        let keyframes = match &p.frame_candidates {
+            Some(ids) => ids.iter().map(|id| Ok((id.clone(), self.key_frame(&artifact, id, &pre, limit)?))).collect::<EResult<Vec<_>>>()?,
+            None => Vec::new(),
+        };
         let mut finishers: Vec<FinisherRecord> = Vec::new();
         let mut companions: Vec<(String, Rgba)> = Vec::new();
         for f in &plan.finishers {
             let input_sha256 = main.pixels_sha256();
-            let made =
-                self.run_finisher(*f, &main, p.portrait_crop, second.as_ref().map(|(id, img)| (id.as_str(), img)), &profile, artifact.canvas)?;
+            let made = self.run_finisher(
+                *f,
+                &main,
+                p.portrait_crop,
+                second.as_ref().map(|(id, img)| (id.as_str(), img)),
+                &keyframes,
+                &profile,
+                artifact.canvas,
+            )?;
             finishers.push(FinisherRecord {
                 name: f.name().to_string(),
                 input_sha256,
@@ -167,7 +181,7 @@ impl Engine {
         };
         self.ledger.append(kind::PROCESSED, Some(&artifact.asset_id), Some(&id), &record)?;
 
-        let opts = Options { canvas: (profile.canvas == [0, 0]).then_some(artifact.canvas) };
+        let opts = Options { canvas: (profile.free_canvas() && artifact.canvas != profile.canvas).then_some(artifact.canvas) };
         let quick = validate_image(&main, &profile, &profile.imagegen.checks, &opts);
         let problems = chain::audit(&record, &profile);
         Ok(json!({
@@ -312,6 +326,29 @@ impl Engine {
         };
         self.ledger.append(kind::IMPORTED, Some(&aid), Some(&rec.candidate_id), &rec)?;
         self.artifact(&rec.candidate_id)
+    }
+
+    /// A key frame of a blend key-frame strip: another raw candidate of the same asset (an edit of the base), with the
+    /// caller's pre-steps applied. It is fitted together with the base by the `key_frames` finisher, not on its own.
+    fn key_frame(&self, base: &Artifact, id: &str, pre: &[Op], limit: Option<f64>) -> EResult<Rgba> {
+        let frame = self.artifact(id)?;
+        if frame.processed || frame.id == base.id || frame.asset_id != base.asset_id || frame.family != base.family {
+            return Err(EngineError::invalid(format!(
+                "every frame_candidates entry must be another raw candidate of {} (an hoi4.image_edit of {}), not {id}",
+                base.asset_id, base.id
+            )));
+        }
+        let (bytes, sha) = self.read_artifact(&frame)?;
+        if sha != frame.recorded_sha256 {
+            return Err(EngineError::refused(
+                "candidate_changed",
+                format!("{id} was modified after it was recorded"),
+                RetryClass::RefreshPreconditions,
+            ));
+        }
+        let (img, _) = decode(&bytes, Some(&frame.path), DecodeLimits::default())?;
+        let (prepared, _) = run_chain_limited(&img, pre, limit)?;
+        Ok(prepared)
     }
 
     /// Frame 2 of a landmark strip: another raw candidate of the same asset, fitted exactly like frame 1.

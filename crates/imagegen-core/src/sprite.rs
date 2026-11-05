@@ -48,6 +48,16 @@ pub fn framed_sprite(name: &str, texture_path: &str, frames: u32) -> SpriteEntry
     }
 }
 
+/// An animated strip: a `frameAnimatedSpriteType` with the family's frame rate, loop flags and effect file
+/// ([`crate::animation::sprite_block`]).
+pub fn animated_sprite(name: &str, texture_path: &str, frames: u32, spec: &crate::animation::AnimationSpec) -> Result<SpriteEntry> {
+    Ok(SpriteEntry {
+        name: name.to_string(),
+        text: crate::animation::sprite_block(name, texture_path, frames, spec)?,
+        caveat: "frameAnimatedSpriteType fields copied from the vanilla 1.19.4.1 sprites of the same kind; playback in game has not been checked by this tool.".into(),
+    })
+}
+
 /// The `_shine` companion every vanilla focus icon has (3,122 shine sprites against 3,131 goal sprites in
 /// 1.19.3.0). The block is the recipe's vanilla-exact one ([`crate::recipes::focus_shine::focus_shine_block`],
 /// which a test compares token for token with the installed game's `goals_shine.gfx`), including the

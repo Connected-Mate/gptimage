@@ -4,6 +4,9 @@
 //! enlarged copy (nearest neighbour, so pixels stay visible) on dark, light and checker backgrounds, then up to
 //! three of the plan's references scaled to the same height. A reviewer must look at the native-size panels:
 //! an enlarged image can look fine and still be unreadable at game size.
+//!
+//! An animated strip also gets a frame sheet (every frame side by side, enlarged) and a looping GIF of the
+//! animation as the game plays it, both next to the contact sheet and recorded with it.
 
 use imagegen_core::error::RetryClass;
 use imagegen_core::fsio::ProjectFs;
@@ -143,12 +146,16 @@ impl Engine {
         // artifact ids contain a dot; keep file names friendly
         let stem = naming_safe(&stem);
         let written = self.fs.write_next_version(&refs_dir, &stem, "png", 0, &sheet.png)?;
+        let animation = match &artifact {
+            Some(a) => self.animation_preview(a, &img, &refs_dir, &stem)?,
+            None => Value::Null,
+        };
         if let Some(a) = &artifact {
             self.ledger.append(
                 kind::PREVIEWED,
                 Some(&a.asset_id),
                 Some(&a.id),
-                json!({"target": a.id, "sha256": sha, "sheet": written.rel, "sheet_sha256": sha256_hex(&sheet.png), "panels": sheet.panels}),
+                json!({"target": a.id, "sha256": sha, "sheet": written.rel, "sheet_sha256": sha256_hex(&sheet.png), "panels": sheet.panels, "animation": animation}),
             )?;
         }
         let report = json!({
@@ -160,7 +167,48 @@ impl Engine {
             "panels": sheet.panels,
             "how_to_look": "Judge the 'native' panels first: that is the size the game draws. Then compare against the reference panels for style. Record the verdict with hoi4.image_review.",
         });
+        let mut report = report;
+        if !animation.is_null() {
+            report["animation"] = animation;
+            report["how_to_look"] = json!("Judge the 'native' panels first: that is the size the game draws. Then play the loop GIF to see the motion as the game plays it (the frame sheet shows each frame enlarged), and compare against the reference panels for style. Record the verdict with hoi4.image_review.");
+        }
         Ok((report, sheet.png))
+    }
+
+    /// The frame sheet and loop GIF of an animated artifact (`Value::Null` for any other). Only a whole strip is
+    /// previewed as an animation: a raw candidate is one base frame.
+    fn animation_preview(&self, a: &super::Artifact, img: &Rgba, dir: &str, stem: &str) -> EResult<Value> {
+        let profile = self.profile_of(a)?;
+        let Some(anim) = profile.imagegen.animation.clone() else { return Ok(Value::Null) };
+        let frames = profile.frames.max(1);
+        if !a.processed || frames < 2 || !img.width.is_multiple_of(frames) {
+            return Ok(Value::Null);
+        }
+        let split = img.split_frames(frames)?;
+        let longest = split[0].width.max(split[0].height).max(1);
+        let scale = (256 / longest).clamp(1, 8);
+        let matte = [DARK[0], DARK[1], DARK[2]];
+        let sheet = imagegen_core::animation::contact_sheet(&split, matte, scale, PAD)?;
+        let sheet_png = encode_png(&sheet)?;
+        let sheet_file = self.fs.write_next_version(dir, &format!("{stem}-frames"), "png", 0, &sheet_png)?;
+        let looped = imagegen_core::animation::preview_loop(&split, &anim)?;
+        let gif = imagegen_core::animation::encode_gif(&looped, matte, scale)?;
+        let gif_file = self.fs.write_next_version(dir, &format!("{stem}-loop"), "gif", 0, &gif)?;
+        let metrics = imagegen_core::animation::frame_metrics(&split);
+        Ok(json!({
+            "frames": frames,
+            "fps": anim.fps,
+            "motion": anim.motion,
+            "effect_file": anim.effect_file,
+            "frame_sheet": sheet_file.rel,
+            "frame_sheet_sha256": sha256_hex(&sheet_png),
+            "loop_gif": gif_file.rel,
+            "loop_gif_sha256": sha256_hex(&gif),
+            "loop_gif_pictures": looped.len(),
+            "scale": scale,
+            "metrics": metrics,
+            "note": if anim.blends() { "the engine cross-fades the frames; the GIF approximates that with linear blends at 20 pictures a second" } else { "each frame is shown for 1 / fps seconds" },
+        }))
     }
 
     /// Preview without the image bytes (CLI and plain callers).

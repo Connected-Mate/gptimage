@@ -11,6 +11,7 @@
 //! folder and names sprites freely, but an installed asset must be attributable to exactly one family, so every
 //! family writes to its own leaf folder under `{feature_slug}`.
 
+use crate::animation::{self, AnimationSpec, Motion};
 use crate::family::{Automation, Family, Group};
 use crate::measurement;
 use crate::profile::{Background, Container, ImagegenSpec, Profile, ProfileOrigin, PromptSpec, SpriteSpec, VanillaDefault, Variant};
@@ -52,6 +53,8 @@ const FLAG_CHECKS: &[&str] = &["size", "opaque", "style", "tga"];
 const UNIT_CHECKS: &[&str] = &["size", "alpha", "frames", "style", "dds"];
 const INTERFACE_CHECKS: &[&str] = &["size", "alpha", "style", "dds"];
 const SUPER_CHECKS: &[&str] = &["size", "checker", "opaque", "style", "dds"];
+const ANIM_CHECKS: &[&str] = &["size", "alpha", "opaque_canvas", "margin", "frames", "animation", "checker", "style", "dds"];
+const SCROLL_CHECKS: &[&str] = &["size", "opaque", "frames", "animation", "checker", "style", "dds"];
 
 const ICON_RULES: &[&str] = &[
     "One centred subject with a strong, simple silhouette that stays readable at {w}x{h} pixels.",
@@ -201,6 +204,24 @@ const EMBLEM_NEGATIVE: &[&str] = &[
     "watermark or signature",
 ];
 const INTERFACE_RULES: &[&str] = &["Match the style of Hearts of Iron IV interface art; the exact size is {w}x{h} pixels."];
+const GLOW_RULES: &[&str] = &[
+    "A soft luminous glow, light only, drawn on a pure black background: the black becomes transparent, so everything that is not glow must be pure black.",
+    "The glow is shaped for an interface element of {w}x{h} pixels (a ring, an outline or a halo around where the element sits), in the warm gold, red or green light of Hearts of Iron IV highlight glows.",
+    "Draw the glow at full strength: the tool makes the dim frame of the pulse itself.",
+];
+const GLOW_NEGATIVE: &[&str] = &["text", "letters or numbers", "watermark or signature", "a grey or coloured background", "solid objects"];
+const KEYFRAME_RULES: &[&str] = &[
+    "One centred subject with a strong silhouette that reads at {w}x{h} pixels, in the painterly style of Hearts of Iron IV interface art.",
+    "Real transparent background: no backdrop, no frame, no plate. Leave clear space around the subject: the next key frames are edits of this one and must fit the same frame.",
+];
+const SCROLL_RULES: &[&str] = &[
+    "A seamless pattern that repeats from left to right and fills the whole {w}x{h} frame edge to edge, such as diagonal stripes, chevrons or a moving texture, in the muted palette of Hearts of Iron IV interface art.",
+    "No single subject, no border and no frame: the pattern scrolls, so its left and right edges must continue each other.",
+];
+const SPIN_RULES: &[&str] = &[
+    "One round subject that is meant to turn, such as a cog, a wheel, a propeller or a radar dish, centred and seen straight on, readable at {w}x{h} pixels.",
+    "Real transparent background, nothing outside the round subject: the whole picture turns a full circle, so anything at the corners would swing in and out.",
+];
 
 /// Defaults of a group. A row overrides what differs with struct update syntax.
 fn base(family: Family, canvas: [u32; 2], accepted: &'static [[u32; 2]], folder: &'static str, prefix: &'static str, gfx: &'static str) -> Row {
@@ -258,6 +279,10 @@ fn base(family: Family, canvas: [u32; 2], accepted: &'static [[u32; 2]], folder:
         Group::Interface => {
             row.checks = INTERFACE_CHECKS;
             row.rules = INTERFACE_RULES;
+        }
+        Group::Animation => {
+            row.checks = ANIM_CHECKS;
+            row.margin = 1;
         }
     }
     row
@@ -522,6 +547,37 @@ fn rows() -> Vec<Row> {
             note: "Super events have no vanilla texture: they are a mod pattern (GUI windows), so the mod defines the canvas.",
             ..base(SuperEvent, [0, 0], &[], "gfx/super_events/{feature_slug}", "super_event_", "interface/{feature_slug}_super_events.gfx")
         },
+        // ---- animation group: the canvas is a default; a plan may name the size of the element the strip sits on
+        Row {
+            frames: 2,
+            rules: GLOW_RULES,
+            negative: GLOW_NEGATIVE,
+            note: "Two frames that the engine cross-fades (effectFile buttonstate_blendframes.lua, animation_rate_fps 1, looping, play_on_show, alwaystransparent), the way 70 vanilla glows pulse. Vanilla glow sizes follow the element they sit on (47 sizes over 66 textures), so a plan may pass its own canvas. The model draws the bright glow on black, which becomes alpha; frame 1 is the same glow at 0.17 of its alpha, the vanilla median.",
+            ..base(AnimBlendGlow, [37, 49], &[[37, 49]], "gfx/interface/animated/{feature_slug}/glows", "glow_", "interface/{feature_slug}_animated.gfx")
+        },
+        Row {
+            frames: 3,
+            margin: 2,
+            rules: KEYFRAME_RULES,
+            note: "Three key frames that the engine cross-fades (buttonstate_blendframes.lua at 1 fps, like the ongoing-focus and spirit glows). Frame 1 is generated; frames 2 and 3 are hoi4.image_edit candidates of it, passed to processing as frame_candidates, and all three are fitted with one shared crop and scale.",
+            ..base(AnimBlendKeyframes, [141, 115], &[[141, 115]], "gfx/interface/animated/{feature_slug}/keyframes", "anim_", "interface/{feature_slug}_animated.gfx")
+        },
+        Row {
+            frames: 9,
+            margin: 0,
+            background: Background::Opaque,
+            checks: SCROLL_CHECKS,
+            rules: SCROLL_RULES,
+            negative: PICTURE_NEGATIVE,
+            note: "Nine frames at 15 fps with loadType INGAME and transparencecheck, the currently-researching highlight of 38 vanilla sprites (72x72 is the frame 16 of them use). The picture is made seamless across its width and moves right by a ninth of it per frame, so a tenth frame would be the first again. Vanilla panels keep a static border with rounded transparent corners around the pattern; this family scrolls the whole frame, so it is opaque.",
+            ..base(AnimScroll, [72, 72], &[[72, 72]], "gfx/interface/animated/{feature_slug}/scroll", "scroll_", "interface/{feature_slug}_animated.gfx")
+        },
+        Row {
+            frames: 20,
+            rules: SPIN_RULES,
+            note: "Twenty frames at 7 fps with loadType INGAME and transparencecheck, like the turning cogs of the leader-group and navy views (26x26 and 25x25). The subject is fitted by its radius, so it stays inside the frame at every angle, and turned clockwise a full circle per loop.",
+            ..base(AnimSpin, [26, 26], &[[26, 26], [25, 25]], "gfx/interface/animated/{feature_slug}/spin", "spin_", "interface/{feature_slug}_animated.gfx")
+        },
     ]
 }
 
@@ -531,6 +587,40 @@ fn flag_variants() -> Vec<Variant> {
         Variant { name: "medium".into(), canvas: [41, 26], folder: "gfx/flags/medium".into() },
         Variant { name: "small".into(), canvas: [10, 7], folder: "gfx/flags/small".into() },
     ]
+}
+
+/// The animation fields of an animated family, as vanilla writes them for the sprites it is measured from
+/// (`data/vanilla-measurement.json`: every one of those sprites loops and plays on show with pause_on_loop 0.0).
+pub fn animation_of(family: Family) -> Option<AnimationSpec> {
+    let blend = |motion, fps: &str| AnimationSpec {
+        motion,
+        fps: fps.into(),
+        looping: true,
+        play_on_show: true,
+        pause_on_loop: "0.0".into(),
+        effect_file: Some(animation::BLEND_EFFECT.into()),
+        always_transparent: true,
+        load_type: None,
+        transparence_check: false,
+    };
+    let strip = |motion, fps: &str| AnimationSpec {
+        motion,
+        fps: fps.into(),
+        looping: true,
+        play_on_show: true,
+        pause_on_loop: "0.0".into(),
+        effect_file: None,
+        always_transparent: false,
+        load_type: Some("INGAME".into()),
+        transparence_check: true,
+    };
+    Some(match family {
+        Family::AnimBlendGlow => blend(Motion::BlendGlow, "1"),
+        Family::AnimBlendKeyframes => blend(Motion::BlendKeyframes, "1"),
+        Family::AnimScroll => strip(Motion::Scroll, "15"),
+        Family::AnimSpin => strip(Motion::Spin, "7"),
+        _ => return None,
+    })
 }
 
 /// The rubric id of a family: one per group (officer spirits and every other icon get the icon rubric).
@@ -614,6 +704,7 @@ pub fn profiles() -> Vec<Profile> {
                     },
                     grayscale: r.grayscale,
                     source_canvas: r.source_canvas,
+                    animation: animation_of(r.family),
                 },
             }
         })
@@ -740,10 +831,46 @@ mod tests {
                 assert_eq!(p.imagegen.background, Background::Transparent, "{f}");
                 continue;
             }
+            // vanilla's scrolling panels have rounded transparent corners around a static border; this family
+            // scrolls the whole frame, which is opaque
+            if f == Family::AnimScroll {
+                assert_eq!(p.imagegen.background, Background::Opaque, "{f}");
+                continue;
+            }
             let class = meas.alpha_class(id).unwrap();
             let want = if class.starts_with("transparent") { Background::Transparent } else { Background::Opaque };
             assert_eq!(p.imagegen.background, want, "{f}: measured '{class}'");
         }
+    }
+
+    /// The animation fields of every animated family are the most common ones of the vanilla sprites it is measured
+    /// from, and the derivation constants are the measured ones.
+    #[test]
+    fn animation_fields_are_the_measured_vanilla_ones() {
+        let meas = data();
+        for (f, p) in by_family() {
+            let anim = p.imagegen.animation.as_ref();
+            assert_eq!(anim.is_some(), f.group() == Group::Animation, "{f}");
+            let Some(anim) = anim else { continue };
+            let id = m::entries_of(f)[0];
+            let mode = |key: &str| meas.registration_mode(id, key).unwrap_or_else(|| panic!("{f}: no {key}")).0;
+            assert_eq!(anim.fps, mode("animation_rate_fps_values"), "{f}");
+            assert_eq!(anim.looping, mode("looping_values") == "yes", "{f}");
+            assert_eq!(anim.play_on_show, mode("play_on_show_values") == "yes", "{f}");
+            assert_eq!(anim.pause_on_loop, mode("pause_on_loop_values"), "{f}");
+            assert_eq!(anim.always_transparent, mode("alwaystransparent_values") == "yes", "{f}");
+            let effect = mode("effect_file_values");
+            let ours = anim.effect_file.as_deref().map(str::to_ascii_lowercase).unwrap_or_else(|| "(none)".into());
+            assert_eq!(ours, effect, "{f}");
+            assert!(p.imagegen.checks.iter().any(|c| c == "animation"), "{f}");
+            assert!(p.frames >= 2, "{f}");
+            assert!(p.free_canvas(), "{f}: the element the strip sits on sets its size");
+        }
+        let dim = meas.animation_number("anim_blend_glow", "median_dim_to_bright_alpha_ratio").unwrap();
+        assert!((dim - crate::animation::GLOW_DIM_RATIO).abs() < 0.005, "measured {dim}");
+        let set = by_family();
+        assert!(!set[&Family::AnimBlendGlow].source_transparent(), "a glow is drawn as light on black");
+        assert!(set[&Family::AnimSpin].source_transparent());
     }
 
     #[test]
