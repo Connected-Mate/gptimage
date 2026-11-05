@@ -1,0 +1,71 @@
+<template>
+  <style>
+    {{BASE}}
+    #root .t { position: absolute; left: 0; right: 0; top: 80px; text-align: center; font-size: 72px; white-space: nowrap; }
+    #root .sub { position: absolute; left: 0; right: 0; top: 196px; text-align: center; font-size: 34px; }
+    #root .cell { position: absolute; top: 290px; width: 400px; height: 600px; }
+    #root .live { position: absolute; left: 0; right: 0; top: 40px; height: 300px; display: flex; align-items: center; justify-content: center; }
+    #root .live img { position: absolute; opacity: 0; }
+    #root .strip { position: absolute; left: 20px; right: 20px; top: 370px; display: flex; gap: 6px; align-items: center; justify-content: center; height: 60px; overflow: hidden; }
+    #root .strip img { height: 40px; background: rgba(0,0,0,.35); box-shadow: inset 0 0 0 1px rgba(232,181,79,.3); }
+    #root .strip span { font-family: "IBM Plex Mono", monospace; font-size: 18px; color: #a8a18f; margin-left: 6px; }
+    #root .fam { position: absolute; left: 24px; top: 460px; font-size: 24px; color: #e8b54f; }
+    #root .fam b { font-weight: 500; }
+    #root .spec { position: absolute; left: 24px; top: 500px; font-size: 20px; color: #c9c2a3; }
+    #root .what { position: absolute; left: 0; right: 0; text-align: center; top: 500px; font-size: 38px; letter-spacing: .08em; text-transform: uppercase; color: #efe6cc; }
+  </style>
+  <div id="root" data-composition-id="animated" data-width="1920" data-height="1080">
+    <div class="steel"></div>
+    {{GRAIN}}
+    <div class="t hero"><span class="ice an-w">Animated sprites.</span> <span class="brass an-w">Loops that hold.</span></div>
+    <div class="sub label">one base frame · every frame checked for drift</div>
+      <div class="cell plate an-c" style="left:115px">
+        <div class="live"><img class="an-f an-0" src="assets/anim/glow_focus_ready_00.png" style="width:282px;height:230px" alt="" /><img class="an-f an-0" src="assets/anim/glow_focus_ready_01.png" style="width:282px;height:230px" alt="" /></div>
+        <div class="strip"><img src="assets/anim/glow_focus_ready_00.png" alt="" /><img src="assets/anim/glow_focus_ready_01.png" alt="" /></div>
+        <div class="what">focus-ready glow</div>
+      </div>
+      <div class="cell plate an-c" style="left:545px">
+        <div class="live"><img class="an-f an-1" src="assets/anim/anim_signal_beacon_00.png" style="width:282px;height:230px" alt="" /><img class="an-f an-1" src="assets/anim/anim_signal_beacon_01.png" style="width:282px;height:230px" alt="" /><img class="an-f an-1" src="assets/anim/anim_signal_beacon_02.png" style="width:282px;height:230px" alt="" /></div>
+        <div class="strip"><img src="assets/anim/anim_signal_beacon_00.png" alt="" /><img src="assets/anim/anim_signal_beacon_01.png" alt="" /><img src="assets/anim/anim_signal_beacon_02.png" alt="" /></div>
+        <div class="what">signal lantern</div>
+      </div>
+      <div class="cell plate an-c" style="left:975px">
+        <div class="live"><img class="an-f an-2" src="assets/anim/scroll_research_progress_00.png" style="width:216px;height:216px" alt="" /><img class="an-f an-2" src="assets/anim/scroll_research_progress_01.png" style="width:216px;height:216px" alt="" /><img class="an-f an-2" src="assets/anim/scroll_research_progress_02.png" style="width:216px;height:216px" alt="" /><img class="an-f an-2" src="assets/anim/scroll_research_progress_03.png" style="width:216px;height:216px" alt="" /><img class="an-f an-2" src="assets/anim/scroll_research_progress_04.png" style="width:216px;height:216px" alt="" /><img class="an-f an-2" src="assets/anim/scroll_research_progress_05.png" style="width:216px;height:216px" alt="" /><img class="an-f an-2" src="assets/anim/scroll_research_progress_06.png" style="width:216px;height:216px" alt="" /><img class="an-f an-2" src="assets/anim/scroll_research_progress_07.png" style="width:216px;height:216px" alt="" /><img class="an-f an-2" src="assets/anim/scroll_research_progress_08.png" style="width:216px;height:216px" alt="" /></div>
+        <div class="strip"><img src="assets/anim/scroll_research_progress_00.png" alt="" /><img src="assets/anim/scroll_research_progress_01.png" alt="" /><img src="assets/anim/scroll_research_progress_02.png" alt="" /><img src="assets/anim/scroll_research_progress_03.png" alt="" /><img src="assets/anim/scroll_research_progress_04.png" alt="" /><img src="assets/anim/scroll_research_progress_05.png" alt="" /></div>
+        <div class="what">progress chevrons</div>
+      </div>
+      <div class="cell plate an-c" style="left:1405px">
+        <div class="live"><img class="an-f an-3" src="assets/anim/spin_industry_cog_00.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_01.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_02.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_03.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_04.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_05.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_06.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_07.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_08.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_09.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_10.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_11.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_12.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_13.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_14.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_15.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_16.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_17.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_18.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_19.png" style="width:256px;height:256px" alt="" /></div>
+        <div class="strip"><img src="assets/anim/spin_industry_cog_00.png" alt="" /><img src="assets/anim/spin_industry_cog_01.png" alt="" /><img src="assets/anim/spin_industry_cog_02.png" alt="" /><img src="assets/anim/spin_industry_cog_03.png" alt="" /><img src="assets/anim/spin_industry_cog_04.png" alt="" /><img src="assets/anim/spin_industry_cog_05.png" alt="" /></div>
+        <div class="what">industry cog</div>
+      </div>
+    <div class="vig"></div>
+  </div>
+  <script>
+    {{LIB}}
+    tl.fromTo(".an-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.15, ease: "power4.out", stagger: b(1) }, 0);
+    tl.fromTo(".sub", { opacity: 0 }, { opacity: 1, duration: 0.3 }, b(1));
+    tl.fromTo(".an-c", { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: b(0.5), ease: "expo.out", stagger: b(0.25) }, b(0.5));
+    { const fr = gsap.utils.toArray(".an-0"); const n = fr.length; const step = 1;
+      for (let t = 0, f = 0; t < DUR; t += step, f = (f + 1) % n) {
+        const at = Math.round((b(1) + t) * 30) / 30; if (at >= DUR) break;
+        tl.to(fr[f], { opacity: 1, duration: step * 0.6, ease: "sine.inOut" }, at); tl.to(fr[(f + n - 1) % n], { opacity: 0, duration: step * 0.6, ease: "sine.inOut" }, at);
+      } }
+    { const fr = gsap.utils.toArray(".an-1"); const n = fr.length; const step = 1;
+      for (let t = 0, f = 0; t < DUR; t += step, f = (f + 1) % n) {
+        const at = Math.round((b(1) + t) * 30) / 30; if (at >= DUR) break;
+        tl.to(fr[f], { opacity: 1, duration: step * 0.6, ease: "sine.inOut" }, at); tl.to(fr[(f + n - 1) % n], { opacity: 0, duration: step * 0.6, ease: "sine.inOut" }, at);
+      } }
+    { const fr = gsap.utils.toArray(".an-2"); const n = fr.length; const step = 0.06666666666666667;
+      for (let t = 0, f = 0; t < DUR; t += step, f = (f + 1) % n) {
+        const at = Math.round((b(1) + t) * 30) / 30; if (at >= DUR) break;
+        tl.set(fr, { opacity: 0 }, at); tl.set(fr[f], { opacity: 1 }, at);
+      } }
+    { const fr = gsap.utils.toArray(".an-3"); const n = fr.length; const step = 0.14285714285714285;
+      for (let t = 0, f = 0; t < DUR; t += step, f = (f + 1) % n) {
+        const at = Math.round((b(1) + t) * 30) / 30; if (at >= DUR) break;
+        tl.set(fr, { opacity: 0 }, at); tl.set(fr[f], { opacity: 1 }, at);
+      } }
+    window.__timelines["animated"] = tl;
+  </script>
+</template>

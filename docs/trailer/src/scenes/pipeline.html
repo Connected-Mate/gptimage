@@ -1,0 +1,879 @@
+<template>
+  <style>
+    {{BASE}}
+    #root .far { position: absolute; left: -400px; top: -400px; width: 13120px; height: 3200px; background:
+      repeating-linear-gradient(0deg, rgba(201,194,163,.05) 0 2px, transparent 2px 360px),
+      repeating-linear-gradient(90deg, rgba(201,194,163,.05) 0 2px, transparent 2px 360px),
+      #0f171d; }
+    #root .world { position: absolute; left: 0; top: 0; width: 27220px; height: 3080px; }
+    #root .ground { position: absolute; inset: -600px; background:
+      repeating-linear-gradient(0deg, rgba(201,194,163,.10) 0 1px, transparent 1px 120px),
+      repeating-linear-gradient(90deg, rgba(201,194,163,.10) 0 1px, transparent 1px 120px),
+      repeating-linear-gradient(0deg, rgba(201,194,163,.04) 0 1px, transparent 1px 24px),
+      repeating-linear-gradient(90deg, rgba(201,194,163,.04) 0 1px, transparent 1px 24px),
+      rgba(21,33,43,.82); }
+    #root .cam { position: absolute; inset: 0; transform-origin: 50% 50%; }
+    #root .station { position: absolute; width: 1920px; height: 1080px; }
+    #root .pstreak { position: absolute; inset: 0; background: linear-gradient(100deg, transparent 35%, rgba(255,226,150,.18) 50%, transparent 65%); pointer-events: none; }
+
+    
+    /* the station template, inside the 90% action-safe box (x 96-1824, y 54-1026) */
+    #root .S-measured .wash { position: absolute; inset: 0; pointer-events: none; }
+    #root .S-measured .tt { position: absolute; left: 96px; right: 96px; top: 96px; text-align: center; font-size: 80px; white-space: nowrap; }
+    #root .S-measured .vis { position: absolute; left: 96px; right: 96px; top: 250px; height: 600px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    #root .S-measured .line { position: absolute; left: 96px; right: 96px; top: 880px; text-align: center; font-size: 46px; letter-spacing: .04em; color: #efe6cc; }
+    #root .S-measured .row3 { display: flex; gap: 60px; align-items: flex-end; }
+    #root .S-measured .row3 .m { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+    #root .S-measured .row3 .pic { height: 270px; display: flex; align-items: flex-end; }
+    #root .S-measured .row3 .pic, #root .S-measured .dev .m, #root .S-measured .pair .pa, #root .S-measured .refs .r { filter: drop-shadow(0 22px 26px rgba(0,0,0,.6)); }
+    #root .S-measured .row3 .sz { font-size: 72px; }
+    #root .S-measured .price .big { font-size: 300px; line-height: .9; }
+    #root .S-measured .dev { align-items: center; }
+    #root .S-measured .chips { margin-top: 48px; display: flex; gap: 16px; }
+    #root .S-measured .chips span { padding: 12px 28px; font-size: 34px; letter-spacing: .04em; border-radius: 6px; box-shadow: 0 12px 24px rgba(0,0,0,.45); }
+    #root .S-measured .refs { display: flex; align-items: center; gap: 24px; }
+    #root .S-measured .refs .r img { width: 200px; height: 176px; display: block; object-fit: contain; }
+    #root .S-measured .arrow { font-size: 120px; margin: 0 20px; }
+    #root .S-measured .refs .out { width: 360px; height: 330px; display: flex; align-items: center; justify-content: center; }
+    #root .S-measured .refs .out img { width: 300px; height: 264px; object-fit: contain; }
+    #root .S-measured .solo { filter: drop-shadow(0 26px 34px rgba(0,0,0,.65)); }
+    #root .S-measured .solo img { width: 520px; height: 520px; object-fit: contain; display: block; }
+    #root .S-measured .pair { display: flex; align-items: center; gap: 30px; }
+    #root .S-measured .pair .pa img { width: 520px; height: 520px; display: block; object-fit: contain; }
+    #root .S-measured .clamp { position: relative; width: 400px; height: 440px; }
+    #root .S-measured .clamp .slot { position: absolute; left: 30px; top: 26px; width: 340px; height: 388px; display: flex; align-items: center; justify-content: center; background: linear-gradient(160deg, #262d31, #14181b); box-shadow: inset 0 0 0 3px #3b444a; }
+    #root .S-measured .clamp .slot img { width: 300px; height: 340px; }
+    #root .S-measured .sheet { padding: 16px; }
+    #root .S-measured .sheet img { width: 1600px; display: block; }
+    #root .S-measured .stamp { margin-top: 50px; font-size: 80px; }
+    #root .S-measured .stamp.ok { color: #7fd38a; border-color: #7fd38a; box-shadow: 0 0 30px rgba(127,211,138,.35), inset 0 0 20px rgba(127,211,138,.2); }
+    #root .S-measured .rev { display: flex; align-items: center; gap: 80px; }
+    #root .S-measured .rev .stamp { margin: 0; }
+    #root .S-measured .stamp.big { font-size: 96px; transform: rotate(-5deg); }
+    #root .S-measured .portrait { padding: 16px; }
+    #root .S-measured .portrait img { display: block; }
+    #root .S-measured .inst { display: flex; align-items: center; }
+    #root .S-measured .inst .tank { padding: 30px; }
+    #root .S-measured .inst .tank img { width: 730px; height: 270px; display: block; }
+    #root .S-measured .files { display: flex; gap: 30px; }
+    #root .S-measured .file { position: relative; width: 200px; height: 250px; border-radius: 8px; background: linear-gradient(170deg, #efe6cc, #c9bd98); box-shadow: 0 24px 40px rgba(0,0,0,.55); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; clip-path: polygon(0 0, 72% 0, 100% 22%, 100% 100%, 0 100%); }
+    #root .S-measured .file b { font-family: "Archivo Black", sans-serif; font-size: 58px; color: #24476e; font-weight: 400; }
+    #root .S-measured .file.gfx b { color: #8c4a12; }
+    #root .S-measured .file span { font-size: 30px; color: #3a3428; letter-spacing: .06em; text-transform: uppercase; }
+    #root .S-measured .nums { display: flex; gap: 140px; }
+    #root .S-measured .nums div { display: flex; flex-direction: column; align-items: center; }
+    #root .S-measured .nums b { font-size: 150px; font-weight: 400; }
+    #root .S-measured .nums span { font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: #c9c2a3; }
+    #root .S-measured .finding { margin-top: 60px; font-size: 48px; letter-spacing: .04em; color: #fff; padding: 16px 40px; border-radius: 6px; background: #b8342c; box-shadow: 0 0 40px rgba(184,52,44,.5); }
+    #root .S-measured .cl { display: flex; gap: 70px; }
+    #root .S-measured .cl .c1 { width: 640px; height: 320px; display: flex; align-items: center; justify-content: center; }
+    #root .S-measured .cl .c1 .hero { font-size: 70px; text-align: center; white-space: nowrap; }
+
+  
+
+    
+    /* the station template, inside the 90% action-safe box (x 96-1824, y 54-1026) */
+    #root .S-plan .wash { position: absolute; inset: 0; pointer-events: none; }
+    #root .S-plan .tt { position: absolute; left: 96px; right: 96px; top: 96px; text-align: center; font-size: 80px; white-space: nowrap; }
+    #root .S-plan .vis { position: absolute; left: 96px; right: 96px; top: 250px; height: 600px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    #root .S-plan .line { position: absolute; left: 96px; right: 96px; top: 880px; text-align: center; font-size: 46px; letter-spacing: .04em; color: #efe6cc; }
+    #root .S-plan .row3 { display: flex; gap: 60px; align-items: flex-end; }
+    #root .S-plan .row3 .m { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+    #root .S-plan .row3 .pic { height: 270px; display: flex; align-items: flex-end; }
+    #root .S-plan .row3 .pic, #root .S-plan .dev .m, #root .S-plan .pair .pa, #root .S-plan .refs .r { filter: drop-shadow(0 22px 26px rgba(0,0,0,.6)); }
+    #root .S-plan .row3 .sz { font-size: 72px; }
+    #root .S-plan .price .big { font-size: 300px; line-height: .9; }
+    #root .S-plan .dev { align-items: center; }
+    #root .S-plan .chips { margin-top: 48px; display: flex; gap: 16px; }
+    #root .S-plan .chips span { padding: 12px 28px; font-size: 34px; letter-spacing: .04em; border-radius: 6px; box-shadow: 0 12px 24px rgba(0,0,0,.45); }
+    #root .S-plan .refs { display: flex; align-items: center; gap: 24px; }
+    #root .S-plan .refs .r img { width: 200px; height: 176px; display: block; object-fit: contain; }
+    #root .S-plan .arrow { font-size: 120px; margin: 0 20px; }
+    #root .S-plan .refs .out { width: 360px; height: 330px; display: flex; align-items: center; justify-content: center; }
+    #root .S-plan .refs .out img { width: 300px; height: 264px; object-fit: contain; }
+    #root .S-plan .solo { filter: drop-shadow(0 26px 34px rgba(0,0,0,.65)); }
+    #root .S-plan .solo img { width: 520px; height: 520px; object-fit: contain; display: block; }
+    #root .S-plan .pair { display: flex; align-items: center; gap: 30px; }
+    #root .S-plan .pair .pa img { width: 520px; height: 520px; display: block; object-fit: contain; }
+    #root .S-plan .clamp { position: relative; width: 400px; height: 440px; }
+    #root .S-plan .clamp .slot { position: absolute; left: 30px; top: 26px; width: 340px; height: 388px; display: flex; align-items: center; justify-content: center; background: linear-gradient(160deg, #262d31, #14181b); box-shadow: inset 0 0 0 3px #3b444a; }
+    #root .S-plan .clamp .slot img { width: 300px; height: 340px; }
+    #root .S-plan .sheet { padding: 16px; }
+    #root .S-plan .sheet img { width: 1600px; display: block; }
+    #root .S-plan .stamp { margin-top: 50px; font-size: 80px; }
+    #root .S-plan .stamp.ok { color: #7fd38a; border-color: #7fd38a; box-shadow: 0 0 30px rgba(127,211,138,.35), inset 0 0 20px rgba(127,211,138,.2); }
+    #root .S-plan .rev { display: flex; align-items: center; gap: 80px; }
+    #root .S-plan .rev .stamp { margin: 0; }
+    #root .S-plan .stamp.big { font-size: 96px; transform: rotate(-5deg); }
+    #root .S-plan .portrait { padding: 16px; }
+    #root .S-plan .portrait img { display: block; }
+    #root .S-plan .inst { display: flex; align-items: center; }
+    #root .S-plan .inst .tank { padding: 30px; }
+    #root .S-plan .inst .tank img { width: 730px; height: 270px; display: block; }
+    #root .S-plan .files { display: flex; gap: 30px; }
+    #root .S-plan .file { position: relative; width: 200px; height: 250px; border-radius: 8px; background: linear-gradient(170deg, #efe6cc, #c9bd98); box-shadow: 0 24px 40px rgba(0,0,0,.55); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; clip-path: polygon(0 0, 72% 0, 100% 22%, 100% 100%, 0 100%); }
+    #root .S-plan .file b { font-family: "Archivo Black", sans-serif; font-size: 58px; color: #24476e; font-weight: 400; }
+    #root .S-plan .file.gfx b { color: #8c4a12; }
+    #root .S-plan .file span { font-size: 30px; color: #3a3428; letter-spacing: .06em; text-transform: uppercase; }
+    #root .S-plan .nums { display: flex; gap: 140px; }
+    #root .S-plan .nums div { display: flex; flex-direction: column; align-items: center; }
+    #root .S-plan .nums b { font-size: 150px; font-weight: 400; }
+    #root .S-plan .nums span { font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: #c9c2a3; }
+    #root .S-plan .finding { margin-top: 60px; font-size: 48px; letter-spacing: .04em; color: #fff; padding: 16px 40px; border-radius: 6px; background: #b8342c; box-shadow: 0 0 40px rgba(184,52,44,.5); }
+    #root .S-plan .cl { display: flex; gap: 70px; }
+    #root .S-plan .cl .c1 { width: 640px; height: 320px; display: flex; align-items: center; justify-content: center; }
+    #root .S-plan .cl .c1 .hero { font-size: 70px; text-align: center; white-space: nowrap; }
+
+  
+
+    
+    /* the station template, inside the 90% action-safe box (x 96-1824, y 54-1026) */
+    #root .S-generate .wash { position: absolute; inset: 0; pointer-events: none; }
+    #root .S-generate .tt { position: absolute; left: 96px; right: 96px; top: 96px; text-align: center; font-size: 80px; white-space: nowrap; }
+    #root .S-generate .vis { position: absolute; left: 96px; right: 96px; top: 250px; height: 600px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    #root .S-generate .line { position: absolute; left: 96px; right: 96px; top: 880px; text-align: center; font-size: 46px; letter-spacing: .04em; color: #efe6cc; }
+    #root .S-generate .row3 { display: flex; gap: 60px; align-items: flex-end; }
+    #root .S-generate .row3 .m { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+    #root .S-generate .row3 .pic { height: 270px; display: flex; align-items: flex-end; }
+    #root .S-generate .row3 .pic, #root .S-generate .dev .m, #root .S-generate .pair .pa, #root .S-generate .refs .r { filter: drop-shadow(0 22px 26px rgba(0,0,0,.6)); }
+    #root .S-generate .row3 .sz { font-size: 72px; }
+    #root .S-generate .price .big { font-size: 300px; line-height: .9; }
+    #root .S-generate .dev { align-items: center; }
+    #root .S-generate .chips { margin-top: 48px; display: flex; gap: 16px; }
+    #root .S-generate .chips span { padding: 12px 28px; font-size: 34px; letter-spacing: .04em; border-radius: 6px; box-shadow: 0 12px 24px rgba(0,0,0,.45); }
+    #root .S-generate .refs { display: flex; align-items: center; gap: 24px; }
+    #root .S-generate .refs .r img { width: 200px; height: 176px; display: block; object-fit: contain; }
+    #root .S-generate .arrow { font-size: 120px; margin: 0 20px; }
+    #root .S-generate .refs .out { width: 360px; height: 330px; display: flex; align-items: center; justify-content: center; }
+    #root .S-generate .refs .out img { width: 300px; height: 264px; object-fit: contain; }
+    #root .S-generate .solo { filter: drop-shadow(0 26px 34px rgba(0,0,0,.65)); }
+    #root .S-generate .solo img { width: 520px; height: 520px; object-fit: contain; display: block; }
+    #root .S-generate .pair { display: flex; align-items: center; gap: 30px; }
+    #root .S-generate .pair .pa img { width: 520px; height: 520px; display: block; object-fit: contain; }
+    #root .S-generate .clamp { position: relative; width: 400px; height: 440px; }
+    #root .S-generate .clamp .slot { position: absolute; left: 30px; top: 26px; width: 340px; height: 388px; display: flex; align-items: center; justify-content: center; background: linear-gradient(160deg, #262d31, #14181b); box-shadow: inset 0 0 0 3px #3b444a; }
+    #root .S-generate .clamp .slot img { width: 300px; height: 340px; }
+    #root .S-generate .sheet { padding: 16px; }
+    #root .S-generate .sheet img { width: 1600px; display: block; }
+    #root .S-generate .stamp { margin-top: 50px; font-size: 80px; }
+    #root .S-generate .stamp.ok { color: #7fd38a; border-color: #7fd38a; box-shadow: 0 0 30px rgba(127,211,138,.35), inset 0 0 20px rgba(127,211,138,.2); }
+    #root .S-generate .rev { display: flex; align-items: center; gap: 80px; }
+    #root .S-generate .rev .stamp { margin: 0; }
+    #root .S-generate .stamp.big { font-size: 96px; transform: rotate(-5deg); }
+    #root .S-generate .portrait { padding: 16px; }
+    #root .S-generate .portrait img { display: block; }
+    #root .S-generate .inst { display: flex; align-items: center; }
+    #root .S-generate .inst .tank { padding: 30px; }
+    #root .S-generate .inst .tank img { width: 730px; height: 270px; display: block; }
+    #root .S-generate .files { display: flex; gap: 30px; }
+    #root .S-generate .file { position: relative; width: 200px; height: 250px; border-radius: 8px; background: linear-gradient(170deg, #efe6cc, #c9bd98); box-shadow: 0 24px 40px rgba(0,0,0,.55); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; clip-path: polygon(0 0, 72% 0, 100% 22%, 100% 100%, 0 100%); }
+    #root .S-generate .file b { font-family: "Archivo Black", sans-serif; font-size: 58px; color: #24476e; font-weight: 400; }
+    #root .S-generate .file.gfx b { color: #8c4a12; }
+    #root .S-generate .file span { font-size: 30px; color: #3a3428; letter-spacing: .06em; text-transform: uppercase; }
+    #root .S-generate .nums { display: flex; gap: 140px; }
+    #root .S-generate .nums div { display: flex; flex-direction: column; align-items: center; }
+    #root .S-generate .nums b { font-size: 150px; font-weight: 400; }
+    #root .S-generate .nums span { font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: #c9c2a3; }
+    #root .S-generate .finding { margin-top: 60px; font-size: 48px; letter-spacing: .04em; color: #fff; padding: 16px 40px; border-radius: 6px; background: #b8342c; box-shadow: 0 0 40px rgba(184,52,44,.5); }
+    #root .S-generate .cl { display: flex; gap: 70px; }
+    #root .S-generate .cl .c1 { width: 640px; height: 320px; display: flex; align-items: center; justify-content: center; }
+    #root .S-generate .cl .c1 .hero { font-size: 70px; text-align: center; white-space: nowrap; }
+
+  
+
+    
+    /* the station template, inside the 90% action-safe box (x 96-1824, y 54-1026) */
+    #root .S-style .wash { position: absolute; inset: 0; pointer-events: none; }
+    #root .S-style .tt { position: absolute; left: 96px; right: 96px; top: 96px; text-align: center; font-size: 80px; white-space: nowrap; }
+    #root .S-style .vis { position: absolute; left: 96px; right: 96px; top: 250px; height: 600px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    #root .S-style .line { position: absolute; left: 96px; right: 96px; top: 880px; text-align: center; font-size: 46px; letter-spacing: .04em; color: #efe6cc; }
+    #root .S-style .row3 { display: flex; gap: 60px; align-items: flex-end; }
+    #root .S-style .row3 .m { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+    #root .S-style .row3 .pic { height: 270px; display: flex; align-items: flex-end; }
+    #root .S-style .row3 .pic, #root .S-style .dev .m, #root .S-style .pair .pa, #root .S-style .refs .r { filter: drop-shadow(0 22px 26px rgba(0,0,0,.6)); }
+    #root .S-style .row3 .sz { font-size: 72px; }
+    #root .S-style .price .big { font-size: 300px; line-height: .9; }
+    #root .S-style .dev { align-items: center; }
+    #root .S-style .chips { margin-top: 48px; display: flex; gap: 16px; }
+    #root .S-style .chips span { padding: 12px 28px; font-size: 34px; letter-spacing: .04em; border-radius: 6px; box-shadow: 0 12px 24px rgba(0,0,0,.45); }
+    #root .S-style .refs { display: flex; align-items: center; gap: 24px; }
+    #root .S-style .refs .r img { width: 200px; height: 176px; display: block; object-fit: contain; }
+    #root .S-style .arrow { font-size: 120px; margin: 0 20px; }
+    #root .S-style .refs .out { width: 360px; height: 330px; display: flex; align-items: center; justify-content: center; }
+    #root .S-style .refs .out img { width: 300px; height: 264px; object-fit: contain; }
+    #root .S-style .solo { filter: drop-shadow(0 26px 34px rgba(0,0,0,.65)); }
+    #root .S-style .solo img { width: 520px; height: 520px; object-fit: contain; display: block; }
+    #root .S-style .pair { display: flex; align-items: center; gap: 30px; }
+    #root .S-style .pair .pa img { width: 520px; height: 520px; display: block; object-fit: contain; }
+    #root .S-style .clamp { position: relative; width: 400px; height: 440px; }
+    #root .S-style .clamp .slot { position: absolute; left: 30px; top: 26px; width: 340px; height: 388px; display: flex; align-items: center; justify-content: center; background: linear-gradient(160deg, #262d31, #14181b); box-shadow: inset 0 0 0 3px #3b444a; }
+    #root .S-style .clamp .slot img { width: 300px; height: 340px; }
+    #root .S-style .sheet { padding: 16px; }
+    #root .S-style .sheet img { width: 1600px; display: block; }
+    #root .S-style .stamp { margin-top: 50px; font-size: 80px; }
+    #root .S-style .stamp.ok { color: #7fd38a; border-color: #7fd38a; box-shadow: 0 0 30px rgba(127,211,138,.35), inset 0 0 20px rgba(127,211,138,.2); }
+    #root .S-style .rev { display: flex; align-items: center; gap: 80px; }
+    #root .S-style .rev .stamp { margin: 0; }
+    #root .S-style .stamp.big { font-size: 96px; transform: rotate(-5deg); }
+    #root .S-style .portrait { padding: 16px; }
+    #root .S-style .portrait img { display: block; }
+    #root .S-style .inst { display: flex; align-items: center; }
+    #root .S-style .inst .tank { padding: 30px; }
+    #root .S-style .inst .tank img { width: 730px; height: 270px; display: block; }
+    #root .S-style .files { display: flex; gap: 30px; }
+    #root .S-style .file { position: relative; width: 200px; height: 250px; border-radius: 8px; background: linear-gradient(170deg, #efe6cc, #c9bd98); box-shadow: 0 24px 40px rgba(0,0,0,.55); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; clip-path: polygon(0 0, 72% 0, 100% 22%, 100% 100%, 0 100%); }
+    #root .S-style .file b { font-family: "Archivo Black", sans-serif; font-size: 58px; color: #24476e; font-weight: 400; }
+    #root .S-style .file.gfx b { color: #8c4a12; }
+    #root .S-style .file span { font-size: 30px; color: #3a3428; letter-spacing: .06em; text-transform: uppercase; }
+    #root .S-style .nums { display: flex; gap: 140px; }
+    #root .S-style .nums div { display: flex; flex-direction: column; align-items: center; }
+    #root .S-style .nums b { font-size: 150px; font-weight: 400; }
+    #root .S-style .nums span { font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: #c9c2a3; }
+    #root .S-style .finding { margin-top: 60px; font-size: 48px; letter-spacing: .04em; color: #fff; padding: 16px 40px; border-radius: 6px; background: #b8342c; box-shadow: 0 0 40px rgba(184,52,44,.5); }
+    #root .S-style .cl { display: flex; gap: 70px; }
+    #root .S-style .cl .c1 { width: 640px; height: 320px; display: flex; align-items: center; justify-content: center; }
+    #root .S-style .cl .c1 .hero { font-size: 70px; text-align: center; white-space: nowrap; }
+
+  
+
+    
+    /* the station template, inside the 90% action-safe box (x 96-1824, y 54-1026) */
+    #root .S-refine .wash { position: absolute; inset: 0; pointer-events: none; }
+    #root .S-refine .tt { position: absolute; left: 96px; right: 96px; top: 96px; text-align: center; font-size: 80px; white-space: nowrap; }
+    #root .S-refine .vis { position: absolute; left: 96px; right: 96px; top: 250px; height: 600px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    #root .S-refine .line { position: absolute; left: 96px; right: 96px; top: 880px; text-align: center; font-size: 46px; letter-spacing: .04em; color: #efe6cc; }
+    #root .S-refine .row3 { display: flex; gap: 60px; align-items: flex-end; }
+    #root .S-refine .row3 .m { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+    #root .S-refine .row3 .pic { height: 270px; display: flex; align-items: flex-end; }
+    #root .S-refine .row3 .pic, #root .S-refine .dev .m, #root .S-refine .pair .pa, #root .S-refine .refs .r { filter: drop-shadow(0 22px 26px rgba(0,0,0,.6)); }
+    #root .S-refine .row3 .sz { font-size: 72px; }
+    #root .S-refine .price .big { font-size: 300px; line-height: .9; }
+    #root .S-refine .dev { align-items: center; }
+    #root .S-refine .chips { margin-top: 48px; display: flex; gap: 16px; }
+    #root .S-refine .chips span { padding: 12px 28px; font-size: 34px; letter-spacing: .04em; border-radius: 6px; box-shadow: 0 12px 24px rgba(0,0,0,.45); }
+    #root .S-refine .refs { display: flex; align-items: center; gap: 24px; }
+    #root .S-refine .refs .r img { width: 200px; height: 176px; display: block; object-fit: contain; }
+    #root .S-refine .arrow { font-size: 120px; margin: 0 20px; }
+    #root .S-refine .refs .out { width: 360px; height: 330px; display: flex; align-items: center; justify-content: center; }
+    #root .S-refine .refs .out img { width: 300px; height: 264px; object-fit: contain; }
+    #root .S-refine .solo { filter: drop-shadow(0 26px 34px rgba(0,0,0,.65)); }
+    #root .S-refine .solo img { width: 520px; height: 520px; object-fit: contain; display: block; }
+    #root .S-refine .pair { display: flex; align-items: center; gap: 30px; }
+    #root .S-refine .pair .pa img { width: 520px; height: 520px; display: block; object-fit: contain; }
+    #root .S-refine .clamp { position: relative; width: 400px; height: 440px; }
+    #root .S-refine .clamp .slot { position: absolute; left: 30px; top: 26px; width: 340px; height: 388px; display: flex; align-items: center; justify-content: center; background: linear-gradient(160deg, #262d31, #14181b); box-shadow: inset 0 0 0 3px #3b444a; }
+    #root .S-refine .clamp .slot img { width: 300px; height: 340px; }
+    #root .S-refine .sheet { padding: 16px; }
+    #root .S-refine .sheet img { width: 1600px; display: block; }
+    #root .S-refine .stamp { margin-top: 50px; font-size: 80px; }
+    #root .S-refine .stamp.ok { color: #7fd38a; border-color: #7fd38a; box-shadow: 0 0 30px rgba(127,211,138,.35), inset 0 0 20px rgba(127,211,138,.2); }
+    #root .S-refine .rev { display: flex; align-items: center; gap: 80px; }
+    #root .S-refine .rev .stamp { margin: 0; }
+    #root .S-refine .stamp.big { font-size: 96px; transform: rotate(-5deg); }
+    #root .S-refine .portrait { padding: 16px; }
+    #root .S-refine .portrait img { display: block; }
+    #root .S-refine .inst { display: flex; align-items: center; }
+    #root .S-refine .inst .tank { padding: 30px; }
+    #root .S-refine .inst .tank img { width: 730px; height: 270px; display: block; }
+    #root .S-refine .files { display: flex; gap: 30px; }
+    #root .S-refine .file { position: relative; width: 200px; height: 250px; border-radius: 8px; background: linear-gradient(170deg, #efe6cc, #c9bd98); box-shadow: 0 24px 40px rgba(0,0,0,.55); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; clip-path: polygon(0 0, 72% 0, 100% 22%, 100% 100%, 0 100%); }
+    #root .S-refine .file b { font-family: "Archivo Black", sans-serif; font-size: 58px; color: #24476e; font-weight: 400; }
+    #root .S-refine .file.gfx b { color: #8c4a12; }
+    #root .S-refine .file span { font-size: 30px; color: #3a3428; letter-spacing: .06em; text-transform: uppercase; }
+    #root .S-refine .nums { display: flex; gap: 140px; }
+    #root .S-refine .nums div { display: flex; flex-direction: column; align-items: center; }
+    #root .S-refine .nums b { font-size: 150px; font-weight: 400; }
+    #root .S-refine .nums span { font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: #c9c2a3; }
+    #root .S-refine .finding { margin-top: 60px; font-size: 48px; letter-spacing: .04em; color: #fff; padding: 16px 40px; border-radius: 6px; background: #b8342c; box-shadow: 0 0 40px rgba(184,52,44,.5); }
+    #root .S-refine .cl { display: flex; gap: 70px; }
+    #root .S-refine .cl .c1 { width: 640px; height: 320px; display: flex; align-items: center; justify-content: center; }
+    #root .S-refine .cl .c1 .hero { font-size: 70px; text-align: center; white-space: nowrap; }
+
+  
+
+    
+    /* the station template, inside the 90% action-safe box (x 96-1824, y 54-1026) */
+    #root .S-process .wash { position: absolute; inset: 0; pointer-events: none; }
+    #root .S-process .tt { position: absolute; left: 96px; right: 96px; top: 96px; text-align: center; font-size: 80px; white-space: nowrap; }
+    #root .S-process .vis { position: absolute; left: 96px; right: 96px; top: 250px; height: 600px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    #root .S-process .line { position: absolute; left: 96px; right: 96px; top: 880px; text-align: center; font-size: 46px; letter-spacing: .04em; color: #efe6cc; }
+    #root .S-process .row3 { display: flex; gap: 60px; align-items: flex-end; }
+    #root .S-process .row3 .m { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+    #root .S-process .row3 .pic { height: 270px; display: flex; align-items: flex-end; }
+    #root .S-process .row3 .pic, #root .S-process .dev .m, #root .S-process .pair .pa, #root .S-process .refs .r { filter: drop-shadow(0 22px 26px rgba(0,0,0,.6)); }
+    #root .S-process .row3 .sz { font-size: 72px; }
+    #root .S-process .price .big { font-size: 300px; line-height: .9; }
+    #root .S-process .dev { align-items: center; }
+    #root .S-process .chips { margin-top: 48px; display: flex; gap: 16px; }
+    #root .S-process .chips span { padding: 12px 28px; font-size: 34px; letter-spacing: .04em; border-radius: 6px; box-shadow: 0 12px 24px rgba(0,0,0,.45); }
+    #root .S-process .refs { display: flex; align-items: center; gap: 24px; }
+    #root .S-process .refs .r img { width: 200px; height: 176px; display: block; object-fit: contain; }
+    #root .S-process .arrow { font-size: 120px; margin: 0 20px; }
+    #root .S-process .refs .out { width: 360px; height: 330px; display: flex; align-items: center; justify-content: center; }
+    #root .S-process .refs .out img { width: 300px; height: 264px; object-fit: contain; }
+    #root .S-process .solo { filter: drop-shadow(0 26px 34px rgba(0,0,0,.65)); }
+    #root .S-process .solo img { width: 520px; height: 520px; object-fit: contain; display: block; }
+    #root .S-process .pair { display: flex; align-items: center; gap: 30px; }
+    #root .S-process .pair .pa img { width: 520px; height: 520px; display: block; object-fit: contain; }
+    #root .S-process .clamp { position: relative; width: 400px; height: 440px; }
+    #root .S-process .clamp .slot { position: absolute; left: 30px; top: 26px; width: 340px; height: 388px; display: flex; align-items: center; justify-content: center; background: linear-gradient(160deg, #262d31, #14181b); box-shadow: inset 0 0 0 3px #3b444a; }
+    #root .S-process .clamp .slot img { width: 300px; height: 340px; }
+    #root .S-process .sheet { padding: 16px; }
+    #root .S-process .sheet img { width: 1600px; display: block; }
+    #root .S-process .stamp { margin-top: 50px; font-size: 80px; }
+    #root .S-process .stamp.ok { color: #7fd38a; border-color: #7fd38a; box-shadow: 0 0 30px rgba(127,211,138,.35), inset 0 0 20px rgba(127,211,138,.2); }
+    #root .S-process .rev { display: flex; align-items: center; gap: 80px; }
+    #root .S-process .rev .stamp { margin: 0; }
+    #root .S-process .stamp.big { font-size: 96px; transform: rotate(-5deg); }
+    #root .S-process .portrait { padding: 16px; }
+    #root .S-process .portrait img { display: block; }
+    #root .S-process .inst { display: flex; align-items: center; }
+    #root .S-process .inst .tank { padding: 30px; }
+    #root .S-process .inst .tank img { width: 730px; height: 270px; display: block; }
+    #root .S-process .files { display: flex; gap: 30px; }
+    #root .S-process .file { position: relative; width: 200px; height: 250px; border-radius: 8px; background: linear-gradient(170deg, #efe6cc, #c9bd98); box-shadow: 0 24px 40px rgba(0,0,0,.55); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; clip-path: polygon(0 0, 72% 0, 100% 22%, 100% 100%, 0 100%); }
+    #root .S-process .file b { font-family: "Archivo Black", sans-serif; font-size: 58px; color: #24476e; font-weight: 400; }
+    #root .S-process .file.gfx b { color: #8c4a12; }
+    #root .S-process .file span { font-size: 30px; color: #3a3428; letter-spacing: .06em; text-transform: uppercase; }
+    #root .S-process .nums { display: flex; gap: 140px; }
+    #root .S-process .nums div { display: flex; flex-direction: column; align-items: center; }
+    #root .S-process .nums b { font-size: 150px; font-weight: 400; }
+    #root .S-process .nums span { font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: #c9c2a3; }
+    #root .S-process .finding { margin-top: 60px; font-size: 48px; letter-spacing: .04em; color: #fff; padding: 16px 40px; border-radius: 6px; background: #b8342c; box-shadow: 0 0 40px rgba(184,52,44,.5); }
+    #root .S-process .cl { display: flex; gap: 70px; }
+    #root .S-process .cl .c1 { width: 640px; height: 320px; display: flex; align-items: center; justify-content: center; }
+    #root .S-process .cl .c1 .hero { font-size: 70px; text-align: center; white-space: nowrap; }
+
+  
+
+    
+    /* the station template, inside the 90% action-safe box (x 96-1824, y 54-1026) */
+    #root .S-validate .wash { position: absolute; inset: 0; pointer-events: none; }
+    #root .S-validate .tt { position: absolute; left: 96px; right: 96px; top: 96px; text-align: center; font-size: 80px; white-space: nowrap; }
+    #root .S-validate .vis { position: absolute; left: 96px; right: 96px; top: 250px; height: 600px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    #root .S-validate .line { position: absolute; left: 96px; right: 96px; top: 880px; text-align: center; font-size: 46px; letter-spacing: .04em; color: #efe6cc; }
+    #root .S-validate .row3 { display: flex; gap: 60px; align-items: flex-end; }
+    #root .S-validate .row3 .m { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+    #root .S-validate .row3 .pic { height: 270px; display: flex; align-items: flex-end; }
+    #root .S-validate .row3 .pic, #root .S-validate .dev .m, #root .S-validate .pair .pa, #root .S-validate .refs .r { filter: drop-shadow(0 22px 26px rgba(0,0,0,.6)); }
+    #root .S-validate .row3 .sz { font-size: 72px; }
+    #root .S-validate .price .big { font-size: 300px; line-height: .9; }
+    #root .S-validate .dev { align-items: center; }
+    #root .S-validate .chips { margin-top: 48px; display: flex; gap: 16px; }
+    #root .S-validate .chips span { padding: 12px 28px; font-size: 34px; letter-spacing: .04em; border-radius: 6px; box-shadow: 0 12px 24px rgba(0,0,0,.45); }
+    #root .S-validate .refs { display: flex; align-items: center; gap: 24px; }
+    #root .S-validate .refs .r img { width: 200px; height: 176px; display: block; object-fit: contain; }
+    #root .S-validate .arrow { font-size: 120px; margin: 0 20px; }
+    #root .S-validate .refs .out { width: 360px; height: 330px; display: flex; align-items: center; justify-content: center; }
+    #root .S-validate .refs .out img { width: 300px; height: 264px; object-fit: contain; }
+    #root .S-validate .solo { filter: drop-shadow(0 26px 34px rgba(0,0,0,.65)); }
+    #root .S-validate .solo img { width: 520px; height: 520px; object-fit: contain; display: block; }
+    #root .S-validate .pair { display: flex; align-items: center; gap: 30px; }
+    #root .S-validate .pair .pa img { width: 520px; height: 520px; display: block; object-fit: contain; }
+    #root .S-validate .clamp { position: relative; width: 400px; height: 440px; }
+    #root .S-validate .clamp .slot { position: absolute; left: 30px; top: 26px; width: 340px; height: 388px; display: flex; align-items: center; justify-content: center; background: linear-gradient(160deg, #262d31, #14181b); box-shadow: inset 0 0 0 3px #3b444a; }
+    #root .S-validate .clamp .slot img { width: 300px; height: 340px; }
+    #root .S-validate .sheet { padding: 16px; }
+    #root .S-validate .sheet img { width: 1600px; display: block; }
+    #root .S-validate .stamp { margin-top: 50px; font-size: 80px; }
+    #root .S-validate .stamp.ok { color: #7fd38a; border-color: #7fd38a; box-shadow: 0 0 30px rgba(127,211,138,.35), inset 0 0 20px rgba(127,211,138,.2); }
+    #root .S-validate .rev { display: flex; align-items: center; gap: 80px; }
+    #root .S-validate .rev .stamp { margin: 0; }
+    #root .S-validate .stamp.big { font-size: 96px; transform: rotate(-5deg); }
+    #root .S-validate .portrait { padding: 16px; }
+    #root .S-validate .portrait img { display: block; }
+    #root .S-validate .inst { display: flex; align-items: center; }
+    #root .S-validate .inst .tank { padding: 30px; }
+    #root .S-validate .inst .tank img { width: 730px; height: 270px; display: block; }
+    #root .S-validate .files { display: flex; gap: 30px; }
+    #root .S-validate .file { position: relative; width: 200px; height: 250px; border-radius: 8px; background: linear-gradient(170deg, #efe6cc, #c9bd98); box-shadow: 0 24px 40px rgba(0,0,0,.55); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; clip-path: polygon(0 0, 72% 0, 100% 22%, 100% 100%, 0 100%); }
+    #root .S-validate .file b { font-family: "Archivo Black", sans-serif; font-size: 58px; color: #24476e; font-weight: 400; }
+    #root .S-validate .file.gfx b { color: #8c4a12; }
+    #root .S-validate .file span { font-size: 30px; color: #3a3428; letter-spacing: .06em; text-transform: uppercase; }
+    #root .S-validate .nums { display: flex; gap: 140px; }
+    #root .S-validate .nums div { display: flex; flex-direction: column; align-items: center; }
+    #root .S-validate .nums b { font-size: 150px; font-weight: 400; }
+    #root .S-validate .nums span { font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: #c9c2a3; }
+    #root .S-validate .finding { margin-top: 60px; font-size: 48px; letter-spacing: .04em; color: #fff; padding: 16px 40px; border-radius: 6px; background: #b8342c; box-shadow: 0 0 40px rgba(184,52,44,.5); }
+    #root .S-validate .cl { display: flex; gap: 70px; }
+    #root .S-validate .cl .c1 { width: 640px; height: 320px; display: flex; align-items: center; justify-content: center; }
+    #root .S-validate .cl .c1 .hero { font-size: 70px; text-align: center; white-space: nowrap; }
+
+  
+
+    
+    /* the station template, inside the 90% action-safe box (x 96-1824, y 54-1026) */
+    #root .S-review .wash { position: absolute; inset: 0; pointer-events: none; }
+    #root .S-review .tt { position: absolute; left: 96px; right: 96px; top: 96px; text-align: center; font-size: 80px; white-space: nowrap; }
+    #root .S-review .vis { position: absolute; left: 96px; right: 96px; top: 250px; height: 600px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    #root .S-review .line { position: absolute; left: 96px; right: 96px; top: 880px; text-align: center; font-size: 46px; letter-spacing: .04em; color: #efe6cc; }
+    #root .S-review .row3 { display: flex; gap: 60px; align-items: flex-end; }
+    #root .S-review .row3 .m { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+    #root .S-review .row3 .pic { height: 270px; display: flex; align-items: flex-end; }
+    #root .S-review .row3 .pic, #root .S-review .dev .m, #root .S-review .pair .pa, #root .S-review .refs .r { filter: drop-shadow(0 22px 26px rgba(0,0,0,.6)); }
+    #root .S-review .row3 .sz { font-size: 72px; }
+    #root .S-review .price .big { font-size: 300px; line-height: .9; }
+    #root .S-review .dev { align-items: center; }
+    #root .S-review .chips { margin-top: 48px; display: flex; gap: 16px; }
+    #root .S-review .chips span { padding: 12px 28px; font-size: 34px; letter-spacing: .04em; border-radius: 6px; box-shadow: 0 12px 24px rgba(0,0,0,.45); }
+    #root .S-review .refs { display: flex; align-items: center; gap: 24px; }
+    #root .S-review .refs .r img { width: 200px; height: 176px; display: block; object-fit: contain; }
+    #root .S-review .arrow { font-size: 120px; margin: 0 20px; }
+    #root .S-review .refs .out { width: 360px; height: 330px; display: flex; align-items: center; justify-content: center; }
+    #root .S-review .refs .out img { width: 300px; height: 264px; object-fit: contain; }
+    #root .S-review .solo { filter: drop-shadow(0 26px 34px rgba(0,0,0,.65)); }
+    #root .S-review .solo img { width: 520px; height: 520px; object-fit: contain; display: block; }
+    #root .S-review .pair { display: flex; align-items: center; gap: 30px; }
+    #root .S-review .pair .pa img { width: 520px; height: 520px; display: block; object-fit: contain; }
+    #root .S-review .clamp { position: relative; width: 400px; height: 440px; }
+    #root .S-review .clamp .slot { position: absolute; left: 30px; top: 26px; width: 340px; height: 388px; display: flex; align-items: center; justify-content: center; background: linear-gradient(160deg, #262d31, #14181b); box-shadow: inset 0 0 0 3px #3b444a; }
+    #root .S-review .clamp .slot img { width: 300px; height: 340px; }
+    #root .S-review .sheet { padding: 16px; }
+    #root .S-review .sheet img { width: 1600px; display: block; }
+    #root .S-review .stamp { margin-top: 50px; font-size: 80px; }
+    #root .S-review .stamp.ok { color: #7fd38a; border-color: #7fd38a; box-shadow: 0 0 30px rgba(127,211,138,.35), inset 0 0 20px rgba(127,211,138,.2); }
+    #root .S-review .rev { display: flex; align-items: center; gap: 80px; }
+    #root .S-review .rev .stamp { margin: 0; }
+    #root .S-review .stamp.big { font-size: 96px; transform: rotate(-5deg); }
+    #root .S-review .portrait { padding: 16px; }
+    #root .S-review .portrait img { display: block; }
+    #root .S-review .inst { display: flex; align-items: center; }
+    #root .S-review .inst .tank { padding: 30px; }
+    #root .S-review .inst .tank img { width: 730px; height: 270px; display: block; }
+    #root .S-review .files { display: flex; gap: 30px; }
+    #root .S-review .file { position: relative; width: 200px; height: 250px; border-radius: 8px; background: linear-gradient(170deg, #efe6cc, #c9bd98); box-shadow: 0 24px 40px rgba(0,0,0,.55); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; clip-path: polygon(0 0, 72% 0, 100% 22%, 100% 100%, 0 100%); }
+    #root .S-review .file b { font-family: "Archivo Black", sans-serif; font-size: 58px; color: #24476e; font-weight: 400; }
+    #root .S-review .file.gfx b { color: #8c4a12; }
+    #root .S-review .file span { font-size: 30px; color: #3a3428; letter-spacing: .06em; text-transform: uppercase; }
+    #root .S-review .nums { display: flex; gap: 140px; }
+    #root .S-review .nums div { display: flex; flex-direction: column; align-items: center; }
+    #root .S-review .nums b { font-size: 150px; font-weight: 400; }
+    #root .S-review .nums span { font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: #c9c2a3; }
+    #root .S-review .finding { margin-top: 60px; font-size: 48px; letter-spacing: .04em; color: #fff; padding: 16px 40px; border-radius: 6px; background: #b8342c; box-shadow: 0 0 40px rgba(184,52,44,.5); }
+    #root .S-review .cl { display: flex; gap: 70px; }
+    #root .S-review .cl .c1 { width: 640px; height: 320px; display: flex; align-items: center; justify-content: center; }
+    #root .S-review .cl .c1 .hero { font-size: 70px; text-align: center; white-space: nowrap; }
+
+  
+
+    
+    /* the station template, inside the 90% action-safe box (x 96-1824, y 54-1026) */
+    #root .S-install .wash { position: absolute; inset: 0; pointer-events: none; }
+    #root .S-install .tt { position: absolute; left: 96px; right: 96px; top: 96px; text-align: center; font-size: 80px; white-space: nowrap; }
+    #root .S-install .vis { position: absolute; left: 96px; right: 96px; top: 250px; height: 600px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    #root .S-install .line { position: absolute; left: 96px; right: 96px; top: 880px; text-align: center; font-size: 46px; letter-spacing: .04em; color: #efe6cc; }
+    #root .S-install .row3 { display: flex; gap: 60px; align-items: flex-end; }
+    #root .S-install .row3 .m { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+    #root .S-install .row3 .pic { height: 270px; display: flex; align-items: flex-end; }
+    #root .S-install .row3 .pic, #root .S-install .dev .m, #root .S-install .pair .pa, #root .S-install .refs .r { filter: drop-shadow(0 22px 26px rgba(0,0,0,.6)); }
+    #root .S-install .row3 .sz { font-size: 72px; }
+    #root .S-install .price .big { font-size: 300px; line-height: .9; }
+    #root .S-install .dev { align-items: center; }
+    #root .S-install .chips { margin-top: 48px; display: flex; gap: 16px; }
+    #root .S-install .chips span { padding: 12px 28px; font-size: 34px; letter-spacing: .04em; border-radius: 6px; box-shadow: 0 12px 24px rgba(0,0,0,.45); }
+    #root .S-install .refs { display: flex; align-items: center; gap: 24px; }
+    #root .S-install .refs .r img { width: 200px; height: 176px; display: block; object-fit: contain; }
+    #root .S-install .arrow { font-size: 120px; margin: 0 20px; }
+    #root .S-install .refs .out { width: 360px; height: 330px; display: flex; align-items: center; justify-content: center; }
+    #root .S-install .refs .out img { width: 300px; height: 264px; object-fit: contain; }
+    #root .S-install .solo { filter: drop-shadow(0 26px 34px rgba(0,0,0,.65)); }
+    #root .S-install .solo img { width: 520px; height: 520px; object-fit: contain; display: block; }
+    #root .S-install .pair { display: flex; align-items: center; gap: 30px; }
+    #root .S-install .pair .pa img { width: 520px; height: 520px; display: block; object-fit: contain; }
+    #root .S-install .clamp { position: relative; width: 400px; height: 440px; }
+    #root .S-install .clamp .slot { position: absolute; left: 30px; top: 26px; width: 340px; height: 388px; display: flex; align-items: center; justify-content: center; background: linear-gradient(160deg, #262d31, #14181b); box-shadow: inset 0 0 0 3px #3b444a; }
+    #root .S-install .clamp .slot img { width: 300px; height: 340px; }
+    #root .S-install .sheet { padding: 16px; }
+    #root .S-install .sheet img { width: 1600px; display: block; }
+    #root .S-install .stamp { margin-top: 50px; font-size: 80px; }
+    #root .S-install .stamp.ok { color: #7fd38a; border-color: #7fd38a; box-shadow: 0 0 30px rgba(127,211,138,.35), inset 0 0 20px rgba(127,211,138,.2); }
+    #root .S-install .rev { display: flex; align-items: center; gap: 80px; }
+    #root .S-install .rev .stamp { margin: 0; }
+    #root .S-install .stamp.big { font-size: 96px; transform: rotate(-5deg); }
+    #root .S-install .portrait { padding: 16px; }
+    #root .S-install .portrait img { display: block; }
+    #root .S-install .inst { display: flex; align-items: center; }
+    #root .S-install .inst .tank { padding: 30px; }
+    #root .S-install .inst .tank img { width: 730px; height: 270px; display: block; }
+    #root .S-install .files { display: flex; gap: 30px; }
+    #root .S-install .file { position: relative; width: 200px; height: 250px; border-radius: 8px; background: linear-gradient(170deg, #efe6cc, #c9bd98); box-shadow: 0 24px 40px rgba(0,0,0,.55); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; clip-path: polygon(0 0, 72% 0, 100% 22%, 100% 100%, 0 100%); }
+    #root .S-install .file b { font-family: "Archivo Black", sans-serif; font-size: 58px; color: #24476e; font-weight: 400; }
+    #root .S-install .file.gfx b { color: #8c4a12; }
+    #root .S-install .file span { font-size: 30px; color: #3a3428; letter-spacing: .06em; text-transform: uppercase; }
+    #root .S-install .nums { display: flex; gap: 140px; }
+    #root .S-install .nums div { display: flex; flex-direction: column; align-items: center; }
+    #root .S-install .nums b { font-size: 150px; font-weight: 400; }
+    #root .S-install .nums span { font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: #c9c2a3; }
+    #root .S-install .finding { margin-top: 60px; font-size: 48px; letter-spacing: .04em; color: #fff; padding: 16px 40px; border-radius: 6px; background: #b8342c; box-shadow: 0 0 40px rgba(184,52,44,.5); }
+    #root .S-install .cl { display: flex; gap: 70px; }
+    #root .S-install .cl .c1 { width: 640px; height: 320px; display: flex; align-items: center; justify-content: center; }
+    #root .S-install .cl .c1 .hero { font-size: 70px; text-align: center; white-space: nowrap; }
+
+  
+
+    
+    /* the station template, inside the 90% action-safe box (x 96-1824, y 54-1026) */
+    #root .S-audit .wash { position: absolute; inset: 0; pointer-events: none; }
+    #root .S-audit .tt { position: absolute; left: 96px; right: 96px; top: 96px; text-align: center; font-size: 80px; white-space: nowrap; }
+    #root .S-audit .vis { position: absolute; left: 96px; right: 96px; top: 250px; height: 600px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    #root .S-audit .line { position: absolute; left: 96px; right: 96px; top: 880px; text-align: center; font-size: 46px; letter-spacing: .04em; color: #efe6cc; }
+    #root .S-audit .row3 { display: flex; gap: 60px; align-items: flex-end; }
+    #root .S-audit .row3 .m { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+    #root .S-audit .row3 .pic { height: 270px; display: flex; align-items: flex-end; }
+    #root .S-audit .row3 .pic, #root .S-audit .dev .m, #root .S-audit .pair .pa, #root .S-audit .refs .r { filter: drop-shadow(0 22px 26px rgba(0,0,0,.6)); }
+    #root .S-audit .row3 .sz { font-size: 72px; }
+    #root .S-audit .price .big { font-size: 300px; line-height: .9; }
+    #root .S-audit .dev { align-items: center; }
+    #root .S-audit .chips { margin-top: 48px; display: flex; gap: 16px; }
+    #root .S-audit .chips span { padding: 12px 28px; font-size: 34px; letter-spacing: .04em; border-radius: 6px; box-shadow: 0 12px 24px rgba(0,0,0,.45); }
+    #root .S-audit .refs { display: flex; align-items: center; gap: 24px; }
+    #root .S-audit .refs .r img { width: 200px; height: 176px; display: block; object-fit: contain; }
+    #root .S-audit .arrow { font-size: 120px; margin: 0 20px; }
+    #root .S-audit .refs .out { width: 360px; height: 330px; display: flex; align-items: center; justify-content: center; }
+    #root .S-audit .refs .out img { width: 300px; height: 264px; object-fit: contain; }
+    #root .S-audit .solo { filter: drop-shadow(0 26px 34px rgba(0,0,0,.65)); }
+    #root .S-audit .solo img { width: 520px; height: 520px; object-fit: contain; display: block; }
+    #root .S-audit .pair { display: flex; align-items: center; gap: 30px; }
+    #root .S-audit .pair .pa img { width: 520px; height: 520px; display: block; object-fit: contain; }
+    #root .S-audit .clamp { position: relative; width: 400px; height: 440px; }
+    #root .S-audit .clamp .slot { position: absolute; left: 30px; top: 26px; width: 340px; height: 388px; display: flex; align-items: center; justify-content: center; background: linear-gradient(160deg, #262d31, #14181b); box-shadow: inset 0 0 0 3px #3b444a; }
+    #root .S-audit .clamp .slot img { width: 300px; height: 340px; }
+    #root .S-audit .sheet { padding: 16px; }
+    #root .S-audit .sheet img { width: 1600px; display: block; }
+    #root .S-audit .stamp { margin-top: 50px; font-size: 80px; }
+    #root .S-audit .stamp.ok { color: #7fd38a; border-color: #7fd38a; box-shadow: 0 0 30px rgba(127,211,138,.35), inset 0 0 20px rgba(127,211,138,.2); }
+    #root .S-audit .rev { display: flex; align-items: center; gap: 80px; }
+    #root .S-audit .rev .stamp { margin: 0; }
+    #root .S-audit .stamp.big { font-size: 96px; transform: rotate(-5deg); }
+    #root .S-audit .portrait { padding: 16px; }
+    #root .S-audit .portrait img { display: block; }
+    #root .S-audit .inst { display: flex; align-items: center; }
+    #root .S-audit .inst .tank { padding: 30px; }
+    #root .S-audit .inst .tank img { width: 730px; height: 270px; display: block; }
+    #root .S-audit .files { display: flex; gap: 30px; }
+    #root .S-audit .file { position: relative; width: 200px; height: 250px; border-radius: 8px; background: linear-gradient(170deg, #efe6cc, #c9bd98); box-shadow: 0 24px 40px rgba(0,0,0,.55); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; clip-path: polygon(0 0, 72% 0, 100% 22%, 100% 100%, 0 100%); }
+    #root .S-audit .file b { font-family: "Archivo Black", sans-serif; font-size: 58px; color: #24476e; font-weight: 400; }
+    #root .S-audit .file.gfx b { color: #8c4a12; }
+    #root .S-audit .file span { font-size: 30px; color: #3a3428; letter-spacing: .06em; text-transform: uppercase; }
+    #root .S-audit .nums { display: flex; gap: 140px; }
+    #root .S-audit .nums div { display: flex; flex-direction: column; align-items: center; }
+    #root .S-audit .nums b { font-size: 150px; font-weight: 400; }
+    #root .S-audit .nums span { font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: #c9c2a3; }
+    #root .S-audit .finding { margin-top: 60px; font-size: 48px; letter-spacing: .04em; color: #fff; padding: 16px 40px; border-radius: 6px; background: #b8342c; box-shadow: 0 0 40px rgba(184,52,44,.5); }
+    #root .S-audit .cl { display: flex; gap: 70px; }
+    #root .S-audit .cl .c1 { width: 640px; height: 320px; display: flex; align-items: center; justify-content: center; }
+    #root .S-audit .cl .c1 .hero { font-size: 70px; text-align: center; white-space: nowrap; }
+
+  
+
+    
+    /* the station template, inside the 90% action-safe box (x 96-1824, y 54-1026) */
+    #root .S-clients .wash { position: absolute; inset: 0; pointer-events: none; }
+    #root .S-clients .tt { position: absolute; left: 96px; right: 96px; top: 96px; text-align: center; font-size: 80px; white-space: nowrap; }
+    #root .S-clients .vis { position: absolute; left: 96px; right: 96px; top: 250px; height: 600px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    #root .S-clients .line { position: absolute; left: 96px; right: 96px; top: 880px; text-align: center; font-size: 46px; letter-spacing: .04em; color: #efe6cc; }
+    #root .S-clients .row3 { display: flex; gap: 60px; align-items: flex-end; }
+    #root .S-clients .row3 .m { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+    #root .S-clients .row3 .pic { height: 270px; display: flex; align-items: flex-end; }
+    #root .S-clients .row3 .pic, #root .S-clients .dev .m, #root .S-clients .pair .pa, #root .S-clients .refs .r { filter: drop-shadow(0 22px 26px rgba(0,0,0,.6)); }
+    #root .S-clients .row3 .sz { font-size: 72px; }
+    #root .S-clients .price .big { font-size: 300px; line-height: .9; }
+    #root .S-clients .dev { align-items: center; }
+    #root .S-clients .chips { margin-top: 48px; display: flex; gap: 16px; }
+    #root .S-clients .chips span { padding: 12px 28px; font-size: 34px; letter-spacing: .04em; border-radius: 6px; box-shadow: 0 12px 24px rgba(0,0,0,.45); }
+    #root .S-clients .refs { display: flex; align-items: center; gap: 24px; }
+    #root .S-clients .refs .r img { width: 200px; height: 176px; display: block; object-fit: contain; }
+    #root .S-clients .arrow { font-size: 120px; margin: 0 20px; }
+    #root .S-clients .refs .out { width: 360px; height: 330px; display: flex; align-items: center; justify-content: center; }
+    #root .S-clients .refs .out img { width: 300px; height: 264px; object-fit: contain; }
+    #root .S-clients .solo { filter: drop-shadow(0 26px 34px rgba(0,0,0,.65)); }
+    #root .S-clients .solo img { width: 520px; height: 520px; object-fit: contain; display: block; }
+    #root .S-clients .pair { display: flex; align-items: center; gap: 30px; }
+    #root .S-clients .pair .pa img { width: 520px; height: 520px; display: block; object-fit: contain; }
+    #root .S-clients .clamp { position: relative; width: 400px; height: 440px; }
+    #root .S-clients .clamp .slot { position: absolute; left: 30px; top: 26px; width: 340px; height: 388px; display: flex; align-items: center; justify-content: center; background: linear-gradient(160deg, #262d31, #14181b); box-shadow: inset 0 0 0 3px #3b444a; }
+    #root .S-clients .clamp .slot img { width: 300px; height: 340px; }
+    #root .S-clients .sheet { padding: 16px; }
+    #root .S-clients .sheet img { width: 1600px; display: block; }
+    #root .S-clients .stamp { margin-top: 50px; font-size: 80px; }
+    #root .S-clients .stamp.ok { color: #7fd38a; border-color: #7fd38a; box-shadow: 0 0 30px rgba(127,211,138,.35), inset 0 0 20px rgba(127,211,138,.2); }
+    #root .S-clients .rev { display: flex; align-items: center; gap: 80px; }
+    #root .S-clients .rev .stamp { margin: 0; }
+    #root .S-clients .stamp.big { font-size: 96px; transform: rotate(-5deg); }
+    #root .S-clients .portrait { padding: 16px; }
+    #root .S-clients .portrait img { display: block; }
+    #root .S-clients .inst { display: flex; align-items: center; }
+    #root .S-clients .inst .tank { padding: 30px; }
+    #root .S-clients .inst .tank img { width: 730px; height: 270px; display: block; }
+    #root .S-clients .files { display: flex; gap: 30px; }
+    #root .S-clients .file { position: relative; width: 200px; height: 250px; border-radius: 8px; background: linear-gradient(170deg, #efe6cc, #c9bd98); box-shadow: 0 24px 40px rgba(0,0,0,.55); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; clip-path: polygon(0 0, 72% 0, 100% 22%, 100% 100%, 0 100%); }
+    #root .S-clients .file b { font-family: "Archivo Black", sans-serif; font-size: 58px; color: #24476e; font-weight: 400; }
+    #root .S-clients .file.gfx b { color: #8c4a12; }
+    #root .S-clients .file span { font-size: 30px; color: #3a3428; letter-spacing: .06em; text-transform: uppercase; }
+    #root .S-clients .nums { display: flex; gap: 140px; }
+    #root .S-clients .nums div { display: flex; flex-direction: column; align-items: center; }
+    #root .S-clients .nums b { font-size: 150px; font-weight: 400; }
+    #root .S-clients .nums span { font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: #c9c2a3; }
+    #root .S-clients .finding { margin-top: 60px; font-size: 48px; letter-spacing: .04em; color: #fff; padding: 16px 40px; border-radius: 6px; background: #b8342c; box-shadow: 0 0 40px rgba(184,52,44,.5); }
+    #root .S-clients .cl { display: flex; gap: 70px; }
+    #root .S-clients .cl .c1 { width: 640px; height: 320px; display: flex; align-items: center; justify-content: center; }
+    #root .S-clients .cl .c1 .hero { font-size: 70px; text-align: center; white-space: nowrap; }
+
+  
+
+  </style>
+  <div id="root" data-composition-id="pipeline" data-width="1920" data-height="1080">
+    <div class="far" id="pp-far"></div>
+    <div class="cam" id="pp-cam"><div class="world" id="pp-world">
+      <div class="ground"></div>
+      <div class="station S-measured" style="left:0px;top:0px">
+    <div class="wash" data-layout-allow-overflow id="measured-wash" style="background: radial-gradient(ellipse 60% 55% at 50% 52%, #2f5d73cc 0%, #2f5d7355 45%, transparent 75%)"></div>
+    <div class="tt hero"><span class="ice measured-w">Measured from</span> <span class="brass measured-w">the game</span></div>
+    <div class="vis" id="measured-vis"><div class="row3">
+      <div class="m"><div class="pic"><img src="assets/gallery/processed_png/peace_conference-v1-p1.png" style="width:596px;height:230px" /></div><div class="sz hero ice">397×153</div></div>
+      <div class="m"><div class="pic"><img src="assets/gallery/processed_png/winter_border-v1-p1.png" style="width:315px;height:264px" /></div><div class="sz hero ice">210×176</div></div>
+      <div class="m"><div class="pic"><img src="assets/gallery/processed_png/IRP_fascism-v1-p1.png" style="width:328px;height:208px" /></div><div class="sz hero ice">82×52</div></div></div></div>
+    <div class="line" id="measured-line">Every canvas read from the game itself</div>
+    </div>
+      <div class="station S-plan" style="left:2300px;top:1000px">
+    <div class="wash" data-layout-allow-overflow id="plan-wash" style="background: radial-gradient(ellipse 60% 55% at 50% 52%, #3f6b2ccc 0%, #3f6b2c55 45%, transparent 75%)"></div>
+    <div class="tt hero"><span class="ice plan-w">Plan first.</span> <span class="brass plan-w">See the cost.</span></div>
+    <div class="vis" id="plan-vis"><div class="price"><div class="big hero brass">$0.00</div></div></div>
+    <div class="line" id="plan-line">on your ChatGPT plan</div>
+    </div>
+      <div class="station S-generate" style="left:4600px;top:0px">
+    <div class="wash" data-layout-allow-overflow id="generate-wash" style="background: radial-gradient(ellipse 60% 55% at 50% 52%, #1f6f63cc 0%, #1f6f6355 45%, transparent 75%)"></div>
+    <div class="tt hero"><span class="ice generate-w">ChatGPT login.</span> <span class="brass generate-w">Or an API key.</span></div>
+    <div class="vis" id="generate-vis"><div class="row3 dev">
+      <div class="m"><img class="g-dev" src="assets/gallery/source_png/heavy_tank-v1.png" style="width:470px" /></div>
+      <div class="m"><img class="g-dev" src="assets/gallery/source_png/state_security-v1.png" style="height:330px" /></div>
+      <div class="m"><img class="g-dev" src="assets/gallery/source_png/peace_conference-v1.png" style="width:470px" /></div></div>
+      <div class="chips"><span style="background:#10a37f;color:#fff">ChatGPT login</span><span style="background:#e8e8e8;color:#111">OpenAI</span><span style="background:#4f7cf0;color:#fff">Gemini</span><span style="background:#7b3fe4;color:#fff">fal</span><span style="background:#f2c94c;color:#111">ComfyUI</span></div></div>
+    
+    </div>
+      <div class="station S-style" style="left:6900px;top:400px">
+    <div class="wash" data-layout-allow-overflow id="style-wash" style="background: radial-gradient(ellipse 60% 55% at 50% 52%, #7a2c2ccc 0%, #7a2c2c55 45%, transparent 75%)"></div>
+    <div class="tt hero"><span class="ice style-w">It matches</span> <span class="brass style-w">your mod's style</span></div>
+    <div class="vis" id="style-vis"><div class="refs">
+      <div class="r"><img src="assets/tno/refs/ref_2.png" /></div><div class="r"><img src="assets/tno/refs/ref_3.png" /></div><div class="r"><img src="assets/tno/refs/ref_6.png" /></div><div class="r"><img src="assets/tno/refs/ref_7.png" /></div>
+      <div class="arrow hero brass">›</div>
+      <div class="out plate"><img src="assets/regen/geiger_counter/geiger_counter-v1-fit.png" /></div></div></div>
+    <div class="line" id="style-line">The New Order icons in · a new one out</div>
+    </div>
+      <div class="station S-refine" style="left:9200px;top:0px">
+    <div class="wash" data-layout-allow-overflow id="refine-wash" style="background: radial-gradient(ellipse 60% 55% at 50% 52%, #8a4a1ccc 0%, #8a4a1c55 45%, transparent 75%)"></div>
+    <div class="tt hero"><span class="ice refine-w">Refine with</span> <span class="brass refine-w">one instruction</span></div>
+    <div class="vis" id="refine-vis"><div class="pair"><div class="pa"><img src="assets/regen/winter_border/winter_border-v1.png" /></div><div class="arrow hero brass">›</div><div class="pa"><img src="assets/regen/winter_border/winter_border-v2.png" /></div></div></div>
+    <div class="line" id="refine-line">“…now at night in a heavy snowstorm”</div>
+    </div>
+      <div class="station S-process" style="left:11500px;top:1000px">
+    <div class="wash" data-layout-allow-overflow id="process-wash" style="background: radial-gradient(ellipse 60% 55% at 50% 52%, #8c6a1ecc 0%, #8c6a1e55 45%, transparent 75%)"></div>
+    <div class="tt hero"><span class="ice process-w">The vanilla finish.</span> <span class="brass process-w">Automatic.</span></div>
+    <div class="vis" id="process-vis"><div class="pair"><div class="pa"><img src="assets/regen/military_reforms/military_reforms-v1-fit.png" /></div><div class="arrow hero brass">›</div>
+      <div class="clamp"><div class="slot"><img src="assets/regen/military_reforms/military_reforms-v1-p1.png" style="width:286px;height:220px" /></div><div class="bracket tl"></div><div class="bracket tr"></div><div class="bracket bl"></div><div class="bracket br"></div></div></div></div>
+    <div class="line" id="process-line">52 × 40 · ready for the game</div>
+    </div>
+      <div class="station S-validate" style="left:13800px;top:0px">
+    <div class="wash" data-layout-allow-overflow id="validate-wash" style="background: radial-gradient(ellipse 60% 55% at 50% 52%, #2d6a3acc 0%, #2d6a3a55 45%, transparent 75%)"></div>
+    <div class="tt hero"><span class="ice validate-w">Checked before</span> <span class="brass validate-w">anyone looks</span></div>
+    <div class="vis" id="validate-vis"><div class="sheet plate"><img src="assets/gallery/preview_heavy_tank.png" /></div><div class="stamp ok">✓ Pass</div></div>
+    
+    </div>
+      <div class="station S-review" style="left:16100px;top:400px">
+    <div class="wash" data-layout-allow-overflow id="review-wash" style="background: radial-gradient(ellipse 60% 55% at 50% 52%, #6e2330cc 0%, #6e233055 45%, transparent 75%)"></div>
+    <div class="tt hero"><span class="ice review-w">No approval,</span> <span class="brass review-w">no install</span></div>
+    <div class="vis" id="review-vis"><div class="rev"><div class="portrait plate"><img src="assets/gallery/processed_png/iron_pact-v1-p1.png" style="width:400px;height:200px" /></div><div class="stamp big">Approved</div></div></div>
+    
+    </div>
+      <div class="station S-install" style="left:18400px;top:0px">
+    <div class="wash" data-layout-allow-overflow id="install-wash" style="background: radial-gradient(ellipse 60% 55% at 50% 52%, #24476ecc 0%, #24476e55 45%, transparent 75%)"></div>
+    <div class="tt hero"><span class="ice install-w">Installed.</span> <span class="brass install-w">Registered.</span></div>
+    <div class="vis" id="install-vis"><div class="inst"><div class="tank plate"><img src="assets/gallery/processed_png/heavy_tank-v1-p1.png" style="" /></div><div class="arrow hero brass">›</div>
+      <div class="files"><div class="file"><b>DDS</b><span>texture</span></div><div class="file gfx"><b>.gfx</b><span>sprite</span></div></div></div></div>
+    
+    </div>
+      <div class="station S-audit" style="left:20700px;top:1000px">
+    <div class="wash" data-layout-allow-overflow id="audit-wash" style="background: radial-gradient(ellipse 60% 55% at 50% 52%, #4a2f6bcc 0%, #4a2f6b55 45%, transparent 75%)"></div>
+    <div class="tt hero"><span class="ice audit-w">Audit</span> <span class="brass audit-w">the whole mod</span></div>
+    <div class="vis" id="audit-vis"><div class="nums"><div><b class="hero ice">29,566</b><span>sprites read</span></div><div><b class="hero ice">22,239</b><span>textures</span></div></div>
+      <div class="finding">1 missing sprite found</div></div>
+    
+    </div>
+      <div class="station S-clients" style="left:23000px;top:0px">
+    <div class="wash" data-layout-allow-overflow id="clients-wash" style="background: radial-gradient(ellipse 60% 55% at 50% 52%, #7a4a22cc 0%, #7a4a2255 45%, transparent 75%)"></div>
+    <div class="tt hero"><span class="ice clients-w">Claude Code</span> <span class="brass clients-w">& Codex</span></div>
+    <div class="vis" id="clients-vis"><div class="cl"><div class="plate c1" style="box-shadow: inset 0 0 0 3px #d97757, 0 30px 60px rgba(0,0,0,.65)"><div class="hero" style="color:#f1b39a">Claude Code</div></div><div class="plate c1" style="box-shadow: inset 0 0 0 3px #e8e8e8, 0 30px 60px rgba(0,0,0,.65)"><div class="hero" style="color:#f2f2f2">Codex</div></div></div></div>
+    <div class="line" id="clients-line">Same tools. Same mod.</div>
+    </div>
+
+    </div></div>
+    {{GRAIN}}
+    <div class="pstreak" id="pp-streak"></div>
+    <div class="vig"></div>
+  </div>
+  <script>
+    {{LIB}}
+    const master = tl;
+
+    master.to("#pp-world", { x: -2300, y: -1000, duration: b(2), ease: "power2.inOut" }, b(6));
+    master.fromTo("#pp-cam", { scale: 1 }, { scale: 0.9, duration: b(1), ease: "sine.inOut", yoyo: true, repeat: 1, immediateRender: false }, b(6));
+    master.to("#pp-far", { x: -805, y: -350, duration: b(2), ease: "power2.inOut" }, b(6));
+    master.fromTo("#pp-streak", { xPercent: -100, opacity: 0.9 }, { xPercent: 100, opacity: 0, duration: b(2), ease: "power2.inOut", immediateRender: false }, b(6));
+    master.to("#pp-world", { x: -4600, y: 0, duration: b(2), ease: "power2.inOut" }, b(14));
+    master.fromTo("#pp-cam", { scale: 1 }, { scale: 0.9, duration: b(1), ease: "sine.inOut", yoyo: true, repeat: 1, immediateRender: false }, b(14));
+    master.to("#pp-far", { x: -1610, y: 0, duration: b(2), ease: "power2.inOut" }, b(14));
+    master.fromTo("#pp-streak", { xPercent: -100, opacity: 0.9 }, { xPercent: 100, opacity: 0, duration: b(2), ease: "power2.inOut", immediateRender: false }, b(14));
+    master.to("#pp-world", { x: -6900, y: -400, duration: b(2), ease: "power2.inOut" }, b(22));
+    master.fromTo("#pp-cam", { scale: 1 }, { scale: 0.9, duration: b(1), ease: "sine.inOut", yoyo: true, repeat: 1, immediateRender: false }, b(22));
+    master.to("#pp-far", { x: -2415, y: -140, duration: b(2), ease: "power2.inOut" }, b(22));
+    master.fromTo("#pp-streak", { xPercent: -100, opacity: 0.9 }, { xPercent: 100, opacity: 0, duration: b(2), ease: "power2.inOut", immediateRender: false }, b(22));
+    master.to("#pp-world", { x: -9200, y: 0, duration: b(2), ease: "power2.inOut" }, b(30));
+    master.fromTo("#pp-cam", { scale: 1 }, { scale: 0.9, duration: b(1), ease: "sine.inOut", yoyo: true, repeat: 1, immediateRender: false }, b(30));
+    master.to("#pp-far", { x: -3220, y: 0, duration: b(2), ease: "power2.inOut" }, b(30));
+    master.fromTo("#pp-streak", { xPercent: -100, opacity: 0.9 }, { xPercent: 100, opacity: 0, duration: b(2), ease: "power2.inOut", immediateRender: false }, b(30));
+    master.to("#pp-world", { x: -11500, y: -1000, duration: b(2), ease: "power2.inOut" }, b(38));
+    master.fromTo("#pp-cam", { scale: 1 }, { scale: 0.9, duration: b(1), ease: "sine.inOut", yoyo: true, repeat: 1, immediateRender: false }, b(38));
+    master.to("#pp-far", { x: -4024.9999999999995, y: -350, duration: b(2), ease: "power2.inOut" }, b(38));
+    master.fromTo("#pp-streak", { xPercent: -100, opacity: 0.9 }, { xPercent: 100, opacity: 0, duration: b(2), ease: "power2.inOut", immediateRender: false }, b(38));
+    master.to("#pp-world", { x: -13800, y: 0, duration: b(2), ease: "power2.inOut" }, b(46));
+    master.fromTo("#pp-cam", { scale: 1 }, { scale: 0.9, duration: b(1), ease: "sine.inOut", yoyo: true, repeat: 1, immediateRender: false }, b(46));
+    master.to("#pp-far", { x: -4830, y: 0, duration: b(2), ease: "power2.inOut" }, b(46));
+    master.fromTo("#pp-streak", { xPercent: -100, opacity: 0.9 }, { xPercent: 100, opacity: 0, duration: b(2), ease: "power2.inOut", immediateRender: false }, b(46));
+    master.to("#pp-world", { x: -16100, y: -400, duration: b(2), ease: "power2.inOut" }, b(54));
+    master.fromTo("#pp-cam", { scale: 1 }, { scale: 0.9, duration: b(1), ease: "sine.inOut", yoyo: true, repeat: 1, immediateRender: false }, b(54));
+    master.to("#pp-far", { x: -5635, y: -140, duration: b(2), ease: "power2.inOut" }, b(54));
+    master.fromTo("#pp-streak", { xPercent: -100, opacity: 0.9 }, { xPercent: 100, opacity: 0, duration: b(2), ease: "power2.inOut", immediateRender: false }, b(54));
+    master.to("#pp-world", { x: -18400, y: 0, duration: b(2), ease: "power2.inOut" }, b(62));
+    master.fromTo("#pp-cam", { scale: 1 }, { scale: 0.9, duration: b(1), ease: "sine.inOut", yoyo: true, repeat: 1, immediateRender: false }, b(62));
+    master.to("#pp-far", { x: -6440, y: 0, duration: b(2), ease: "power2.inOut" }, b(62));
+    master.fromTo("#pp-streak", { xPercent: -100, opacity: 0.9 }, { xPercent: 100, opacity: 0, duration: b(2), ease: "power2.inOut", immediateRender: false }, b(62));
+    master.to("#pp-world", { x: -20700, y: -1000, duration: b(2), ease: "power2.inOut" }, b(70));
+    master.fromTo("#pp-cam", { scale: 1 }, { scale: 0.9, duration: b(1), ease: "sine.inOut", yoyo: true, repeat: 1, immediateRender: false }, b(70));
+    master.to("#pp-far", { x: -7244.999999999999, y: -350, duration: b(2), ease: "power2.inOut" }, b(70));
+    master.fromTo("#pp-streak", { xPercent: -100, opacity: 0.9 }, { xPercent: 100, opacity: 0, duration: b(2), ease: "power2.inOut", immediateRender: false }, b(70));
+    master.to("#pp-world", { x: -23000, y: 0, duration: b(2), ease: "power2.inOut" }, b(78));
+    master.fromTo("#pp-cam", { scale: 1 }, { scale: 0.9, duration: b(1), ease: "sine.inOut", yoyo: true, repeat: 1, immediateRender: false }, b(78));
+    master.to("#pp-far", { x: -8049.999999999999, y: 0, duration: b(2), ease: "power2.inOut" }, b(78));
+    master.fromTo("#pp-streak", { xPercent: -100, opacity: 0.9 }, { xPercent: 100, opacity: 0, duration: b(2), ease: "power2.inOut", immediateRender: false }, b(78));
+    { const DUR = b(8); const tl = gsap.timeline();
+      tl.set({}, {}, Math.max(0, DUR - 1 / 30));
+
+    // beat 0: title; beat 0.5: the visual; beat 2: the line; then everything holds still
+    tl.fromTo("#measured-wash", { opacity: 0 }, { opacity: 1, duration: b(1), ease: "sine.out" }, 0);
+    tl.fromTo(".measured-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: b(0.5), ease: "power3.out", stagger: b(0.5) }, 0);
+    tl.fromTo("#measured-vis", { opacity: 0, y: 40, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: b(1), ease: "power3.out" }, b(0.5));
+    tl.fromTo("#measured-line", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: b(0.75), ease: "power3.out" }, b(2));
+
+    
+      master.add(tl, b(0)); }
+    { const DUR = b(8); const tl = gsap.timeline();
+      tl.set({}, {}, Math.max(0, DUR - 1 / 30));
+
+    // beat 0: title; beat 0.5: the visual; beat 2: the line; then everything holds still
+    tl.fromTo("#plan-wash", { opacity: 0 }, { opacity: 1, duration: b(1), ease: "sine.out" }, 0);
+    tl.fromTo(".plan-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: b(0.5), ease: "power3.out", stagger: b(0.5) }, 0);
+    tl.fromTo("#plan-vis", { opacity: 0, y: 40, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: b(1), ease: "power3.out" }, b(0.5));
+    tl.fromTo("#plan-line", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: b(0.75), ease: "power3.out" }, b(2));
+
+    
+      master.add(tl, b(8)); }
+    { const DUR = b(8); const tl = gsap.timeline();
+      tl.set({}, {}, Math.max(0, DUR - 1 / 30));
+
+    // beat 0: title; beat 0.5: the visual; beat 2: the line; then everything holds still
+    tl.fromTo("#generate-wash", { opacity: 0 }, { opacity: 1, duration: b(1), ease: "sine.out" }, 0);
+    tl.fromTo(".generate-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: b(0.5), ease: "power3.out", stagger: b(0.5) }, 0);
+    tl.fromTo("#generate-vis", { opacity: 0, y: 40, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: b(1), ease: "power3.out" }, b(0.5));
+    tl.fromTo(".g-dev", { filter: "brightness(2.6) contrast(.4) blur(12px)" }, { filter: "brightness(1) contrast(1) blur(0px)", duration: b(1.5), ease: "power2.out", stagger: b(0.5) }, b(0.5));
+    tl.fromTo("#generate-vis .chips span", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: b(0.5), ease: "power3.out", stagger: b(0.25) }, b(2));
+    
+      master.add(tl, b(16)); }
+    { const DUR = b(8); const tl = gsap.timeline();
+      tl.set({}, {}, Math.max(0, DUR - 1 / 30));
+
+    // beat 0: title; beat 0.5: the visual; beat 2: the line; then everything holds still
+    tl.fromTo("#style-wash", { opacity: 0 }, { opacity: 1, duration: b(1), ease: "sine.out" }, 0);
+    tl.fromTo(".style-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: b(0.5), ease: "power3.out", stagger: b(0.5) }, 0);
+    tl.fromTo("#style-vis", { opacity: 0, y: 40, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: b(1), ease: "power3.out" }, b(0.5));
+    tl.fromTo("#style-line", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: b(0.75), ease: "power3.out" }, b(2));
+
+    
+      master.add(tl, b(24)); }
+    { const DUR = b(8); const tl = gsap.timeline();
+      tl.set({}, {}, Math.max(0, DUR - 1 / 30));
+
+    // beat 0: title; beat 0.5: the visual; beat 2: the line; then everything holds still
+    tl.fromTo("#refine-wash", { opacity: 0 }, { opacity: 1, duration: b(1), ease: "sine.out" }, 0);
+    tl.fromTo(".refine-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: b(0.5), ease: "power3.out", stagger: b(0.5) }, 0);
+    tl.fromTo("#refine-vis", { opacity: 0, y: 40, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: b(1), ease: "power3.out" }, b(0.5));
+    tl.fromTo("#refine-line", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: b(0.75), ease: "power3.out" }, b(2));
+    tl.fromTo("#refine-vis .pa:last-child", { opacity: 0, x: -50 }, { opacity: 1, x: 0, duration: b(1), ease: "power3.out" }, b(2));
+    
+      master.add(tl, b(32)); }
+    { const DUR = b(8); const tl = gsap.timeline();
+      tl.set({}, {}, Math.max(0, DUR - 1 / 30));
+
+    // beat 0: title; beat 0.5: the visual; beat 2: the line; then everything holds still
+    tl.fromTo("#process-wash", { opacity: 0 }, { opacity: 1, duration: b(1), ease: "sine.out" }, 0);
+    tl.fromTo(".process-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: b(0.5), ease: "power3.out", stagger: b(0.5) }, 0);
+    tl.fromTo("#process-vis", { opacity: 0, y: 40, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: b(1), ease: "power3.out" }, b(0.5));
+    tl.fromTo("#process-line", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: b(0.75), ease: "power3.out" }, b(2));
+    tl.fromTo("#process-vis .bracket", { scale: 1.8, opacity: 0 }, { scale: 1, opacity: 1, duration: b(0.75), ease: "back.out(1.6)" }, b(2));
+    tl.fromTo("#process-vis .slot img", { opacity: 0, scale: 1.3 }, { opacity: 1, scale: 1, duration: b(0.75), ease: "power3.out" }, b(2));
+    
+      master.add(tl, b(40)); }
+    { const DUR = b(8); const tl = gsap.timeline();
+      tl.set({}, {}, Math.max(0, DUR - 1 / 30));
+
+    // beat 0: title; beat 0.5: the visual; beat 2: the line; then everything holds still
+    tl.fromTo("#validate-wash", { opacity: 0 }, { opacity: 1, duration: b(1), ease: "sine.out" }, 0);
+    tl.fromTo(".validate-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: b(0.5), ease: "power3.out", stagger: b(0.5) }, 0);
+    tl.fromTo("#validate-vis", { opacity: 0, y: 40, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: b(1), ease: "power3.out" }, b(0.5));
+    tl.fromTo("#validate-vis .stamp", { opacity: 0, scale: 1.6 }, { opacity: 1, scale: 1, duration: b(0.5), ease: "back.out(1.8)" }, b(2));
+    
+      master.add(tl, b(48)); }
+    { const DUR = b(8); const tl = gsap.timeline();
+      tl.set({}, {}, Math.max(0, DUR - 1 / 30));
+
+    // beat 0: title; beat 0.5: the visual; beat 2: the line; then everything holds still
+    tl.fromTo("#review-wash", { opacity: 0 }, { opacity: 1, duration: b(1), ease: "sine.out" }, 0);
+    tl.fromTo(".review-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: b(0.5), ease: "power3.out", stagger: b(0.5) }, 0);
+    tl.fromTo("#review-vis", { opacity: 0, y: 40, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: b(1), ease: "power3.out" }, b(0.5));
+    tl.fromTo("#review-vis .stamp", { opacity: 0, scale: 1.6 }, { opacity: 1, scale: 1, duration: b(0.5), ease: "back.out(1.8)" }, b(2));
+    
+      master.add(tl, b(56)); }
+    { const DUR = b(8); const tl = gsap.timeline();
+      tl.set({}, {}, Math.max(0, DUR - 1 / 30));
+
+    // beat 0: title; beat 0.5: the visual; beat 2: the line; then everything holds still
+    tl.fromTo("#install-wash", { opacity: 0 }, { opacity: 1, duration: b(1), ease: "sine.out" }, 0);
+    tl.fromTo(".install-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: b(0.5), ease: "power3.out", stagger: b(0.5) }, 0);
+    tl.fromTo("#install-vis", { opacity: 0, y: 40, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: b(1), ease: "power3.out" }, b(0.5));
+    tl.fromTo("#install-vis .file", { opacity: 0, y: -60 }, { opacity: 1, y: 0, duration: b(0.75), ease: "back.out(1.4)", stagger: b(0.5) }, b(2));
+    
+      master.add(tl, b(64)); }
+    { const DUR = b(8); const tl = gsap.timeline();
+      tl.set({}, {}, Math.max(0, DUR - 1 / 30));
+
+    // beat 0: title; beat 0.5: the visual; beat 2: the line; then everything holds still
+    tl.fromTo("#audit-wash", { opacity: 0 }, { opacity: 1, duration: b(1), ease: "sine.out" }, 0);
+    tl.fromTo(".audit-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: b(0.5), ease: "power3.out", stagger: b(0.5) }, 0);
+    tl.fromTo("#audit-vis", { opacity: 0, y: 40, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: b(1), ease: "power3.out" }, b(0.5));
+    tl.fromTo("#audit-vis .finding", { opacity: 0, scale: 1.15 }, { opacity: 1, scale: 1, duration: b(0.5), ease: "back.out(1.8)" }, b(2));
+    
+      master.add(tl, b(72)); }
+    { const DUR = b(8); const tl = gsap.timeline();
+      tl.set({}, {}, Math.max(0, DUR - 1 / 30));
+
+    // beat 0: title; beat 0.5: the visual; beat 2: the line; then everything holds still
+    tl.fromTo("#clients-wash", { opacity: 0 }, { opacity: 1, duration: b(1), ease: "sine.out" }, 0);
+    tl.fromTo(".clients-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: b(0.5), ease: "power3.out", stagger: b(0.5) }, 0);
+    tl.fromTo("#clients-vis", { opacity: 0, y: 40, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: b(1), ease: "power3.out" }, b(0.5));
+    tl.fromTo("#clients-line", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: b(0.75), ease: "power3.out" }, b(2));
+
+    
+      master.add(tl, b(80)); }
+
+    window.__timelines["pipeline"] = master;
+  </script>
+</template>

@@ -1,0 +1,41 @@
+<template>
+  <style>
+    {{BASE}}
+    #root .bg { position: absolute; inset: -80px; background: url(assets/ingame/news_event_in_frame.png) center/cover; filter: blur(18px) brightness(.35) saturate(.8); }
+    #root .shot { position: absolute; left: 50%; top: 50%; overflow: hidden; box-shadow: 0 0 0 3px #59646b, 0 0 0 10px #1a1f22, 0 0 0 12px #e8b54f, 0 50px 100px rgba(0,0,0,.75); opacity: 0; }
+    #root .shot img { position: absolute; display: block; }
+    #root .lab { position: absolute; left: 0; right: 0; bottom: 56px; text-align: center; opacity: 0; font-size: 34px; }
+    #root .t { position: absolute; left: 0; right: 0; top: 52px; text-align: center; font-size: 78px; white-space: nowrap; }
+    #root .sw { position: absolute; top: -10%; left: 0; width: 50%; height: 120%; background: linear-gradient(100deg, transparent 20%, rgba(255,231,163,.85) 48%, rgba(232,181,79,.8) 52%, transparent 80%); mix-blend-mode: screen; }
+  </style>
+  <div id="root" data-composition-id="ingame" data-width="1920" data-height="1080">
+    <div class="bg"></div>
+    {{GRAIN}}
+    <div class="t hero"><span class="ice ig-w">Real files.</span> <span class="brass ig-w">Loaded by the game.</span></div>
+    <div class="shot ig-s" data-layout-allow-overflow style="width:816px;height:732px;margin:-340px 0 0 -408px"><img src="assets/ingame/news_event_in_frame.png" style="width:2304px;left:-720px;top:-264px" alt="" /></div>
+    <div class="shot ig-s" data-layout-allow-overflow style="width:1024px;height:390px;margin:-195px 0 0 -512px"><img src="assets/ingame/decision_category_in_panel.png" style="width:1120px;left:-16px;top:-1590px" alt="" /></div>
+    <div class="shot ig-s" data-layout-allow-overflow style="width:1400px;height:375px;margin:-188px 0 0 -700px"><img src="assets/ingame/W5_agency_logo_normal_hover_selected.png" style="width:1400px;left:0;top:0" alt="" /></div>
+    <div class="lab label ig-l">the <b>World News</b> window</div>
+    <div class="lab label ig-l">the <b>decisions</b> panel</div>
+    <div class="lab label ig-l">the agency logo · <b>selected</b></div>
+    <div class="sw" id="ig-sw" data-layout-allow-overflow></div>
+    <div class="vig"></div>
+  </div>
+  <script>
+    {{LIB}}
+    tl.fromTo(".ig-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out", stagger: b(1) }, 0);
+    const shots = gsap.utils.toArray(".ig-s"), labs = gsap.utils.toArray(".ig-l");
+    const n = shots.length, len = b(4);
+    shots.forEach((s, i) => {
+      const t0 = b(i * 4);
+      tl.fromTo(s, { opacity: 0, scale: 0.86, rotation: i % 2 ? 3 : -3, y: 60 }, { opacity: 1, scale: 1, rotation: i % 2 ? -1 : 1, y: 0, duration: b(0.5), ease: "expo.out" }, t0);
+      tl.fromTo(labs[i], { opacity: 0 }, { opacity: 1, duration: 0.2 }, t0 + b(0.25));
+      if (i < n - 1) {
+        tl.to(s, { opacity: 0, scale: 1.05, filter: "blur(10px)", duration: b(0.25), ease: "power3.in" }, t0 + len - b(0.25));
+        tl.to(labs[i], { opacity: 0, duration: 0.1 }, t0 + len - b(0.25));
+        tl.fromTo("#ig-sw", { xPercent: -120 }, { xPercent: 220, duration: b(0.5), ease: "power3.inOut" }, t0 + len - b(0.25));
+      }
+    });
+    window.__timelines["ingame"] = tl;
+  </script>
+</template>

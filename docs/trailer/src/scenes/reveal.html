@@ -1,0 +1,42 @@
+<template>
+  <style>
+    {{BASE}}
+    /* two mirrored plates, exactly half the frame each; borders only on the outer three edges so no seam line remains */
+    #root .pl { position: absolute; top: 0; width: 960px; height: 1080px; }
+    #root .pl.l { left: 0; background: repeating-linear-gradient(90deg, rgba(255,255,255,.025) 0 2px, transparent 2px 7px), linear-gradient(170deg, #343d42, #1a2023 60%, #11161a);
+      box-shadow: inset 3px 0 0 #59646b, inset 0 3px 0 #59646b, inset 0 -3px 0 #59646b, inset 120px 0 120px -60px rgba(0,0,0,.45); }
+    #root .pl.r { left: 960px; background: repeating-linear-gradient(90deg, rgba(255,255,255,.025) 0 2px, transparent 2px 7px), linear-gradient(190deg, #343d42, #1a2023 60%, #11161a);
+      box-shadow: inset -3px 0 0 #59646b, inset 0 3px 0 #59646b, inset 0 -3px 0 #59646b, inset -120px 0 120px -60px rgba(0,0,0,.45); }
+    #root .riv { position: absolute; width: 18px; height: 18px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #b5bec2, #2b3236 70%); }
+    #root .seam { position: absolute; left: 958px; top: 0; width: 4px; height: 1080px; background: #e8b54f; box-shadow: 0 0 40px #e8b54f; opacity: 0; }
+    #root .name { position: absolute; left: 0; right: 0; top: 400px; text-align: center; font-size: 140px; white-space: nowrap; }
+    #root .name span { display: inline-block; }
+    #root .sub { position: absolute; left: 0; right: 0; top: 600px; text-align: center; font-size: 44px; letter-spacing: .14em; text-transform: uppercase; }
+    #root .sub span { display: inline-block; color: #efe6cc; }
+    #root .sub i { display: inline-block; width: 10px; height: 10px; margin: 0 34px 8px; background: #e8b54f; transform: rotate(45deg); }
+    #root .sub span b { color: #e8b54f; font-weight: 600; }
+  </style>
+  <div id="root" data-composition-id="reveal" data-width="1920" data-height="1080">
+    <div class="steel"></div>
+    <div class="pl l" id="rv-l" data-layout-allow-overflow><div class="riv" style="left:48px;top:48px"></div><div class="riv" style="left:48px;bottom:48px"></div></div>
+    <div class="pl r" id="rv-r" data-layout-allow-overflow><div class="riv" style="right:48px;top:48px"></div><div class="riv" style="right:48px;bottom:48px"></div></div>
+    <div class="seam" id="rv-seam"></div>
+    {{GRAIN}}
+    <div class="name hero" id="rv-name"><span class="brass">h</span><span class="brass">o</span><span class="brass">i</span><span class="brass">4</span><span class="brass">-</span><span class="brass">i</span><span class="brass">m</span><span class="brass">a</span><span class="brass">g</span><span class="brass">e</span><span class="brass">g</span><span class="brass">e</span><span class="brass">n</span><span class="brass">-</span><span class="brass">m</span><span class="brass">c</span><span class="brass">p</span></div>
+    <div class="sub"><span class="rv-s">Rust MCP server + CLI</span><i class="rv-s"></i><span class="rv-s"><b>19</b> tools</span><i class="rv-s"></i><span class="rv-s"><b>40</b> asset families</span></div>
+    <div class="streak" id="rv-streak" style="left:0;top:560px;width:1920px"></div>
+    <div class="vig"></div>
+  </div>
+  <script>
+    {{LIB}}
+    tl.fromTo("#rv-l", { x: -1000 }, { x: 0, duration: b(1), ease: "expo.in" }, 0);
+    tl.fromTo("#rv-r", { x: 1000 }, { x: 0, duration: b(1), ease: "expo.in" }, 0);
+    tl.fromTo("#rv-seam", { opacity: 0, scaleY: 0 }, { opacity: 1, scaleY: 1, duration: 0.12 }, b(1));
+    tl.to("#rv-seam", { opacity: 0, duration: b(1), ease: "power2.out", immediateRender: false }, b(1.5));
+    tl.fromTo("#rv-name span", { opacity: 0, y: 80, scaleY: 1.6, filter: "blur(8px)" }, { opacity: 1, y: 0, scaleY: 1, filter: "blur(0px)", duration: 0.28, ease: "back.out(1.6)", stagger: 0.035 }, b(1));
+    tl.fromTo("#rv-streak", { scaleX: 0, opacity: 1 }, { scaleX: 1, opacity: 0, duration: b(1.5), ease: "power2.out" }, b(1));
+    tl.fromTo(".rv-s", { opacity: 0, filter: "blur(10px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.16, ease: "power4.out", stagger: b(0.5) }, b(4));
+    tl.to("#rv-name", { scale: 1.6, opacity: 0, filter: "blur(14px)", duration: b(0.5), ease: "power3.in" }, DUR - b(0.5));
+    window.__timelines["reveal"] = tl;
+  </script>
+</template>

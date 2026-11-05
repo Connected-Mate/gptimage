@@ -1,0 +1,49 @@
+<template>
+  <style>
+    {{BASE}}
+    #root .stage { position: absolute; inset: 0; perspective: 1600px; }
+    #root .ic { position: absolute; left: 50%; top: 44%; opacity: 0; filter: drop-shadow(0 24px 30px rgba(0,0,0,.6)); }
+    #root .ic img { display: block; }
+    #root .hero-ic { position: absolute; left: 50%; top: 42%; width: 440px; height: 440px; margin: -220px 0 0 -220px; opacity: 0; }
+    #root .hero-ic img { position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 30px 40px rgba(0,0,0,.7)); }
+    #root .shine { position: absolute; inset: 0; overflow: hidden; -webkit-mask: url(assets/gallery/source_png/iron_pact-v1.png) center/100% 100% no-repeat; mask: url(assets/gallery/source_png/iron_pact-v1.png) center/100% 100% no-repeat; }
+    #root .shine i { position: absolute; top: -20%; left: 0; width: 35%; height: 140%; background: linear-gradient(100deg, transparent, rgba(255,236,190,.9), transparent); mix-blend-mode: screen; }
+    #root .t1 { position: absolute; left: 0; right: 0; bottom: 90px; text-align: center; font-size: 92px; }
+    #root .t1 span { display: inline-block; margin: 0 14px; }
+    #root .warm { position: absolute; inset: 0; background: radial-gradient(ellipse 55% 50% at 50% 44%, rgba(176,98,30,.55) 0%, rgba(120,60,20,.22) 45%, transparent 75%); }
+    #root .ring { position: absolute; left: 50%; top: 42%; width: 760px; height: 760px; margin: -380px 0 0 -380px; border-radius: 50%; box-shadow: 0 0 0 2px rgba(232,181,79,.35); opacity: 0; }
+  </style>
+  <div id="root" data-composition-id="hook" data-width="1920" data-height="1080">
+    <div class="steel"></div>
+    <div class="warm" data-layout-allow-overflow></div>
+    {{GRAIN}}
+    <div class="stage">
+      <div class="ic hk-i" style="margin:-150px 0 0 -150px"><img src="assets/regen/military_reforms/military_reforms-v1-fit.png" style="width:300px;height:300px;object-fit:contain" alt="" /></div>
+      <div class="ic hk-i" style="margin:-170px 0 0 -113px"><img src="assets/gallery/fit/defenders_of_order-v1.png" style="width:227px;height:340px;object-fit:contain" alt="" /></div>
+      <div class="ic hk-i" style="margin:-104px 0 0 -164px"><img src="assets/gallery/processed_png/IRP_fascism-v1-p1.png" style="width:328px;height:208px" alt="" /></div>
+      <div class="ic hk-i" style="margin:-176px 0 0 -210px"><img src="assets/gallery/processed_png/winter_border-v1-p1.png" style="width:420px;height:352px;image-rendering:auto" alt="" /></div>
+    </div>
+    <div class="ring" id="hk-ring"></div>
+    <div class="hero-ic" id="hk-hero"><img src="assets/gallery/source_png/iron_pact-v1.png" alt="" /><div class="shine" data-layout-allow-overflow><i id="hk-sh"></i></div></div>
+    <div class="t1 hero"><span class="ice hook-w">Made by an agent.</span><br /><span class="brass hook-w">Ready for the game.</span></div>
+    <div class="vig"></div>
+  </div>
+  <script>
+    {{LIB}}
+    // one real asset per half beat over the first bar, each punching in on its beat, then gone
+    const ics = gsap.utils.toArray(".hk-i");
+    const xs = [-520, 500, -440, 440], ys = [-40, 30, 170, -150];
+    ics.forEach((el, i) => {
+      const t0 = b(i);
+      tl.fromTo(el, { opacity: 0, scale: 2.2, x: xs[i] * 0.4, y: ys[i] * 0.4, filter: "blur(14px)" }, { opacity: 1, scale: 1, x: xs[i], y: ys[i], filter: "blur(0px)", duration: b(0.4), ease: "expo.out" }, t0);
+      tl.to(el, { opacity: 0, scale: 0.85, filter: "blur(8px)", duration: b(0.4), ease: "power2.in" }, t0 + b(0.6));
+    });
+    // downbeat of bar 2: everything clears, the focus icon lands, and its shine sweeps on the next beat
+    tl.to(ics, { opacity: 0, scale: 0.5, filter: "blur(10px)", duration: b(0.25), ease: "power3.in" }, b(3.5));
+    tl.fromTo("#hk-hero", { opacity: 0, scale: 1.8 }, { opacity: 1, scale: 1, duration: b(0.5), ease: "back.out(1.6)" }, b(4));
+    tl.fromTo("#hk-ring", { opacity: 0.9, scale: 0.6 }, { opacity: 0, scale: 1.4, duration: b(1), ease: "power2.out", immediateRender: false }, b(4));
+    tl.fromTo("#hk-sh", { xPercent: -150 }, { xPercent: 350, duration: b(1), ease: "power2.inOut" }, b(5));
+    tl.fromTo(".hook-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.15, ease: "power4.out", stagger: b(2) }, b(4));
+    window.__timelines["hook"] = tl;
+  </script>
+</template>

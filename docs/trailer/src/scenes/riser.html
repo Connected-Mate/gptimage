@@ -1,0 +1,38 @@
+<template>
+  <style>
+    {{BASE}}
+    #root .f { position: absolute; left: 210px; top: 180px; width: 1500px; height: 720px; display: flex; align-items: center; justify-content: center; opacity: 0; }
+    #root .f img { display: block; max-width: 1500px; max-height: 720px; box-shadow: 0 30px 60px rgba(0,0,0,.6); }
+    #root .t { position: absolute; left: 96px; right: 96px; top: 400px; text-align: center; font-size: 110px; line-height: .98; opacity: 0; }
+  </style>
+  <div id="root" data-composition-id="riser" data-width="1920" data-height="1080">
+    <div class="paper"></div>
+    {{GRAIN}}
+    <div class="f rs-f"><img src="assets/gallery/source_png/peace_conference-v1.png" alt="" /></div>
+    <div class="f rs-f"><img src="assets/regen/military_reforms/military_reforms-v1-fit.png" alt="" /></div>
+    <div class="f rs-f"><img src="assets/gallery/source_png/iron_pact-v1.png" alt="" /></div>
+    <div class="f rs-f"><img src="assets/gallery/source_png/heavy_tank-v1.png" alt="" /></div>
+    <div class="f rs-f"><img src="assets/gallery/source_png/war_industry-v1.png" alt="" /></div>
+    <div class="f rs-f"><img src="assets/gallery/source_png/winter_border-v1.png" alt="" /></div>
+    <div class="f rs-f"><img src="assets/gallery/fit/hold_the_line-v1.png" alt="" /></div>
+    <div class="f rs-f"><img src="assets/gallery/source_png/armistice-v1.png" alt="" /></div>
+    <div class="f rs-f"><img src="assets/gallery/fit/IRP_fascism-v1.png" alt="" /></div>
+    <div class="f rs-f"><img src="assets/gallery/source_png/state_security-v1.png" alt="" /></div>
+    <div class="t hero brass" id="rs-t">The vanilla finish.<br />Built in.</div>
+    <div class="vig"></div>
+  </div>
+  <script>
+    {{LIB}}
+    // flashes on beats 0-3, then half beats, then the title slams on the last beat
+    const fr = gsap.utils.toArray(".rs-f");
+    const times = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.25, 3.5, 3.75].map((x) => b(x));
+    fr.forEach((f, i) => {
+      const t0 = Math.round(times[i] * 30) / 30, t1 = i < fr.length - 1 ? Math.round(times[i + 1] * 30) / 30 : b(4);
+      tl.set(f, { opacity: 1 }, t0);
+      tl.fromTo(f, { scale: 1.12, rotation: (i % 2 ? 4 : -4) }, { scale: 1, rotation: 0, duration: Math.max(0.05, t1 - t0), ease: "power2.out", immediateRender: false }, t0);
+      tl.set(f, { opacity: 0 }, t1);
+    });
+    tl.fromTo("#rs-t", { opacity: 0, scale: 2.2, filter: "blur(18px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: b(0.4), ease: "expo.out" }, b(4));
+    window.__timelines["riser"] = tl;
+  </script>
+</template>
