@@ -32,14 +32,14 @@ Other commands:
 Every image runs on **gpt-6-luna**. This is the maintainer's decision of 2026-11-01, and there is no other model and no model fallback.
 
 The reasoning effort is **the highest one the backend accepts**. On 2026-11-05 the backend began refusing `high` for image requests ("Complexity 'high' is not supported for this image model"), and the maintainer chose this rule (decision W5-6):
-- Each request asks for `reasoning.effort = high` first. If the backend refuses that effort, the same request is sent once at `medium`, and then once at `low`. The first effort the backend accepts is used. No request is sent without an effort.
-- On 2026-11-05 the backend refused high and then medium as well (it passes the effort to the image tool as its `complexity`), so the maintainer added `low`. Whether low-effort images are good enough is checked image by image.
+- Each request asks for `reasoning.effort = high` first. If the backend refuses that effort, the same request is sent once at `medium`, then once at `low`, and finally once with no `reasoning` field at all, so the backend uses its own default effort. The first rung the backend accepts is used.
+- On 2026-11-05 the backend refused high, medium and low (it passes the effort to the image tool as its `complexity`). The maintainer added `low`, and then the request without an effort. An image made that way records `reasoning_effort: "backend default"` and the effort the backend reported. Whether such images are good enough is checked image by image.
 - A refused effort is remembered on the machine for a day (`refused_efforts` in `route-state.json`), so later images skip it and send one request. The last effort on the ladder is always tried, so a backend that changes again is noticed. After the day, `high` is tried again.
 - The attempts run one at a time under the route lock and keep the pacing between requests.
-- If the backend refuses all three, the call ends with one clear error that lists each refusal. Nothing is retried after that.
+- If the backend refuses all four, the call ends with one clear error that lists each refusal, and the route is down until the backend changes. Nothing is retried after that.
 - Any other backend error ends the call at once. It is not retried at a lower effort.
 - The backend's response events must report the same model (or a dated snapshot of it, `gpt-6-luna-*`) and the effort that attempt asked for. Anything else, or a response that does not say, is refused with a clear error, and the image is never used.
-- The effort each image ran at is data on its candidate record in the ledger: `usage.reasoning_effort`, with `usage.refused_efforts` and the backend's own `usage.backend_usage`. The candidate notes say the same in words ("ran on gpt-6-luna at medium reasoning effort").
+- The effort each image ran at is data on its candidate record in the ledger: `usage.reasoning_effort` (a named effort or `backend default`), `usage.reported_effort` (what the backend said it ran at), `usage.refused_efforts` and the backend's own `usage.backend_usage`. The candidate notes say the same in words ("ran on gpt-6-luna at medium reasoning effort").
 - A plan that names another model for this provider is refused at plan time.
 - The model and effort the backend reported are recorded with every candidate in the ledger.
 

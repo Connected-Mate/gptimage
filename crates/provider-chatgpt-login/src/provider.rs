@@ -242,7 +242,7 @@ impl ChatGptLoginProvider {
                 continue;
             }
             match self.attempt(req, size, effort, &guard, ctx)? {
-                Attempt::Done(out) => {
+                Attempt::Done(reported_effort, out) => {
                     let mut out = *out;
                     if !skipped.is_empty() {
                         out.notes.push(format!("skipped {} reasoning effort, which the backend refused within the last day", skipped.join(" and ")));
@@ -254,6 +254,7 @@ impl ChatGptLoginProvider {
                     let backend_usage = out.usage.take();
                     out.usage = Some(json!({
                         "reasoning_effort": effort,
+                        "reported_effort": reported_effort,
                         "refused_efforts": refused.iter().map(|r| r.split(':').next().unwrap_or("")).chain(skipped.iter().copied()).collect::<Vec<_>>(),
                         "backend_usage": backend_usage,
                     }));
@@ -374,6 +375,7 @@ impl ChatGptLoginProvider {
             }
         })?;
         let (model, effort) = verify_model(&outcome, effort)?;
+        let reported_effort = outcome.effort.clone();
         let mut notes = vec![format!("ran on {model} at {effort} reasoning effort, as reported by the backend; usage is not reported")];
         if let Some(meta) = outcome.image_meta.as_object() {
             if let Some(m) = &outcome.image_tool_model {
@@ -388,17 +390,20 @@ impl ChatGptLoginProvider {
                 notes.push(format!("revised prompt: {v}"));
             }
         }
-        Ok(Attempt::Done(Box::new(ProviderOutput {
-            image: b64_decode(&outcome.image_b64)?,
-            mime: "image/png".into(),
-            provider_request_id: outcome.response_id.clone(),
-            usage: outcome.usage.clone(),
-            actual_usd: None,
-            usage_unknown: true,
-            model_echo: Some(model),
-            notes,
-            job: None,
-        })))
+        Ok(Attempt::Done(
+            reported_effort,
+            Box::new(ProviderOutput {
+                image: b64_decode(&outcome.image_b64)?,
+                mime: "image/png".into(),
+                provider_request_id: outcome.response_id.clone(),
+                usage: outcome.usage.clone(),
+                actual_usd: None,
+                usage_unknown: true,
+                model_echo: Some(model),
+                notes,
+                job: None,
+            }),
+        ))
     }
 
     /// Save the raw response for fixtures when [`RECORD_ENV`] names a folder. Never fails the call.
@@ -511,7 +516,7 @@ pub fn parse_sse(stream: &str) -> Result<SseOutcome, String> {
 /// What one effort attempt came to.
 enum Attempt {
     /// An image, verified.
-    Done(Box<ProviderOutput>),
+    Done(Option<String>, Box<ProviderOutput>),
     /// The backend refused this reasoning effort; the next one may be tried.
     EffortRefused(String),
 }
@@ -743,9 +748,9 @@ mod tests {
         let body = p.build_body(&request(), None, crate::EFFORT_BACKEND_DEFAULT);
         assert!(body.get("reasoning").is_none(), "{body}");
         let ok = parse_sse(&sse("QUJD")).unwrap();
-        assert_eq!(verify_model(&ok, crate::EFFORT_BACKEND_DEFAULT).unwrap().1, "default (reported high)");
+        assert_eq!(verify_model(&ok, crate::EFFORT_BACKEND_DEFAULT).unwrap().1, "backend default (reported high)");
         let silent = SseOutcome { effort: None, ..ok.clone() };
-        assert_eq!(verify_model(&silent, crate::EFFORT_BACKEND_DEFAULT).unwrap().1, "default");
+        assert_eq!(verify_model(&silent, crate::EFFORT_BACKEND_DEFAULT).unwrap().1, "backend default");
         let other = SseOutcome { model: Some("gpt-6-astra".into()), ..ok };
         assert!(verify_model(&other, crate::EFFORT_BACKEND_DEFAULT).is_err(), "the model check never relaxes");
     }
@@ -779,6 +784,30 @@ data: {{\"type\":\"error\",\"error\":{{\"message\":\"Complexity '{effort}' is no
         assert_eq!(usage["refused_efforts"], json!(["high"]));
     }
 
+    /// W5-6 (2026-11-05): high, medium and low refused, then the request without an effort is accepted. The effort
+    /// is recorded as the backend default, beside what the backend reports.
+    #[test]
+    fn when_every_named_effort_is_refused_the_backend_default_is_used_and_recorded() {
+        let d = dir();
+        let fixture = Arc::new(FixtureTransport::new());
+        for e in ["high", "medium", "low"] {
+            fixture.respond(Method::Post, "/backend-api/codex/responses", 200, &[], refusal(e));
+        }
+        fixture.respond(Method::Post, "/backend-api/codex/responses", 200, &[], sse("QUJD").replace("\"effort\":\"high\"", "\"effort\":\"none\""));
+        let p = provider(&d, fixture.clone(), Some(creds(None)), 0);
+        let out = p.generate(&request(), &no_sleep()).unwrap();
+        let usage = out.usage.clone().unwrap();
+        assert_eq!(usage["reasoning_effort"], "backend default");
+        assert_eq!(usage["reported_effort"], "none");
+        assert_eq!(usage["refused_efforts"], json!(["high", "medium", "low"]));
+        assert!(out.notes[0].contains("gpt-6-luna at backend default (reported none) reasoning effort"), "{:?}", out.notes);
+        // the next image goes straight to the backend default
+        fixture.respond(Method::Post, "/backend-api/codex/responses", 200, &[], sse("QUJD"));
+        let next = p.generate(&request(), &no_sleep()).unwrap();
+        assert_eq!(fixture.requests().len(), 5, "one request for the second image");
+        assert_eq!(next.usage.unwrap()["reasoning_effort"], "backend default");
+    }
+
     /// A refused effort is remembered on the machine, so the next image is one request at the effort that works.
     #[test]
     fn a_refused_effort_is_skipped_on_the_next_image() {
@@ -805,14 +834,16 @@ data: {{\"type\":\"error\",\"error\":{{\"message\":\"Complexity '{effort}' is no
     fn every_effort_refused_is_one_clear_terminal_error() {
         let d = dir();
         let fixture = Arc::new(FixtureTransport::new());
-        for e in ["high", "medium", "low"] {
+        for e in ["high", "medium", "low", "low"] {
             fixture.respond(Method::Post, "/backend-api/codex/responses", 200, &[], refusal(e));
         }
         let p = provider(&d, fixture.clone(), Some(creds(None)), 0);
         let e = p.generate(&request(), &no_sleep()).unwrap_err();
         assert_eq!((e.kind, e.retry), (ErrorKind::BadRequest, RetryClass::Terminal));
         assert!(e.message.contains("every reasoning effort") && e.message.contains("low: Complexity 'low'"), "{}", e.message);
-        assert_eq!(fixture.requests().len(), 3, "each effort is tried once, and nothing is sent without an effort");
+        assert_eq!(fixture.requests().len(), 4, "each rung is tried once, the last without an effort");
+        let last: Value = serde_json::from_slice(&fixture.requests()[3].body).unwrap();
+        assert!(last.get("reasoning").is_none(), "the last rung sends no reasoning field");
     }
 
     #[test]

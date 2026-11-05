@@ -30,7 +30,8 @@ ChatGPT login: read this once before signing in.
 * It is for your own account on your own computer only. Never share the sign-in or run it on a server.
   HOI4 Factory's hosted service never uses it.
 * Images use the gpt-6-luna model at the highest reasoning effort the backend accepts (high, then medium,
-  then low); each image records the effort it ran at. Your password is typed only into OpenAI's page;
+  then low). If it accepts none of them, the request goes without an effort and the image may be made at the
+  backend's own default effort. Each image records the effort it ran at. Your password is typed only into OpenAI's page;
   this tool keeps the resulting tokens in your operating system's credential store.
 * Documented API providers (OpenAI API key, Gemini, fal, ComfyUI) remain available as alternatives.
 ";

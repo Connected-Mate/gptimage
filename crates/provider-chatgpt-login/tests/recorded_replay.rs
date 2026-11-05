@@ -214,15 +214,14 @@ fn after_the_recorded_refusals_of_high_and_medium_low_is_used_and_recorded() {
 fn a_refusal_of_every_rung_is_one_terminal_error_and_nothing_goes_without_an_effort() {
     let (_d, f, p) = replay(200, HIGH_REFUSED.to_string(), None);
     f.respond(Method::Post, BACKEND_PATH, 200, &[("content-type", "text/event-stream")], MEDIUM_REFUSED.to_string());
-    f.respond(
-        Method::Post,
-        BACKEND_PATH,
-        200,
-        &[("content-type", "text/event-stream")],
-        MEDIUM_REFUSED.replace("'medium'", "'low'").replace("\"effort\":\"medium\"", "\"effort\":\"low\""),
-    );
+    // injected: low refused, then the request without an effort refused as well (no real recording of these yet)
+    let low = MEDIUM_REFUSED.replace("'medium'", "'low'").replace("\"effort\":\"medium\"", "\"effort\":\"low\"");
+    f.respond(Method::Post, BACKEND_PATH, 200, &[("content-type", "text/event-stream")], low.clone());
+    f.respond(Method::Post, BACKEND_PATH, 200, &[("content-type", "text/event-stream")], low);
     let e = p.generate(&request(), &no_sleep()).unwrap_err();
     assert_eq!((e.kind, e.retry), (ErrorKind::BadRequest, RetryClass::Terminal));
-    assert!(e.message.contains("high: Complexity 'high'") && e.message.contains("low: Complexity 'low'"), "{}", e.message);
-    assert_eq!(f.requests().len(), 3);
+    assert!(e.message.contains("high: Complexity 'high'") && e.message.contains("backend default: Complexity"), "{}", e.message);
+    assert_eq!(f.requests().len(), 4, "high, medium, low, then once without an effort");
+    let last: serde_json::Value = serde_json::from_slice(&f.requests()[3].body).unwrap();
+    assert!(last.get("reasoning").is_none());
 }
