@@ -6,13 +6,13 @@
    "family": "focus",
    "asset": "armoured_column_parade",
    "brief": "A column of Brazilian light tanks rolling through a dusty avenue in the 1940s, hatches open, crowds waving from balconies, triumphant mood.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     100,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "war",
    "native": "vanilla/focus/armoured_column_parade.webp",
    "enlarged": "vanilla/focus/armoured_column_parade@2x.webp",
    "scale": 2
@@ -28,7 +28,7 @@
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "politics",
    "native": "vanilla/focus/assembly_ballot_vote.webp",
    "enlarged": "vanilla/focus/assembly_ballot_vote@2x.webp",
    "scale": 2
@@ -54,13 +54,13 @@
    "family": "focus",
    "asset": "atlantic_convoy",
    "brief": "An American merchant convoy crossing a grey Atlantic with escort destroyers on the flanks and smoke on the horizon, grim resolve.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     100,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "naval",
    "native": "vanilla/focus/atlantic_convoy.webp",
    "enlarged": "vanilla/focus/atlantic_convoy@2x.webp",
    "scale": 2
@@ -86,13 +86,13 @@
    "family": "focus",
    "asset": "blast_furnace_dawn",
    "brief": "A Finnish steelworks blast furnace glowing orange at dawn above snowy pines, small silhouettes of workers at the gate, hopeful mood of rebuilding after a hard winter.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     100,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "society",
    "native": "vanilla/focus/blast_furnace_dawn.webp",
    "enlarged": "vanilla/focus/blast_furnace_dawn@2x.webp",
    "scale": 2
@@ -118,7 +118,7 @@
    "family": "focus",
    "asset": "coastal_radar_mast",
    "brief": "A British coastal radar mast on white chalk cliffs scanning above a calm grey sea in 1940, tense watchful mood. Bold two-colour carved print.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     100,
     88
@@ -134,13 +134,13 @@
    "family": "focus",
    "asset": "cruiser_launch_slipway",
    "brief": "A new Italian light cruiser sliding down the slipway into a Genoa harbour, bunting overhead and dockworkers cheering, festive and proud.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     100,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "naval",
    "native": "vanilla/focus/cruiser_launch_slipway.webp",
    "enlarged": "vanilla/focus/cruiser_launch_slipway@2x.webp",
    "scale": 2
@@ -150,7 +150,7 @@
    "family": "focus",
    "asset": "cyclotron_laboratory",
    "brief": "A young researcher beside a brass-coiled cyclotron magnet in a university laboratory, dials and glass tubes glowing, hopeful 1940s scientific mood.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     100,
     88
@@ -182,13 +182,13 @@
    "family": "focus",
    "asset": "fighter_dawn_scramble",
    "brief": "Polish single-seat fighters taking off from a grass airfield at first light, ground crew running clear, tense and determined mood.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     100,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "air",
    "native": "vanilla/focus/fighter_dawn_scramble.webp",
    "enlarged": "vanilla/focus/fighter_dawn_scramble@2x.webp",
    "scale": 2
@@ -214,13 +214,13 @@
    "family": "focus",
    "asset": "frontier_fortress_turret",
    "brief": "A French frontier fortress with an armoured gun turret rising from a green hillside, barbed wire in front, grim and steady mood.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     100,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "all",
    "native": "vanilla/focus/frontier_fortress_turret.webp",
    "enlarged": "vanilla/focus/frontier_fortress_turret@2x.webp",
    "scale": 2
@@ -230,13 +230,13 @@
    "family": "focus",
    "asset": "highland_road_builders",
    "brief": "Ethiopian highland workers breaking rock with picks and hauling carts to build a mountain road, steep green valley behind them, 1930s hopeful effort.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     100,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "society",
    "native": "vanilla/focus/highland_road_builders.webp",
    "enlarged": "vanilla/focus/highland_road_builders@2x.webp",
    "scale": 2
@@ -246,13 +246,13 @@
    "family": "focus",
    "asset": "howitzer_hillside",
    "brief": "A heavy Soviet howitzer on a snowy hillside with its crew in dark silhouette, barrel raised against a pale sky, grim determination.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     100,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "all",
    "native": "vanilla/focus/howitzer_hillside.webp",
    "enlarged": "vanilla/focus/howitzer_hillside@2x.webp",
    "scale": 2
@@ -278,13 +278,13 @@
    "family": "focus",
    "asset": "irrigation_canal_gates",
    "brief": "Thai farmers opening wooden irrigation sluice gates so water flows into green rice terraces, hopeful early-morning mood.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     100,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "all",
    "native": "vanilla/focus/irrigation_canal_gates.webp",
    "enlarged": "vanilla/focus/irrigation_canal_gates@2x.webp",
    "scale": 2
@@ -310,13 +310,13 @@
    "family": "focus",
    "asset": "land_reform_plough",
    "brief": "A southern Italian peasant family marking out their own field with boundary stakes beside a plough and oxen, hopeful early 1950s mood. Bold two-colour carved print.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     100,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "politics",
    "native": "vanilla/focus/land_reform_plough.webp",
    "enlarged": "vanilla/focus/land_reform_plough@2x.webp",
    "scale": 2
@@ -326,13 +326,13 @@
    "family": "focus",
    "asset": "oil_gusher_celebration",
    "brief": "A Mexican oil derrick erupting in a black gusher while oilfield workers throw their hats in the air, a festive mood of national pride in the late 1930s.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     100,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "air",
    "native": "vanilla/focus/oil_gusher_celebration.webp",
    "enlarged": "vanilla/focus/oil_gusher_celebration@2x.webp",
    "scale": 2
@@ -342,13 +342,13 @@
    "family": "focus",
    "asset": "opera_mask_scroll",
    "brief": "A Chinese opera mask on a lacquered stand beside an unrolled scroll of mountain scenery and a lute, calm 1930s cultural mood.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     100,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "all",
    "native": "vanilla/focus/opera_mask_scroll.webp",
    "enlarged": "vanilla/focus/opera_mask_scroll@2x.webp",
    "scale": 2
@@ -358,13 +358,13 @@
    "family": "focus",
    "asset": "orange_quay_trade",
    "brief": "Crates of Valencia oranges stacked on a quay beside a steamship, dockers loading by hand, festive early 1950s trade mood.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     100,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "economy",
    "native": "vanilla/focus/orange_quay_trade.webp",
    "enlarged": "vanilla/focus/orange_quay_trade@2x.webp",
    "scale": 2
@@ -374,13 +374,13 @@
    "family": "focus",
    "asset": "paratrooper_drop",
    "brief": "A wing of transport aircraft over red Australian desert releasing a cloud of white parachutes, long shadows on the sand, tense 1940s mood.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     100,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "air",
    "native": "vanilla/focus/paratrooper_drop.webp",
    "enlarged": "vanilla/focus/paratrooper_drop@2x.webp",
    "scale": 2
@@ -406,13 +406,13 @@
    "family": "focus",
    "asset": "railway_viaduct_opening",
    "brief": "A Turkish steam locomotive crossing a new stone viaduct high in the Anatolian mountains, villagers watching from the ridge, triumphant mood. Soft flat gouache look.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     100,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "economy",
    "native": "vanilla/focus/railway_viaduct_opening.webp",
    "enlarged": "vanilla/focus/railway_viaduct_opening@2x.webp",
    "scale": 2
@@ -454,13 +454,13 @@
    "family": "focus",
    "asset": "steam_locomotive_power",
    "brief": "A Yugoslav steam locomotive thundering along a river gorge with timber wagons behind it, smoke streaming, confident mood of national infrastructure.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     100,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "economy",
    "native": "vanilla/focus/steam_locomotive_power.webp",
    "enlarged": "vanilla/focus/steam_locomotive_power@2x.webp",
    "scale": 2
@@ -486,13 +486,13 @@
    "family": "focus",
    "asset": "submarine_leaving_pen",
    "brief": "A sleek Japanese submarine gliding out of a concrete pen at dusk with its crew on deck, water dark and still, tense and quiet.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     100,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "naval",
    "native": "vanilla/focus/submarine_leaving_pen.webp",
    "enlarged": "vanilla/focus/submarine_leaving_pen@2x.webp",
    "scale": 2
@@ -518,13 +518,13 @@
    "family": "focus",
    "asset": "torch_over_square",
    "brief": "A burning torch raised high over a crowd of silhouetted citizens in a night city square under fictional striped banners, tense yet defiant.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     100,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "society",
    "native": "vanilla/focus/torch_over_square.webp",
    "enlarged": "vanilla/focus/torch_over_square@2x.webp",
    "scale": 2
@@ -534,13 +534,13 @@
    "family": "focus",
    "asset": "treaty_handshake",
    "brief": "A Persian envoy and a British diplomat in 1930s suits shake hands across a green felt table with a brass globe between them, quiet and hopeful mood.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     100,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "diplomacy",
    "native": "vanilla/focus/treaty_handshake.webp",
    "enlarged": "vanilla/focus/treaty_handshake@2x.webp",
    "scale": 2
@@ -550,13 +550,13 @@
    "family": "focus",
    "asset": "village_radio_tower",
    "brief": "A tall radio mast above a Chinese village square where families gather around a loudspeaker, radio waves rippling outward, 1940s. Grainy ink and sepia sketch look.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     100,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "all",
    "native": "vanilla/focus/village_radio_tower.webp",
    "enlarged": "vanilla/focus/village_radio_tower@2x.webp",
    "scale": 2
@@ -566,13 +566,13 @@
    "family": "focus",
    "asset": "wheat_and_gold_vault",
    "brief": "An open bank vault in Buenos Aires with stacked gold bars beside heaped wheat sheaves, a promise of economic recovery in the 1930s.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     100,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "air",
    "native": "vanilla/focus/wheat_and_gold_vault.webp",
    "enlarged": "vanilla/focus/wheat_and_gold_vault@2x.webp",
    "scale": 2
@@ -966,13 +966,13 @@
    "family": "idea_concern",
    "asset": "aircraft_plant_fuselages",
    "brief": "An American aircraft plant with silver fuselages hanging in a long line from the ceiling, wings stacked below and morning light through high windows.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "air",
    "native": "vanilla/idea_concern/aircraft_plant_fuselages.webp",
    "enlarged": "vanilla/idea_concern/aircraft_plant_fuselages@3x.webp",
    "scale": 3
@@ -1014,13 +1014,13 @@
    "family": "idea_concern",
    "asset": "bored_barrel_aa_gun",
    "brief": "A Swedish ordnance works where a long anti-aircraft gun barrel is bored on a huge lathe, curls of bright steel on the floor, snowy yard outside.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "air",
    "native": "vanilla/idea_concern/bored_barrel_aa_gun.webp",
    "enlarged": "vanilla/idea_concern/bored_barrel_aa_gun@3x.webp",
    "scale": 3
@@ -1030,13 +1030,13 @@
    "family": "idea_concern",
    "asset": "brass_cartridge_mill",
    "brief": "A brass rolling mill with coils of golden metal, stamping presses and trays of shining cartridge cases, American small town works.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "all",
    "native": "vanilla/idea_concern/brass_cartridge_mill.webp",
    "enlarged": "vanilla/idea_concern/brass_cartridge_mill@3x.webp",
    "scale": 3
@@ -1046,13 +1046,13 @@
    "family": "idea_concern",
    "asset": "cable_drum_yard",
    "brief": "A cable works yard stacked with huge wooden drums of telegraph cable and coils of copper wire beside a railway siding, Spanish setting.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "economy",
    "native": "vanilla/idea_concern/cable_drum_yard.webp",
    "enlarged": "vanilla/idea_concern/cable_drum_yard@3x.webp",
    "scale": 3
@@ -1078,13 +1078,13 @@
    "family": "idea_concern",
    "asset": "diesel_engine_hall",
    "brief": "A Swiss diesel engine works with a massive marine engine block under assembly, polished pistons and gauges, quiet precise craft. Soft flat gouache look.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "naval",
    "native": "vanilla/idea_concern/diesel_engine_hall.webp",
    "enlarged": "vanilla/idea_concern/diesel_engine_hall@3x.webp",
    "scale": 3
@@ -1094,13 +1094,13 @@
    "family": "idea_concern",
    "asset": "flying_boat_hangar",
    "brief": "A giant hangar with a four-engined flying boat on a slipway, ground crew on its wing, bay water glittering outside, Australian works.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "all",
    "native": "vanilla/idea_concern/flying_boat_hangar.webp",
    "enlarged": "vanilla/idea_concern/flying_boat_hangar@3x.webp",
    "scale": 3
@@ -1110,13 +1110,13 @@
    "family": "idea_concern",
    "asset": "gun_foundry_pour",
    "brief": "A gun foundry where a glowing ladle pours molten steel into a mould for a long barrel, workers in leather aprons shielding their faces. Bold two-colour carved print.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "economy",
    "native": "vanilla/idea_concern/gun_foundry_pour.webp",
    "enlarged": "vanilla/idea_concern/gun_foundry_pour@3x.webp",
    "scale": 3
@@ -1126,13 +1126,13 @@
    "family": "idea_concern",
    "asset": "locomotive_erecting_shop",
    "brief": "A Hungarian locomotive works erecting shop with a steam engine boiler lifted by a crane above its wheels, steam drifting through iron rafters.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "all",
    "native": "vanilla/idea_concern/locomotive_erecting_shop.webp",
    "enlarged": "vanilla/idea_concern/locomotive_erecting_shop@3x.webp",
    "scale": 3
@@ -1142,13 +1142,13 @@
    "family": "idea_concern",
    "asset": "motorcycle_sidecar_row",
    "brief": "A Polish factory floor with motorcycles and sidecar combinations lined up in a row, headlamps shining, workers wiping tanks with rags.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "war",
    "native": "vanilla/idea_concern/motorcycle_sidecar_row.webp",
    "enlarged": "vanilla/idea_concern/motorcycle_sidecar_row@3x.webp",
    "scale": 3
@@ -1158,13 +1158,13 @@
    "family": "idea_concern",
    "asset": "optics_workshop_lenses",
    "brief": "A Japanese optics workshop bench with binoculars, a rangefinder, polished lenses and brass tools under a single lamp, careful quiet craft. Grainy ink and sepia sketch look.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "all",
    "native": "vanilla/idea_concern/optics_workshop_lenses.webp",
    "enlarged": "vanilla/idea_concern/optics_workshop_lenses@3x.webp",
    "scale": 3
@@ -1174,13 +1174,13 @@
    "family": "idea_concern",
    "asset": "pontoon_bridge_sections",
    "brief": "Stacks of steel pontoon bridge sections and girders in an Austrian engineering yard, a crane lifting one over a flowing river.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "economy",
    "native": "vanilla/idea_concern/pontoon_bridge_sections.webp",
    "enlarged": "vanilla/idea_concern/pontoon_bridge_sections@3x.webp",
    "scale": 3
@@ -1190,13 +1190,13 @@
    "family": "idea_concern",
    "asset": "radial_engine_test_stand",
    "brief": "A British engine works with a radial aircraft engine on a test stand, propeller blurred, fitters in overalls watching gauges.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "air",
    "native": "vanilla/idea_concern/radial_engine_test_stand.webp",
    "enlarged": "vanilla/idea_concern/radial_engine_test_stand@3x.webp",
    "scale": 3
@@ -1206,13 +1206,13 @@
    "family": "idea_concern",
    "asset": "radio_valve_works",
    "brief": "A Dutch radio works bench covered with glowing valves, copper coils, dials and field radio sets in leather cases.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "all",
    "native": "vanilla/idea_concern/radio_valve_works.webp",
    "enlarged": "vanilla/idea_concern/radio_valve_works@3x.webp",
    "scale": 3
@@ -1222,13 +1222,13 @@
    "family": "idea_concern",
    "asset": "rifle_armoury_racks",
    "brief": "A Belgian arms factory proof room with rows of bolt-action rifles in racks and a bench of gleaming machined parts and gauges.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "war",
    "native": "vanilla/idea_concern/rifle_armoury_racks.webp",
    "enlarged": "vanilla/idea_concern/rifle_armoury_racks@3x.webp",
    "scale": 3
@@ -1238,13 +1238,13 @@
    "family": "idea_concern",
    "asset": "searchlight_signal_works",
    "brief": "A signals works with big searchlight drums, signal lamps and field telephones lined along a workbench, a Turkish factory in warm evening light.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "economy",
    "native": "vanilla/idea_concern/searchlight_signal_works.webp",
    "enlarged": "vanilla/idea_concern/searchlight_signal_works@3x.webp",
    "scale": 3
@@ -1270,13 +1270,13 @@
    "family": "idea_concern",
    "asset": "shipyard_gantry_hulls",
    "brief": "A Scottish shipyard with a great gantry crane over two half-built hulls on slipways, riveters' scaffolding and grey river beyond.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "naval",
    "native": "vanilla/idea_concern/shipyard_gantry_hulls.webp",
    "enlarged": "vanilla/idea_concern/shipyard_gantry_hulls@3x.webp",
    "scale": 3
@@ -1286,13 +1286,13 @@
    "family": "idea_concern",
    "asset": "tank_assembly_hall",
    "brief": "A Czech tank works interior with armoured hulls on rails beneath overhead cranes, welders' sparks and turrets waiting in rows.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "war",
    "native": "vanilla/idea_concern/tank_assembly_hall.webp",
    "enlarged": "vanilla/idea_concern/tank_assembly_hall@3x.webp",
    "scale": 3
@@ -1302,13 +1302,13 @@
    "family": "idea_concern",
    "asset": "torpedo_shop_cradles",
    "brief": "A naval torpedo workshop with gleaming torpedoes resting in wooden cradles beside a chain hoist, German shipyard interior, damp and bluish light.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "naval",
    "native": "vanilla/idea_concern/torpedo_shop_cradles.webp",
    "enlarged": "vanilla/idea_concern/torpedo_shop_cradles@3x.webp",
    "scale": 3
@@ -1318,13 +1318,13 @@
    "family": "idea_concern",
    "asset": "tractor_tank_works",
    "brief": "A Ukrainian tractor works where crawler tractors and early tanks sit side by side on the same assembly line, vast hall and misty light.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "war",
    "native": "vanilla/idea_concern/tractor_tank_works.webp",
    "enlarged": "vanilla/idea_concern/tractor_tank_works@3x.webp",
    "scale": 3
@@ -1334,13 +1334,13 @@
    "family": "idea_concern",
    "asset": "truck_assembly_line",
    "brief": "A line of half-built army lorries on an assembly floor, cabs waiting for engines, tyres stacked against the wall, Italian factory.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "economy",
    "native": "vanilla/idea_concern/truck_assembly_line.webp",
    "enlarged": "vanilla/idea_concern/truck_assembly_line@3x.webp",
    "scale": 3
@@ -1926,7 +1926,7 @@
    "family": "decision_category_icon",
    "asset": "anchor_ship_wheel",
    "brief": "A heavy ship's anchor crossed with a wooden helm wheel, emblem of the naval programme.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     52,
     40
@@ -1942,13 +1942,13 @@
    "family": "decision_category_icon",
    "asset": "border_post_barrier",
    "brief": "A striped border post and a lowered barrier gate with coils of barbed wire, grim emblem of border conflicts. Bold two-colour carved print.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     52,
     40
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "war",
    "native": "vanilla/decision_category_icon/border_post_barrier.webp",
    "enlarged": "vanilla/decision_category_icon/border_post_barrier@3x.webp",
    "scale": 3
@@ -1958,13 +1958,13 @@
    "family": "decision_category_icon",
    "asset": "colonial_steamship_palm",
    "brief": "A steamship at a tropical jetty with a palm tree and a rolled map, emblem of colonial affairs.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     52,
     40
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "all",
    "native": "vanilla/decision_category_icon/colonial_steamship_palm.webp",
    "enlarged": "vanilla/decision_category_icon/colonial_steamship_palm@3x.webp",
    "scale": 3
@@ -1974,13 +1974,13 @@
    "family": "decision_category_icon",
    "asset": "espionage_window_figure",
    "brief": "A silhouette of a trench-coated figure behind a lamp-lit frosted window, a blank cipher disc in the foreground, emblem of espionage.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     52,
     40
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "all",
    "native": "vanilla/decision_category_icon/espionage_window_figure.webp",
    "enlarged": "vanilla/decision_category_icon/espionage_window_figure@3x.webp",
    "scale": 3
@@ -1990,13 +1990,13 @@
    "family": "decision_category_icon",
    "asset": "industrial_gear_chimney",
    "brief": "A large cogwheel in front of a tall smoking factory chimney and a girder frame, emblem of an industrial programme.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     52,
     40
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "all",
    "native": "vanilla/decision_category_icon/industrial_gear_chimney.webp",
    "enlarged": "vanilla/decision_category_icon/industrial_gear_chimney@3x.webp",
    "scale": 3
@@ -2006,7 +2006,7 @@
    "family": "decision_category_icon",
    "asset": "propeller_wings",
    "brief": "A two-bladed aircraft propeller flanked by a pair of simple spread wings, emblem of the air programme.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     52,
     40
@@ -2020,9 +2020,25 @@
   {
    "section": "vanilla",
    "family": "decision_category_icon",
+   "asset": "reconstruction_crane",
+   "brief": "A tower crane lifting a girder above a half-rebuilt street, rubble at its base, emblem of reconstruction.",
+   "build": "0.3.3",
+   "size": [
+    52,
+    40
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/decision_category_icon/reconstruction_crane.webp",
+   "enlarged": "vanilla/decision_category_icon/reconstruction_crane@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "decision_category_icon",
    "asset": "relief_bread_soup",
    "brief": "A large soup kettle with a ladle beside loaves of bread and a stack of tin bowls, emblem of relief efforts. Soft flat gouache look.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     52,
     40
@@ -2038,13 +2054,13 @@
    "family": "decision_category_icon",
    "asset": "science_flask_rocket",
    "brief": "A glass laboratory flask with bubbling liquid, an orbiting atom and a small finned rocket, emblem of scientific research.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     52,
     40
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "all",
    "native": "vanilla/decision_category_icon/science_flask_rocket.webp",
    "enlarged": "vanilla/decision_category_icon/science_flask_rocket@3x.webp",
    "scale": 3
@@ -2054,7 +2070,7 @@
    "family": "decision_category_icon",
    "asset": "trade_scales_crates",
    "brief": "A pair of market scales balanced over crates and sacks with a coin on one pan, emblem of trade agreements.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     52,
     40
@@ -3142,13 +3158,13 @@
    "family": "commander_trait",
    "asset": "crossed_skis_poles",
    "brief": "A pair of wooden skis crossed with two poles, a winter warfare specialist, bold simple shape.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     23,
     33
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "war",
    "native": "vanilla/commander_trait/crossed_skis_poles.webp",
    "enlarged": "vanilla/commander_trait/crossed_skis_poles@4x.webp",
    "scale": 4
@@ -3158,31 +3174,15 @@
    "family": "commander_trait",
    "asset": "fox_head_big_ears",
    "brief": "The head of a desert fox with very large ears and a narrow muzzle, cunning mobile commander of sand campaigns.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     23,
     33
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "all",
    "native": "vanilla/commander_trait/fox_head_big_ears.webp",
    "enlarged": "vanilla/commander_trait/fox_head_big_ears@4x.webp",
-   "scale": 4
-  },
-  {
-   "section": "vanilla",
-   "family": "commander_trait",
-   "asset": "fuel_jerrycan",
-   "brief": "A single dented metal fuel jerrycan with a cross-pressed side and spout, a logistics master keeping armies moving.",
-   "build": "0.3.1",
-   "size": [
-    23,
-    33
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "vanilla/commander_trait/fuel_jerrycan.webp",
-   "enlarged": "vanilla/commander_trait/fuel_jerrycan@4x.webp",
    "scale": 4
   },
   {
@@ -3206,13 +3206,13 @@
    "family": "commander_trait",
    "asset": "machete_leaf",
    "brief": "A single broad-bladed machete lying across one large palm leaf, a jungle fighter at home in dense tropical country, bold simple outline.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     23,
     33
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "air",
    "native": "vanilla/commander_trait/machete_leaf.webp",
    "enlarged": "vanilla/commander_trait/machete_leaf@4x.webp",
    "scale": 4
@@ -3222,13 +3222,13 @@
    "family": "commander_trait",
    "asset": "parachute_canopy_cords",
    "brief": "A single open parachute canopy with hanging cords seen from the front, airborne assault leader, bold simple shape.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     23,
     33
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "air",
    "native": "vanilla/commander_trait/parachute_canopy_cords.webp",
    "enlarged": "vanilla/commander_trait/parachute_canopy_cords@4x.webp",
    "scale": 4
@@ -3238,13 +3238,13 @@
    "family": "commander_trait",
    "asset": "periscope_waves",
    "brief": "A single submarine periscope rising from rippling waves with a small wake, silent undersea hunter, bold simple shape.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     23,
     33
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "naval",
    "native": "vanilla/commander_trait/periscope_waves.webp",
    "enlarged": "vanilla/commander_trait/periscope_waves@4x.webp",
    "scale": 4
@@ -3254,13 +3254,13 @@
    "family": "commander_trait",
    "asset": "pickaxe_and_shovel",
    "brief": "A pickaxe and a shovel crossed in an X, an army engineer commander who fortifies the front, simple strong shape.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     23,
     33
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "war",
    "native": "vanilla/commander_trait/pickaxe_and_shovel.webp",
    "enlarged": "vanilla/commander_trait/pickaxe_and_shovel@4x.webp",
    "scale": 4
@@ -3270,13 +3270,13 @@
    "family": "commander_trait",
    "asset": "rearing_horse",
    "brief": "A rearing cavalry horse head and forelegs with flowing mane, charging cavalry spirit, bold simple outline.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     23,
     33
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "all",
    "native": "vanilla/commander_trait/rearing_horse.webp",
    "enlarged": "vanilla/commander_trait/rearing_horse@4x.webp",
    "scale": 4
@@ -3302,13 +3302,13 @@
    "family": "commander_trait",
    "asset": "stone_bastion_tower",
    "brief": "A single squat stone fortress tower with battlements, solid and unmovable defensive commander, strong simple shape.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     23,
     33
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "all",
    "native": "vanilla/commander_trait/stone_bastion_tower.webp",
    "enlarged": "vanilla/commander_trait/stone_bastion_tower@4x.webp",
    "scale": 4
@@ -3318,13 +3318,13 @@
    "family": "commander_trait",
    "asset": "turret_gun_barrels",
    "brief": "A single naval gun turret with three long barrels raised, a naval gunnery specialist, strong simple shape.",
-   "build": "0.3.1",
+   "build": "0.3.3",
    "size": [
     23,
     33
    ],
    "vanilla_check": "pass",
-   "subfamily": null,
+   "subfamily": "naval",
    "native": "vanilla/commander_trait/turret_gun_barrels.webp",
    "enlarged": "vanilla/commander_trait/turret_gun_barrels@4x.webp",
    "scale": 4
@@ -4318,6 +4318,22 @@
    "vanilla_check": "pass",
    "subfamily": "politics",
    "native": "vanilla/news_event/rally_in_great_square.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "news_event",
+   "asset": "refugee_ferry_crossing",
+   "brief": "A crowded passenger ferry crossing a grey harbour at dawn, families with suitcases at the rail, gulls overhead, documentary black and white press photo.",
+   "build": "0.3.3",
+   "size": [
+    397,
+    153
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/news_event/refugee_ferry_crossing.webp",
    "enlarged": null,
    "scale": 1
   },
@@ -6628,6 +6644,22 @@
   {
    "section": "vanilla",
    "family": "faction_logo",
+   "asset": "crossed_spears_star_horde",
+   "brief": "A round emblem of two crossed spears below a bright yellow star on a deep orange disc, with a thick black border, fierce and proud.",
+   "build": "0.3.3",
+   "size": [
+    200,
+    100
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/faction_logo/crossed_spears_star_horde.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "faction_logo",
    "asset": "crossed_swords_laurel",
    "brief": "A round emblem of two crossed swords inside a laurel wreath, in steel grey and gold on a deep red disc, formal and martial.",
    "build": "0.3.1",
@@ -6670,6 +6702,54 @@
    "vanilla_check": "pass",
    "subfamily": null,
    "native": "vanilla/faction_logo/five_star_alliance.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "faction_logo",
+   "asset": "lion_and_crown_commonwealth",
+   "brief": "A round emblem of a crowned lion standing on its hind legs on a deep purple disc, with a wreath of oak leaves around it. Soft flat matte gouache colours.",
+   "build": "0.3.3",
+   "size": [
+    200,
+    100
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/faction_logo/lion_and_crown_commonwealth.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "faction_logo",
+   "asset": "mountain_fist_pact",
+   "brief": "A shield emblem of a clenched gauntlet in front of snow-capped peaks, silver and white on a slate blue field with a bold red edge.",
+   "build": "0.3.3",
+   "size": [
+    200,
+    100
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/faction_logo/mountain_fist_pact.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "faction_logo",
+   "asset": "olive_branch_dove_accord",
+   "brief": "A round pale blue emblem of a white dove carrying an olive branch above a simple globe, with a thin silver rim, a peaceful neutral mood.",
+   "build": "0.3.3",
+   "size": [
+    200,
+    100
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/faction_logo/olive_branch_dove_accord.webp",
    "enlarged": null,
    "scale": 1
   },
@@ -6734,6 +6814,166 @@
    "vanilla_check": "pass",
    "subfamily": null,
    "native": "vanilla/agency_logo/all_seeing_eye_bureau.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "agency_logo",
+   "asset": "compass_rose_intelligence",
+   "brief": "A round emblem of an eight-pointed compass rose in gold and cream on a deep blue disc, with a fine outer ring of tick marks.",
+   "build": "0.3.3",
+   "size": [
+    234,
+    119
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/agency_logo/compass_rose_intelligence.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "agency_logo",
+   "asset": "dagger_and_rose_section",
+   "brief": "A round emblem of an upright dagger entwined by a single red rose on a charcoal disc, with a thin silver ring around it.",
+   "build": "0.3.3",
+   "size": [
+    234,
+    119
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/agency_logo/dagger_and_rose_section.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "agency_logo",
+   "asset": "fox_head_counterintel",
+   "brief": "A round emblem of a sly red fox head in profile with pricked ears on a dark forest green disc, with a thin cream border.",
+   "build": "0.3.3",
+   "size": [
+    234,
+    119
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/agency_logo/fox_head_counterintel.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "agency_logo",
+   "asset": "hourglass_and_quill_archive",
+   "brief": "A round emblem of an hourglass crossed with a feather quill on a deep burgundy disc, a thin gold rim around it, scholarly and watchful.",
+   "build": "0.3.3",
+   "size": [
+    234,
+    119
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/agency_logo/hourglass_and_quill_archive.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "agency_logo",
+   "asset": "keyhole_shield_service",
+   "brief": "A shield emblem with a glowing keyhole in the centre of a dark navy field, framed by a silver border and a faint beam of light.",
+   "build": "0.3.3",
+   "size": [
+    234,
+    119
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/agency_logo/keyhole_shield_service.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "agency_logo",
+   "asset": "lantern_in_the_dark",
+   "brief": "A round emblem of a glowing oil lantern on a hook against a deep indigo night, its warm light forming a halo, mysterious and quiet.",
+   "build": "0.3.3",
+   "size": [
+    234,
+    119
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/agency_logo/lantern_in_the_dark.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "agency_logo",
+   "asset": "lighthouse_beam_signals",
+   "brief": "A round emblem of a small lighthouse sending a broad beam across a night sea, in teal and pale yellow on a navy disc, calm and vigilant.",
+   "build": "0.3.3",
+   "size": [
+    234,
+    119
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/agency_logo/lighthouse_beam_signals.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "agency_logo",
+   "asset": "masked_face_special_branch",
+   "brief": "A round emblem of a half-face domino mask in white and black on a crimson disc, with a small golden star on the brow. Grainy ink and sepia sketch.",
+   "build": "0.3.3",
+   "size": [
+    234,
+    119
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/agency_logo/masked_face_special_branch.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "agency_logo",
+   "asset": "owl_watch_office",
+   "brief": "A round emblem of a wide-eyed owl with spread wings perched on a branch, in sepia browns and gold on a dark disc.",
+   "build": "0.3.3",
+   "size": [
+    234,
+    119
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/agency_logo/owl_watch_office.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "agency_logo",
+   "asset": "padlock_and_chain_cipher",
+   "brief": "A round emblem of a heavy brass padlock wrapped by a chain, on a steel grey disc with a thin red rim, secretive and stern.",
+   "build": "0.3.3",
+   "size": [
+    234,
+    119
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/agency_logo/padlock_and_chain_cipher.webp",
    "enlarged": null,
    "scale": 1
   },
@@ -7716,6 +7956,70 @@
   {
    "section": "vanilla",
    "family": "modifier_stat_icon",
+   "asset": "air_superiority_fighter",
+   "brief": "A single-engined fighter plane seen from above with swept wings, and a bold arrow rising above it.",
+   "build": "0.3.3",
+   "size": [
+    30,
+    20
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/modifier_stat_icon/air_superiority_fighter.webp",
+   "enlarged": "vanilla/modifier_stat_icon/air_superiority_fighter@4x.webp",
+   "scale": 4
+  },
+  {
+   "section": "vanilla",
+   "family": "modifier_stat_icon",
+   "asset": "defence_shield",
+   "brief": "A sturdy heater-shaped shield with a bold raised centre ridge and thick rim, nothing else.",
+   "build": "0.3.3",
+   "size": [
+    30,
+    20
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "war",
+   "native": "vanilla/modifier_stat_icon/defence_shield.webp",
+   "enlarged": "vanilla/modifier_stat_icon/defence_shield@4x.webp",
+   "scale": 4
+  },
+  {
+   "section": "vanilla",
+   "family": "modifier_stat_icon",
+   "asset": "manpower_helmet",
+   "brief": "A single round steel helmet seen from the side with a chin strap, drawn with thick simple shapes.",
+   "build": "0.3.3",
+   "size": [
+    30,
+    20
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/modifier_stat_icon/manpower_helmet.webp",
+   "enlarged": "vanilla/modifier_stat_icon/manpower_helmet@4x.webp",
+   "scale": 4
+  },
+  {
+   "section": "vanilla",
+   "family": "modifier_stat_icon",
+   "asset": "naval_range_ship",
+   "brief": "A small warship in side view with a stubby funnel, with a long double-headed arrow running beneath its hull.",
+   "build": "0.3.3",
+   "size": [
+    30,
+    20
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "naval",
+   "native": "vanilla/modifier_stat_icon/naval_range_ship.webp",
+   "enlarged": "vanilla/modifier_stat_icon/naval_range_ship@4x.webp",
+   "scale": 4
+  },
+  {
+   "section": "vanilla",
+   "family": "modifier_stat_icon",
    "asset": "organisation_chain",
    "brief": "Two interlocked chain links in heavy outline, one slightly turned, with a short curved arrow circling them.",
    "build": "0.3.1",
@@ -7727,6 +8031,70 @@
    "subfamily": null,
    "native": "vanilla/modifier_stat_icon/organisation_chain.webp",
    "enlarged": "vanilla/modifier_stat_icon/organisation_chain@4x.webp",
+   "scale": 4
+  },
+  {
+   "section": "vanilla",
+   "family": "modifier_stat_icon",
+   "asset": "production_cogwheel",
+   "brief": "A chunky cogwheel with eight teeth and a round centre hole, with a small curved arrow along its rim.",
+   "build": "0.3.3",
+   "size": [
+    30,
+    20
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/modifier_stat_icon/production_cogwheel.webp",
+   "enlarged": "vanilla/modifier_stat_icon/production_cogwheel@4x.webp",
+   "scale": 4
+  },
+  {
+   "section": "vanilla",
+   "family": "modifier_stat_icon",
+   "asset": "reinforcement_helmets",
+   "brief": "Two stacked steel helmets with a small bold plus-shaped arrow pointing up toward them.",
+   "build": "0.3.3",
+   "size": [
+    30,
+    20
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/modifier_stat_icon/reinforcement_helmets.webp",
+   "enlarged": "vanilla/modifier_stat_icon/reinforcement_helmets@4x.webp",
+   "scale": 4
+  },
+  {
+   "section": "vanilla",
+   "family": "modifier_stat_icon",
+   "asset": "research_flask",
+   "brief": "A round-bottomed laboratory flask half full of liquid with rising bubbles and a small upward arrow above it.",
+   "build": "0.3.3",
+   "size": [
+    30,
+    20
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/modifier_stat_icon/research_flask.webp",
+   "enlarged": "vanilla/modifier_stat_icon/research_flask@4x.webp",
+   "scale": 4
+  },
+  {
+   "section": "vanilla",
+   "family": "modifier_stat_icon",
+   "asset": "speed_winged_boot",
+   "brief": "A single soldier's boot with one small spread wing at the heel, with a short arrow trailing behind.",
+   "build": "0.3.3",
+   "size": [
+    30,
+    20
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/modifier_stat_icon/speed_winged_boot.webp",
+   "enlarged": "vanilla/modifier_stat_icon/speed_winged_boot@4x.webp",
    "scale": 4
   },
   {
@@ -7764,6 +8132,22 @@
   {
    "section": "vanilla",
    "family": "gui_texture",
+   "asset": "blueprint_grid",
+   "brief": "Deep blue technical paper with a faint pale grid of fine lines and a thin white double border, no drawings.",
+   "build": "0.3.3",
+   "size": [
+    300,
+    200
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "vanilla/gui_texture/blueprint_grid.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "gui_texture",
    "asset": "brushed_steel",
    "brief": "Cool grey brushed steel with fine horizontal grain and a soft sheen, bordered by a narrow bevelled edge in a darker tone.",
    "build": "0.3.1",
@@ -7774,6 +8158,150 @@
    "vanilla_check": "unavailable",
    "subfamily": null,
    "native": "vanilla/gui_texture/brushed_steel.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "gui_texture",
+   "asset": "green_baize",
+   "brief": "Deep green felt like a card table with soft napped fibres and a dark piped border strip around the edges, gouache-like matte surface.",
+   "build": "0.3.3",
+   "size": [
+    300,
+    200
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "vanilla/gui_texture/green_baize.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "gui_texture",
+   "asset": "linen_paper",
+   "brief": "Off-white linen-textured paper with a faint woven cross-hatch fibre and a slim inked rule border near the edge.",
+   "build": "0.3.3",
+   "size": [
+    300,
+    200
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "vanilla/gui_texture/linen_paper.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "gui_texture",
+   "asset": "oak_wood",
+   "brief": "Warm oak planks with bold carved grain lines running horizontally and a plain beaded frame at the edge, suited to a two-colour carved print.",
+   "build": "0.3.3",
+   "size": [
+    300,
+    200
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "vanilla/gui_texture/oak_wood.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "gui_texture",
+   "asset": "parchment_sheet",
+   "brief": "Yellowed parchment with mottled stains, uneven fibres and a thin brown line border, rendered in grainy sepia ink and sketch tones.",
+   "build": "0.3.3",
+   "size": [
+    300,
+    200
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "vanilla/gui_texture/parchment_sheet.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "gui_texture",
+   "asset": "polished_brass",
+   "brief": "Warm golden brass sheet with soft brushed highlights, small age tarnish and a thin engraved border line.",
+   "build": "0.3.3",
+   "size": [
+    300,
+    200
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "vanilla/gui_texture/polished_brass.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "gui_texture",
+   "asset": "poured_concrete",
+   "brief": "Pale grey poured concrete with fine pitting and hairline cracks, bordered by a slightly raised shuttered edge.",
+   "build": "0.3.3",
+   "size": [
+    300,
+    200
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "vanilla/gui_texture/poured_concrete.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "gui_texture",
+   "asset": "riveted_iron_plate",
+   "brief": "Dark iron plate with a rough surface, rust bloom at the corners and a row of round rivets along a raised border.",
+   "build": "0.3.3",
+   "size": [
+    300,
+    200
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "vanilla/gui_texture/riveted_iron_plate.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "gui_texture",
+   "asset": "rough_canvas",
+   "brief": "Olive-tan army canvas with a visible coarse weave and a stitched hem line running around the border.",
+   "build": "0.3.3",
+   "size": [
+    300,
+    200
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "vanilla/gui_texture/rough_canvas.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "gui_texture",
+   "asset": "white_marble",
+   "brief": "Polished white marble with delicate grey veins and a slim carved moulding border in a slightly darker stone tone.",
+   "build": "0.3.3",
+   "size": [
+    300,
+    200
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "vanilla/gui_texture/white_marble.webp",
    "enlarged": null,
    "scale": 1
   },

@@ -31,7 +31,7 @@
  },
  "commander_trait": {
   "asset": "crossed_skis_poles",
-  "build": "0.3.1",
+  "build": "0.3.3",
   "brief": "A pair of wooden skis crossed with two poles, a winter warfare specialist, bold simple shape."
  },
  "counter_large": {
@@ -50,9 +50,9 @@
   "brief": "A blacksmith's anvil with a heavy hammer resting across it, a few glowing sparks, one bold object. Bold two-colour carved print."
  },
  "decision_category_icon": {
-  "asset": "anchor_ship_wheel",
-  "build": "0.3.1",
-  "brief": "A heavy ship's anchor crossed with a wooden helm wheel, emblem of the naval programme."
+  "asset": "border_post_barrier",
+  "build": "0.3.3",
+  "brief": "A striped border post and a lowered barrier gate with coils of barbed wire, grim emblem of border conflicts. Bold two-colour carved print."
  },
  "division_emblem": {
   "asset": "bear_standing",
@@ -80,14 +80,14 @@
   "brief": "Diplomacy: two envoys shaking hands under two invented national flags."
  },
  "gui_texture": {
-  "asset": "aged_leather",
-  "build": "0.3.1",
-  "brief": "Worn brown leather with a fine cracked grain, faint creases and darkened edges, framed by a thin stitched border line."
+  "asset": "blueprint_grid",
+  "build": "0.3.3",
+  "brief": "Deep blue technical paper with a faint pale grid of fine lines and a thin white double border, no drawings."
  },
  "idea_concern": {
-  "asset": "aircraft_plant_fuselages",
+  "asset": "armour_plate_rolling",
   "build": "0.3.1",
-  "brief": "An American aircraft plant with silver fuselages hanging in a long line from the ceiling, wings stacked below and morning light through high windows."
+  "brief": "A rolling mill where a glowing slab of armour plate is pulled between huge rollers, sparks scattering, steelworkers in the glare, Czech mood of power."
  },
  "idea_spirit": {
   "asset": "alpine_village_guard",
@@ -95,9 +95,9 @@
   "brief": "Swiss mountain villagers with rifles and a cowbell standing watch above a snowy pass, calm and watchful readiness."
  },
  "leader_portrait": {
-  "asset": "balkan_queen_regent",
+  "asset": "american_new_deal_president",
   "build": "0.3.3",
-  "brief": "A young Yugoslav queen regent in her twenties, black mourning dress, pearl choker and short veil, solemn composed expression, candlelit palace hall glowing behind her. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure."
+  "brief": "A cheerful American president in his fifties, pinstripe suit, wire-rimmed glasses, hopeful chin-up smile, limestone portico and a bright sky behind, festive optimistic mood. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure."
  },
  "mio_department": {
   "asset": "armour_plate_mill",
@@ -110,9 +110,9 @@
   "brief": "Two pairs of hands passing rolled blueprints to each other across a table in front of two different factory windows, patent sharing, friendly mood."
  },
  "modifier_stat_icon": {
-  "asset": "organisation_chain",
-  "build": "0.3.1",
-  "brief": "Two interlocked chain links in heavy outline, one slightly turned, with a short curved arrow circling them."
+  "asset": "air_superiority_fighter",
+  "build": "0.3.3",
+  "brief": "A single-engined fighter plane seen from above with swept wings, and a bold arrow rising above it."
  },
  "news_event": {
   "asset": "crowded_central_station",
