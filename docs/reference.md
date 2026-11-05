@@ -232,7 +232,7 @@ Once you have signed in, the ChatGPT login is the default provider on your machi
 What to know before you use it:
 
 * It calls a ChatGPT backend that OpenAI does not document for other tools, and it presents itself as the Codex CLI. It can change or be blocked without notice. Heavy use counts against your plan, and the consequences are yours. The risk note is shown once at sign-in.
-* Every image runs on `gpt-6-luna` at high reasoning effort. The tool sends both and checks that the backend's response reports both. A response that reports something else, or nothing, is refused and the image is not used. There is no fallback and no override.
+* Every image runs on `gpt-6-luna`. The route asks for the highest reasoning effort the backend accepts and, when the backend refuses the named efforts, sends the request with no effort so the backend uses its default. The ledger records the effort asked for and the one the backend reported for every image. A response that reports another model, or an effort other than the one asked for, is refused and the image is not used. There is no other model and no override.
 * **The route cannot force image quality.** The pixels come from the backend's own image tool, reported as `gpt-image-2-codex`. The backend replaces the tool settings we send with `quality = auto` and `size = auto`, and chooses quality and size itself. One recorded probe returned a medium-quality 1337x1176 image. The ledger records what the backend reported for each image, so check the pixels in the preview.
 * A refusal by the provider's safety system is reported as a moderation block, with advice to change the brief or the references.
 * **Up to three requests at once.** The route sends at most three requests at a time on your machine, across every process (maintainer decision W5-8 of 2026-11-05, a trial). Set `HOI4_IMAGEGEN_CHATGPT_CONCURRENCY` from 1 to 6 to change it, or `concurrency` under `[providers.chatgpt_login]` in the project config. The variable wins, and 1 means one at a time. Each slot waits at least 20 seconds between its own requests.
@@ -262,7 +262,7 @@ gh attestation verify <archive> --repo klimPaskov/hoi4-imagegen-mcp
 
 ### With HOI4 Mod Setup
 
-[HOI4 Mod Setup](https://github.com/klimPaskov/HOI4-Mod-Setup) installs the release per project and writes the project-level MCP entries for your coding tools, under the server id `hoi4_imagegen`. It also offers the sign-in and keeps API keys in the credential store.
+[HOI4 Mod Setup](https://github.com/klimPaskov/HOI4-Mod-Setup) installs the release per project and writes the project-level MCP entries for your coding tools, under the server id `hoi4_imagegen`. From Setup 0.9.2 the image step is one **Install hoi4-imagegen** checkbox, other backends sit under **Use another backend**, and after setup the Ready screen opens the ChatGPT sign-in by itself. It keeps API keys in the credential store.
 
 ### By hand
 

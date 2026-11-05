@@ -27,17 +27,8 @@
   <a href="docs/rules-and-terms.md">Rules and terms</a>
 </p>
 
-<!--
-TODO(trailer): when the trailer video exists, replace the line below with the same thumbnail block the sibling projects use:
-
 <p align="center">
-  <a href="https://www.youtube.com/watch?v=VIDEO_ID"><img src="https://raw.githubusercontent.com/klimPaskov/hoi4-imagegen-mcp/main/docs/images/imagegen-trailer-thumbnail.png" alt="Watch the HOI4 Imagegen trailer"></a>
-</p>
-
-Until then the releases page is the place to look: https://github.com/klimPaskov/hoi4-imagegen-mcp/releases
--->
-<p align="center">
-  <em>Trailer coming soon. Until then, see the <a href="https://github.com/klimPaskov/hoi4-imagegen-mcp/releases">releases</a> and the <a href="docs/families.md">gallery</a>.</em>
+  <a href="https://www.youtube.com/watch?v=4ko6f-icwDc"><img src="docs/images/imagegen-trailer-thumbnail.png" alt="Watch the HOI4 Imagegen trailer"></a>
 </p>
 
 Focus icons, idea pictures, decision icons, technology pictures, event pictures, portraits, flags, counters, logos, animated sprites and more: 44 asset families, each with the canvas, frames, naming, processing and checks measured from the game itself.
@@ -78,8 +69,8 @@ See more in the [documentation](docs/families.md): all 40 families, each with it
 
 ## Quick start
 
-1. **Install it.** The easy way is [HOI4 Mod Setup](https://github.com/klimPaskov/HOI4-Mod-Setup/releases/latest): on the image step choose **ChatGPT sign-in and API keys (hoi4-imagegen)**. It downloads the release for your computer, checks its SHA-256 and installs it in your mod. To install by hand, download the archive for your platform from the [releases](https://github.com/klimPaskov/hoi4-imagegen-mcp/releases) (Windows, macOS and Linux, `SHA256SUMS` included) and unpack it somewhere on your `PATH`.
-2. **Sign in once** with your ChatGPT account, and no API key is needed:
+1. **Install it.** The easy way is [HOI4 Mod Setup](https://github.com/klimPaskov/HOI4-Mod-Setup/releases/latest) 0.9.2 or later: tick **Install hoi4-imagegen** on the image step. Setup downloads the [latest release](https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/latest) (v0.3.3) for your computer, checks its SHA-256, installs it in your mod and then opens the ChatGPT sign-in in your browser by itself. Other backends are under **Use another backend**. To install by hand, download the archive for your platform from the [releases](https://github.com/klimPaskov/hoi4-imagegen-mcp/releases) (Windows, macOS and Linux, `SHA256SUMS` included) and unpack it somewhere on your `PATH`.
+2. **Sign in once** with your ChatGPT account, and no API key is needed. Setup does this step for you. By hand it is one command, which opens the browser, with nothing to type or confirm:
 
    ```sh
    hoi4-imagegen login
@@ -142,7 +133,7 @@ Every tool is also on the command line: `hoi4-imagegen call <tool> '<json>'`. Th
 
 Once you have signed in, the ChatGPT login is the default provider on your machine. A provider named in a plan, a style profile or the project config wins. Keys come from the environment, or from the credential store where HOI4 Mod Setup saved them, and are never written into a project file.
 
-Before you use the login, know that it calls a ChatGPT backend that OpenAI does not document for other tools, so it can change or be blocked without notice. Heavy use counts against your plan, and the consequences are yours. The risk note is shown once at sign-in. Every image runs on `gpt-6-luna` at high reasoning effort, checked on every response. The route cannot force image quality or size, so check the pixels in the preview. Details and recorded evidence are in [docs/chatgpt-login.md](docs/chatgpt-login.md).
+Before you use the login, know that it calls a ChatGPT backend that OpenAI does not document for other tools, so it can change or be blocked without notice. Heavy use counts against your plan, and the consequences are yours. The risk note is shown as information at sign-in, and signing in accepts it. Every image runs on `gpt-6-luna`. The route asks for the highest reasoning effort the backend accepts, falls back to the backend's default when it refuses the named efforts, and records the effort each image ran at. Since 0.3.3 it sends up to three requests at once across your machine, and it drops to one at a time for six hours by itself after a sign-out by the server, a rate limit or a usage-limit answer. The route cannot force image quality or size, so check the pixels in the preview. Details and recorded evidence are in [docs/chatgpt-login.md](docs/chatgpt-login.md).
 
 ## More
 
