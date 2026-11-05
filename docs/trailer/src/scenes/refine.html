@@ -1,0 +1,76 @@
+<template>
+  <style>
+    {{BASE}}
+    /* the station template, inside the 90% action-safe box (x 96-1824, y 54-1026) */
+    #root .wash { position: absolute; inset: 0; pointer-events: none; }
+    #root .tt { position: absolute; left: 96px; right: 96px; top: 96px; text-align: center; font-size: 80px; white-space: nowrap; }
+    #root .vis { position: absolute; left: 96px; right: 96px; top: 250px; height: 600px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    #root .line { position: absolute; left: 96px; right: 96px; top: 880px; text-align: center; font-size: 46px; letter-spacing: .04em; color: #efe6cc; }
+    #root .row3 { display: flex; gap: 60px; align-items: flex-end; }
+    #root .row3 .m { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+    #root .row3 .pic { height: 270px; display: flex; align-items: flex-end; }
+    #root .row3 .pic, #root .dev .m, #root .pair .pa, #root .refs .r { filter: drop-shadow(0 22px 26px rgba(0,0,0,.6)); }
+    #root .row3 .sz { font-size: 72px; }
+    #root .price .big { font-size: 300px; line-height: .9; }
+    #root .dev { align-items: center; }
+    #root .chips { margin-top: 48px; display: flex; gap: 16px; }
+    #root .chips span { padding: 12px 28px; font-size: 34px; letter-spacing: .04em; border-radius: 6px; box-shadow: 0 12px 24px rgba(0,0,0,.45); }
+    #root .refs { display: flex; align-items: center; gap: 24px; }
+    #root .refs .r img { width: 200px; height: 176px; display: block; object-fit: contain; }
+    #root .arrow { font-size: 120px; margin: 0 20px; }
+    #root .refs .out { width: 360px; height: 330px; display: flex; align-items: center; justify-content: center; }
+    #root .refs .out img { width: 300px; height: 264px; object-fit: contain; }
+    #root .solo { filter: drop-shadow(0 26px 34px rgba(0,0,0,.65)); }
+    #root .solo img { width: 520px; height: 520px; object-fit: contain; display: block; }
+    #root .pair { display: flex; align-items: center; gap: 30px; }
+    #root .pair .pa img { width: 520px; height: 520px; display: block; object-fit: contain; }
+    #root .clamp { position: relative; width: 400px; height: 440px; }
+    #root .clamp .slot { position: absolute; left: 30px; top: 26px; width: 340px; height: 388px; display: flex; align-items: center; justify-content: center; background: linear-gradient(160deg, #262d31, #14181b); box-shadow: inset 0 0 0 3px #3b444a; }
+    #root .clamp .slot img { width: 300px; height: 340px; }
+    #root .sheet { padding: 16px; }
+    #root .sheet img { width: 1600px; display: block; }
+    #root .stamp { margin-top: 50px; font-size: 80px; }
+    #root .stamp.ok { color: #7fd38a; border-color: #7fd38a; box-shadow: 0 0 30px rgba(127,211,138,.35), inset 0 0 20px rgba(127,211,138,.2); }
+    #root .rev { display: flex; align-items: center; gap: 80px; }
+    #root .rev .stamp { margin: 0; }
+    #root .stamp.big { font-size: 96px; transform: rotate(-5deg); }
+    #root .portrait { padding: 16px; }
+    #root .portrait img { display: block; }
+    #root .inst { display: flex; align-items: center; }
+    #root .inst .tank { padding: 30px; }
+    #root .inst .tank img { width: 730px; height: 270px; display: block; }
+    #root .files { display: flex; gap: 30px; }
+    #root .file { position: relative; width: 200px; height: 250px; border-radius: 8px; background: linear-gradient(170deg, #efe6cc, #c9bd98); box-shadow: 0 24px 40px rgba(0,0,0,.55); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; clip-path: polygon(0 0, 72% 0, 100% 22%, 100% 100%, 0 100%); }
+    #root .file b { font-family: "Archivo Black", sans-serif; font-size: 58px; color: #24476e; font-weight: 400; }
+    #root .file.gfx b { color: #8c4a12; }
+    #root .file span { font-size: 30px; color: #3a3428; letter-spacing: .06em; text-transform: uppercase; }
+    #root .nums { display: flex; gap: 140px; }
+    #root .nums div { display: flex; flex-direction: column; align-items: center; }
+    #root .nums b { font-size: 150px; font-weight: 400; }
+    #root .nums span { font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: #c9c2a3; }
+    #root .finding { margin-top: 60px; font-size: 48px; letter-spacing: .04em; color: #fff; padding: 16px 40px; border-radius: 6px; background: #b8342c; box-shadow: 0 0 40px rgba(184,52,44,.5); }
+    #root .cl { display: flex; gap: 70px; }
+    #root .cl .c1 { width: 640px; height: 320px; display: flex; align-items: center; justify-content: center; }
+    #root .cl .c1 .hero { font-size: 70px; text-align: center; white-space: nowrap; }
+
+  </style>
+  <div id="root" data-composition-id="refine" data-width="1920" data-height="1080">
+    <div class="table"></div>
+    <div class="wash" data-layout-allow-overflow id="refine-wash" style="background: radial-gradient(ellipse 60% 55% at 50% 52%, #8a4a1ccc 0%, #8a4a1c55 45%, transparent 75%)"></div>
+    {{GRAIN}}
+    <div class="tt hero"><span class="ice refine-w">Refine with</span> <span class="brass refine-w">one instruction</span></div>
+    <div class="vis" id="refine-vis"><div class="pair"><div class="pa"><img src="assets/regen/winter_border/winter_border-v1.png" /></div><div class="arrow hero brass">›</div><div class="pa"><img src="assets/regen/winter_border/winter_border-v2.png" /></div></div></div>
+    <div class="line" id="refine-line">“…now at night in a heavy snowstorm”</div>
+    <div class="vig"></div>
+  </div>
+  <script>
+    {{LIB}}
+    // beat 0: title; beat 0.5: the visual; beat 2: the line; then everything holds still
+    tl.fromTo("#refine-wash", { opacity: 0 }, { opacity: 1, duration: b(1), ease: "sine.out" }, 0);
+    tl.fromTo(".refine-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: b(0.5), ease: "power3.out", stagger: b(0.5) }, 0);
+    tl.fromTo("#refine-vis", { opacity: 0, y: 40, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: b(1), ease: "power3.out" }, b(0.5));
+    tl.fromTo("#refine-line", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: b(0.75), ease: "power3.out" }, b(2));
+    tl.fromTo("#refine-vis .pa:last-child", { opacity: 0, x: -50 }, { opacity: 1, x: 0, duration: b(1), ease: "power3.out" }, b(2));
+    window.__timelines["refine"] = tl;
+  </script>
+</template>

@@ -1,0 +1,101 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: "Oswald", sans-serif; color: #efe6cc; }
+#root .abs { position: absolute; }
+#root .full { position: absolute; inset: 0; }
+#root .table { position: absolute; inset: -80px; background:
+  radial-gradient(ellipse 70% 60% at 50% 46%, rgba(70,110,140,.30), rgba(0,0,0,0) 70%),
+  repeating-linear-gradient(0deg, rgba(201,194,163,.10) 0 1px, transparent 1px 120px),
+  repeating-linear-gradient(90deg, rgba(201,194,163,.10) 0 1px, transparent 1px 120px),
+  repeating-linear-gradient(0deg, rgba(201,194,163,.04) 0 1px, transparent 1px 24px),
+  repeating-linear-gradient(90deg, rgba(201,194,163,.04) 0 1px, transparent 1px 24px),
+  #15212b; }
+#root .paper { position: absolute; inset: 0; background:
+  radial-gradient(ellipse 60% 55% at 50% 42%, rgba(232,181,79,.20), transparent 70%),
+  radial-gradient(ellipse 120% 90% at 50% 50%, #2a241b 0%, #14110d 100%); }
+#root .steel { position: absolute; inset: 0; background: radial-gradient(ellipse 90% 80% at 50% 40%, #222b31 0%, #0e1316 100%); }
+#root .vig { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 88% 78% at 50% 50%, transparent 52%, rgba(0,0,0,.68) 100%); }
+#root .grain { position: absolute; inset: 0; opacity: .22; mix-blend-mode: overlay; pointer-events: none; }
+#root .hero { font-family: "Archivo Black", sans-serif; text-transform: uppercase; line-height: .9; letter-spacing: -.01em; }
+#root .brass { background: linear-gradient(180deg, #fff1c4 0%, #f0bd4f 45%, #a8701a 82%, #6b430c 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 3px 0 #5a3a0a) drop-shadow(0 6px 0 #3a2508) drop-shadow(0 18px 26px rgba(0,0,0,.7)); }
+#root .ice { background: linear-gradient(180deg, #ffffff 0%, #d8e4ea 45%, #8fa3ad 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 4px 0 #2c3a42) drop-shadow(0 16px 24px rgba(0,0,0,.75)); }
+#root .label { font-size: 28px; letter-spacing: .12em; text-transform: uppercase; color: #c9c2a3; }
+#root .label b { color: #e8b54f; font-weight: 500; }
+#root .mono { font-family: "IBM Plex Mono", monospace; }
+#root .plate { background: linear-gradient(160deg, #2b3236, #121618); box-shadow: inset 0 0 0 2px #59646b, inset 0 0 0 7px #1a1f22, inset 0 0 0 9px #46505570, 0 30px 60px rgba(0,0,0,.65); }
+#root .term { background: linear-gradient(180deg, #1b2226, #0f1416); border-radius: 6px; box-shadow: 0 0 0 2px #4a545a, 0 0 0 9px #22292d, 0 0 0 11px #59646b, 0 60px 120px rgba(0,0,0,.7); overflow: hidden; }
+#root .term .bar { height: 54px; background: linear-gradient(180deg, #3a4349, #262d31); display: flex; align-items: center; padding: 0 22px; gap: 12px; color: #c9c2a3; font-size: 22px; letter-spacing: .12em; text-transform: uppercase; }
+#root .term .bar i { width: 14px; height: 14px; border-radius: 50%; background: #59646b; display: inline-block; }
+#root .term pre { margin: 0; padding: 24px 32px; font-family: "IBM Plex Mono", monospace; font-size: 24px; line-height: 1.55; color: #b9c4b8; white-space: pre-wrap; }
+#root .term .p { color: #e8b54f; }
+#root .term .k { color: #efe6cc; font-weight: 600; }
+#root .term .hit { background: rgba(232,181,79,.2); color: #ffe7a3; }
+#root .term .dim { color: #6f7b74; }
+#root .term .ok { color: #8fd18b; }
+#root .term .bad { color: #ff8a7a; }
+#root .bracket { position: absolute; width: 80px; height: 80px; border-color: #e8b54f; border-style: solid; filter: drop-shadow(0 0 10px rgba(232,181,79,.55)); }
+#root .bracket.tl { left: 0; top: 0; border-width: 10px 0 0 10px; }
+#root .bracket.tr { right: 0; top: 0; border-width: 10px 10px 0 0; }
+#root .bracket.bl { left: 0; bottom: 0; border-width: 0 0 10px 10px; }
+#root .bracket.br { right: 0; bottom: 0; border-width: 0 10px 10px 0; }
+#root .streak { position: absolute; height: 3px; background: linear-gradient(90deg, transparent, rgba(255,226,150,.95), transparent); box-shadow: 0 0 22px rgba(255,200,90,.85); }
+#root .chip { display: inline-block; padding: 10px 22px; border: 2px solid rgba(201,194,163,.35); margin-right: -2px; background: rgba(10,14,18,.6); font-family: "IBM Plex Mono", monospace; font-size: 24px; color: #c9c2a3; }
+#root .chip.on { color: #15212b; background: #e8b54f; border-color: #e8b54f; }
+#root .px { image-rendering: auto; }
+#root .stamp { font-family: "Archivo Black", sans-serif; text-transform: uppercase; color: #e8b54f; border: 8px solid #e8b54f; padding: 10px 30px; letter-spacing: .04em; box-shadow: 0 0 30px rgba(232,181,79,.35), inset 0 0 20px rgba(232,181,79,.25); }
+
+    #root .f { position: absolute; left: 210px; top: 180px; width: 1500px; height: 720px; display: flex; align-items: center; justify-content: center; opacity: 0; }
+    #root .f img { display: block; max-width: 1500px; max-height: 720px; box-shadow: 0 30px 60px rgba(0,0,0,.6); }
+    #root .t { position: absolute; left: 96px; right: 96px; top: 400px; text-align: center; font-size: 110px; line-height: .98; opacity: 0; }
+  </style>
+  <div id="root" data-composition-id="riser" data-width="1920" data-height="1080">
+    <div class="paper"></div>
+    <svg class="grain" width="1920" height="1080"><filter id="riser-n"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .9 0"/></filter><rect width="100%" height="100%" filter="url(#riser-n)"/></svg>
+    <div class="f rs-f"><img src="assets/gallery/source_png/peace_conference-v1.png" alt="" /></div>
+    <div class="f rs-f"><img src="assets/regen/military_reforms/military_reforms-v1-fit.png" alt="" /></div>
+    <div class="f rs-f"><img src="assets/gallery/source_png/iron_pact-v1.png" alt="" /></div>
+    <div class="f rs-f"><img src="assets/gallery/source_png/heavy_tank-v1.png" alt="" /></div>
+    <div class="f rs-f"><img src="assets/gallery/source_png/war_industry-v1.png" alt="" /></div>
+    <div class="f rs-f"><img src="assets/gallery/source_png/winter_border-v1.png" alt="" /></div>
+    <div class="f rs-f"><img src="assets/gallery/fit/hold_the_line-v1.png" alt="" /></div>
+    <div class="f rs-f"><img src="assets/gallery/source_png/armistice-v1.png" alt="" /></div>
+    <div class="f rs-f"><img src="assets/gallery/fit/IRP_fascism-v1.png" alt="" /></div>
+    <div class="f rs-f"><img src="assets/gallery/source_png/state_security-v1.png" alt="" /></div>
+    <div class="t hero brass" id="rs-t">The vanilla finish.<br />Built in.</div>
+    <div class="dip" id="riser-dip" style="position:absolute;inset:0;background:#0b1014;pointer-events:none;z-index:50"></div>
+    <div class="vig"></div>
+  </div>
+  <script>
+    const BEAT = 0.5085017250921023;
+const DUR = 4.068013800736819;
+// b(n): the time of beat n inside this scene, snapped to a 30 fps frame.
+const b = (n) => Math.round(n * BEAT * 30) / 30;
+const tl = gsap.timeline({ paused: true });
+// Hold the scene's last frame until its slot ends.
+tl.set({}, {}, Math.max(0, DUR - 1 / 30));
+// Exit flash: a brass streak wipes the frame on the last half beat.
+function exitWipe(sel) {
+  tl.fromTo(sel, { xPercent: -120 }, { xPercent: 120, duration: b(0.5), ease: "power3.in" }, DUR - b(0.5));
+}
+// Land a block of words one by one on beats, blur to sharp, then hold still.
+function wordsIn(sel, at, gap) {
+  tl.fromTo(sel, { opacity: 0, filter: "blur(10px)", scale: 1.08 }, { opacity: 1, filter: "blur(0px)", scale: 1, duration: 0.16, ease: "power4.out", stagger: gap }, at);
+}
+
+    // flashes on beats 0-3, then half beats, then the title slams on the last beat
+    const fr = gsap.utils.toArray(".rs-f");
+    const times = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.25, 3.5, 3.75].map((x) => b(x));
+    fr.forEach((f, i) => {
+      const t0 = Math.round(times[i] * 30) / 30, t1 = i < fr.length - 1 ? Math.round(times[i + 1] * 30) / 30 : b(4);
+      tl.set(f, { opacity: 1 }, t0);
+      tl.fromTo(f, { scale: 1.12, rotation: (i % 2 ? 4 : -4) }, { scale: 1, rotation: 0, duration: Math.max(0.05, t1 - t0), ease: "power2.out", immediateRender: false }, t0);
+      tl.set(f, { opacity: 0 }, t1);
+    });
+    tl.fromTo("#rs-t", { opacity: 0, scale: 2.2, filter: "blur(18px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: b(0.4), ease: "expo.out" }, b(4));
+    tl.fromTo("#riser-dip", { opacity: 1 }, { opacity: 0, duration: b(0.5), ease: "power2.out" }, 0);
+    tl.fromTo("#riser-dip", { opacity: 0 }, { opacity: 0.85, duration: b(0.5), ease: "power2.in", immediateRender: false }, DUR - b(0.5));
+    window.__timelines["riser"] = tl;
+  </script>
+</template>

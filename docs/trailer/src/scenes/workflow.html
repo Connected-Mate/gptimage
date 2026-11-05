@@ -1,0 +1,38 @@
+<template>
+  <style>
+    {{BASE}}
+    #root .top { position: absolute; left: 96px; right: 96px; top: 70px; text-align: center; font-size: 58px; line-height: 1.05; }
+    #root .chips { position: absolute; left: 96px; right: 96px; top: 222px; display: flex; justify-content: center; gap: 14px; }
+    #root .chips span { padding: 10px 22px; border: 2px solid rgba(232,181,79,.45); background: rgba(10,14,18,.6); font-size: 30px; letter-spacing: .08em; text-transform: uppercase; color: #efe6cc; }
+    #root .app { position: absolute; right: 140px; top: 350px; width: 840px; height: 630px; overflow: hidden; border-radius: 10px; box-shadow: 0 0 0 2px #4a545a, 0 50px 100px rgba(0,0,0,.7); }
+    #root .app img { width: 840px; display: block; }
+    #root .left { position: absolute; left: 140px; top: 510px; width: 700px; }
+    #root .left .ico { width: 110px; height: 110px; }
+    #root .left .n { margin-top: 20px; font-family: "Archivo Black", sans-serif; font-size: 72px; text-transform: uppercase; line-height: 1; }
+    #root .left .d { margin-top: 18px; font-size: 40px; color: #c9c2a3; }
+    #root .left .d b { color: #e8b54f; font-weight: 500; }
+    #root .left .s { margin-top: 30px; white-space: nowrap; font-family: "IBM Plex Mono", monospace; font-size: 24px; color: #a8a18f; }
+  </style>
+  <div id="root" data-composition-id="workflow" data-width="1920" data-height="1080">
+    <div class="steel"></div>
+    {{GRAIN}}
+    <div class="top hero"><span class="ice wf-w">Works best inside the full</span><br /><span class="brass wf-w">Agentic HOI4 Modding</span> <span class="ice wf-w">workflow</span></div>
+    <div class="chips"><span class="wf-c">Instructions</span><span class="wf-c">Skills</span><span class="wf-c">Subagents</span><span class="wf-c">MCP servers</span><span class="wf-c">Assets</span></div>
+    <div class="left">
+      <img class="ico" id="wf-ico" src="assets/setup/appicon.png" alt="" />
+      <div class="n ice" id="wf-n">HOI4 Mod Setup</div>
+      <div class="d" id="wf-d">installs it all <b>in one go</b></div>
+    </div>
+    <div class="app" id="wf-app"><img src="assets/setup/setup_components.png" alt="" /></div>
+    <div class="vig"></div>
+  </div>
+  <script>
+    {{LIB}}
+    tl.fromTo(".wf-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.15, ease: "power4.out", stagger: b(0.5) }, 0);
+    tl.fromTo(".wf-c", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: b(0.25), ease: "back.out(2)", stagger: b(0.25) }, b(1.5));
+    tl.fromTo("#wf-app", { opacity: 0, x: 200, rotationY: -25 }, { opacity: 1, x: 0, rotationY: 0, duration: b(1), ease: "power3.out" }, b(2.5));
+    tl.fromTo("#wf-ico", { opacity: 0, scale: 0.4, rotation: -90 }, { opacity: 1, scale: 1, rotation: 0, duration: b(0.5), ease: "back.out(1.8)" }, b(2.5));
+    tl.fromTo(["#wf-n", "#wf-d"], { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: b(0.5), ease: "power3.out", stagger: b(0.5) }, b(3));
+    window.__timelines["workflow"] = tl;
+  </script>
+</template>

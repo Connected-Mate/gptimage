@@ -1,0 +1,10 @@
+assets/
+renders/
+boards/
+snapshots/
+.media/
+node_modules/
+CLAUDE.md
+AGENTS.md
+.hyperframes/
+thumbs/

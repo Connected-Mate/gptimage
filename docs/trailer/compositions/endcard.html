@@ -1,0 +1,159 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: "Oswald", sans-serif; color: #efe6cc; }
+#root .abs { position: absolute; }
+#root .full { position: absolute; inset: 0; }
+#root .table { position: absolute; inset: -80px; background:
+  radial-gradient(ellipse 70% 60% at 50% 46%, rgba(70,110,140,.30), rgba(0,0,0,0) 70%),
+  repeating-linear-gradient(0deg, rgba(201,194,163,.10) 0 1px, transparent 1px 120px),
+  repeating-linear-gradient(90deg, rgba(201,194,163,.10) 0 1px, transparent 1px 120px),
+  repeating-linear-gradient(0deg, rgba(201,194,163,.04) 0 1px, transparent 1px 24px),
+  repeating-linear-gradient(90deg, rgba(201,194,163,.04) 0 1px, transparent 1px 24px),
+  #15212b; }
+#root .paper { position: absolute; inset: 0; background:
+  radial-gradient(ellipse 60% 55% at 50% 42%, rgba(232,181,79,.20), transparent 70%),
+  radial-gradient(ellipse 120% 90% at 50% 50%, #2a241b 0%, #14110d 100%); }
+#root .steel { position: absolute; inset: 0; background: radial-gradient(ellipse 90% 80% at 50% 40%, #222b31 0%, #0e1316 100%); }
+#root .vig { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 88% 78% at 50% 50%, transparent 52%, rgba(0,0,0,.68) 100%); }
+#root .grain { position: absolute; inset: 0; opacity: .22; mix-blend-mode: overlay; pointer-events: none; }
+#root .hero { font-family: "Archivo Black", sans-serif; text-transform: uppercase; line-height: .9; letter-spacing: -.01em; }
+#root .brass { background: linear-gradient(180deg, #fff1c4 0%, #f0bd4f 45%, #a8701a 82%, #6b430c 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 3px 0 #5a3a0a) drop-shadow(0 6px 0 #3a2508) drop-shadow(0 18px 26px rgba(0,0,0,.7)); }
+#root .ice { background: linear-gradient(180deg, #ffffff 0%, #d8e4ea 45%, #8fa3ad 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 4px 0 #2c3a42) drop-shadow(0 16px 24px rgba(0,0,0,.75)); }
+#root .label { font-size: 28px; letter-spacing: .12em; text-transform: uppercase; color: #c9c2a3; }
+#root .label b { color: #e8b54f; font-weight: 500; }
+#root .mono { font-family: "IBM Plex Mono", monospace; }
+#root .plate { background: linear-gradient(160deg, #2b3236, #121618); box-shadow: inset 0 0 0 2px #59646b, inset 0 0 0 7px #1a1f22, inset 0 0 0 9px #46505570, 0 30px 60px rgba(0,0,0,.65); }
+#root .term { background: linear-gradient(180deg, #1b2226, #0f1416); border-radius: 6px; box-shadow: 0 0 0 2px #4a545a, 0 0 0 9px #22292d, 0 0 0 11px #59646b, 0 60px 120px rgba(0,0,0,.7); overflow: hidden; }
+#root .term .bar { height: 54px; background: linear-gradient(180deg, #3a4349, #262d31); display: flex; align-items: center; padding: 0 22px; gap: 12px; color: #c9c2a3; font-size: 22px; letter-spacing: .12em; text-transform: uppercase; }
+#root .term .bar i { width: 14px; height: 14px; border-radius: 50%; background: #59646b; display: inline-block; }
+#root .term pre { margin: 0; padding: 24px 32px; font-family: "IBM Plex Mono", monospace; font-size: 24px; line-height: 1.55; color: #b9c4b8; white-space: pre-wrap; }
+#root .term .p { color: #e8b54f; }
+#root .term .k { color: #efe6cc; font-weight: 600; }
+#root .term .hit { background: rgba(232,181,79,.2); color: #ffe7a3; }
+#root .term .dim { color: #6f7b74; }
+#root .term .ok { color: #8fd18b; }
+#root .term .bad { color: #ff8a7a; }
+#root .bracket { position: absolute; width: 80px; height: 80px; border-color: #e8b54f; border-style: solid; filter: drop-shadow(0 0 10px rgba(232,181,79,.55)); }
+#root .bracket.tl { left: 0; top: 0; border-width: 10px 0 0 10px; }
+#root .bracket.tr { right: 0; top: 0; border-width: 10px 10px 0 0; }
+#root .bracket.bl { left: 0; bottom: 0; border-width: 0 0 10px 10px; }
+#root .bracket.br { right: 0; bottom: 0; border-width: 0 10px 10px 0; }
+#root .streak { position: absolute; height: 3px; background: linear-gradient(90deg, transparent, rgba(255,226,150,.95), transparent); box-shadow: 0 0 22px rgba(255,200,90,.85); }
+#root .chip { display: inline-block; padding: 10px 22px; border: 2px solid rgba(201,194,163,.35); margin-right: -2px; background: rgba(10,14,18,.6); font-family: "IBM Plex Mono", monospace; font-size: 24px; color: #c9c2a3; }
+#root .chip.on { color: #15212b; background: #e8b54f; border-color: #e8b54f; }
+#root .px { image-rendering: auto; }
+#root .stamp { font-family: "Archivo Black", sans-serif; text-transform: uppercase; color: #e8b54f; border: 8px solid #e8b54f; padding: 10px 30px; letter-spacing: .04em; box-shadow: 0 0 30px rgba(232,181,79,.35), inset 0 0 20px rgba(232,181,79,.25); }
+
+    #root .left { position: absolute; left: 110px; top: 210px; width: 760px; }
+    #root .mark { display: flex; align-items: center; gap: 28px; }
+    #root .mark img { width: 120px; height: 120px; }
+    #root .mark .w { font-size: 64px; line-height: 1; }
+    #root .tag { margin-top: 26px; font-size: 34px; letter-spacing: .14em; text-transform: uppercase; color: #c9c2a3; }
+    #root .rail { margin-top: 60px; position: relative; padding-left: 40px; }
+    #root .rail::before { content: ""; position: absolute; left: 11px; top: 14px; bottom: 14px; width: 2px; background: linear-gradient(180deg, #e8b54f, rgba(232,181,79,.15)); }
+    #root .step { position: relative; margin-bottom: 26px; }
+    #root .step::before { content: ""; position: absolute; left: -38px; top: 10px; width: 18px; height: 18px; border-radius: 50%; background: #15212b; box-shadow: 0 0 0 3px #e8b54f; }
+    #root .step.me::before { background: #e8b54f; box-shadow: 0 0 0 3px #e8b54f, 0 0 18px #e8b54f; }
+    #root .step .k { font-size: 28px; letter-spacing: .18em; text-transform: uppercase; color: #e8b54f; }
+    #root .step .n { font-family: "Archivo Black", sans-serif; font-size: 38px; text-transform: uppercase; line-height: 1.1; }
+    /* link cards: the Chaos Redux trailer's g2 cards, in steel and brass */
+    #root .cards { position: absolute; left: 980px; top: 250px; width: 840px; display: flex; flex-direction: column; gap: 24px; }
+    #root .card { position: relative; overflow: hidden; width: 840px; height: 128px; border-radius: 6px; border: 2px solid #3b444a;
+      background: linear-gradient(180deg, rgba(30,38,43,.97), rgba(12,16,19,.98));
+      box-shadow: inset 0 0 0 1px rgba(232,181,79,.22), inset 0 0 44px rgba(232,181,79,.06), 0 18px 48px rgba(0,0,0,.6);
+      display: flex; align-items: center; padding: 0 40px 0 44px; gap: 28px; }
+    #root .card.repo { height: 170px; border-color: #a8701a; box-shadow: inset 0 0 0 1px rgba(232,181,79,.4), inset 0 0 70px rgba(232,181,79,.12), 0 0 50px rgba(232,181,79,.18), 0 18px 48px rgba(0,0,0,.6); }
+    #root .card.repo .bar { position: absolute; left: 0; top: 0; bottom: 0; width: 8px; background: linear-gradient(180deg, #f0bd4f, #a8701a); }
+    #root .ic { flex: 0 0 auto; width: 76px; height: 76px; border-radius: 50%; border: 2px solid #a8701a; background: radial-gradient(circle at 50% 40%, rgba(232,181,79,.35), rgba(12,16,19,.9)); box-shadow: 0 0 22px rgba(232,181,79,.25); display: flex; align-items: center; justify-content: center; }
+    #root .ic svg { width: 44px; height: 44px; display: block; }
+    #root .tx { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    #root .lb { font-size: 28px; letter-spacing: .22em; text-transform: uppercase; color: #e8b54f; }
+    #root .tt { font-family: "Archivo Black", sans-serif; font-size: 32px; letter-spacing: .04em; text-transform: uppercase; color: #efe6cc; white-space: nowrap; }
+    #root .sb { font-family: "IBM Plex Mono", monospace; font-size: 24px; color: #a8a18f; white-space: nowrap; }
+    #root .ar { margin-left: auto; flex: 0 0 auto; width: 34px; height: 34px; }
+    #root .sw { position: absolute; left: 0; top: -20px; width: 160px; height: 240px; background: linear-gradient(90deg, rgba(232,181,79,0), rgba(232,181,79,.22), rgba(232,181,79,0)); pointer-events: none; }
+    /* each link card in its brand's own colour */
+    #root .card.b-gh { border-color: #8b949e; background: linear-gradient(180deg, #2d333b, #1c2128); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12), 0 18px 48px rgba(0,0,0,.6); }
+    #root .card.b-gh .bar { background: linear-gradient(180deg, #ffffff, #8b949e); }
+    #root .card.b-gh .ic { border-color: #8b949e; background: #24292f; box-shadow: none; }
+    #root .card.b-gh .lb { color: #c9d1d9; }
+    #root .card.b-kf { border-color: #ff5e5b; background: linear-gradient(180deg, #3a1f22, #24151a); }
+    #root .card.b-kf .ic { border-color: #ff5e5b; background: #ff5e5b; box-shadow: 0 0 22px rgba(255,94,91,.45); }
+    #root .card.b-yt { border-color: #ff0000; background: linear-gradient(180deg, #3a1a1a, #241212); }
+    #root .card.b-yt .ic { border-color: #ff0000; background: #ff0000; box-shadow: 0 0 22px rgba(255,0,0,.45); }
+    #root .card.b-dc { border-color: #5865f2; background: linear-gradient(180deg, #23264a, #171936); }
+    #root .card.b-dc .ic { border-color: #5865f2; background: #5865f2; box-shadow: 0 0 22px rgba(88,101,242,.5); }
+    #root .card.b-kf .ar path, #root .card.b-kf .ic svg *[stroke="#e8b54f"] { stroke: #ffd2d1; }
+    #root .card.b-yt .ar path { stroke: #ff8080; } #root .card.b-dc .ar path { stroke: #aab1ff; } #root .card.b-gh .ar path { stroke: #ffffff; }
+    #root .card .ic svg * { stroke: #ffffff; }
+    #root .card.b-kf .sw { background: linear-gradient(90deg, rgba(255,94,91,0), rgba(255,94,91,.25), rgba(255,94,91,0)); }
+    #root .card.b-yt .sw { background: linear-gradient(90deg, rgba(255,0,0,0), rgba(255,0,0,.22), rgba(255,0,0,0)); }
+    #root .card.b-dc .sw { background: linear-gradient(90deg, rgba(88,101,242,0), rgba(88,101,242,.3), rgba(88,101,242,0)); }
+    #root .card.b-gh .sw { background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.14), rgba(255,255,255,0)); }
+  </style>
+  <div id="root" data-composition-id="endcard" data-width="1920" data-height="1080">
+    <div class="steel"></div>
+    <svg class="grain" width="1920" height="1080"><filter id="endcard-n"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .9 0"/></filter><rect width="100%" height="100%" filter="url(#endcard-n)"/></svg>
+    <div class="left">
+      <div class="mark" id="ec-mark"><img src="assets/logo_imagegen.png" alt="" /><div class="w hero brass">hoi4-imagegen</div></div>
+      <div class="tag" id="ec-tag">Free · open source · MIT</div>
+      <div class="rail">
+        <div class="step ec-st"><div class="k">installs it</div><div class="n">HOI4 Mod Setup</div></div>
+        <div class="step ec-st"><div class="k">its agents drive it</div><div class="n">Agentic HOI4 Modding kit</div></div>
+        <div class="step me ec-st"><div class="k">makes the art</div><div class="n">hoi4-imagegen</div></div>
+        <div class="step ec-st"><div class="k">works beside it</div><div class="n">HOI4 Agent Tools</div></div>
+      </div>
+    </div>
+    <div class="cards">
+      <div data-layout-allow-overflow class="card b-gh repo ec-c"><div class="bar"></div>
+        <div class="ic"><svg viewBox="0 0 56 56" fill="none" stroke="#efe6cc" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 44c-9 3-9-5-13-6m26 10v-7c0-2 0-3-1-4 5-1 10-3 10-12 0-2-1-5-3-7 1-2 1-5 0-7 0 0-2-1-7 2a23 23 0 0 0-12 0c-5-3-7-2-7-2-1 2-1 5 0 7-2 2-3 5-3 7 0 9 5 11 10 12-1 1-1 2-1 4v7" /></svg></div>
+        <div class="tx"><div class="lb">Get it on GitHub</div><div class="tt">hoi4-imagegen-mcp</div><div class="sb">github.com/klimPaskov/hoi4-imagegen-mcp</div></div>
+        <svg class="ar" viewBox="0 0 34 34" fill="none" stroke="#e8b54f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6l11 11-11 11" /></svg><div class="sw"></div></div>
+      <div data-layout-allow-overflow class="card b-kf ec-c">
+        <div class="ic"><svg viewBox="0 0 56 56" fill="none" stroke="#efe6cc" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20h30v14a10 10 0 0 1-10 10h-10a10 10 0 0 1-10-10z" /><path d="M39 24h3a6 6 0 0 1 0 12h-4" /><path d="M24 37c-5-3.4-7-6-7-8.6a3.8 3.8 0 0 1 7-2 3.8 3.8 0 0 1 7 2c0 2.6-2 5.2-7 8.6z" stroke="#e8b54f" fill="rgba(232,181,79,.35)" /></svg></div>
+        <div class="tx"><div class="tt">Ko-fi</div><div class="sb">ko-fi.com/klimpaskov</div></div>
+        <svg class="ar" viewBox="0 0 34 34" fill="none" stroke="#e8b54f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6l11 11-11 11" /></svg><div class="sw"></div></div>
+      <div data-layout-allow-overflow class="card b-yt ec-c">
+        <div class="ic"><svg viewBox="0 0 56 56" fill="none" stroke="#efe6cc" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="13" width="44" height="30" rx="9" /><path d="M23 21l13 7-13 7z" stroke="#e8b54f" fill="rgba(232,181,79,.45)" /></svg></div>
+        <div class="tx"><div class="tt">Subscribe</div><div class="sb">youtube.com/@ChaosRedux</div></div>
+        <svg class="ar" viewBox="0 0 34 34" fill="none" stroke="#e8b54f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6l11 11-11 11" /></svg><div class="sw"></div></div>
+      <div data-layout-allow-overflow class="card b-dc ec-c">
+        <div class="ic"><svg viewBox="0 0 56 56" fill="none" stroke="#efe6cc" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14h36a4 4 0 0 1 4 4v18a4 4 0 0 1-4 4H30l-9 8v-8H10a4 4 0 0 1-4-4V18a4 4 0 0 1 4-4z" /><circle cx="20" cy="27" r="2.6" stroke="#e8b54f" fill="#e8b54f" /><circle cx="36" cy="27" r="2.6" stroke="#e8b54f" fill="#e8b54f" /></svg></div>
+        <div class="tx"><div class="tt">Join the Discord</div><div class="sb">discord.gg/rAXesGcT2t</div></div>
+        <svg class="ar" viewBox="0 0 34 34" fill="none" stroke="#e8b54f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6l11 11-11 11" /></svg><div class="sw"></div></div>
+    </div>
+    <div class="dip" id="endcard-dip" style="position:absolute;inset:0;background:#0b1014;pointer-events:none;z-index:50"></div>
+    <div class="vig"></div>
+  </div>
+  <script>
+    const BEAT = 0.5085017250921023;
+const DUR = 8.136027601473637;
+// b(n): the time of beat n inside this scene, snapped to a 30 fps frame.
+const b = (n) => Math.round(n * BEAT * 30) / 30;
+const tl = gsap.timeline({ paused: true });
+// Hold the scene's last frame until its slot ends.
+tl.set({}, {}, Math.max(0, DUR - 1 / 30));
+// Exit flash: a brass streak wipes the frame on the last half beat.
+function exitWipe(sel) {
+  tl.fromTo(sel, { xPercent: -120 }, { xPercent: 120, duration: b(0.5), ease: "power3.in" }, DUR - b(0.5));
+}
+// Land a block of words one by one on beats, blur to sharp, then hold still.
+function wordsIn(sel, at, gap) {
+  tl.fromTo(sel, { opacity: 0, filter: "blur(10px)", scale: 1.08 }, { opacity: 1, filter: "blur(0px)", scale: 1, duration: 0.16, ease: "power4.out", stagger: gap }, at);
+}
+
+    tl.fromTo("#ec-mark", { opacity: 0, x: -80, filter: "blur(14px)" }, { opacity: 1, x: 0, filter: "blur(0px)", duration: b(1), ease: "power3.out" }, 0);
+    tl.fromTo("#ec-tag", { opacity: 0 }, { opacity: 1, duration: b(0.5) }, b(1));
+    tl.fromTo(".ec-st", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: b(0.75), ease: "power3.out", stagger: b(0.5) }, b(1.5));
+    gsap.utils.toArray(".ec-c").forEach((c, k) => {
+      const t0 = b(2 + k);
+      tl.fromTo(c, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: b(1.5), ease: "power3.out" }, t0);
+      tl.fromTo(c.querySelector(".sw"), { x: -260, skewX: -18 }, { x: 1100, skewX: -18, duration: b(2), ease: "power2.inOut" }, t0 + b(0.75));
+    });
+    tl.fromTo("#endcard-dip", { opacity: 1 }, { opacity: 0, duration: b(0.5), ease: "power2.out" }, 0);
+    tl.fromTo("#endcard-dip", { opacity: 0 }, { opacity: 0.85, duration: b(0.5), ease: "power2.in", immediateRender: false }, DUR - b(0.5));
+    window.__timelines["endcard"] = tl;
+  </script>
+</template>

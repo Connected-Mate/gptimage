@@ -1,0 +1,134 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: "Oswald", sans-serif; color: #efe6cc; }
+#root .abs { position: absolute; }
+#root .full { position: absolute; inset: 0; }
+#root .table { position: absolute; inset: -80px; background:
+  radial-gradient(ellipse 70% 60% at 50% 46%, rgba(70,110,140,.30), rgba(0,0,0,0) 70%),
+  repeating-linear-gradient(0deg, rgba(201,194,163,.10) 0 1px, transparent 1px 120px),
+  repeating-linear-gradient(90deg, rgba(201,194,163,.10) 0 1px, transparent 1px 120px),
+  repeating-linear-gradient(0deg, rgba(201,194,163,.04) 0 1px, transparent 1px 24px),
+  repeating-linear-gradient(90deg, rgba(201,194,163,.04) 0 1px, transparent 1px 24px),
+  #15212b; }
+#root .paper { position: absolute; inset: 0; background:
+  radial-gradient(ellipse 60% 55% at 50% 42%, rgba(232,181,79,.20), transparent 70%),
+  radial-gradient(ellipse 120% 90% at 50% 50%, #2a241b 0%, #14110d 100%); }
+#root .steel { position: absolute; inset: 0; background: radial-gradient(ellipse 90% 80% at 50% 40%, #222b31 0%, #0e1316 100%); }
+#root .vig { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 88% 78% at 50% 50%, transparent 52%, rgba(0,0,0,.68) 100%); }
+#root .grain { position: absolute; inset: 0; opacity: .22; mix-blend-mode: overlay; pointer-events: none; }
+#root .hero { font-family: "Archivo Black", sans-serif; text-transform: uppercase; line-height: .9; letter-spacing: -.01em; }
+#root .brass { background: linear-gradient(180deg, #fff1c4 0%, #f0bd4f 45%, #a8701a 82%, #6b430c 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 3px 0 #5a3a0a) drop-shadow(0 6px 0 #3a2508) drop-shadow(0 18px 26px rgba(0,0,0,.7)); }
+#root .ice { background: linear-gradient(180deg, #ffffff 0%, #d8e4ea 45%, #8fa3ad 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 4px 0 #2c3a42) drop-shadow(0 16px 24px rgba(0,0,0,.75)); }
+#root .label { font-size: 28px; letter-spacing: .12em; text-transform: uppercase; color: #c9c2a3; }
+#root .label b { color: #e8b54f; font-weight: 500; }
+#root .mono { font-family: "IBM Plex Mono", monospace; }
+#root .plate { background: linear-gradient(160deg, #2b3236, #121618); box-shadow: inset 0 0 0 2px #59646b, inset 0 0 0 7px #1a1f22, inset 0 0 0 9px #46505570, 0 30px 60px rgba(0,0,0,.65); }
+#root .term { background: linear-gradient(180deg, #1b2226, #0f1416); border-radius: 6px; box-shadow: 0 0 0 2px #4a545a, 0 0 0 9px #22292d, 0 0 0 11px #59646b, 0 60px 120px rgba(0,0,0,.7); overflow: hidden; }
+#root .term .bar { height: 54px; background: linear-gradient(180deg, #3a4349, #262d31); display: flex; align-items: center; padding: 0 22px; gap: 12px; color: #c9c2a3; font-size: 22px; letter-spacing: .12em; text-transform: uppercase; }
+#root .term .bar i { width: 14px; height: 14px; border-radius: 50%; background: #59646b; display: inline-block; }
+#root .term pre { margin: 0; padding: 24px 32px; font-family: "IBM Plex Mono", monospace; font-size: 24px; line-height: 1.55; color: #b9c4b8; white-space: pre-wrap; }
+#root .term .p { color: #e8b54f; }
+#root .term .k { color: #efe6cc; font-weight: 600; }
+#root .term .hit { background: rgba(232,181,79,.2); color: #ffe7a3; }
+#root .term .dim { color: #6f7b74; }
+#root .term .ok { color: #8fd18b; }
+#root .term .bad { color: #ff8a7a; }
+#root .bracket { position: absolute; width: 80px; height: 80px; border-color: #e8b54f; border-style: solid; filter: drop-shadow(0 0 10px rgba(232,181,79,.55)); }
+#root .bracket.tl { left: 0; top: 0; border-width: 10px 0 0 10px; }
+#root .bracket.tr { right: 0; top: 0; border-width: 10px 10px 0 0; }
+#root .bracket.bl { left: 0; bottom: 0; border-width: 0 0 10px 10px; }
+#root .bracket.br { right: 0; bottom: 0; border-width: 0 10px 10px 0; }
+#root .streak { position: absolute; height: 3px; background: linear-gradient(90deg, transparent, rgba(255,226,150,.95), transparent); box-shadow: 0 0 22px rgba(255,200,90,.85); }
+#root .chip { display: inline-block; padding: 10px 22px; border: 2px solid rgba(201,194,163,.35); margin-right: -2px; background: rgba(10,14,18,.6); font-family: "IBM Plex Mono", monospace; font-size: 24px; color: #c9c2a3; }
+#root .chip.on { color: #15212b; background: #e8b54f; border-color: #e8b54f; }
+#root .px { image-rendering: auto; }
+#root .stamp { font-family: "Archivo Black", sans-serif; text-transform: uppercase; color: #e8b54f; border: 8px solid #e8b54f; padding: 10px 30px; letter-spacing: .04em; box-shadow: 0 0 30px rgba(232,181,79,.35), inset 0 0 20px rgba(232,181,79,.25); }
+
+    #root .t { position: absolute; left: 0; right: 0; top: 80px; text-align: center; font-size: 72px; white-space: nowrap; }
+    #root .sub { position: absolute; left: 0; right: 0; top: 196px; text-align: center; font-size: 34px; }
+    #root .cell { position: absolute; top: 290px; width: 400px; height: 600px; }
+    #root .live { position: absolute; left: 0; right: 0; top: 40px; height: 300px; display: flex; align-items: center; justify-content: center; }
+    #root .live img { position: absolute; opacity: 0; }
+    #root .strip { position: absolute; left: 20px; right: 20px; top: 370px; display: flex; gap: 6px; align-items: center; justify-content: center; height: 60px; overflow: hidden; }
+    #root .strip img { height: 40px; background: rgba(0,0,0,.35); box-shadow: inset 0 0 0 1px rgba(232,181,79,.3); }
+    #root .strip span { font-family: "IBM Plex Mono", monospace; font-size: 18px; color: #a8a18f; margin-left: 6px; }
+    #root .fam { position: absolute; left: 24px; top: 460px; font-size: 24px; color: #e8b54f; }
+    #root .fam b { font-weight: 500; }
+    #root .spec { position: absolute; left: 24px; top: 500px; font-size: 20px; color: #c9c2a3; }
+    #root .what { position: absolute; left: 0; right: 0; text-align: center; top: 500px; font-size: 38px; letter-spacing: .08em; text-transform: uppercase; color: #efe6cc; }
+  </style>
+  <div id="root" data-composition-id="animated" data-width="1920" data-height="1080">
+    <div class="steel"></div>
+    <svg class="grain" width="1920" height="1080"><filter id="animated-n"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .9 0"/></filter><rect width="100%" height="100%" filter="url(#animated-n)"/></svg>
+    <div class="t hero"><span class="ice an-w">Animated sprites.</span> <span class="brass an-w">Loops that hold.</span></div>
+    <div class="sub label">one base frame · every frame checked for drift</div>
+      <div class="cell plate an-c" style="left:115px">
+        <div class="live"><img class="an-f an-0" src="assets/anim/glow_focus_ready_00.png" style="width:282px;height:230px" alt="" /><img class="an-f an-0" src="assets/anim/glow_focus_ready_01.png" style="width:282px;height:230px" alt="" /></div>
+        <div class="strip"><img src="assets/anim/glow_focus_ready_00.png" alt="" /><img src="assets/anim/glow_focus_ready_01.png" alt="" /></div>
+        <div class="what">focus-ready glow</div>
+      </div>
+      <div class="cell plate an-c" style="left:545px">
+        <div class="live"><img class="an-f an-1" src="assets/anim/anim_signal_beacon_00.png" style="width:282px;height:230px" alt="" /><img class="an-f an-1" src="assets/anim/anim_signal_beacon_01.png" style="width:282px;height:230px" alt="" /><img class="an-f an-1" src="assets/anim/anim_signal_beacon_02.png" style="width:282px;height:230px" alt="" /></div>
+        <div class="strip"><img src="assets/anim/anim_signal_beacon_00.png" alt="" /><img src="assets/anim/anim_signal_beacon_01.png" alt="" /><img src="assets/anim/anim_signal_beacon_02.png" alt="" /></div>
+        <div class="what">signal lantern</div>
+      </div>
+      <div class="cell plate an-c" style="left:975px">
+        <div class="live"><img class="an-f an-2" src="assets/anim/scroll_research_progress_00.png" style="width:216px;height:216px" alt="" /><img class="an-f an-2" src="assets/anim/scroll_research_progress_01.png" style="width:216px;height:216px" alt="" /><img class="an-f an-2" src="assets/anim/scroll_research_progress_02.png" style="width:216px;height:216px" alt="" /><img class="an-f an-2" src="assets/anim/scroll_research_progress_03.png" style="width:216px;height:216px" alt="" /><img class="an-f an-2" src="assets/anim/scroll_research_progress_04.png" style="width:216px;height:216px" alt="" /><img class="an-f an-2" src="assets/anim/scroll_research_progress_05.png" style="width:216px;height:216px" alt="" /><img class="an-f an-2" src="assets/anim/scroll_research_progress_06.png" style="width:216px;height:216px" alt="" /><img class="an-f an-2" src="assets/anim/scroll_research_progress_07.png" style="width:216px;height:216px" alt="" /><img class="an-f an-2" src="assets/anim/scroll_research_progress_08.png" style="width:216px;height:216px" alt="" /></div>
+        <div class="strip"><img src="assets/anim/scroll_research_progress_00.png" alt="" /><img src="assets/anim/scroll_research_progress_01.png" alt="" /><img src="assets/anim/scroll_research_progress_02.png" alt="" /><img src="assets/anim/scroll_research_progress_03.png" alt="" /><img src="assets/anim/scroll_research_progress_04.png" alt="" /><img src="assets/anim/scroll_research_progress_05.png" alt="" /></div>
+        <div class="what">progress chevrons</div>
+      </div>
+      <div class="cell plate an-c" style="left:1405px">
+        <div class="live"><img class="an-f an-3" src="assets/anim/spin_industry_cog_00.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_01.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_02.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_03.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_04.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_05.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_06.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_07.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_08.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_09.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_10.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_11.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_12.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_13.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_14.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_15.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_16.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_17.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_18.png" style="width:256px;height:256px" alt="" /><img class="an-f an-3" src="assets/anim/spin_industry_cog_19.png" style="width:256px;height:256px" alt="" /></div>
+        <div class="strip"><img src="assets/anim/spin_industry_cog_00.png" alt="" /><img src="assets/anim/spin_industry_cog_01.png" alt="" /><img src="assets/anim/spin_industry_cog_02.png" alt="" /><img src="assets/anim/spin_industry_cog_03.png" alt="" /><img src="assets/anim/spin_industry_cog_04.png" alt="" /><img src="assets/anim/spin_industry_cog_05.png" alt="" /></div>
+        <div class="what">industry cog</div>
+      </div>
+    <div class="dip" id="animated-dip" style="position:absolute;inset:0;background:#0b1014;pointer-events:none;z-index:50"></div>
+    <div class="vig"></div>
+  </div>
+  <script>
+    const BEAT = 0.5085017250921023;
+const DUR = 4.068013800736819;
+// b(n): the time of beat n inside this scene, snapped to a 30 fps frame.
+const b = (n) => Math.round(n * BEAT * 30) / 30;
+const tl = gsap.timeline({ paused: true });
+// Hold the scene's last frame until its slot ends.
+tl.set({}, {}, Math.max(0, DUR - 1 / 30));
+// Exit flash: a brass streak wipes the frame on the last half beat.
+function exitWipe(sel) {
+  tl.fromTo(sel, { xPercent: -120 }, { xPercent: 120, duration: b(0.5), ease: "power3.in" }, DUR - b(0.5));
+}
+// Land a block of words one by one on beats, blur to sharp, then hold still.
+function wordsIn(sel, at, gap) {
+  tl.fromTo(sel, { opacity: 0, filter: "blur(10px)", scale: 1.08 }, { opacity: 1, filter: "blur(0px)", scale: 1, duration: 0.16, ease: "power4.out", stagger: gap }, at);
+}
+
+    tl.fromTo(".an-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.15, ease: "power4.out", stagger: b(1) }, 0);
+    tl.fromTo(".sub", { opacity: 0 }, { opacity: 1, duration: 0.3 }, b(1));
+    tl.fromTo(".an-c", { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: b(0.5), ease: "expo.out", stagger: b(0.25) }, b(0.5));
+    { const fr = gsap.utils.toArray(".an-0"); const n = fr.length; const step = 1;
+      for (let t = 0, f = 0; t < DUR; t += step, f = (f + 1) % n) {
+        const at = Math.round((b(1) + t) * 30) / 30; if (at >= DUR) break;
+        tl.to(fr[f], { opacity: 1, duration: step * 0.6, ease: "sine.inOut" }, at); tl.to(fr[(f + n - 1) % n], { opacity: 0, duration: step * 0.6, ease: "sine.inOut" }, at);
+      } }
+    { const fr = gsap.utils.toArray(".an-1"); const n = fr.length; const step = 1;
+      for (let t = 0, f = 0; t < DUR; t += step, f = (f + 1) % n) {
+        const at = Math.round((b(1) + t) * 30) / 30; if (at >= DUR) break;
+        tl.to(fr[f], { opacity: 1, duration: step * 0.6, ease: "sine.inOut" }, at); tl.to(fr[(f + n - 1) % n], { opacity: 0, duration: step * 0.6, ease: "sine.inOut" }, at);
+      } }
+    { const fr = gsap.utils.toArray(".an-2"); const n = fr.length; const step = 0.06666666666666667;
+      for (let t = 0, f = 0; t < DUR; t += step, f = (f + 1) % n) {
+        const at = Math.round((b(1) + t) * 30) / 30; if (at >= DUR) break;
+        tl.set(fr, { opacity: 0 }, at); tl.set(fr[f], { opacity: 1 }, at);
+      } }
+    { const fr = gsap.utils.toArray(".an-3"); const n = fr.length; const step = 0.14285714285714285;
+      for (let t = 0, f = 0; t < DUR; t += step, f = (f + 1) % n) {
+        const at = Math.round((b(1) + t) * 30) / 30; if (at >= DUR) break;
+        tl.set(fr, { opacity: 0 }, at); tl.set(fr[f], { opacity: 1 }, at);
+      } }
+    tl.fromTo("#animated-dip", { opacity: 1 }, { opacity: 0, duration: b(0.5), ease: "power2.out" }, 0);
+    tl.fromTo("#animated-dip", { opacity: 0 }, { opacity: 0.85, duration: b(0.5), ease: "power2.in", immediateRender: false }, DUR - b(0.5));
+    window.__timelines["animated"] = tl;
+  </script>
+</template>

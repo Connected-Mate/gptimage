@@ -1,0 +1,105 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: "Oswald", sans-serif; color: #efe6cc; }
+#root .abs { position: absolute; }
+#root .full { position: absolute; inset: 0; }
+#root .table { position: absolute; inset: -80px; background:
+  radial-gradient(ellipse 70% 60% at 50% 46%, rgba(70,110,140,.30), rgba(0,0,0,0) 70%),
+  repeating-linear-gradient(0deg, rgba(201,194,163,.10) 0 1px, transparent 1px 120px),
+  repeating-linear-gradient(90deg, rgba(201,194,163,.10) 0 1px, transparent 1px 120px),
+  repeating-linear-gradient(0deg, rgba(201,194,163,.04) 0 1px, transparent 1px 24px),
+  repeating-linear-gradient(90deg, rgba(201,194,163,.04) 0 1px, transparent 1px 24px),
+  #15212b; }
+#root .paper { position: absolute; inset: 0; background:
+  radial-gradient(ellipse 60% 55% at 50% 42%, rgba(232,181,79,.20), transparent 70%),
+  radial-gradient(ellipse 120% 90% at 50% 50%, #2a241b 0%, #14110d 100%); }
+#root .steel { position: absolute; inset: 0; background: radial-gradient(ellipse 90% 80% at 50% 40%, #222b31 0%, #0e1316 100%); }
+#root .vig { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 88% 78% at 50% 50%, transparent 52%, rgba(0,0,0,.68) 100%); }
+#root .grain { position: absolute; inset: 0; opacity: .22; mix-blend-mode: overlay; pointer-events: none; }
+#root .hero { font-family: "Archivo Black", sans-serif; text-transform: uppercase; line-height: .9; letter-spacing: -.01em; }
+#root .brass { background: linear-gradient(180deg, #fff1c4 0%, #f0bd4f 45%, #a8701a 82%, #6b430c 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 3px 0 #5a3a0a) drop-shadow(0 6px 0 #3a2508) drop-shadow(0 18px 26px rgba(0,0,0,.7)); }
+#root .ice { background: linear-gradient(180deg, #ffffff 0%, #d8e4ea 45%, #8fa3ad 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 4px 0 #2c3a42) drop-shadow(0 16px 24px rgba(0,0,0,.75)); }
+#root .label { font-size: 28px; letter-spacing: .12em; text-transform: uppercase; color: #c9c2a3; }
+#root .label b { color: #e8b54f; font-weight: 500; }
+#root .mono { font-family: "IBM Plex Mono", monospace; }
+#root .plate { background: linear-gradient(160deg, #2b3236, #121618); box-shadow: inset 0 0 0 2px #59646b, inset 0 0 0 7px #1a1f22, inset 0 0 0 9px #46505570, 0 30px 60px rgba(0,0,0,.65); }
+#root .term { background: linear-gradient(180deg, #1b2226, #0f1416); border-radius: 6px; box-shadow: 0 0 0 2px #4a545a, 0 0 0 9px #22292d, 0 0 0 11px #59646b, 0 60px 120px rgba(0,0,0,.7); overflow: hidden; }
+#root .term .bar { height: 54px; background: linear-gradient(180deg, #3a4349, #262d31); display: flex; align-items: center; padding: 0 22px; gap: 12px; color: #c9c2a3; font-size: 22px; letter-spacing: .12em; text-transform: uppercase; }
+#root .term .bar i { width: 14px; height: 14px; border-radius: 50%; background: #59646b; display: inline-block; }
+#root .term pre { margin: 0; padding: 24px 32px; font-family: "IBM Plex Mono", monospace; font-size: 24px; line-height: 1.55; color: #b9c4b8; white-space: pre-wrap; }
+#root .term .p { color: #e8b54f; }
+#root .term .k { color: #efe6cc; font-weight: 600; }
+#root .term .hit { background: rgba(232,181,79,.2); color: #ffe7a3; }
+#root .term .dim { color: #6f7b74; }
+#root .term .ok { color: #8fd18b; }
+#root .term .bad { color: #ff8a7a; }
+#root .bracket { position: absolute; width: 80px; height: 80px; border-color: #e8b54f; border-style: solid; filter: drop-shadow(0 0 10px rgba(232,181,79,.55)); }
+#root .bracket.tl { left: 0; top: 0; border-width: 10px 0 0 10px; }
+#root .bracket.tr { right: 0; top: 0; border-width: 10px 10px 0 0; }
+#root .bracket.bl { left: 0; bottom: 0; border-width: 0 0 10px 10px; }
+#root .bracket.br { right: 0; bottom: 0; border-width: 0 10px 10px 0; }
+#root .streak { position: absolute; height: 3px; background: linear-gradient(90deg, transparent, rgba(255,226,150,.95), transparent); box-shadow: 0 0 22px rgba(255,200,90,.85); }
+#root .chip { display: inline-block; padding: 10px 22px; border: 2px solid rgba(201,194,163,.35); margin-right: -2px; background: rgba(10,14,18,.6); font-family: "IBM Plex Mono", monospace; font-size: 24px; color: #c9c2a3; }
+#root .chip.on { color: #15212b; background: #e8b54f; border-color: #e8b54f; }
+#root .px { image-rendering: auto; }
+#root .stamp { font-family: "Archivo Black", sans-serif; text-transform: uppercase; color: #e8b54f; border: 8px solid #e8b54f; padding: 10px 30px; letter-spacing: .04em; box-shadow: 0 0 30px rgba(232,181,79,.35), inset 0 0 20px rgba(232,181,79,.25); }
+
+    /* two mirrored plates, exactly half the frame each; borders only on the outer three edges so no seam line remains */
+    #root .pl { position: absolute; top: 0; width: 960px; height: 1080px; }
+    #root .pl.l { left: 0; background: repeating-linear-gradient(90deg, rgba(255,255,255,.025) 0 2px, transparent 2px 7px), linear-gradient(170deg, #343d42, #1a2023 60%, #11161a);
+      box-shadow: inset 3px 0 0 #59646b, inset 0 3px 0 #59646b, inset 0 -3px 0 #59646b, inset 120px 0 120px -60px rgba(0,0,0,.45); }
+    #root .pl.r { left: 960px; background: repeating-linear-gradient(90deg, rgba(255,255,255,.025) 0 2px, transparent 2px 7px), linear-gradient(190deg, #343d42, #1a2023 60%, #11161a);
+      box-shadow: inset -3px 0 0 #59646b, inset 0 3px 0 #59646b, inset 0 -3px 0 #59646b, inset -120px 0 120px -60px rgba(0,0,0,.45); }
+    #root .riv { position: absolute; width: 18px; height: 18px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #b5bec2, #2b3236 70%); }
+    #root .seam { position: absolute; left: 958px; top: 0; width: 4px; height: 1080px; background: #e8b54f; box-shadow: 0 0 40px #e8b54f; opacity: 0; }
+    #root .name { position: absolute; left: 0; right: 0; top: 400px; text-align: center; font-size: 140px; white-space: nowrap; }
+    #root .name span { display: inline-block; }
+    #root .sub { position: absolute; left: 0; right: 0; top: 600px; text-align: center; font-size: 44px; letter-spacing: .14em; text-transform: uppercase; }
+    #root .sub span { display: inline-block; color: #efe6cc; }
+    #root .sub i { display: inline-block; width: 10px; height: 10px; margin: 0 34px 8px; background: #e8b54f; transform: rotate(45deg); }
+    #root .sub span b { color: #e8b54f; font-weight: 600; }
+  </style>
+  <div id="root" data-composition-id="reveal" data-width="1920" data-height="1080">
+    <div class="steel"></div>
+    <div class="pl l" id="rv-l" data-layout-allow-overflow><div class="riv" style="left:48px;top:48px"></div><div class="riv" style="left:48px;bottom:48px"></div></div>
+    <div class="pl r" id="rv-r" data-layout-allow-overflow><div class="riv" style="right:48px;top:48px"></div><div class="riv" style="right:48px;bottom:48px"></div></div>
+    <div class="seam" id="rv-seam"></div>
+    <svg class="grain" width="1920" height="1080"><filter id="reveal-n"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .9 0"/></filter><rect width="100%" height="100%" filter="url(#reveal-n)"/></svg>
+    <div class="name hero" id="rv-name"><span class="brass">h</span><span class="brass">o</span><span class="brass">i</span><span class="brass">4</span><span class="brass">-</span><span class="brass">i</span><span class="brass">m</span><span class="brass">a</span><span class="brass">g</span><span class="brass">e</span><span class="brass">g</span><span class="brass">e</span><span class="brass">n</span><span class="brass">-</span><span class="brass">m</span><span class="brass">c</span><span class="brass">p</span></div>
+    <div class="sub"><span class="rv-s">Rust MCP server + CLI</span><i class="rv-s"></i><span class="rv-s"><b>19</b> tools</span><i class="rv-s"></i><span class="rv-s"><b>40</b> asset families</span></div>
+    <div class="streak" id="rv-streak" style="left:0;top:560px;width:1920px"></div>
+    <div class="dip" id="reveal-dip" style="position:absolute;inset:0;background:#0b1014;pointer-events:none;z-index:50"></div>
+    <div class="vig"></div>
+  </div>
+  <script>
+    const BEAT = 0.5085017250921023;
+const DUR = 4.068013800736819;
+// b(n): the time of beat n inside this scene, snapped to a 30 fps frame.
+const b = (n) => Math.round(n * BEAT * 30) / 30;
+const tl = gsap.timeline({ paused: true });
+// Hold the scene's last frame until its slot ends.
+tl.set({}, {}, Math.max(0, DUR - 1 / 30));
+// Exit flash: a brass streak wipes the frame on the last half beat.
+function exitWipe(sel) {
+  tl.fromTo(sel, { xPercent: -120 }, { xPercent: 120, duration: b(0.5), ease: "power3.in" }, DUR - b(0.5));
+}
+// Land a block of words one by one on beats, blur to sharp, then hold still.
+function wordsIn(sel, at, gap) {
+  tl.fromTo(sel, { opacity: 0, filter: "blur(10px)", scale: 1.08 }, { opacity: 1, filter: "blur(0px)", scale: 1, duration: 0.16, ease: "power4.out", stagger: gap }, at);
+}
+
+    tl.fromTo("#rv-l", { x: -1000 }, { x: 0, duration: b(1), ease: "expo.in" }, 0);
+    tl.fromTo("#rv-r", { x: 1000 }, { x: 0, duration: b(1), ease: "expo.in" }, 0);
+    tl.fromTo("#rv-seam", { opacity: 0, scaleY: 0 }, { opacity: 1, scaleY: 1, duration: 0.12 }, b(1));
+    tl.to("#rv-seam", { opacity: 0, duration: b(1), ease: "power2.out", immediateRender: false }, b(1.5));
+    tl.fromTo("#rv-name span", { opacity: 0, y: 80, scaleY: 1.6, filter: "blur(8px)" }, { opacity: 1, y: 0, scaleY: 1, filter: "blur(0px)", duration: 0.28, ease: "back.out(1.6)", stagger: 0.035 }, b(1));
+    tl.fromTo("#rv-streak", { scaleX: 0, opacity: 1 }, { scaleX: 1, opacity: 0, duration: b(1.5), ease: "power2.out" }, b(1));
+    tl.fromTo(".rv-s", { opacity: 0, filter: "blur(10px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.16, ease: "power4.out", stagger: b(0.5) }, b(4));
+    tl.to("#rv-name", { scale: 1.6, opacity: 0, filter: "blur(14px)", duration: b(0.5), ease: "power3.in" }, DUR - b(0.5));
+    tl.fromTo("#reveal-dip", { opacity: 1 }, { opacity: 0, duration: b(0.5), ease: "power2.out" }, 0);
+    tl.fromTo("#reveal-dip", { opacity: 0 }, { opacity: 0.85, duration: b(0.5), ease: "power2.in", immediateRender: false }, DUR - b(0.5));
+    window.__timelines["reveal"] = tl;
+  </script>
+</template>

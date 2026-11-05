@@ -1,0 +1,159 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; font-family: "Oswald", sans-serif; color: #efe6cc; }
+#root .abs { position: absolute; }
+#root .full { position: absolute; inset: 0; }
+#root .table { position: absolute; inset: -80px; background:
+  radial-gradient(ellipse 70% 60% at 50% 46%, rgba(70,110,140,.30), rgba(0,0,0,0) 70%),
+  repeating-linear-gradient(0deg, rgba(201,194,163,.10) 0 1px, transparent 1px 120px),
+  repeating-linear-gradient(90deg, rgba(201,194,163,.10) 0 1px, transparent 1px 120px),
+  repeating-linear-gradient(0deg, rgba(201,194,163,.04) 0 1px, transparent 1px 24px),
+  repeating-linear-gradient(90deg, rgba(201,194,163,.04) 0 1px, transparent 1px 24px),
+  #15212b; }
+#root .paper { position: absolute; inset: 0; background:
+  radial-gradient(ellipse 60% 55% at 50% 42%, rgba(232,181,79,.20), transparent 70%),
+  radial-gradient(ellipse 120% 90% at 50% 50%, #2a241b 0%, #14110d 100%); }
+#root .steel { position: absolute; inset: 0; background: radial-gradient(ellipse 90% 80% at 50% 40%, #222b31 0%, #0e1316 100%); }
+#root .vig { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 88% 78% at 50% 50%, transparent 52%, rgba(0,0,0,.68) 100%); }
+#root .grain { position: absolute; inset: 0; opacity: .22; mix-blend-mode: overlay; pointer-events: none; }
+#root .hero { font-family: "Archivo Black", sans-serif; text-transform: uppercase; line-height: .9; letter-spacing: -.01em; }
+#root .brass { background: linear-gradient(180deg, #fff1c4 0%, #f0bd4f 45%, #a8701a 82%, #6b430c 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 3px 0 #5a3a0a) drop-shadow(0 6px 0 #3a2508) drop-shadow(0 18px 26px rgba(0,0,0,.7)); }
+#root .ice { background: linear-gradient(180deg, #ffffff 0%, #d8e4ea 45%, #8fa3ad 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 4px 0 #2c3a42) drop-shadow(0 16px 24px rgba(0,0,0,.75)); }
+#root .label { font-size: 28px; letter-spacing: .12em; text-transform: uppercase; color: #c9c2a3; }
+#root .label b { color: #e8b54f; font-weight: 500; }
+#root .mono { font-family: "IBM Plex Mono", monospace; }
+#root .plate { background: linear-gradient(160deg, #2b3236, #121618); box-shadow: inset 0 0 0 2px #59646b, inset 0 0 0 7px #1a1f22, inset 0 0 0 9px #46505570, 0 30px 60px rgba(0,0,0,.65); }
+#root .term { background: linear-gradient(180deg, #1b2226, #0f1416); border-radius: 6px; box-shadow: 0 0 0 2px #4a545a, 0 0 0 9px #22292d, 0 0 0 11px #59646b, 0 60px 120px rgba(0,0,0,.7); overflow: hidden; }
+#root .term .bar { height: 54px; background: linear-gradient(180deg, #3a4349, #262d31); display: flex; align-items: center; padding: 0 22px; gap: 12px; color: #c9c2a3; font-size: 22px; letter-spacing: .12em; text-transform: uppercase; }
+#root .term .bar i { width: 14px; height: 14px; border-radius: 50%; background: #59646b; display: inline-block; }
+#root .term pre { margin: 0; padding: 24px 32px; font-family: "IBM Plex Mono", monospace; font-size: 24px; line-height: 1.55; color: #b9c4b8; white-space: pre-wrap; }
+#root .term .p { color: #e8b54f; }
+#root .term .k { color: #efe6cc; font-weight: 600; }
+#root .term .hit { background: rgba(232,181,79,.2); color: #ffe7a3; }
+#root .term .dim { color: #6f7b74; }
+#root .term .ok { color: #8fd18b; }
+#root .term .bad { color: #ff8a7a; }
+#root .bracket { position: absolute; width: 80px; height: 80px; border-color: #e8b54f; border-style: solid; filter: drop-shadow(0 0 10px rgba(232,181,79,.55)); }
+#root .bracket.tl { left: 0; top: 0; border-width: 10px 0 0 10px; }
+#root .bracket.tr { right: 0; top: 0; border-width: 10px 10px 0 0; }
+#root .bracket.bl { left: 0; bottom: 0; border-width: 0 0 10px 10px; }
+#root .bracket.br { right: 0; bottom: 0; border-width: 0 10px 10px 0; }
+#root .streak { position: absolute; height: 3px; background: linear-gradient(90deg, transparent, rgba(255,226,150,.95), transparent); box-shadow: 0 0 22px rgba(255,200,90,.85); }
+#root .chip { display: inline-block; padding: 10px 22px; border: 2px solid rgba(201,194,163,.35); margin-right: -2px; background: rgba(10,14,18,.6); font-family: "IBM Plex Mono", monospace; font-size: 24px; color: #c9c2a3; }
+#root .chip.on { color: #15212b; background: #e8b54f; border-color: #e8b54f; }
+#root .px { image-rendering: auto; }
+#root .stamp { font-family: "Archivo Black", sans-serif; text-transform: uppercase; color: #e8b54f; border: 8px solid #e8b54f; padding: 10px 30px; letter-spacing: .04em; box-shadow: 0 0 30px rgba(232,181,79,.35), inset 0 0 20px rgba(232,181,79,.25); }
+
+    #root .dr-g { position: absolute; inset: 0; opacity: 0; }
+    #root .dr-raw { position: absolute; left: 110px; top: 170px; width: 780px; height: 600px; display: flex; align-items: center; justify-content: center; }
+    #root .dr-raw img { max-width: 780px; max-height: 560px; filter: drop-shadow(0 30px 40px rgba(0,0,0,.55)); }
+    #root .dr-raw span.mono { position: absolute; left: 0; right: 0; bottom: -34px; text-align: center; font-size: 22px; color: #c9c2a3; white-space: nowrap; }
+    #root .dr-raw.card img { background: #efe6cc; padding: 40px; border-radius: 6px; max-width: 600px; max-height: 460px; }
+    #root .dr-imp { flex-direction: column; border: 3px dashed rgba(201,194,163,.3); }
+    #root .dr-imp .hero { font-size: 110px; color: rgba(201,194,163,.35); }
+    #root .dr-imp span.mono { position: static; margin-top: 20px; }
+    #root .dr-box { position: absolute; left: 990px; top: 200px; width: 780px; height: 480px; }
+    #root .dr-box img { position: absolute; filter: drop-shadow(0 18px 24px rgba(0,0,0,.6)); }
+    #root .dr-name { position: absolute; left: 990px; top: 730px; width: 780px; text-align: center; font-size: 72px; white-space: nowrap; }
+    #root .dr-fam { position: absolute; left: 990px; top: 830px; width: 780px; text-align: center; font-size: 36px; letter-spacing: .03em; color: #efe6cc; }
+    #root .dr-fam b { color: #e8b54f; font-weight: 500; }
+    #root .dr-n { position: absolute; right: 110px; top: 70px; font-size: 64px; color: #e8b54f; }
+    #root .dr-n span { color: rgba(201,194,163,.4); font-size: 36px; }
+    #root .flash { position: absolute; inset: 0; background: #fff1c4; mix-blend-mode: overlay; opacity: 0; }
+  </style>
+  <div id="root" data-composition-id="drop" data-width="1920" data-height="1080">
+    <div class="paper" id="dr-paper" data-layout-allow-overflow></div>
+    <svg class="grain" width="1920" height="1080"><filter id="drop-n"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .9 0"/></filter><rect width="100%" height="100%" filter="url(#drop-n)"/></svg>
+      <div class="dr-g" id="dr-g01">
+        <div class="dr-raw"><img src="assets/gallery/source_png/winter_border-v1.png" alt="" /></div>
+        <div class="dr-box"><img class="px dr-f" src="assets/gallery/processed_png/winter_border-v1-p1.png" style="left:180px;top:64px;width:420px;height:352px" alt="" /><div class="bracket tl"></div><div class="bracket tr"></div><div class="bracket bl"></div><div class="bracket br"></div></div>
+        <div class="dr-name hero ice">report card</div>
+        <div class="dr-fam">sepia · tilt · shadow</div>
+      </div>
+      <div class="dr-g" id="dr-g02">
+        <div class="dr-raw"><img src="assets/gallery/source_png/peace_conference-v1.png" alt="" /></div>
+        <div class="dr-box"><img class="px dr-f" src="assets/gallery/processed_png/peace_conference-v1-p1.png" style="left:192px;top:164px;width:397px;height:153px" alt="" /><div class="bracket tl"></div><div class="bracket tr"></div><div class="bracket bl"></div><div class="bracket br"></div></div>
+        <div class="dr-name hero ice">news photo</div>
+        <div class="dr-fam">cropped · grayscale</div>
+      </div>
+      <div class="dr-g" id="dr-g03">
+        <div class="dr-raw"><img src="assets/gallery/source_png/IRP_fascism-v1.png" alt="" /></div>
+        <div class="dr-box"><img class="px dr-f" src="assets/gallery/processed_png/IRP_fascism-v1-p1.png" style="left:167px;top:162px;width:246px;height:156px" alt="" /><img class="px dr-f" src="assets/gallery/processed_png/IRP_fascism-v1-p1_medium.png" style="left:437px;top:201px;width:123px;height:78px" alt="" /><img class="px dr-f" src="assets/gallery/processed_png/IRP_fascism-v1-p1_small.png" style="left:584px;top:230px;width:30px;height:21px" alt="" /><div class="bracket tl"></div><div class="bracket tr"></div><div class="bracket bl"></div><div class="bracket br"></div></div>
+        <div class="dr-name hero ice">flag ladder</div>
+        <div class="dr-fam">three sizes · TGA</div>
+      </div>
+      <div class="dr-g" id="dr-g04">
+        <div class="dr-raw"><img src="assets/gallery/source_png/iron_pact-v1.png" alt="" /></div>
+        <div class="dr-box"><img class="px dr-f" src="assets/gallery/processed_png/iron_pact-v1-p1.png" style="left:30px;top:90px;width:600px;height:300px" alt="" /><img class="px dr-f" src="assets/gallery/processed_png/iron_pact-v1-p1_miniature.png" style="left:654px;top:192px;width:96px;height:96px" alt="" /><div class="bracket tl"></div><div class="bracket tr"></div><div class="bracket bl"></div><div class="bracket br"></div></div>
+        <div class="dr-name hero ice">faction logo</div>
+        <div class="dr-fam">selected frame · miniature</div>
+      </div>
+      <div class="dr-g" id="dr-g05">
+        <div class="dr-raw"><img src="assets/gallery/source_png/state_security-v1.png" alt="" /></div>
+        <div class="dr-box"><img class="px dr-f" src="assets/gallery/processed_png/state_security-v1-p1.png" style="left:39px;top:62px;width:702px;height:357px" alt="" /><div class="bracket tl"></div><div class="bracket tr"></div><div class="bracket bl"></div><div class="bracket br"></div></div>
+        <div class="dr-name hero ice">agency logo</div>
+        <div class="dr-fam">normal · selected</div>
+      </div>
+      <div class="dr-g" id="dr-g06">
+        <div class="dr-raw card"><img src="assets/picked/counter_large/infantry_rifleman-v1.png" alt="" /></div>
+        <div class="dr-box"><img class="px dr-f" src="assets/picked/counter_large/infantry_rifleman-v1-p1.png" style="left:10px;top:135px;width:760px;height:210px" alt="" /><div class="bracket tl"></div><div class="bracket tr"></div><div class="bracket bl"></div><div class="bracket br"></div></div>
+        <div class="dr-name hero ice">unit counter</div>
+        <div class="dr-fam">green map counter</div>
+      </div>
+      <div class="dr-g" id="dr-g07">
+        <div class="dr-raw card"><img src="assets/picked/division_emblem/bear_standing-v1.png" alt="" /></div>
+        <div class="dr-box"><img class="px dr-f" src="assets/picked/division_emblem/bear_standing-v1-p1.png" style="left:162px;top:114px;width:456px;height:252px" alt="" /><div class="bracket tl"></div><div class="bracket tr"></div><div class="bracket bl"></div><div class="bracket br"></div></div>
+        <div class="dr-name hero ice">division emblem</div>
+        <div class="dr-fam">green glow</div>
+      </div>
+      <div class="dr-g" id="dr-g08">
+        <div class="dr-raw"><img src="assets/gallery/source_png/hold_the_line-v1.png" alt="" /></div>
+        <div class="dr-box"><img class="px dr-f" src="assets/gallery/processed_png/hold_the_line-v1-p1.png" style="left:78px;top:144px;width:192px;height:192px" alt="" /><img class="px dr-f" src="assets/gallery/processed_png/hold_the_line-v1-p1_grey.png" style="left:294px;top:144px;width:192px;height:192px" alt="" /><img class="px dr-f" src="assets/gallery/processed_png/hold_the_line-v1-p1_not_eligible.png" style="left:510px;top:144px;width:192px;height:192px" alt="" /><div class="bracket tl"></div><div class="bracket tr"></div><div class="bracket bl"></div><div class="bracket br"></div></div>
+        <div class="dr-name hero ice">achievement</div>
+        <div class="dr-fam">normal · grey · locked</div>
+      </div>
+    <div class="flash" id="dr-flash"></div>
+    <div class="dip" id="drop-dip" style="position:absolute;inset:0;background:#0b1014;pointer-events:none;z-index:50"></div>
+    <div class="vig"></div>
+  </div>
+  <script>
+    const BEAT = 0.5085017250921023;
+const DUR = 16.272055202947275;
+// b(n): the time of beat n inside this scene, snapped to a 30 fps frame.
+const b = (n) => Math.round(n * BEAT * 30) / 30;
+const tl = gsap.timeline({ paused: true });
+// Hold the scene's last frame until its slot ends.
+tl.set({}, {}, Math.max(0, DUR - 1 / 30));
+// Exit flash: a brass streak wipes the frame on the last half beat.
+function exitWipe(sel) {
+  tl.fromTo(sel, { xPercent: -120 }, { xPercent: 120, duration: b(0.5), ease: "power3.in" }, DUR - b(0.5));
+}
+// Land a block of words one by one on beats, blur to sharp, then hold still.
+function wordsIn(sel, at, gap) {
+  tl.fromTo(sel, { opacity: 0, filter: "blur(10px)", scale: 1.08 }, { opacity: 1, filter: "blur(0px)", scale: 1, duration: 0.16, ease: "power4.out", stagger: gap }, at);
+}
+
+    const N = 8;
+    const step = b(4);
+    tl.fromTo("#dr-paper", { scale: 1.1 }, { scale: 1, duration: DUR, ease: "none" }, 0);
+    for (let i = 0; i < N; i++) {
+      const g = "#dr-g" + String(i + 1).padStart(2, "0");
+      const t0 = b(i * 4);
+      const t1 = b((i + 1) * 4);
+      tl.set(g, { opacity: 1 }, t0);
+      if (i < N - 1) tl.set(g, { opacity: 0 }, t1);
+      tl.fromTo(g + " .dr-raw", { x: -260, rotation: -5, filter: "blur(10px)", opacity: 0 }, { x: 0, rotation: -2, filter: "blur(0px)", opacity: 1, duration: b(1), ease: "expo.out" }, t0);
+      tl.set(g + " .dr-raw", { filter: "none" }, t0 + b(1));
+      tl.fromTo(g + " .dr-box .bracket", { scale: 2.2, opacity: 0 }, { scale: 1, opacity: 1, duration: b(0.5), ease: "back.out(2.4)" }, t0 + b(2));
+      tl.fromTo(g + " .dr-f", { scale: 2.4, opacity: 0, filter: "blur(12px)" }, { scale: 1, opacity: 1, filter: "blur(0px)", duration: b(0.75), ease: "expo.out", stagger: b(0.25) }, t0 + b(2));
+      tl.fromTo(g + " .dr-name", { opacity: 0, x: 80 }, { opacity: 1, x: 0, duration: b(0.5), ease: "power4.out" }, t0 + b(2));
+      tl.fromTo(g + " .dr-fam", { opacity: 0 }, { opacity: 1, duration: b(0.5) }, t0 + b(2));
+      tl.fromTo("#dr-flash", { opacity: 0.55 }, { opacity: 0, duration: b(1), ease: "power2.out", immediateRender: false }, t0 + b(2));
+    }
+    tl.fromTo("#drop-dip", { opacity: 1 }, { opacity: 0, duration: b(0.5), ease: "power2.out" }, 0);
+    tl.fromTo("#drop-dip", { opacity: 0 }, { opacity: 0.85, duration: b(0.5), ease: "power2.in", immediateRender: false }, DUR - b(0.5));
+    window.__timelines["drop"] = tl;
+  </script>
+</template>
