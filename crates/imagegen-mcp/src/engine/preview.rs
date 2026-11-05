@@ -7,6 +7,11 @@
 //!
 //! An animated strip also gets a frame sheet (every frame side by side, enlarged) and a looping GIF of the
 //! animation as the game plays it, both next to the contact sheet and recorded with it.
+//!
+//! An artifact also gets the vanilla side-by-side sheet (`vanilla.rs`): the candidate beside the family's most
+//! typical vanilla images at the same sizes, with the measured vanilla-match result. The contact sheet is written into
+//! the mod and holds no vanilla art; the vanilla sheet holds vanilla pixels and is written outside the mod. An
+//! approval needs a preview of the exact file that included the vanilla sheet.
 
 use imagegen_core::error::RetryClass;
 use imagegen_core::fsio::ProjectFs;
@@ -48,7 +53,7 @@ fn checker(w: u32, h: u32) -> Rgba {
     img
 }
 
-fn upscale_nearest(img: &Rgba, s: u32) -> Rgba {
+pub(crate) fn upscale_nearest(img: &Rgba, s: u32) -> Rgba {
     let mut out = Rgba::new(img.width * s, img.height * s);
     for y in 0..out.height {
         for x in 0..out.width {
@@ -58,7 +63,7 @@ fn upscale_nearest(img: &Rgba, s: u32) -> Rgba {
     out
 }
 
-fn panel(content: &Rgba, bg: &str) -> Rgba {
+pub(crate) fn panel(content: &Rgba, bg: &str) -> Rgba {
     let (w, h) = (content.width + 2 * PAD, content.height + 2 * PAD);
     let mut p = match bg {
         "dark" => Rgba::filled(w, h, DARK),
@@ -116,8 +121,9 @@ pub fn compose(img: &Rgba, references: &[Rgba], companions: &[(String, Rgba)]) -
 }
 
 impl Engine {
-    /// Write a contact sheet and record it. Returns the report and the sheet bytes.
-    pub fn preview_with_image(&self, p: &PreviewParams) -> EResult<(Value, Vec<u8>)> {
+    /// Write a contact sheet and record it. Returns the report and the sheets as PNG bytes: the contact sheet first,
+    /// then the vanilla side-by-side sheet when there is one.
+    pub fn preview_with_image(&self, p: &PreviewParams) -> EResult<(Value, Vec<Vec<u8>>)> {
         let mut companion_imgs: Vec<(String, Rgba)> = Vec::new();
         let (img, rel_source, sha, artifact, refs_dir) = if super::looks_like_artifact(&p.target) {
             let a = self.artifact(&p.target)?;
@@ -150,12 +156,23 @@ impl Engine {
             Some(a) => self.animation_preview(a, &img, &refs_dir, &stem)?,
             None => Value::Null,
         };
+        // the vanilla side-by-side sheet and the measured check, for artifacts (their family is known)
+        let (vanilla_sheet, vanilla_png, vanilla_check) = match &artifact {
+            Some(a) => {
+                let check = self.vanilla_check(a.family, &img);
+                match self.vanilla_side_by_side(a.family, &img, &stem) {
+                    Ok((report, png)) => (report, Some(png), check),
+                    Err(reason) => (json!({"unavailable": reason}), None, check),
+                }
+            }
+            None => (Value::Null, None, Value::Null),
+        };
         if let Some(a) = &artifact {
             self.ledger.append(
                 kind::PREVIEWED,
                 Some(&a.asset_id),
                 Some(&a.id),
-                json!({"target": a.id, "sha256": sha, "sheet": written.rel, "sheet_sha256": sha256_hex(&sheet.png), "panels": sheet.panels, "animation": animation}),
+                json!({"target": a.id, "sha256": sha, "sheet": written.rel, "sheet_sha256": sha256_hex(&sheet.png), "panels": sheet.panels, "animation": animation, "vanilla_sheet": vanilla_sheet, "vanilla_check": vanilla_check}),
             )?;
         }
         let report = json!({
@@ -165,14 +182,20 @@ impl Engine {
             "sheet_sha256": sha256_hex(&sheet.png),
             "sheet_size": sheet.size,
             "panels": sheet.panels,
-            "how_to_look": "Judge the 'native' panels first: that is the size the game draws. Then compare against the reference panels for style. Record the verdict with hoi4.image_review.",
+            "how_to_look": "Judge the 'native' panels first: that is the size the game draws. Then put it beside the vanilla side-by-side sheet: same form, medium, palette and framing as vanilla? Record the verdict with hoi4.image_review, which runs the measured vanilla-match check itself.",
         });
         let mut report = report;
         if !animation.is_null() {
             report["animation"] = animation;
-            report["how_to_look"] = json!("Judge the 'native' panels first: that is the size the game draws. Then play the loop GIF to see the motion as the game plays it (the frame sheet shows each frame enlarged), and compare against the reference panels for style. Record the verdict with hoi4.image_review.");
+            report["how_to_look"] = json!("Judge the 'native' panels first: that is the size the game draws. Then play the loop GIF to see the motion as the game plays it (the frame sheet shows each frame enlarged), and compare against the vanilla side-by-side sheet. Record the verdict with hoi4.image_review.");
         }
-        Ok((report, sheet.png))
+        if artifact.is_some() {
+            report["vanilla_sheet"] = vanilla_sheet;
+            report["vanilla_check"] = vanilla_check;
+        }
+        let mut images = vec![sheet.png];
+        images.extend(vanilla_png);
+        Ok((report, images))
     }
 
     /// The frame sheet and loop GIF of an animated artifact (`Value::Null` for any other). Only a whole strip is

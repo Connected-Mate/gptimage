@@ -235,7 +235,7 @@ fn golden_path() -> std::path::PathBuf {
 }
 
 #[test]
-fn handshake_lists_exactly_twenty_tools_with_stable_schemas() {
+fn handshake_lists_exactly_twenty_one_tools_with_stable_schemas() {
     let mock = MockOpenAi::start(Duration::from_millis(0));
     let dir = project(mock.port);
     let mut c = Client::start(dir.path(), mock.port);
@@ -251,7 +251,7 @@ fn handshake_lists_exactly_twenty_tools_with_stable_schemas() {
     let mut want: Vec<&str> = imagegen_mcp::server::TOOL_NAMES.to_vec();
     want.sort_unstable();
     assert_eq!(names, want);
-    assert_eq!(tools.len(), 20);
+    assert_eq!(tools.len(), 21);
 
     // each generation tool's schema lists exactly the families of its group, and nothing else
     let mut seen: Vec<String> = Vec::new();
@@ -387,7 +387,7 @@ fn the_whole_loop_runs_over_stdio() {
     let profile = c.ok("hoi4.image_families", json!({"family": "focus"}));
     let answers: serde_json::Map<String, Value> =
         profile["family"]["rubric_questions"].as_array().unwrap().iter().map(|q| (q["key"].as_str().unwrap().to_string(), json!(true))).collect();
-    let rev = c.ok("hoi4.image_review", json!({"target": art, "verdict": "approved", "reviewer": "protocol test", "answers": answers}));
+    let rev = c.ok("hoi4.image_review", json!({"target": art, "verdict": "approved", "reviewer": "protocol test", "answers": answers, "override_vanilla_check": true, "override_reason": "synthetic test art, no installed game"}));
     let approval = rev["approval_id"].as_str().unwrap().to_string();
 
     let inst = c.ok("hoi4.image_install", json!({"target": art, "approval_id": approval}));

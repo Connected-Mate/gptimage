@@ -154,7 +154,9 @@ impl Engine {
                     None => (profile.clone(), c.size),
                 };
                 // the style model describes the main image only: companion states (grey, smaller sizes) skip it
-                let (_, more, _) = run_checks(&data, &c.path, &cprofile, &checks, Some(csize), None);
+                let cchecks: Vec<String> =
+                    checks.iter().filter(|k| !imagegen_core::validate::MAIN_IMAGE_ONLY_CHECKS.contains(&k.as_str())).cloned().collect();
+                let (_, more, _) = run_checks(&data, &c.path, &cprofile, &cchecks, Some(csize), None);
                 findings.extend(more.into_iter().map(|mut f| {
                     f.message = format!("[{}] {}", c.key, f.message);
                     f

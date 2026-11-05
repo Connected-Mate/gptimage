@@ -107,13 +107,38 @@ pub fn resolve_single_face(image_size: (u32, u32), candidates: &[FaceBox]) -> Re
 /// horizontally and its top 0.9 face heights below the crop's top, clamped to the image. Fails closed when the image
 /// cannot hold a crop that contains the face.
 pub fn compute_portrait_crop(image_size: (u32, u32), face: FaceBox) -> Result<[u32; 4]> {
+    compute_framed_crop(image_size, face, Framing::KIT)
+}
+
+/// How tightly a portrait is framed around the detected face box.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Framing {
+    /// Crop height in face-box heights.
+    pub face_heights: f64,
+    /// Space above the face box, in face-box heights.
+    pub above: f64,
+}
+
+impl Framing {
+    /// The kit's `extract_portrait_source_crop.py` framing: 4.5 face heights, the face 0.9 face heights down. Advisor
+    /// cards keep it.
+    pub const KIT: Framing = Framing { face_heights: 4.5, above: 0.9 };
+    /// Vanilla's leader, commander, operative and scientist portraits, measured with YuNet on 70 of the 156x210
+    /// files in gfx/leaders (HOI4 1.19.4.1): the face box is 0.543 of the height (10th to 90th percentile 0.452 to
+    /// 0.619) and its top sits at 0.181, so the crop is 1/0.543 = 1.84 face heights with 0.333 of one above the face.
+    /// The kit framing made the face 0.22 of the height, far smaller than vanilla's.
+    pub const VANILLA_LEADER: Framing = Framing { face_heights: 1.84, above: 0.333 };
+}
+
+/// [`compute_portrait_crop`] with a chosen [`Framing`].
+pub fn compute_framed_crop(image_size: (u32, u32), face: FaceBox, framing: Framing) -> Result<[u32; 4]> {
     let (width, height) = (i64::from(image_size.0), i64::from(image_size.1));
     let (left, top, fw, fh) = face;
     if left < 0 || top < 0 || fw <= 0 || fh <= 0 || left + fw > width || top + fh > height {
         return Err(Error::Invalid(format!("detected face is outside the decoded image bounds: {face:?} in {image_size:?}")));
     }
     let aspect = f64::from(PORTRAIT_SIZE.0) / f64::from(PORTRAIT_SIZE.1);
-    let mut crop_h = py_round(fh as f64 * 4.5).max(py_round(fw as f64 * 4.5 / aspect));
+    let mut crop_h = py_round(fh as f64 * framing.face_heights).max(py_round(fw as f64 * framing.face_heights / aspect));
     let mut crop_w = py_round(crop_h as f64 * aspect).max(1);
     if crop_w > width {
         crop_w = width;
@@ -134,7 +159,7 @@ pub fn compute_portrait_crop(image_size: (u32, u32), face: FaceBox) -> Result<[u
     }
     let face_cx = left as f64 + fw as f64 / 2.0;
     let l = py_round(face_cx - crop_w as f64 / 2.0).clamp(0, width - crop_w);
-    let t = py_round(top as f64 - fh as f64 * 0.9).clamp(0, height - crop_h);
+    let t = py_round(top as f64 - fh as f64 * framing.above).clamp(0, height - crop_h);
     let crop = [l, t, l + crop_w, t + crop_h];
     if !(crop[0] <= left && crop[1] <= top && crop[2] >= left + fw && crop[3] >= top + fh) {
         return Err(Error::Invalid("automatic head-and-shoulders crop would clip the detected face; provide an explicit crop rectangle".into()));
@@ -177,22 +202,47 @@ pub fn extract_portrait_manual(master: &Rgba, crop: [i64; 4]) -> Result<Portrait
 
 /// Automatic route from already detected candidates: exactly one face, then the head-and-shoulders crop.
 pub fn extract_portrait_from_faces(master: &Rgba, candidates: &[FaceBox]) -> Result<PortraitCrop> {
+    extract_framed_from_faces(master, candidates, Framing::KIT)
+}
+
+/// [`extract_portrait_from_faces`] with a chosen [`Framing`].
+pub fn extract_framed_from_faces(master: &Rgba, candidates: &[FaceBox], framing: Framing) -> Result<PortraitCrop> {
     let face = resolve_single_face(master.size(), candidates)?;
-    let crop = compute_portrait_crop(master.size(), face)?;
+    let crop = compute_framed_crop(master.size(), face, framing)?;
     finish(master, crop, CropChoice::Detected(face))
 }
 
-/// Automatic route with a detector. A `manual` rectangle skips detection.
+/// Automatic route with a detector and the kit framing. A `manual` rectangle skips detection.
 pub fn extract_portrait(master: &Rgba, detector: &dyn FaceDetector, manual: Option<[i64; 4]>) -> Result<PortraitCrop> {
+    extract_portrait_framed(master, detector, manual, Framing::KIT)
+}
+
+/// [`extract_portrait`] with a chosen [`Framing`].
+pub fn extract_portrait_framed(master: &Rgba, detector: &dyn FaceDetector, manual: Option<[i64; 4]>, framing: Framing) -> Result<PortraitCrop> {
     match manual {
         Some(crop) => extract_portrait_manual(master, crop),
-        None => extract_portrait_from_faces(master, &detector.detect(master)?),
+        None => extract_framed_from_faces(master, &detector.detect(master)?, framing),
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_vanilla_leader_framing_makes_the_face_as_large_as_vanilla() {
+        // a narrow 100 px face in a large master, so the height sets the crop: the face box is vanilla's 0.543 of the
+        // height, its top at 0.181
+        let crop = compute_framed_crop((1200, 1600), (500, 400, 60, 100), Framing::VANILLA_LEADER).unwrap();
+        let h = f64::from(crop[3] - crop[1]);
+        assert!((100.0 / h - 0.543).abs() < 0.01, "face share {}", 100.0 / h);
+        assert!(((400.0 - f64::from(crop[1])) / h - 0.181).abs() < 0.01);
+        // the kit framing, which advisor cards keep, is unchanged
+        assert_eq!(
+            compute_framed_crop((1200, 1600), (500, 400, 90, 100), Framing::KIT).unwrap(),
+            compute_portrait_crop((1200, 1600), (500, 400, 90, 100)).unwrap()
+        );
+    }
 
     struct Fixed(Vec<FaceBox>);
     impl FaceDetector for Fixed {

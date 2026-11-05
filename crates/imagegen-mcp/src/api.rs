@@ -104,6 +104,9 @@ macro_rules! group_request {
             /// Canvas `[width, height]` of one frame, for families whose size the mod defines (GUI textures, super events, and animated strips, which take the size of the element they sit on). Refused for the others.
             #[serde(default)]
             pub canvas: Option<[u32; 2]>,
+            /// GUI textures only: the kind of texture (`button`, `frame`, `panel` or `background`). It adds that kind's vanilla form to the prompt and picks vanilla references of that kind. Refused for the others.
+            #[serde(default)]
+            pub texture_kind: Option<imagegen_core::GuiTextureKind>,
             /// Candidates to produce in one go (1 to 4); each is a separate provider call.
             #[serde(default)]
             pub variants: Option<u8>,
@@ -146,6 +149,7 @@ macro_rules! group_request {
                     budget_usd: self.budget_usd,
                     quality: self.quality,
                     canvas: self.canvas,
+                    texture_kind: self.texture_kind,
                 };
                 (req, follow)
             }
@@ -325,6 +329,12 @@ pub struct ProcessParams {
     /// sub-unit key); an infantry cross when nothing matches.
     #[serde(default)]
     pub counter_symbol: Option<String>,
+    /// `technology` only: stamp a tier numeral (I to X, from `tier` 1 to 10) on the finished picture, and with `gem`
+    /// the blue gem vanilla puts before it on battleship, cruiser and carrier pictures. Vanilla bakes these marks into
+    /// the texture (no GUI layer or sprite draws them), so the overlay is part of the processed pixels: vanilla's serif
+    /// glyphs, gold and shadow, in vanilla's place (top right) unless `position` gives the badge's top-left corner.
+    #[serde(default)]
+    pub overlay: Option<imagegen_core::recipes::tech_overlay::TechOverlay>,
     /// `anim_blend_keyframes` only: the candidates of frames 2 onward, in order. Make each with `hoi4.image_edit` on the
     /// base candidate (the one being processed), so it keeps the base's framing; all frames are then fitted with one
     /// shared crop and scale.
@@ -364,7 +374,8 @@ pub struct PreviewParams {
 pub struct ReviewParams {
     /// Artifact reviewed.
     pub target: String,
-    /// Verdict. An approval needs a passing validation, a preview of this exact file and every rubric answer true.
+    /// Verdict. An approval needs a passing validation, a preview of this exact file with the vanilla side-by-side
+    /// sheet, a passing measured vanilla-match check (or a recorded override) and every rubric answer true.
     pub verdict: Verdict,
     /// Who reviewed: a person's name or an agent's name.
     pub reviewer: String,
@@ -374,6 +385,13 @@ pub struct ReviewParams {
     /// Notes for the next round.
     #[serde(default)]
     pub notes: Option<String>,
+    /// Approve although the measured vanilla-match check fails or cannot run (a deliberate mod style, or no
+    /// installed game). Needs `override_reason`. The override and its reason are recorded in the ledger and the review.
+    #[serde(default)]
+    pub override_vanilla_check: Option<bool>,
+    /// Why the art may differ from vanilla (10 to 1000 characters). Required with `override_vanilla_check`.
+    #[serde(default)]
+    pub override_reason: Option<String>,
 }
 
 /// How an install treats the `.gfx` file.
@@ -448,6 +466,11 @@ pub struct CancelParams {
     /// For a job left behind by a crashed run: ask the provider what became of it and store the image if it finished.
     #[serde(default)]
     pub reconcile: Option<bool>,
+    /// Retire an uncertain idempotency key: a generate or edit request was cut off (the process was killed) and the same key is
+    /// refused with `uncertain_previous_attempt`. The ledger records the abandonment with the time and the warning that the first
+    /// attempt may have been charged, and the key (or a new one) can be used again. Refused for a key whose attempt completed.
+    #[serde(default)]
+    pub abandon: Option<bool>,
 }
 
 /// `hoi4.image_audit`

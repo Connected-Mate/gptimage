@@ -225,3 +225,89 @@ fn a_refusal_of_every_rung_is_one_terminal_error_and_nothing_goes_without_an_eff
     let last: serde_json::Value = serde_json::from_slice(&f.requests()[3].body).unwrap();
     assert!(last.get("reasoning").is_none());
 }
+
+// ------------------------------------------------------------------ the 2026-11-05 request without a reasoning effort
+
+/// RECORDED-REAL: the first successful answer of the backend to a gpt-6-luna request that carried no `reasoning` field
+/// (2026-11-05, 10:51 UTC), captured with `HOI4_IMAGEGEN_RECORD_RESPONSES` and scrubbed by
+/// `scripts/make_replay_fixture.py` (ids replaced, the image downscaled to 64 px). The backend chose its own effort and
+/// reported it in response.created: `medium`.
+const NO_EFFORT: &str = include_str!("fixtures/recorded-real/no-effort-default-medium-2026-11-05.sse");
+
+#[test]
+fn the_no_effort_fixture_is_the_scrubbed_recording_and_carries_no_account_identifiers() {
+    assert!(NO_EFFORT.contains("\"safety_identifier\":\"user-REDACTED\"") && NO_EFFORT.contains("\"prompt_cache_key\":\"REDACTED\""));
+    assert!(NO_EFFORT.contains("\"effort\":\"medium\"") && NO_EFFORT.contains("\"model\":\"gpt-6-luna\""), "the backend reported its own effort");
+    for needle in ["resp_0", "ig_0", "msg_0", "rs_0", "@", "access-", "refresh", "Bearer", "eyJ", "acct", "org-"] {
+        assert!(!NO_EFFORT.contains(needle), "{needle} must not appear in a committed fixture");
+    }
+    assert!(!NO_EFFORT.contains('\r'), "LF only");
+    assert!(NO_EFFORT.len() < 64 * 1024, "the image is downscaled");
+}
+
+/// The state this machine remembered after 2026-11-05: high, medium and low were each refused within the last day.
+/// SYNTHETIC state file (the refusals themselves are the recorded ones above and the injected low below); it is read
+/// by the real route code.
+fn remember_all_three_refusals(dir: &Path) {
+    let until = 1_793_561_534_i64 + 3600;
+    let state = serde_json::json!({
+        "version": 1,
+        "refused_efforts": [
+            {"effort": "high", "until_epoch": until},
+            {"effort": "medium", "until_epoch": until},
+            {"effort": "low", "until_epoch": until},
+        ]
+    });
+    std::fs::write(dir.join("route-state.json"), serde_json::to_vec_pretty(&state).unwrap()).unwrap();
+}
+
+#[test]
+fn after_the_remembered_refusals_the_recorded_no_effort_request_yields_the_recorded_image() {
+    let (d, f, p) = replay(200, NO_EFFORT.to_string(), None);
+    remember_all_three_refusals(d.path());
+    let out = p.generate(&request(), &no_sleep()).expect("the recorded no-effort answer is accepted");
+
+    // exactly one request, and it carries no reasoning field
+    let sent: Vec<serde_json::Value> = f.requests().iter().map(|r| serde_json::from_slice(&r.body).unwrap()).collect();
+    assert_eq!(sent.len(), 1, "the three remembered refusals are skipped, so the image is one request");
+    assert!(sent[0].get("reasoning").is_none(), "{}", sent[0]);
+    assert_eq!(sent[0]["model"], "gpt-6-luna");
+
+    // the recorded image, with its usage record
+    assert_eq!(&out.image[..8], b"\x89PNG\r\n\x1a\n");
+    let img = image::load_from_memory(&out.image).unwrap();
+    assert!(img.width() <= 64 && img.height() <= 64 && img.width() > 0);
+    assert_eq!(out.model_echo.as_deref(), Some("gpt-6-luna"));
+    let usage = out.usage.clone().expect("usage is recorded");
+    assert_eq!(usage["reasoning_effort"], "backend default");
+    assert_eq!(usage["reported_effort"], "medium");
+    assert_eq!(usage["refused_efforts"], serde_json::json!(["high", "medium", "low"]));
+    assert!(usage["backend_usage"].is_object(), "the backend's own usage block is kept: {usage}");
+    assert!(out.notes[0].contains("gpt-6-luna at backend default (reported medium) reasoning effort"), "{:?}", out.notes);
+    assert!(out.notes.iter().any(|n| n.contains("skipped high and medium and low reasoning effort")), "{:?}", out.notes);
+    assert_eq!(out.provider_request_id.as_deref(), Some("resp_recorded"));
+    assert!(out.usage_unknown);
+}
+
+/// The whole ladder from a clean state: the recorded refusals of high and medium, an INJECTED refusal of low (the
+/// medium recording with the effort changed; no real low refusal was captured), then the recorded no-effort success.
+#[test]
+fn the_whole_ladder_ends_on_the_recorded_no_effort_success_and_remembers_the_refusals() {
+    let (d, f, p) = replay(200, HIGH_REFUSED.to_string(), None);
+    f.respond(Method::Post, BACKEND_PATH, 200, &[("content-type", "text/event-stream")], MEDIUM_REFUSED.to_string());
+    let injected_low = MEDIUM_REFUSED.replace("'medium'", "'low'").replace("\"effort\":\"medium\"", "\"effort\":\"low\"");
+    f.respond(Method::Post, BACKEND_PATH, 200, &[("content-type", "text/event-stream")], injected_low);
+    f.respond(Method::Post, BACKEND_PATH, 200, &[("content-type", "text/event-stream")], NO_EFFORT.to_string());
+    let out = p.generate(&request(), &no_sleep()).unwrap();
+    let usage = out.usage.unwrap();
+    assert_eq!((usage["reasoning_effort"].as_str(), usage["reported_effort"].as_str()), (Some("backend default"), Some("medium")));
+    assert_eq!(usage["refused_efforts"], serde_json::json!(["high", "medium", "low"]));
+    let sent: Vec<serde_json::Value> = f.requests().iter().map(|r| serde_json::from_slice(&r.body).unwrap()).collect();
+    assert_eq!(sent.len(), 4);
+    assert_eq!(sent[..3].iter().map(|b| b["reasoning"]["effort"].as_str().unwrap()).collect::<Vec<_>>(), ["high", "medium", "low"]);
+    assert!(sent[3].get("reasoning").is_none());
+    // and the next image skips the three refusals, as the previous test shows from a state file
+    let saved: serde_json::Value = serde_json::from_slice(&std::fs::read(d.path().join("route-state.json")).unwrap()).unwrap();
+    let remembered: Vec<&str> = saved["refused_efforts"].as_array().unwrap().iter().map(|e| e["effort"].as_str().unwrap()).collect();
+    assert_eq!(remembered, ["high", "medium", "low"]);
+}

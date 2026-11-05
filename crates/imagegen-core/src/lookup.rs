@@ -166,7 +166,7 @@ pub fn derived_companions(family: Family, canvas: [u32; 2]) -> Vec<DerivedCompan
             vec![c("miniature", DeriveKind::Miniature, [32, 32], 1, 0, None, "{prefix}{asset}_miniature", "GFX_faction_logo_{asset}_miniature")]
         }
         Family::Building if canvas == [64, 64] => {
-            vec![c("small", DeriveKind::HalfSize, [32, 32], 2, 0, None, "{prefix}{asset}_small", "GFX_{asset}_icon_small")]
+            vec![c("small", DeriveKind::LandmarkSmall, [32, 32], 2, 0, None, "{prefix}{asset}_small", "GFX_{asset}_icon_small")]
         }
         Family::Medal => vec![c("small", DeriveKind::HalfSize, [28, 42], 1, 1, None, "{prefix}{asset}_small", "GFX_medal_icon_{asset}")],
         _ => Vec::new(),

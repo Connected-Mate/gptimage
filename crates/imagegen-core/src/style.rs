@@ -16,6 +16,32 @@ use crate::naming::validate_snake;
 /// Folder of style files.
 pub const STYLE_DIR: &str = ".hoi4-imagegen/styles";
 
+/// Why a style was applied to a plan.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum StyleWhy {
+    /// The caller named it (`style: <name>`).
+    Explicit,
+    /// The style has `default: true`.
+    Default,
+    /// The style's non-empty `families` list names the family.
+    FamilyList,
+    /// No style was applied.
+    None,
+}
+
+impl StyleWhy {
+    /// The id used in plans.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            StyleWhy::Explicit => "explicit",
+            StyleWhy::Default => "default",
+            StyleWhy::FamilyList => "family_list",
+            StyleWhy::None => "none",
+        }
+    }
+}
+
 /// A pinned reference image.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct StyleRef {
@@ -48,9 +74,16 @@ pub struct StyleProfile {
     /// Palette notes.
     #[serde(default)]
     pub palette_notes: String,
-    /// Families the style applies to; empty means all.
+    /// Families the style is available to. Empty means available to any family, but never applied automatically
+    /// (see [`StyleProfile::auto_applies_to`]). A non-empty list also makes the style the automatic style of the
+    /// families it names.
     #[serde(default, alias = "categories")]
     pub families: Vec<Family>,
+    /// `true` applies the style automatically to the families it lists, or to every family when it lists none.
+    /// `false` turns automatic use off even for a listed family (the style stays available by name). Absent means
+    /// "automatic only for the families the list names".
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub default: Option<bool>,
     /// Approved reference images, pinned by hash.
     #[serde(default)]
     pub references: Vec<StyleRef>,
@@ -90,9 +123,27 @@ impl StyleProfile {
         Ok(())
     }
 
-    /// True when the style applies to a family.
+    /// True when the style may be chosen by name for a family (`style: <name>`): always, unless a non-empty
+    /// `families` list leaves the family out.
     pub fn applies_to(&self, c: Family) -> bool {
         self.families.is_empty() || self.families.contains(&c)
+    }
+
+    /// Why the style is applied automatically to a family, or `None` when it is only available by name.
+    ///
+    /// * `default: false` never applies automatically.
+    /// * `default: true` applies to the listed families, or to every family when the list is empty.
+    /// * No `default` key: applies only to the families a non-empty list names. An empty list means "available to
+    ///   any family, never applied automatically".
+    pub fn auto_applies_to(&self, c: Family) -> Option<StyleWhy> {
+        let listed = self.families.contains(&c);
+        match self.default {
+            Some(false) => None,
+            Some(true) if self.families.is_empty() || listed => Some(StyleWhy::Default),
+            Some(true) => None,
+            None if listed => Some(StyleWhy::FamilyList),
+            None => None,
+        }
     }
 
     /// Check that every pinned reference still matches its recorded hash.
@@ -176,6 +227,7 @@ mod tests {
             negative_rules: vec!["no text".into()],
             palette_notes: "earth tones".into(),
             families: vec![Family::Focus],
+            default: None,
             references: vec![],
             provider: Some("openai".into()),
             model: None,
@@ -231,5 +283,34 @@ mod tests {
         let mut all = style("y");
         all.families.clear();
         assert!(all.applies_to(Family::IdeaSpirit));
+    }
+
+    #[test]
+    fn automatic_use_needs_a_listed_family_or_default_true() {
+        let listed = style("a"); // families = [Focus], default unset
+        assert_eq!(listed.auto_applies_to(Family::Focus), Some(StyleWhy::FamilyList));
+        assert_eq!(listed.auto_applies_to(Family::IdeaSpirit), None);
+        let mut none = style("b");
+        none.families.clear();
+        assert_eq!(none.auto_applies_to(Family::Focus), None, "no families and no default: available by name, never automatic");
+        none.default = Some(true);
+        assert_eq!(none.auto_applies_to(Family::IdeaSpirit), Some(StyleWhy::Default));
+        let mut dl = style("c");
+        dl.default = Some(true);
+        assert_eq!(dl.auto_applies_to(Family::Focus), Some(StyleWhy::Default));
+        assert_eq!(dl.auto_applies_to(Family::IdeaSpirit), None, "default applies only to the listed families when there are some");
+        dl.default = Some(false);
+        assert_eq!(dl.auto_applies_to(Family::Focus), None);
+        assert!(dl.applies_to(Family::Focus), "default = false still allows naming it");
+    }
+
+    #[test]
+    fn the_default_key_is_optional_and_not_written_when_unset() {
+        let old: StyleProfile = serde_json::from_str(r#"{"name":"old","categories":["focus"]}"#).unwrap();
+        assert_eq!(old.default, None);
+        assert_eq!(old.auto_applies_to(Family::Focus), Some(StyleWhy::FamilyList));
+        assert!(!serde_json::to_string(&old).unwrap().contains("\"default\""));
+        let new: StyleProfile = serde_json::from_str(r#"{"name":"new","default":true}"#).unwrap();
+        assert_eq!(new.default, Some(true));
     }
 }

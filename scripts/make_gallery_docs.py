@@ -51,6 +51,9 @@ CHECKS = {
     "near_opaque": "the picture is opaque to within the template's own alpha (`GFX-ALPHA-IN-OPAQUE`)",
     "card_corners": "transparent card corners (`GFX-CARD-CORNERS`)",
     "frames": "the width divides into the frames (`GFX-FRAME-WIDTH`)",
+    "line_art": "a special project drawing has no filled area (`GFX-FILLED-INTERIOR`)",
+    "unit_material": "finished unit art is vanilla's green or grey material with the NATO box (`GFX-UNIT-MATERIAL`)",
+    "side_view": "a technology picture is as wide as vanilla's side views, a warning only (`GFX-TECH-VIEW`)",
     "style": "distance from the family's style references, a warning only (`GFX-STYLE-DRIFT`, `GFX-STYLE-MATCH`)",
     "dds": "DDS header and layout (`GFX-DDS-HEADER`, `GFX-TRUNCATED`, `GFX-LFS-POINTER`)",
     "tga": "TGA format and bottom-left origin (`GFX-TGA-FORMAT`, `GFX-FLAG-ORIGIN`)",
@@ -66,6 +69,12 @@ RECIPES = {
     "selected_strip": "fit with a margin, then frame 2 as the selected state",
     "landmark_strip": "fit, then frame 2 as the ruined landmark from a second candidate",
     "imported_art": "import only: the exact strip, or one file per frame",
+    "raid": "trim, fit, then vanilla's gold gradient and black outline",
+    "doctrine": "trim, fit, then black units with vanilla's pale outline and glow",
+    "line_art": "the image redrawn as vanilla's thin pale lines, then grayscale",
+    "unit_counter": "the silhouette in vanilla's material, then the NATO box as frame 2",
+    "division_symbol": "the silhouette in vanilla's green material",
+    "phase_card": "flatten, then the report card on vanilla's phase picture mask",
 }
 KIND = {
     "full_name": "the script names the sprite in full, so the name is free",
@@ -314,7 +323,7 @@ def docs():
     w(
         "* **Canvas and frames** are measured from the installed game, HOI4 1.19.4.1.\n"
         "* **Names the game looks up** follow the vanilla evidence in `crates/imagegen-core/src/lookup.rs`, as fixed in v0.2.2. Where a script names the sprite in full the name is free. Where the game builds the name, the tool builds the same one and the install result's `script` field says what to write.\n"
-        "* **Processing** is the family's fixed chain. The tool appends it and you cannot skip it. The steps listed are the ones that ran on the example.\n"
+        "* **Processing** is the family's fixed chain. The tool appends it and you cannot skip it. The steps listed are the ones that ran on the example. The examples were made with version 0.2.0. Since 0.3.2 more families have their own chain: raid icons get vanilla's gold gradient, doctrine icons black units with a pale outline and glow, special project icons are redrawn as line art, counters and division emblems always end in the unit recipe, and a landmark's small strip is a flat orange pictogram. The [reference](reference.md#processing-chains) lists every chain.\n"
         "* **Checks** are the deterministic set that `hoi4.image_validate` always runs for the family. Composition and readability at game size go to the visual review.\n"
         "* **Example call** is the one-call form (`approve: true` plans and generates together) as it was run for the image. `hoi4-imagegen call <tool> '<json>'` runs the same operation on the command line. The rest of the loop (process, validate, preview, review, install) is in the [how-to](how-to.md).\n"
         "* The example mod's feature slug is `gallery`. Replace it and the asset name with your own.\n"

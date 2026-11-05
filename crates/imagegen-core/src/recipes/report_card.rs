@@ -50,6 +50,22 @@ pub struct ReportCardParams {
     pub rotate_supersample: u32,
     /// Gaussian sigma applied to the card's alpha after rotation.
     pub edge_soften: f64,
+    /// Where the card sits, in pixels from the canvas centre (x right, y down).
+    pub card_offset: (i64, i64),
+}
+
+impl ReportCardParams {
+    /// The operation phase picture: the same card, tilted the other way and lower.
+    ///
+    /// Vanilla's 71 phase pictures (`gfx/interface/operations/images/phase_*.dds`, HOI4 1.19.4.1) use four alpha masks.
+    /// 46 share one that is not a report card's: the card is tilted clockwise (top-left corner highest, at x 16 y 12;
+    /// right edge at y 25) and its box runs from (7, 11) to (205, 173) instead of (3, 4) to (206, 171). A rotated
+    /// rectangle fits it best at the report card's size, 3.5 degrees clockwise, centred 2 px right and 4 px down of
+    /// the report card (IoU 0.972, the same fit quality as the report card's own mask). 15 use a smaller
+    /// counter-clockwise card, and 10 use report card masks unchanged. This preset draws the majority mask.
+    pub fn phase() -> ReportCardParams {
+        ReportCardParams { angle: -3.5, card_offset: (2, 4), ..Default::default() }
+    }
 }
 
 impl Default for ReportCardParams {
@@ -67,6 +83,7 @@ impl Default for ReportCardParams {
             seed: 1337,
             rotate_supersample: 4,
             edge_soften: 0.35,
+            card_offset: (0, 0),
         }
     }
 }
@@ -200,8 +217,8 @@ pub fn report_card(source: &Rgba, p: &ReportCardParams) -> Result<Rgba> {
         photo
     };
     let rotated = rotate_card(&card, p.angle, p.rotate_supersample, p.edge_soften)?;
-    let x = (i64::from(p.canvas_size.0) - i64::from(rotated.width)).div_euclid(2);
-    let y = (i64::from(p.canvas_size.1) - i64::from(rotated.height)).div_euclid(2);
+    let x = (i64::from(p.canvas_size.0) - i64::from(rotated.width)).div_euclid(2) + p.card_offset.0;
+    let y = (i64::from(p.canvas_size.1) - i64::from(rotated.height)).div_euclid(2) + p.card_offset.1;
     let mut canvas = Rgba::new(p.canvas_size.0, p.canvas_size.1);
     let shadow = shadow_layer(&rotated, (x, y), p);
     alpha_composite(&mut canvas, &shadow, 0, 0);
@@ -274,6 +291,46 @@ mod tests {
         assert!(out.px(5, 88)[3] > 0, "shadow clipped at the card box");
         assert!(out.px(5, 88)[3] < 128);
         assert_eq!(out.px(0, 0)[3], 0);
+    }
+
+    /// The phase card's alpha against vanilla's majority phase mask, and the report card's against vanilla's report
+    /// masks, for comparison.
+    #[test]
+    fn the_phase_card_matches_vanillas_phase_picture_mask() {
+        let g = std::env::var("HOI4_GAME_DIR")
+            .map(std::path::PathBuf::from)
+            .unwrap_or_else(|_| "C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV".into());
+        let read = |rel: &str| crate::dds::decode(&std::fs::read(g.join(rel)).ok()?).ok();
+        let (Some(phase), Some(report)) =
+            (read("gfx/interface/operations/images/phase_bruneval_attack.dds"), read("gfx/event_pictures/report_event_AST_referendum.dds"))
+        else {
+            eprintln!("SKIPPED phase card vs vanilla: Hearts of Iron IV not found (set HOI4_GAME_DIR)");
+            return;
+        };
+        let iou = |a: &Rgba, b: &Rgba| {
+            let (mut i, mut u) = (0, 0);
+            for (p, q) in a.data.chunks_exact(4).zip(b.data.chunks_exact(4)) {
+                let (x, y) = (p[3] > 128, q[3] > 128);
+                i += usize::from(x && y);
+                u += usize::from(x || y);
+            }
+            i as f64 / u as f64
+        };
+        let mae = |a: &Rgba, b: &Rgba| {
+            a.data.chunks_exact(4).zip(b.data.chunks_exact(4)).map(|(p, q)| (f64::from(p[3]) - f64::from(q[3])).abs()).sum::<f64>()
+                / (a.data.len() / 4) as f64
+        };
+        let ours = report_card(&picture(400, 300), &ReportCardParams::phase()).unwrap();
+        let card = report_card(&picture(400, 300), &ReportCardParams::default()).unwrap();
+        let (pi, ri, cross) = (iou(&ours, &phase), iou(&card, &report), iou(&card, &phase));
+        eprintln!(
+            "phase card vs vanilla phase mask: IoU {pi:.3}, alpha MAE {:.2}; report card vs vanilla report mask: IoU {ri:.3}, alpha MAE {:.2}; report card vs phase mask: IoU {cross:.3}",
+            mae(&ours, &phase),
+            mae(&card, &report)
+        );
+        assert!(pi >= 0.97, "phase IoU {pi}");
+        assert!(pi > cross + 0.05, "the phase preset is closer to the phase mask than a report card is");
+        assert!(mae(&ours, &phase) < 8.0);
     }
 
     #[test]

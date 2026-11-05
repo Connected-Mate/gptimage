@@ -146,7 +146,7 @@ impl Harness {
     pub fn approve(&self, id: &str, rubric_id: &str) -> Value {
         let answers: serde_json::Map<String, Value> = rubric::questions(rubric_id).iter().map(|(k, _)| (k.to_string(), json!(true))).collect();
         self.engine
-            .review(serde_json::from_value(json!({"target": id, "verdict": "approved", "reviewer": "test reviewer", "answers": answers})).unwrap())
+            .review(serde_json::from_value(json!({"target": id, "verdict": "approved", "reviewer": "test reviewer", "answers": answers, "override_vanilla_check": true, "override_reason": "synthetic test art, no installed game"})).unwrap())
             .unwrap()
     }
 
@@ -154,7 +154,7 @@ impl Harness {
     pub fn approve_all(&self, id: &str) -> String {
         assert_eq!(self.validate(id)["status"], "pass", "{:#}", self.validate(id));
         self.preview(id);
-        self.approve(id, "icon_v2")["approval_id"].as_str().unwrap().to_string()
+        self.approve(id, "icon_v3")["approval_id"].as_str().unwrap().to_string()
     }
 
     pub fn install(&self, id: &str, approval: &str, extra: Value) -> Result<Value, imagegen_mcp::EngineError> {

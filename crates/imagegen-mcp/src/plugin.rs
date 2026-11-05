@@ -31,7 +31,7 @@ pub struct PluginReport {
     pub reasons: Vec<String>,
 }
 
-fn plugin_mode(mode: RunMode) -> PluginMode {
+pub(crate) fn plugin_mode(mode: RunMode) -> PluginMode {
     match mode {
         RunMode::LocalStdio => PluginMode::LocalStdio,
         RunMode::Cli => PluginMode::Cli,
@@ -73,7 +73,11 @@ pub fn register(
                 enabled: true,
                 signed_in,
                 model,
-                state: if signed_in { "signed in; the default local provider".into() } else { "available; not signed in".into() },
+                state: if signed_in {
+                    "signed in; the default local provider".into()
+                } else {
+                    "available; not signed in (hoi4.image_login or `hoi4-imagegen login` opens the browser sign-in)".into()
+                },
                 reasons: if signed_in { Vec::new() } else { vec!["run `hoi4-imagegen login` once to sign in with your ChatGPT account".into()] },
             }
         }

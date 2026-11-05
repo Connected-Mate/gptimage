@@ -87,19 +87,41 @@ fn install_refuses_until_validation_review_and_hashes_are_in_order() {
 
     // approving without a preview is refused
     let answers: serde_json::Map<String, Value> =
-        imagegen_core::rubric::questions("icon_v2").iter().map(|(k, _)| (k.to_string(), json!(true))).collect();
-    let review = |verdict: &str, answers: Value| {
+        imagegen_core::rubric::questions("icon_v3").iter().map(|(k, _)| (k.to_string(), json!(true))).collect();
+    let plain = |verdict: &str, answers: Value| {
         h.engine.review(serde_json::from_value(json!({"target": processed, "verdict": verdict, "reviewer": "t", "answers": answers})).unwrap())
+    };
+    // the harness has no installed game, so every approval below records an override of the vanilla check
+    let review = |verdict: &str, answers: Value| {
+        h.engine.review(
+            serde_json::from_value(json!({"target": processed, "verdict": verdict, "reviewer": "t", "answers": answers, "override_vanilla_check": true, "override_reason": "synthetic test art, no installed game"}))
+                .unwrap(),
+        )
     };
     assert_eq!(review("approved", json!(answers)).unwrap_err().code, "review_needs_preview");
     h.preview(&processed);
+    // blanket true answers alone no longer approve: without the vanilla side-by-side sheet and check it is refused
+    let e = plain("approved", json!(answers)).unwrap_err();
+    assert_eq!(e.code, "review_needs_vanilla_preview", "{e}");
+    assert_eq!(e.details.as_ref().unwrap()["vanilla_check"]["status"], "unavailable");
+    // an override needs a reason
+    let e = h
+        .engine
+        .review(
+            serde_json::from_value(
+                json!({"target": processed, "verdict": "approved", "reviewer": "t", "answers": answers, "override_vanilla_check": true}),
+            )
+            .unwrap(),
+        )
+        .unwrap_err();
+    assert_eq!(e.code, "invalid_argument");
     // an incomplete rubric is refused
     let mut partial = answers.clone();
-    partial.insert("silhouette_clear".into(), json!(false));
+    partial.insert("vanilla_form".into(), json!(false));
     partial.remove("no_text_or_watermark");
     let e = review("approved", json!(partial)).unwrap_err();
     assert_eq!(e.code, "review_incomplete");
-    assert!(e.message.contains("silhouette_clear") && e.message.contains("no_text_or_watermark"));
+    assert!(e.message.contains("vanilla_form") && e.message.contains("no_text_or_watermark"));
     // a rejection issues no approval
     let rej = review("rejected", json!(partial)).unwrap();
     assert!(rej["approval_id"].is_null());
@@ -107,7 +129,14 @@ fn install_refuses_until_validation_review_and_hashes_are_in_order() {
     assert_eq!(code(&e), "install_gate_approval_mismatch", "a rejection issues no approval id, so no id can match");
 
     // a real approval opens the gate...
-    let approval = review("approved", json!(answers)).unwrap()["approval_id"].as_str().unwrap().to_string();
+    let approved = review("approved", json!(answers)).unwrap();
+    // the override and its reason are in the reply and the ledger
+    assert_eq!(approved["vanilla_override"]["reason"], "synthetic test art, no installed game");
+    assert_eq!(approved["vanilla_override"]["status_overridden"], "unavailable");
+    let rec = h.engine.ledger.entries().unwrap().into_iter().rev().find(|e| e.kind == imagegen_core::records::kind::REVIEWED).unwrap();
+    assert_eq!(rec.data["vanilla_override"]["reason"], "synthetic test art, no installed game");
+    assert_eq!(rec.data["vanilla_check"]["status"], "unavailable");
+    let approval = approved["approval_id"].as_str().unwrap().to_string();
     // ...but only with its own id
     assert_eq!(code(&h.install(&processed, "apr-ffffffffffffffff", json!({})).unwrap_err()), "install_gate_approval_mismatch");
 
@@ -400,10 +429,10 @@ fn fake_checkerboards_are_rejected_at_validation() {
     // the failed validation blocks approval and install
     h.preview(&id);
     let answers: serde_json::Map<String, Value> =
-        imagegen_core::rubric::questions("icon_v2").iter().map(|(k, _)| (k.to_string(), json!(true))).collect();
+        imagegen_core::rubric::questions("icon_v3").iter().map(|(k, _)| (k.to_string(), json!(true))).collect();
     let e = h
         .engine
-        .review(serde_json::from_value(json!({"target": id, "verdict": "approved", "reviewer": "t", "answers": answers})).unwrap())
+        .review(serde_json::from_value(json!({"target": id, "verdict": "approved", "reviewer": "t", "answers": answers, "override_vanilla_check": true, "override_reason": "synthetic test art, no installed game"})).unwrap())
         .unwrap_err();
     assert_eq!(e.code, "review_needs_validation");
     assert_eq!(code(&h.install(&id, "apr-0000000000000000", json!({})).unwrap_err()), "install_gate_validation_failed");
@@ -543,7 +572,7 @@ fn finished_art_from_another_tool_can_be_imported_validated_and_installed() {
     assert_eq!(art.pixels_sha256(), p["pixels_sha256"], "no pixel changed");
     assert_eq!(h.validate(&id)["status"], "pass");
     h.preview(&id);
-    let approval = h.approve(&id, "portrait_v1")["approval_id"].as_str().unwrap().to_string();
+    let approval = h.approve(&id, "portrait_v3")["approval_id"].as_str().unwrap().to_string();
     let out = h.install(&id, &approval, json!({})).unwrap();
     let installed = dds::decode(&h.read("gfx/interface/ideas/iron_pact/advisors/idea_chief_advisor.dds")).unwrap();
     assert_eq!(installed.pixels_sha256(), art.pixels_sha256(), "imported art arrives pixel for pixel");
@@ -574,7 +603,7 @@ fn flag_sets_install_three_tga_sizes() {
     assert_eq!(p["size"], json!([82, 52]));
     assert_eq!(h.validate(&id)["status"], "pass");
     h.preview(&id);
-    let approval = h.approve(&id, "flag_v1")["approval_id"].as_str().unwrap().to_string();
+    let approval = h.approve(&id, "flag_v3")["approval_id"].as_str().unwrap().to_string();
     h.install(&id, &approval, json!({})).unwrap();
     for (rel, w, hgt) in [("gfx/flags/IRP.tga", 82, 52), ("gfx/flags/medium/IRP.tga", 41, 26), ("gfx/flags/small/IRP.tga", 10, 7)] {
         let info = imagegen_core::tga::parse_header(&h.read(rel)).unwrap();
@@ -707,4 +736,131 @@ fn the_ledger_chain_survives_a_whole_session_and_detects_tampering() {
     std::fs::write(&path, text.replacen("steel_gate", "steel_gat3", 1)).unwrap();
     let q = h.engine.ledger_query(serde_json::from_value(json!({})).unwrap()).unwrap();
     assert_eq!(q["chain"]["ok"], false);
+}
+
+// ---- 0.3.2: retiring an uncertain idempotency key ----
+
+fn crashed_harness(key: &str) -> (Harness, serde_json::Value) {
+    let h = openai_harness();
+    let plan = h.plan_focus("steel_gate");
+    h.engine
+        .ledger
+        .append(
+            "job_intent",
+            Some("iron_pact.steel_gate"),
+            None,
+            json!({"job_id": "job-crashed", "idempotency_key": key, "asset_id": "iron_pact.steel_gate"}),
+        )
+        .unwrap();
+    (h, plan)
+}
+
+fn gen_with(h: &Harness, plan: &serde_json::Value, key: &str) -> Result<serde_json::Value, imagegen_mcp::EngineError> {
+    h.engine.generate(serde_json::from_value(json!({"plan_id": plan["plan_id"], "idempotency_key": key})).unwrap())
+}
+
+#[test]
+fn abandon_retires_an_uncertain_key_and_the_same_key_then_proceeds() {
+    let (h, plan) = crashed_harness("k-killed");
+    assert_eq!(code(&gen_with(&h, &plan, "k-killed").unwrap_err()), "uncertain_previous_attempt");
+    // reconcile cannot clear it for a synchronous provider
+    let r = h.engine.cancel(serde_json::from_value(json!({"idempotency_key": "k-killed", "reconcile": true})).unwrap()).unwrap();
+    assert_eq!(r["status"], "unknown_outcome");
+    assert!(r["note"].as_str().unwrap().contains("abandon"), "the note points to the way out: {r}");
+    assert_eq!(code(&gen_with(&h, &plan, "k-killed").unwrap_err()), "uncertain_previous_attempt");
+
+    let c = h.engine.cancel(serde_json::from_value(json!({"idempotency_key": "k-killed", "abandon": true})).unwrap()).unwrap();
+    assert_eq!(c["status"], "abandoned", "{c}");
+    assert_eq!(c["job_ids"], json!(["job-crashed"]));
+    assert!(c["warning"].as_str().unwrap().contains("may have been charged"));
+    // the ledger records it with the time and the warning
+    let ended = h.engine.ledger.entries().unwrap().into_iter().rfind(|e| e.kind == "job_ended").unwrap();
+    assert_eq!(ended.data["outcome"], "abandoned");
+    assert_eq!(ended.data["job_id"], "job-crashed");
+    assert_eq!(ended.data["idempotency_key"], "k-killed");
+    assert!(ended.data["abandoned_at"].as_str().unwrap().starts_with("20"), "{}", ended.data);
+    assert!(ended.data["warning"].as_str().unwrap().contains("may have been charged"));
+    // no provider call was made by retiring the key
+    assert!(h.fixture.requests().is_empty());
+
+    // the same key now proceeds
+    h.queue_generation(&synthetic_icon_png());
+    let g = gen_with(&h, &plan, "k-killed").unwrap();
+    assert!(g["candidates"][0]["candidate_id"].is_string(), "{g}");
+    // and a second abandon of the now-completed key is refused
+    let again = h.engine.cancel(serde_json::from_value(json!({"idempotency_key": "k-killed", "abandon": true})).unwrap()).unwrap_err();
+    assert_eq!(code(&again), "attempt_completed");
+}
+
+#[test]
+fn abandon_by_job_id_works_too() {
+    let (h, plan) = crashed_harness("k-by-id");
+    let c = h.engine.cancel(serde_json::from_value(json!({"job_id": "job-crashed", "abandon": true})).unwrap()).unwrap();
+    assert_eq!(c["status"], "abandoned");
+    assert_eq!(c["idempotency_key"], "k-by-id");
+    h.queue_generation(&synthetic_icon_png());
+    assert!(gen_with(&h, &plan, "k-by-id").is_ok());
+}
+
+#[test]
+fn abandon_never_applies_to_a_completed_attempt() {
+    let h = openai_harness();
+    let plan = h.plan_focus("steel_gate");
+    h.queue_generation(&synthetic_icon_png());
+    let g = gen_with(&h, &plan, "k-done").unwrap();
+    let cid = g["candidates"][0]["candidate_id"].as_str().unwrap().to_string();
+    let e = h.engine.cancel(serde_json::from_value(json!({"idempotency_key": "k-done", "abandon": true})).unwrap()).unwrap_err();
+    assert_eq!(code(&e), "attempt_completed");
+    assert!(e.message.contains(&cid), "{}", e.message);
+    // the ledger gained no abandonment, and the key still replays the same candidate
+    assert!(!h.engine.ledger.entries().unwrap().iter().any(|x| x.data["outcome"] == "abandoned"));
+    let replay = gen_with(&h, &plan, "k-done").unwrap();
+    assert_eq!(replay["candidates"][0]["candidate_id"], json!(cid));
+    assert_eq!(replay["candidates"][0]["replayed"], true);
+}
+
+#[test]
+fn abandon_refuses_a_job_recorded_as_completed_by_job_id() {
+    let (h, _plan) = crashed_harness("k-rec");
+    h.engine.ledger.append("job_ended", Some("iron_pact.steel_gate"), None, json!({"job_id": "job-crashed", "outcome": "recovered"})).unwrap();
+    let e = h.engine.cancel(serde_json::from_value(json!({"job_id": "job-crashed", "abandon": true})).unwrap()).unwrap_err();
+    assert_eq!(code(&e), "attempt_completed");
+}
+
+#[test]
+fn abandon_reports_when_there_is_nothing_to_retire() {
+    let h = openai_harness();
+    let plan = h.plan_focus("steel_gate");
+    // unknown key
+    let e = h.engine.cancel(serde_json::from_value(json!({"idempotency_key": "k-never", "abandon": true})).unwrap()).unwrap_err();
+    assert_eq!(code(&e), "not_found");
+    // an attempt that failed cleanly is already closed
+    h.fixture.fail(Method::Post, "/v1/images/generations", TransportError::NotSent("no network".into()));
+    let _ = gen_with(&h, &plan, "k-failed");
+    let c = h.engine.cancel(serde_json::from_value(json!({"idempotency_key": "k-failed", "abandon": true})).unwrap()).unwrap();
+    assert_eq!(c["status"], "nothing_to_abandon", "{c}");
+    // abandon cannot be combined with reconcile, and needs an id
+    let e = h.engine.cancel(serde_json::from_value(json!({"idempotency_key": "k", "abandon": true, "reconcile": true})).unwrap()).unwrap_err();
+    assert_eq!(code(&e), "invalid_argument");
+    let e = h.engine.cancel(serde_json::from_value(json!({"abandon": true})).unwrap()).unwrap_err();
+    assert_eq!(code(&e), "invalid_argument");
+}
+
+#[test]
+fn a_second_crash_after_an_abandon_blocks_the_key_again() {
+    // the retry reuses the job id, so the earlier end entry must not hide the new unfinished intent
+    let (h, plan) = crashed_harness("k-twice");
+    h.engine.cancel(serde_json::from_value(json!({"idempotency_key": "k-twice", "abandon": true})).unwrap()).unwrap();
+    h.engine
+        .ledger
+        .append(
+            "job_intent",
+            Some("iron_pact.steel_gate"),
+            None,
+            json!({"job_id": "job-crashed", "idempotency_key": "k-twice", "asset_id": "iron_pact.steel_gate"}),
+        )
+        .unwrap();
+    assert_eq!(code(&gen_with(&h, &plan, "k-twice").unwrap_err()), "uncertain_previous_attempt");
+    let c = h.engine.cancel(serde_json::from_value(json!({"idempotency_key": "k-twice", "abandon": true})).unwrap()).unwrap();
+    assert_eq!(c["status"], "abandoned");
 }

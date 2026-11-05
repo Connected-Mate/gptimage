@@ -4,11 +4,15 @@ use imagegen_core::error::RetryClass;
 use imagegen_core::export;
 use imagegen_core::family::{Family, Group};
 use imagegen_core::naming::{self, asset_id};
-use imagegen_core::plan::{aspect_of, build_prompt, plan_path, GenerationPlan, Plan, PlanEstimate, PlanPaths, PlanRequest};
+use imagegen_core::plan::{
+    aspect_of, build_prompt_with_form, plan_path, FormPrecedence, GenerationPlan, Plan, PlanEstimate, PlanPaths, PlanRequest, StyleContribution,
+    StyleSelection,
+};
 use imagegen_core::records::{kind, RefSummary};
 use imagegen_core::refs::{self, LoadedRef, RefRole, ReferenceInput};
 use imagegen_core::reuse;
 use imagegen_core::style;
+use imagegen_core::style::{StyleProfile, StyleWhy};
 use imagegen_core::stylesrc;
 use imagegen_providers::types::{AlphaSupport, ImageRequest, ModelStatus};
 use serde_json::json;
@@ -49,11 +53,21 @@ impl Engine {
             }
         };
 
+        // only a GUI texture has kinds
+        if req.texture_kind.is_some() && req.family != Family::GuiTexture {
+            return Err(EngineError::invalid(format!("texture_kind is for gui_texture, not {}", req.family)));
+        }
+
         let style_profile = match &req.style {
             Some(name) => {
                 let s = style::load(&self.fs, name)?;
                 if !s.applies_to(req.family) {
-                    return Err(EngineError::invalid(format!("style '{name}' does not apply to {}", req.family)));
+                    let listed: Vec<&str> = s.families.iter().map(|f| f.as_str()).collect();
+                    return Err(EngineError::invalid(format!(
+                        "style '{name}' lists only these families: {}. {} is not one of them. Add it to the style's families, or empty the list to make the style available to any family",
+                        listed.join(", "),
+                        req.family
+                    )));
                 }
                 s.verify_references(&self.fs)?;
                 Some(s)
@@ -88,8 +102,9 @@ impl Engine {
         // skill's shelf, the mod's own assets, then vanilla. The tier is chosen from the files alone, so the
         // provider's limit (which depends on the model) only trims the list afterwards.
         let game = self.game_dir();
-        let pinned = self.pinned_style_for(req.family, style_profile.as_ref());
-        let mut sources = self.resolve_style(&profile, pinned.as_ref(), stylesrc::DEFAULT_SEND, false);
+        let applied = self.applied_style_for(req.family, style_profile.as_ref());
+        let pinned = applied.as_ref().map(|(s, _)| s.clone());
+        let mut sources = self.resolve_style(&profile, pinned.as_ref(), stylesrc::DEFAULT_SEND, false, req.texture_kind);
         let explicit_model = req.model.clone().or_else(|| style_profile.as_ref().and_then(|s| s.model.clone()));
         let explicit_refs = req.references.len();
         let wants_refs = explicit_refs > 0 || !sources.send_paths().is_empty();
@@ -97,6 +112,12 @@ impl Engine {
         let model_refs = |m: &str| provider.descriptor().model(m).map(|x| if x.supports_edit { usize::from(x.max_refs) } else { 0 }).unwrap_or(0);
         let cap = model_refs(&model_id).saturating_sub(explicit_refs).min(stylesrc::DEFAULT_SEND);
         sources.limit_send(cap, &format!("{provider_id} {model_id} takes at most {} reference images", model_refs(&model_id)));
+        // the caller's own style anchors show the form to match, and vanilla art beside them pulls the image back to
+        // the vanilla form
+        let caller_style = req.references.iter().any(|r| r.role == RefRole::StyleAnchor);
+        if caller_style {
+            sources.drop_tier(4, "the request sends its own style anchors");
+        }
         if explicit_model.is_none() && explicit_refs == 0 && sources.send_paths().is_empty() {
             model_id = provider.default_model(false);
         }
@@ -154,7 +175,26 @@ impl Engine {
         // finishing that needs the mod's templates is refused now, before anything is spent
         self.check_finishing_resources(imagegen_core::chain::recipe_of(&profile))?;
         let prompt_style = style_profile.as_ref().or(pinned.as_ref());
-        let prompt = build_prompt(&profile, ask, &brief, prompt_style, &loaded, transparent, sources.report.style_paragraph.as_deref());
+        // the mod's own references (tier 2 or 3) show the mod's form: it wins over the vanilla form the rules state
+        let mod_form_refs = sources.report.chosen.iter().any(|c| c.sent_to_provider && (c.tier == 2 || c.tier == 3));
+        let form = if caller_style {
+            FormPrecedence::CallerReferences
+        } else if mod_form_refs {
+            FormPrecedence::ModReferences
+        } else {
+            FormPrecedence::VanillaRule
+        };
+        // the measured paragraph describes the tier's images, which are not sent beside the caller's anchors when vanilla
+        let measured =
+            if caller_style && sources.report.chosen.iter().all(|c| !c.sent_to_provider) { None } else { sources.report.style_paragraph.as_deref() };
+        // a GUI texture's kind adds the kind's vanilla form to the prompt (the profile itself, and its hash, stay as
+        // they are)
+        let mut prompt_profile = profile.clone();
+        if let Some(kind) = req.texture_kind {
+            prompt_profile.imagegen.prompt.rules.insert(1, kind.form_rule().to_string());
+        }
+        let prompt = build_prompt_with_form(&prompt_profile, ask, &brief, prompt_style, &loaded, transparent, measured, form);
+        let style_selection = describe_selection(applied.as_ref(), &sources.report, form, req.family);
 
         let probe = ImageRequest {
             model: model_id.clone(),
@@ -196,10 +236,11 @@ impl Engine {
             if let ModelStatus::Deprecated { shutdown } = &model.status {
                 warnings.push(format!("model {model_id} is deprecated and shuts down on {shutdown}"));
             }
-            // the unit art recipes read a silhouette from a flat background themselves, so no alpha is needed there
+            // the unit art and line art recipes read the subject from a flat background themselves, so no alpha is
+            // needed there
             let keys_itself = matches!(
                 imagegen_core::chain::recipe_of(&profile),
-                imagegen_core::chain::Recipe::UnitCounter | imagegen_core::chain::Recipe::DivisionSymbol
+                imagegen_core::chain::Recipe::UnitCounter | imagegen_core::chain::Recipe::DivisionSymbol | imagegen_core::chain::Recipe::LineArt
             );
             if transparent && model.alpha == AlphaSupport::None && !keys_itself {
                 warnings.push(format!(
@@ -243,9 +284,13 @@ impl Engine {
             ));
         }
         if req.style.is_none() {
-            if let Some(p) = &pinned {
+            if let Some((p, why)) = &applied {
+                let because = match why {
+                    StyleWhy::Default => "it is marked default".to_string(),
+                    _ => format!("its families list names {}", req.family),
+                };
                 warnings.push(format!(
-                    "the project's pinned style '{}' for {} was applied automatically (references and style text)",
+                    "the project's pinned style '{}' for {} was applied automatically because {because} (references and style text)",
                     p.name, req.family
                 ));
             }
@@ -301,6 +346,7 @@ impl Engine {
                 .collect(),
             style: req.style.clone(),
             style_sources: Some(sources.report.clone()),
+            style_selection: Some(style_selection),
             style_sha256: match &req.style {
                 Some(n) => Some(imagegen_core::hashing::sha256_hex(&self.fs.read(&style::style_path(n)?, 256 * 1024)?)),
                 None => None,
@@ -401,6 +447,48 @@ impl Engine {
         }
         Ok(plan)
     }
+}
+
+/// What the plan says about the style it applied, what each source contributed and which form wins.
+fn describe_selection(
+    applied: Option<&(StyleProfile, StyleWhy)>,
+    report: &stylesrc::StyleReport,
+    form: FormPrecedence,
+    family: Family,
+) -> StyleSelection {
+    let (name, why) = match applied {
+        Some((s, why)) => (Some(s.name.clone()), *why),
+        None => (None, StyleWhy::None),
+    };
+    let detail = match (&name, why) {
+        (Some(n), StyleWhy::Explicit) => format!("style '{n}' was named in the request"),
+        (Some(n), StyleWhy::Default) => format!("style '{n}' is marked default, so it applies to {family} without being named"),
+        (Some(n), _) => format!("style '{n}' lists {family} in its families, so it applies without being named"),
+        (None, _) => "no style profile applies: none was named, and no profile is marked default or lists this family".to_string(),
+    };
+    let mut contributions: Vec<StyleContribution> = Vec::new();
+    for c in report.chosen.iter().filter(|c| c.sent_to_provider) {
+        let source = match (&name, c.tier) {
+            (Some(n), 1) => format!("style '{n}'"),
+            _ => stylesrc::Tier::ALL.iter().find(|t| t.number() == c.tier).map(|t| t.label().to_string()).unwrap_or_default(),
+        };
+        match contributions.iter_mut().find(|x| x.tier == c.tier) {
+            Some(x) => x.references.push(c.path.clone()),
+            None => contributions.push(StyleContribution { source, tier: c.tier, references: vec![c.path.clone()] }),
+        }
+    }
+    let form_note = match form {
+        FormPrecedence::ModReferences => {
+            "the style references come from the mod itself (tier 2 or 3): the prompt says their form and framing win over the vanilla form rule"
+                .to_string()
+        }
+        FormPrecedence::CallerReferences => {
+            "the request sends its own style anchors: the prompt says their form and framing win over the vanilla form rule, and no vanilla reference is sent beside them"
+                .to_string()
+        }
+        FormPrecedence::VanillaRule => "no mod reference (tier 2 or 3) is sent, so the family's vanilla form rule stands alone".to_string(),
+    };
+    StyleSelection { applied: name, why: why.as_str().to_string(), detail, contributions, form_precedence: form, form_note }
 }
 
 /// Convenience for tests and the CLI: a family by id string.

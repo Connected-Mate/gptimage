@@ -55,6 +55,11 @@ pub struct PlanRequest {
     /// Canvas for families that have none (`gui_texture`, `super_event`): the mod defines it.
     #[serde(default)]
     pub canvas: Option<[u32; 2]>,
+    /// The kind of a `gui_texture` (button, frame, panel, background): adds the kind's vanilla form to the prompt and
+    /// picks vanilla references of that kind. Refused for other families. Left out when unset, so plans made before
+    /// the field existed keep their hash.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub texture_kind: Option<crate::family::GuiTextureKind>,
 }
 
 /// The prompt a plan will send.
@@ -156,6 +161,9 @@ pub struct Plan {
     /// Where the automatic style references came from: tiers, chosen references with reasons, statistics.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub style_sources: Option<StyleReport>,
+    /// Which style was applied and why, what each source contributed and which form wins (new in 0.3.2).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub style_selection: Option<StyleSelection>,
     /// Estimate.
     pub estimate: PlanEstimate,
     /// Output paths.
@@ -166,6 +174,62 @@ pub struct Plan {
     pub approvals: Vec<String>,
     /// Warnings.
     pub warnings: Vec<String>,
+}
+
+/// The references one source contributed to a plan.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct StyleContribution {
+    /// `style 'name'` for a pinned style, else the tier name.
+    pub source: String,
+    /// Tier (1 to 4).
+    pub tier: u8,
+    /// Paths of the references this source sends to the provider.
+    pub references: Vec<String>,
+}
+
+/// Which form rule wins when the prompt states a vanilla form and the references show another.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum FormPrecedence {
+    /// The references come from the mod itself (tier 2 or 3): their form wins over the vanilla form rule.
+    ModReferences,
+    /// The request sends its own style anchors: their form wins over the vanilla form rule, and no vanilla reference
+    /// is sent beside them.
+    CallerReferences,
+    /// No mod reference is sent: the family's vanilla form rule stands alone.
+    VanillaRule,
+}
+
+impl FormPrecedence {
+    /// The sentence added to the prompt, or `None` when the vanilla rule stands alone.
+    pub fn prompt_line(self) -> Option<&'static str> {
+        match self {
+            FormPrecedence::ModReferences => Some(
+                "The reference images come from this mod. Match the form and framing of the mod's reference images; the vanilla form described under Requirements applies only where they do not show one.",
+            ),
+            FormPrecedence::CallerReferences => Some(
+                "The style anchor images were chosen for this image. Match their form, framing, materials and palette; the vanilla form described under Requirements applies only where they do not show one.",
+            ),
+            FormPrecedence::VanillaRule => None,
+        }
+    }
+}
+
+/// Which style a plan applied and why, what each source contributed, and which form wins.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub struct StyleSelection {
+    /// Name of the applied style profile, if any.
+    pub applied: Option<String>,
+    /// `explicit`, `default`, `family_list` or `none`.
+    pub why: String,
+    /// One sentence for a person.
+    pub detail: String,
+    /// References each source contributed (a pinned style and the tier that was used).
+    pub contributions: Vec<StyleContribution>,
+    /// Which form wins when references and the vanilla form rule disagree.
+    pub form_precedence: FormPrecedence,
+    /// One sentence for a person.
+    pub form_note: String,
 }
 
 impl Plan {
@@ -212,6 +276,22 @@ pub fn build_prompt(
     transparent: bool,
     measured_style: Option<&str>,
 ) -> PromptPlan {
+    build_prompt_with_form(profile, canvas, brief, style, refs, transparent, measured_style, FormPrecedence::VanillaRule)
+}
+
+/// [`build_prompt`] with the form precedence: when the references come from the mod itself, the prompt says their
+/// form wins over the vanilla form the family's rules state.
+#[allow(clippy::too_many_arguments)]
+pub fn build_prompt_with_form(
+    profile: &Profile,
+    canvas: [u32; 2],
+    brief: &str,
+    style: Option<&StyleProfile>,
+    refs: &[LoadedRef],
+    transparent: bool,
+    measured_style: Option<&str>,
+    form: FormPrecedence,
+) -> PromptPlan {
     let subst = |s: &str| s.replace("{w}", &canvas[0].to_string()).replace("{h}", &canvas[1].to_string());
     let mut text = format!("Create one Hearts of Iron IV {}: {}\n", profile.family.label(), brief.trim());
     text.push_str("\nRequirements:\n");
@@ -243,6 +323,9 @@ pub fn build_prompt(
         text.push_str("\nReference images, in the order attached:\n");
         for (i, r) in refs.iter().enumerate() {
             text.push_str(&format!("{}. {}\n", i + 1, r.role.phrase()));
+        }
+        if let Some(line) = form.prompt_line() {
+            text.push_str(&format!("{line}\n"));
         }
     }
     let mut negative: Vec<String> = profile.imagegen.prompt.negative.clone();
@@ -297,6 +380,7 @@ mod tests {
                 budget_usd: None,
                 quality: None,
                 canvas: None,
+                texture_kind: None,
             },
             asset_id: "iron.wall".into(),
             profile: ProfileRef { id: "focus".into(), hash: "h".into(), kit_sha256: None },
@@ -312,6 +396,7 @@ mod tests {
             style: None,
             style_sha256: None,
             style_sources: None,
+            style_selection: None,
             estimate: PlanEstimate {
                 usd_per_call: 0.006,
                 calls: 1,
@@ -381,6 +466,7 @@ mod tests {
             negative_rules: vec!["neon colours".into()],
             palette_notes: "earth tones".into(),
             families: vec![],
+            default: None,
             references: vec![],
             provider: None,
             model: None,

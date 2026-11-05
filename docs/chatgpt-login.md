@@ -2,7 +2,7 @@
 
 The ChatGPT-login provider makes images on your own ChatGPT plan, with no API key. Decision D-12a (HOI4 Factory, 2026-11-01) makes it a first-class local route:
 - It ships in every local build, with no feature flag, config entry or environment variable.
-- You sign in once in the browser, and the risk note is shown once.
+- You sign in once in the browser. The risk note is shown as information, and signing in accepts it. There is nothing to type.
 - Once you are signed in, it is the default local provider. An explicit `provider` in a plan still wins.
 - Documented API providers stay available: OpenAI API key, Gemini, fal and ComfyUI.
 - It is never part of hosted HOI4 Factory (see "Hosted deployments" below).
@@ -13,7 +13,9 @@ The ChatGPT-login provider makes images on your own ChatGPT plan, with no API ke
 hoi4-imagegen login
 ```
 
-1. **The risk note.** It is printed and you type `yes`. Acceptance is recorded once per user, in your own data folder, never in a project. A cloned mod therefore cannot accept it for you. `--accept-risk` skips the question in scripts.
+An agent or a setup tool can start the same sign-in with the MCP tool `hoi4.image_login`, with no terminal at all. It opens the browser and returns at once, and the sign-in finishes in the background.
+
+1. **The risk note.** It is printed in the terminal (or returned by `hoi4.image_login`), and the page the browser lands on after the sign-in sums it up. Signing in is the acceptance, so there is no question to answer (a maintainer decision of 2026-11-05 that replaced the typed `yes`). The acceptance is recorded once per user, in your own data folder, never in a project. `--accept-risk` is still accepted and does nothing.
 2. **The browser.** It opens OpenAI's sign-in page, and the address is also printed. This is an OAuth 2.0 authorization-code flow with PKCE against `auth.openai.com`, using the public client id of the official Codex CLI and a loopback redirect on `127.0.0.1:1455`. Your password is typed only into OpenAI's page.
 3. **The tokens.** They go to your operating system's credential store:
    - Windows: Credential Manager, service `hoi4-imagegen.chatgpt-login`, split across numbered entries because of Windows' size limit

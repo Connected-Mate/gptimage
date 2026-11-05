@@ -28,6 +28,7 @@ pub mod preview;
 pub mod process;
 pub mod review;
 pub mod validate;
+pub mod vanilla;
 
 /// How the process was started. The ChatGPT-login plugin refuses everything but `LocalStdio` and `Cli`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -203,6 +204,8 @@ pub struct Engine {
     pub sleeper: Arc<dyn Sleeper>,
     /// What the ChatGPT-login plugin gates said at start-up.
     pub plugin: crate::plugin::PluginReport,
+    /// Measured vanilla art per family and game folder, for the review's vanilla-match check and the preview.
+    pub(crate) vanilla_cache: vanilla::Cache,
 }
 
 impl Engine {
@@ -227,6 +230,7 @@ impl Engine {
             mode,
             sleeper: Arc::new(imagegen_providers::types::RealSleeper),
             plugin,
+            vanilla_cache: vanilla::Cache::default(),
         })
     }
 

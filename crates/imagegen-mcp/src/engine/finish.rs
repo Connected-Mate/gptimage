@@ -9,6 +9,7 @@
 
 use imagegen_core::chain::{Finisher, Recipe};
 use imagegen_core::error::RetryClass;
+use imagegen_core::family::Family;
 use imagegen_core::hashing::sha256_hex;
 use imagegen_core::pixels::{decode, DecodeLimits, Rgba};
 use imagegen_core::process::{apply, Op};
@@ -18,7 +19,7 @@ use imagegen_core::recipes::advisor::{advisor_card, AdvisorParams};
 use imagegen_core::recipes::derived;
 use imagegen_core::recipes::flags::flag_ladder;
 use imagegen_core::recipes::pillow::alpha_composite;
-use imagegen_core::recipes::portrait::{extract_portrait, CropChoice, FaceBox, FaceDetector};
+use imagegen_core::recipes::portrait::{extract_portrait_framed, CropChoice, FaceBox, FaceDetector, Framing};
 use imagegen_core::recipes::strip::build_strip;
 use serde_json::{json, Value};
 
@@ -284,7 +285,9 @@ impl Engine {
                     let net = imagegen_core::recipes::face::YuNet::from_onnx_bytes(&bytes)?;
                     (Box::new(net), json!({"path": rel, "sha256": sha256_hex(&bytes)}))
                 };
-                let made = extract_portrait(img, &*detector, portrait_crop).map_err(|e| {
+                // leader-type portraits are framed as close as vanilla's; the advisor card keeps the kit framing
+                let framing = if profile.family == Family::AdvisorCard { Framing::KIT } else { Framing::VANILLA_LEADER };
+                let made = extract_portrait_framed(img, &*detector, portrait_crop, framing).map_err(|e| {
                     EngineError::refused(
                         "portrait_crop_failed",
                         format!("the portrait crop failed: {e}. Pass portrait_crop [left, top, right, bottom] in source pixels to choose it by hand"),

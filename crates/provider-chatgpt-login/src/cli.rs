@@ -1,34 +1,40 @@
-//! `hoi4-imagegen login|status|logout` (also `hoi4-imagegen chatgpt-login <action>`): the only code that starts a
-//! sign-in.
+//! `hoi4-imagegen login|status|logout` (also `hoi4-imagegen chatgpt-login <action>`) and the MCP tool
+//! `hoi4.image_login`: the only code that starts a sign-in.
 //!
-//! Signing in is a deliberate act by the account holder. The risk note is shown once and must be accepted, the
-//! sign-in page opens in the user's browser (the address is also printed), the code arrives on 127.0.0.1, and the
-//! tokens go to the operating system's credential store. Nothing here runs unless the user types the command.
+//! Signing in is a deliberate act by the account holder in their own browser. The risk note is shown as information
+//! (in the terminal, and its main points on the page the browser lands on), and signing in is the acceptance: there
+//! is no question to answer (maintainer request of 2026-11-05, replacing the typed `yes` of D-12a). The code arrives
+//! on 127.0.0.1 and the tokens go to the operating system's credential store.
 
-use std::io::{BufRead, IsTerminal};
+use std::net::TcpListener;
 use std::sync::Arc;
 use std::time::Duration;
 
 use imagegen_core::config::EnvSource;
-use imagegen_core::hashing::Clock;
+use imagegen_core::hashing::{Clock, SystemClock};
 use imagegen_providers::transport::{send, HostPolicy, HttpTransport, UreqTransport};
 use imagegen_providers::types::{CallContext, CancelToken, RealSleeper};
 
 use crate::consent::{self, RISK_NOTE};
-use crate::oauth::{account_id, authorize_url, bind_listener, exchange_request, expiry_ms, make_pkce, make_state, parse_tokens, wait_for_callback};
+use crate::oauth::{
+    account_id, authorize_url, bind_listener, exchange_request, expiry_ms, make_pkce, make_state, parse_tokens, wait_for_callback, Pkce,
+};
 use crate::provider::{describe, ChatGptLoginProvider, CheckOutcome};
 use crate::route::Route;
 use crate::store::{CredentialStore, Credentials};
 use crate::{evaluate_gates, PluginMode, CALLBACK_PORT, HOSTS};
 
-/// Run a sign-in action. `accept_risk` is the `--accept-risk` flag; without it an interactive terminal is asked.
-/// Returns the text to show the user.
-pub fn run(action: &str, env: &dyn EnvSource, clock: &dyn Clock, accept_risk: bool) -> Result<String, String> {
-    run_with(action, env, clock, accept_risk, &mut ask_yes)
+/// How long a sign-in waits for the browser.
+pub const SIGN_IN_TIMEOUT: Duration = Duration::from_secs(300);
+
+/// Run a sign-in action and return the text to show the user. `_accept_risk` is the old `--accept-risk` flag, kept
+/// so scripts that pass it still work: there is no longer a question for it to skip.
+pub fn run(action: &str, env: &dyn EnvSource, clock: &dyn Clock, _accept_risk: bool) -> Result<String, String> {
+    run_with(action, env, clock)
 }
 
-/// [`run`] with the terminal question injected (tests).
-pub fn run_with(action: &str, env: &dyn EnvSource, clock: &dyn Clock, accept_risk: bool, ask: &mut dyn FnMut() -> bool) -> Result<String, String> {
+/// [`run`] without the old flag.
+pub fn run_with(action: &str, env: &dyn EnvSource, clock: &dyn Clock) -> Result<String, String> {
     evaluate_gates(PluginMode::Cli)?;
     let store = CredentialStore::for_environment(env)?;
     match action {
@@ -46,20 +52,111 @@ pub fn run_with(action: &str, env: &dyn EnvSource, clock: &dyn Clock, accept_ris
         }
         "login" => {
             if !consent::accepted(env) {
-                eprintln!("{RISK_NOTE}");
-                let ok = accept_risk || ask();
-                if !ok {
-                    return Err("sign-in cancelled: the risk note was not accepted (type yes, or pass --accept-risk)".into());
-                }
-                consent::record(env, &clock.now_rfc3339())?;
+                eprintln!("{RISK_NOTE}\nSigning in accepts this note. There is nothing to type: the browser opens now.\n");
             }
-            login(&store, &UreqTransport::new(), clock, CALLBACK_PORT, Duration::from_secs(300), &mut |url| {
+            let text = login(&store, &UreqTransport::new(), clock, CALLBACK_PORT, SIGN_IN_TIMEOUT, &mut |url| {
                 eprintln!("Sign in with your own ChatGPT account in the browser. If it does not open, visit:\n\n{url}\n");
                 open_browser(url);
-            })
+            })?;
+            consent::record(env, &clock.now_rfc3339())?;
+            Ok(text)
         }
         other => Err(format!("unknown action '{other}': use login, status, status-check or logout")),
     }
+}
+
+/// Start a sign-in from a long-running local host (the MCP server, which HOI4 Mod Setup or an agent can ask): open
+/// the browser and return at once with the address, while a background thread waits for the callback, stores the
+/// tokens and records the note as accepted. A second start while one is waiting fails, because the callback port is
+/// taken. `open` opens the address (the default browser in production).
+pub fn start_login(env: &dyn EnvSource, mode: PluginMode, open: &mut dyn FnMut(&str)) -> Result<StartedLogin, String> {
+    evaluate_gates(mode)?;
+    let store = CredentialStore::for_environment(env)?;
+    let pending = begin(CALLBACK_PORT)?;
+    let url = pending.url.clone();
+    let consent_file = consent::record_file(env);
+    open(&url);
+    std::thread::spawn(move || {
+        let clock = SystemClock;
+        match finish(pending, &store, &UreqTransport::new(), &clock, SIGN_IN_TIMEOUT) {
+            Ok(_) => {
+                if let Some(file) = consent_file {
+                    if let Err(e) = consent::record_to(&file, &clock.now_rfc3339()) {
+                        eprintln!("hoi4-imagegen: signed in, but the risk-note record could not be written: {e}");
+                    }
+                }
+                eprintln!("hoi4-imagegen: signed in to ChatGPT");
+            }
+            Err(e) => eprintln!("hoi4-imagegen: the browser sign-in did not finish: {e}"),
+        }
+    });
+    Ok(StartedLogin { url, timeout_secs: SIGN_IN_TIMEOUT.as_secs() })
+}
+
+/// What [`start_login`] returns.
+#[derive(Debug, Clone)]
+pub struct StartedLogin {
+    /// The sign-in address the browser was sent to.
+    pub url: String,
+    /// How long the background sign-in waits for the browser.
+    pub timeout_secs: u64,
+}
+
+/// A sign-in waiting for the browser: the listener is bound and the address is ready.
+pub struct PendingLogin {
+    listener: TcpListener,
+    pkce: Pkce,
+    state: String,
+    port: u16,
+    /// The address to open.
+    pub url: String,
+}
+
+/// Bind the callback listener and build the sign-in address.
+pub fn begin(port: u16) -> Result<PendingLogin, String> {
+    let pkce = make_pkce()?;
+    let state = make_state()?;
+    let listener = bind_listener(port).map_err(|e| {
+        if port == CALLBACK_PORT {
+            format!("{e} (another sign-in may already be waiting for the browser: finish or close it first)")
+        } else {
+            e
+        }
+    })?;
+    let port = listener.local_addr().map_err(|e| e.to_string())?.port();
+    let url = authorize_url(&pkce.challenge, &state, port);
+    Ok(PendingLogin { listener, pkce, state, port, url })
+}
+
+/// Wait for the browser, exchange the code and store the tokens.
+pub fn finish(
+    p: PendingLogin,
+    store: &CredentialStore,
+    transport: &dyn HttpTransport,
+    clock: &dyn Clock,
+    timeout: Duration,
+) -> Result<String, String> {
+    let code = wait_for_callback(&p.listener, &p.state, timeout)?;
+    // The code exchange is a request to OpenAI like any other: one at a time on this machine. A successful sign-in
+    // also clears a recorded server revocation, so the route works again.
+    let route = Route::new(store.state_dir());
+    let _guard = route.acquire(&CancelToken::new(), &RealSleeper).map_err(|e| e.message)?;
+    let resp = send(transport, &HostPolicy::api(&HOSTS), &exchange_request(&code, &p.pkce.verifier, p.port)).map_err(|e| e.message)?;
+    if resp.status != 200 {
+        return Err(format!("the code exchange failed with HTTP {}", resp.status));
+    }
+    let tokens = parse_tokens(&resp.body)?;
+    let now_ms = (clock.now_secs().max(0) as u64) * 1000;
+    let creds = Credentials {
+        account_id: account_id(&tokens.access),
+        expires_ms: tokens.expires_in.map(|s| now_ms + s * 1000).or_else(|| expiry_ms(&tokens.access)),
+        access: tokens.access,
+        refresh: tokens.refresh,
+        last_refresh: clock.now_rfc3339(),
+    };
+    store.save(&creds)?;
+    route.clear()?;
+    Ok(format!("{}\nstored in: {}", describe(&creds), store.location()))
 }
 
 /// `login-status`: what is stored, and whether the server is known to have revoked it. Makes no network call.
@@ -87,17 +184,8 @@ pub fn status_check(store: &CredentialStore, provider: &ChatGptLoginProvider, ct
     }
 }
 
-fn ask_yes() -> bool {
-    if !std::io::stdin().is_terminal() {
-        return false;
-    }
-    eprint!("Type yes to accept and continue: ");
-    let mut line = String::new();
-    std::io::stdin().lock().read_line(&mut line).is_ok() && line.trim().eq_ignore_ascii_case("yes")
-}
-
 /// Best effort: open the address in the default browser. The address is always printed as well.
-fn open_browser(url: &str) {
+pub fn open_browser(url: &str) {
     let result = if cfg!(windows) {
         std::process::Command::new("rundll32").args(["url.dll,FileProtocolHandler", url]).spawn()
     } else if cfg!(target_os = "macos") {
@@ -119,32 +207,9 @@ pub fn login(
     timeout: Duration,
     show_url: &mut dyn FnMut(&str),
 ) -> Result<String, String> {
-    let pkce = make_pkce()?;
-    let state = make_state()?;
-    let listener = bind_listener(port)?;
-    let actual_port = listener.local_addr().map_err(|e| e.to_string())?.port();
-    show_url(&authorize_url(&pkce.challenge, &state, actual_port));
-    let code = wait_for_callback(&listener, &state, timeout)?;
-    // The code exchange is a request to OpenAI like any other: one at a time on this machine. A successful sign-in
-    // also clears a recorded server revocation, so the route works again.
-    let route = Route::new(store.state_dir());
-    let _guard = route.acquire(&CancelToken::new(), &RealSleeper).map_err(|e| e.message)?;
-    let resp = send(transport, &HostPolicy::api(&HOSTS), &exchange_request(&code, &pkce.verifier, actual_port)).map_err(|e| e.message)?;
-    if resp.status != 200 {
-        return Err(format!("the code exchange failed with HTTP {}", resp.status));
-    }
-    let tokens = parse_tokens(&resp.body)?;
-    let now_ms = (clock.now_secs().max(0) as u64) * 1000;
-    let creds = Credentials {
-        account_id: account_id(&tokens.access),
-        expires_ms: tokens.expires_in.map(|s| now_ms + s * 1000).or_else(|| expiry_ms(&tokens.access)),
-        access: tokens.access,
-        refresh: tokens.refresh,
-        last_refresh: clock.now_rfc3339(),
-    };
-    store.save(&creds)?;
-    route.clear()?;
-    Ok(format!("{}\nstored in: {}", describe(&creds), store.location()))
+    let pending = begin(port)?;
+    show_url(&pending.url);
+    finish(pending, store, transport, clock, timeout)
 }
 
 #[cfg(test)]
@@ -245,9 +310,9 @@ mod tests {
         let env = MapEnv::from_pairs(&[(crate::store::PATH_ENV, file.as_str()), ("APPDATA", home.as_str()), ("HOME", home.as_str())]);
         let store = CredentialStore::at(&file);
         Route::new(store.state_dir()).acquire(&CancelToken::new(), &RealSleeper).unwrap().record_revoked(1_793_000_000, 401, b"", "generation");
-        assert!(run_with("status", &env, &FixedClock(0), false, &mut || false).unwrap().contains("signed out by the server"));
-        run_with("logout", &env, &FixedClock(0), false, &mut || false).unwrap();
-        assert!(run_with("status", &env, &FixedClock(0), false, &mut || false).unwrap().contains("not signed in"));
+        assert!(run_with("status", &env, &FixedClock(0)).unwrap().contains("signed out by the server"));
+        run_with("logout", &env, &FixedClock(0)).unwrap();
+        assert!(run_with("status", &env, &FixedClock(0)).unwrap().contains("not signed in"));
     }
 
     #[test]
@@ -255,12 +320,12 @@ mod tests {
         assert!(RISK_NOTE.contains("revoke") && RISK_NOTE.contains("every Codex sign-in") && RISK_NOTE.contains("signs you out of Codex"));
         assert!(RISK_NOTE.contains("one request at a time"));
         assert!(RISK_NOTE.contains(&format!("{} seconds", crate::route::MIN_GAP_SECS)));
-        let text = run_with("risk-note", &MapEnv::from_pairs(&[(crate::store::PATH_ENV, "x.json")]), &FixedClock(0), false, &mut || false).unwrap();
+        let text = run_with("risk-note", &MapEnv::from_pairs(&[(crate::store::PATH_ENV, "x.json")]), &FixedClock(0)).unwrap();
         assert_eq!(text, RISK_NOTE, "`login-risk-note` prints the same note `login` shows");
     }
 
     #[test]
-    fn login_without_accepting_the_note_is_cancelled_and_status_logout_work() {
+    fn status_and_logout_work_without_a_sign_in() {
         let base = Path::new(env!("CARGO_MANIFEST_DIR")).join("..").join("..").join(".work");
         std::fs::create_dir_all(&base).unwrap();
         let dir = tempfile::Builder::new().prefix("s").tempdir_in(base).unwrap();
@@ -273,18 +338,15 @@ mod tests {
             ("XDG_DATA_HOME", home.as_str()),
         ]);
         let clock = FixedClock(0);
-        assert!(
-            run_with("login", &env, &clock, false, &mut || false).unwrap_err().contains("not accepted"),
-            "a test process has no terminal, so the note cannot be accepted silently"
-        );
+        // `login` itself opens a real browser, so the flow is tested through `login` with a fixture endpoint below
         assert!(!crate::consent::accepted(&env));
-        assert!(run_with("status", &env, &clock, false, &mut || false).unwrap().contains("not signed in"));
+        assert!(run_with("status", &env, &clock).unwrap().contains("not signed in"));
         CredentialStore::at(&file)
             .save(&Credentials { access: "a".into(), refresh: None, account_id: Some("acct".into()), expires_ms: None, last_refresh: "t".into() })
             .unwrap();
-        assert!(run_with("status", &env, &clock, false, &mut || false).unwrap().contains("acct"));
-        assert!(run_with("logout", &env, &clock, false, &mut || false).unwrap().contains("signed out"));
-        assert!(run_with("logout", &env, &clock, false, &mut || false).unwrap().contains("nothing"));
-        assert!(run_with("bogus", &env, &clock, false, &mut || false).is_err());
+        assert!(run_with("status", &env, &clock).unwrap().contains("acct"));
+        assert!(run_with("logout", &env, &clock).unwrap().contains("signed out"));
+        assert!(run_with("logout", &env, &clock).unwrap().contains("nothing"));
+        assert!(run_with("bogus", &env, &clock).is_err());
     }
 }

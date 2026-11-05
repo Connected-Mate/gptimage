@@ -11,6 +11,7 @@ use std::collections::BTreeMap;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+use crate::family::Family;
 use crate::pixels::Rgba;
 use crate::resize::resize_lanczos3;
 
@@ -557,6 +558,45 @@ pub fn aggregate(items: &[&Analysis]) -> StyleStats {
 /// A short style paragraph derived only from the measured values. `subject` says what was measured
 /// (for example `the mod's existing national focus icon art`).
 pub fn style_paragraph(subject: &str, s: &StyleStats) -> String {
+    style_paragraph_for(subject, s, None)
+}
+
+/// Words a line-art paragraph never uses: they describe shaded bodies, which a line drawing has none of.
+pub const SHADING_WORDS: &[&str] = &["shad", "surface", "texture", "fill"];
+
+/// [`style_paragraph`] for a family whose processing fixes part of its look, so the paragraph never contradicts the
+/// family's form rule:
+///
+/// * `special_project_icon` is redrawn as line art: the paragraph speaks of line weight, line colour and empty
+///   interiors, and never of shading or surfaces (no word of [`SHADING_WORDS`]).
+/// * `raid` is recoloured in vanilla's gold gradient with a black outline, and `doctrine` gets black units with a pale
+///   outline and glow: the paragraph says so instead of describing the references' outline and surfaces, which the
+///   processing replaces.
+pub fn style_paragraph_for(subject: &str, s: &StyleStats, family: Option<Family>) -> String {
+    let covered = format!("about {:.0}% of the canvas covered by the subject", s.alpha_coverage * 100.0);
+    match family {
+        Some(Family::SpecialProjectIcon) => {
+            let colour = s.palette.first().map_or_else(|| "white".to_string(), |c| c.name.clone());
+            return format!(
+                "Match {subject}: line art only, thin {colour} lines about one pixel wide and partly transparent, so they read pale; the outline and a few inner lines carry the drawing and every interior stays empty; about {:.0}% of the canvas inked (measured on {} images).",
+                s.alpha_coverage * 100.0,
+                s.images
+            );
+        }
+        Some(Family::Raid) => {
+            return format!(
+                "Match {subject}: one bold pictogram with clear light and dark details; the tool gives it vanilla's gold gradient, pale gold at the top to brown at the bottom, and the black outline on its edge; {covered} (measured on {} images).",
+                s.images
+            );
+        }
+        Some(Family::Doctrine) => {
+            return format!(
+                "Match {subject}: flat unit silhouettes grouped into one emblem with bright orange or yellow accents; the tool fills the units black and adds the pale outline and glow; {covered} (measured on {} images).",
+                s.images
+            );
+        }
+        _ => {}
+    }
     let sat = match s.saturation.mean {
         x if x < 0.18 => "muted, low-saturation",
         x if x < 0.38 => "moderately muted",
@@ -600,7 +640,7 @@ pub fn style_paragraph(subject: &str, s: &StyleStats) -> String {
         .to_string(),
     );
     if s.alpha_coverage < 0.98 {
-        parts.push(format!("about {:.0}% of the canvas covered by the subject", s.alpha_coverage * 100.0));
+        parts.push(covered);
     }
     format!("Match {subject}: {} (measured on {} images).", parts.join("; "), s.images)
 }
@@ -755,6 +795,26 @@ mod tests {
         let far = model.check(&rows(40.0)[3]);
         assert!(far.drifted && far.z_rms > model.threshold);
         assert_eq!(far.worst.len(), 3);
+    }
+
+    /// A special project paragraph speaks of lines and empty interiors, never of shading or surfaces, even when the
+    /// measured references are smooth shaded bodies (a 0.3.1 plan said "smooth, softly shaded surfaces" right after a
+    /// form rule asking for line art with no shading). Raid and doctrine paragraphs describe their processed look.
+    #[test]
+    fn line_art_and_processed_families_get_paragraphs_that_agree_with_their_form() {
+        let smooth = aggregate(&[&analyse(&icon([200, 200, 200], false)).unwrap(), &analyse(&icon([190, 190, 190], false)).unwrap()]);
+        assert!(style_paragraph("x", &smooth).contains("softly shaded"), "the generic paragraph describes the surfaces");
+        let line = style_paragraph_for("vanilla special project icon art", &smooth, Some(Family::SpecialProjectIcon));
+        let lower = line.to_ascii_lowercase();
+        assert!(lower.contains("line art") && lower.contains("one pixel") && lower.contains("interior stays empty"), "{line}");
+        for w in SHADING_WORDS {
+            assert!(!lower.contains(w), "'{w}' in {line}");
+        }
+        let raid = style_paragraph_for("x", &smooth, Some(Family::Raid));
+        assert!(raid.contains("gold gradient") && raid.contains("black outline") && !raid.contains("shaded"), "{raid}");
+        let doctrine = style_paragraph_for("x", &smooth, Some(Family::Doctrine));
+        assert!(doctrine.contains("units black") && doctrine.contains("glow") && !doctrine.contains("shaded"), "{doctrine}");
+        assert_eq!(style_paragraph_for("x", &smooth, Some(Family::Focus)), style_paragraph("x", &smooth));
     }
 
     #[test]

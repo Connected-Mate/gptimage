@@ -104,3 +104,22 @@ fn hosted_mode_can_never_select_it_even_signed_in_and_asked_for() {
     let err = plan(&e, None).unwrap_err();
     assert!(!err.message.is_empty());
 }
+
+#[test]
+fn the_login_tool_reports_an_existing_sign_in_and_is_refused_hosted() {
+    // signed in: nothing is opened and no port is bound
+    let (_d, e) = open("", RunMode::LocalStdio, true, &[]);
+    let v = e.login().unwrap();
+    assert_eq!(v["status"], "already_signed_in");
+    assert!(v["state"].as_str().unwrap().contains("signed in"));
+    // hosted: refused before anything else, signed in or not
+    for signed_in in [true, false] {
+        let (_d, e) = open("", RunMode::Hosted, signed_in, &[]);
+        let err = e.login().unwrap_err();
+        assert_eq!(err.code, "login_unavailable");
+        assert!(err.message.contains("D-12a"), "{}", err.message);
+    }
+    // the status line names the tool that signs in
+    let (_d, e) = open("", RunMode::LocalStdio, false, &[]);
+    assert!(e.status()["chatgpt_login"]["state"].as_str().unwrap().contains("hoi4.image_login"));
+}

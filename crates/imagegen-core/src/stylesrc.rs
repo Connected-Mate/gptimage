@@ -22,7 +22,7 @@ use std::path::{Path, PathBuf};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use crate::family::Family;
+use crate::family::{Family, GuiTextureKind};
 use crate::fsio::{display_path, read_limited, ProjectFs};
 use crate::hashing::sha256_hex;
 use crate::pixels::{decode, DecodeLimits};
@@ -176,6 +176,14 @@ impl Resolved {
         self.report.chosen.iter().filter(|c| c.sent_to_provider).map(|c| c.path.clone()).collect()
     }
 
+    /// Mark every sent reference of `tier` as not sent.
+    pub fn drop_tier(&mut self, tier: u8, why: &str) {
+        for c in self.report.chosen.iter_mut().filter(|c| c.sent_to_provider && c.tier == tier) {
+            c.sent_to_provider = false;
+            c.reason = format!("{} (not sent: {why})", c.reason);
+        }
+    }
+
     /// Mark all but the first `cap` sent references as not sent.
     pub fn limit_send(&mut self, cap: usize, why: &str) {
         let mut sent = 0usize;
@@ -209,6 +217,9 @@ pub struct SourceCtx<'a> {
     pub max_send: usize,
     /// Look at every tier, not only down to the first usable one.
     pub scan_all: bool,
+    /// The kind of a `gui_texture` (button, frame, panel, background): it picks the vanilla references. Without
+    /// it a GUI texture has no automatic reference.
+    pub gui_kind: Option<GuiTextureKind>,
 }
 
 // ---- family tables ----
@@ -220,10 +231,14 @@ struct Dir {
     not_prefix: &'static [&'static str],
     not_contains: &'static [&'static str],
     not_suffix: &'static [&'static str],
+    contains: &'static [&'static str],
+    suffixes: &'static [&'static str],
+    /// Smallest width and height a file must have (0: any). Read from the header.
+    min_side: u32,
 }
 
 fn dir(path: &'static str, recursive: bool) -> Dir {
-    Dir { path, recursive, prefixes: &[], not_prefix: &[], not_contains: &[], not_suffix: &[] }
+    Dir { path, recursive, prefixes: &[], not_prefix: &[], not_contains: &[], not_suffix: &[], contains: &[], suffixes: &[], min_side: 0 }
 }
 
 impl Dir {
@@ -243,8 +258,22 @@ impl Dir {
         self.not_suffix = p;
         self
     }
+    fn has(mut self, p: &'static [&'static str]) -> Dir {
+        self.contains = p;
+        self
+    }
+    fn end(mut self, p: &'static [&'static str]) -> Dir {
+        self.suffixes = p;
+        self
+    }
+    fn min(mut self, side: u32) -> Dir {
+        self.min_side = side;
+        self
+    }
     fn accepts(&self, stem: &str) -> bool {
         (self.prefixes.is_empty() || self.prefixes.iter().any(|p| stem.starts_with(p)))
+            && (self.contains.is_empty() || self.contains.iter().any(|p| stem.contains(p)))
+            && (self.suffixes.is_empty() || self.suffixes.iter().any(|p| stem.ends_with(p)))
             && !self.not_prefix.iter().any(|p| stem.starts_with(p))
             && !self.not_contains.iter().any(|p| stem.contains(p))
             && !self.not_suffix.iter().any(|p| stem.ends_with(p))
@@ -298,10 +327,24 @@ pub fn shelf_folder(f: Family) -> Option<&'static str> {
     })
 }
 
-/// Texture folders (game-relative, also used inside a mod) and file-name rules of a family.
-fn texture_dirs(f: Family) -> Vec<Dir> {
+/// Texture folders (game-relative, also used inside a mod) and file-name rules of a family. Each family's rules
+/// keep to the files that show its one vanilla form (measured on HOI4 1.19.4.1): commander traits leave out the
+/// operative traits (a shield plaque without a ribbon) and the placeholders, the operation phase icon and picture keep
+/// to their own sizes, and a GUI texture takes the files of its kind.
+fn texture_dirs(f: Family, gui_kind: Option<GuiTextureKind>) -> Vec<Dir> {
     use Family::*;
     match f {
+        GuiTexture => match gui_kind {
+            None => vec![],
+            // 34 files: rounded bevelled plates
+            Some(GuiTextureKind::Button) => vec![dir("gfx/interface", false).pre(&["button_"]), dir("gfx/interface/buttons", false)],
+            // 50 files: borders with an empty middle, without the multi-frame strips
+            Some(GuiTextureKind::Frame) => vec![dir("gfx/interface", false).has(&["_frame"]).not_has(&["frames", "frame_bg"])],
+            // 48 files: the stretchable window and dialog plates
+            Some(GuiTextureKind::Panel) => vec![dir("gfx/interface/tiles", false).pre(&["tiled_"])],
+            // 71 files: whole window backgrounds of at least 256 px a side
+            Some(GuiTextureKind::Background) => vec![dir("gfx/interface", false).end(&["_bg"]).min(256)],
+        },
         Focus => vec![dir("gfx/interface/goals", true).pre(&["goal", "focus"]).not_has(&["untitl"])],
         IdeaSpirit => vec![dir("gfx/interface/ideas", true).pre(&["idea_"])],
         IdeaConcern => vec![dir("gfx/interface/ideas", true)],
@@ -314,12 +357,16 @@ fn texture_dirs(f: Family) -> Vec<Dir> {
         MioDepartment => vec![dir("gfx/interface/military_industrial_organization/department_icons", true)],
         MioTrait => vec![dir("gfx/interface/military_industrial_organization/trait_icons", true)],
         MioPolicy => vec![dir("gfx/interface/military_industrial_organization/policy_icons", true)],
-        BopSide => vec![dir("gfx/interface/bop", true)],
+        // the base side is a greyscale portrait or bust; the _improved and _max variants are its coloured, stronger states
+        BopSide => vec![dir("gfx/interface/bop", true).not_has(&["_improved", "rubble"]).not_end(&["_max"])],
         Medal => vec![dir("gfx/interface/medals", true)],
         AgencyUpgrade => vec![dir("gfx/interface/operatives/icons", true)],
         AgencyLogo => vec![dir("gfx/interface/operatives/agencies", true)],
-        OperationIcon => vec![dir("gfx/interface/operations", true)],
-        CommanderTrait => vec![dir("gfx/interface/traits", false).pre(&["trait_"])],
+        // the 59x58 phase icons (phases_small); the 85x85 and 48x48 operation icons are a different, coloured form
+        OperationIcon => vec![dir("gfx/interface/operations", true).pre(&["phase_"])],
+        CommanderTrait => {
+            vec![dir("gfx/interface/traits", false).pre(&["trait_"]).not_pre(&["trait_operative_", "trait_add_new", "trait_unknown"])]
+        }
         PersonalTrait => vec![dir("gfx/interface/traits/personal", true)],
         Doctrine => vec![dir("gfx/interface/doctrines", true).pre(&["doctrine_"])],
         ReportEvent => vec![dir("gfx/event_pictures", true).pre(&["report_event"])],
@@ -337,7 +384,17 @@ fn texture_dirs(f: Family) -> Vec<Dir> {
         Building => vec![dir("gfx/interface/buildings", true)],
         FactionLogo => vec![dir("gfx/interface/factions/faction_logos", true).not_end(&["_miniature"])],
         ModifierStatIcon => vec![dir("gfx/interface/modifiers", true).pre(&["modifier_"])],
-        SuperEvent | GuiTexture | AnimBlendGlow | AnimBlendKeyframes | AnimScroll | AnimSpin => vec![],
+        SuperEvent | AnimBlendGlow | AnimBlendKeyframes | AnimScroll | AnimSpin => vec![],
+    }
+}
+
+/// The strip sizes whose files show a family's one form, where the family accepts other sizes too. A landmark's
+/// 64x64 frames are painted miniatures, its 32x32 frames flat orange pictograms, so the references keep to the
+/// 128x64 strips the family generates.
+fn reference_sizes(f: Family) -> Option<&'static [[u32; 2]]> {
+    match f {
+        Family::Building => Some(&[[128, 64]]),
+        _ => None,
     }
 }
 
@@ -417,13 +474,21 @@ fn scan_dirs(base: &Path, dirs: &[Dir], sizes: &[[u32; 2]], exts: &[&str]) -> Ve
         let mut found = Vec::new();
         walk(&base.join(d.path), d.recursive, 0, &mut budget, &mut found);
         for p in found {
-            if exts.contains(&ext_of(&p).as_str()) && d.accepts(&stem_of(&p)) && size_ok(&p, sizes) && !files.contains(&p) {
+            let big_enough = d.min_side == 0 || header_size(&p).is_some_and(|s| s[0] >= d.min_side && s[1] >= d.min_side);
+            if exts.contains(&ext_of(&p).as_str()) && d.accepts(&stem_of(&p)) && big_enough && size_ok(&p, sizes) && !files.contains(&p) {
                 files.push(p);
             }
         }
     }
     files.sort();
     files
+}
+
+/// The family's vanilla texture files in the installed game, limited to `sizes` (empty: any size), sorted by path.
+/// The same folders and name rules as the vanilla style tier, so the review's vanilla-match check and the style
+/// sources agree on what a family's vanilla art is.
+pub fn vanilla_files(game: &Path, family: Family, sizes: &[[u32; 2]]) -> Vec<PathBuf> {
+    scan_dirs(game, &texture_dirs(family, None), sizes, &RASTER)
 }
 
 fn unify(p: &str) -> String {
@@ -567,10 +632,14 @@ pub fn resolve(ctx: &SourceCtx) -> Resolved {
     let mut pinned_small: Vec<Cand> = Vec::new();
 
     let effective_sizes = ctx.profile.accepted_strips();
-    let mut vanilla_sizes = ctx.builtin.map(|b| b.accepted_strips()).unwrap_or_default();
-    if vanilla_sizes.is_empty() {
-        vanilla_sizes = effective_sizes.clone();
-    }
+    // a family whose canvas the mod defines takes vanilla references of any size; a family with several accepted
+    // sizes of different forms takes references of its one form only
+    let vanilla_sizes: Vec<[u32; 2]> = match (reference_sizes(family), ctx.builtin) {
+        (Some(form), _) => form.to_vec(),
+        (None, Some(b)) if b.needs_mod_canvas() => Vec::new(),
+        (None, Some(b)) if !b.accepted_strips().is_empty() => b.accepted_strips(),
+        _ => effective_sizes.clone(),
+    };
 
     for tier in Tier::ALL {
         let mut summary =
@@ -610,9 +679,11 @@ pub fn resolve(ctx: &SourceCtx) -> Resolved {
                     }
                     Some(shelf) => {
                         let mut sizes = vanilla_sizes.clone();
-                        for s in &effective_sizes {
-                            if !sizes.contains(s) {
-                                sizes.push(*s);
+                        if reference_sizes(family).is_none() && !sizes.is_empty() {
+                            for s in &effective_sizes {
+                                if !sizes.contains(s) {
+                                    sizes.push(*s);
+                                }
                             }
                         }
                         let mut files = Vec::new();
@@ -641,7 +712,7 @@ pub fn resolve(ctx: &SourceCtx) -> Resolved {
                 }
             }
             Tier::ModAssets => {
-                let dirs: Vec<Dir> = texture_dirs(family).into_iter().filter(|d| ctx.fs.resolve(d.path).is_ok()).collect();
+                let dirs: Vec<Dir> = texture_dirs(family, ctx.gui_kind).into_iter().filter(|d| ctx.fs.resolve(d.path).is_ok()).collect();
                 let mut files = scan_dirs(ctx.fs.root(), &dirs, &effective_sizes, &RASTER);
                 for tex in registered_textures(ctx.fs, ctx.profile) {
                     if let Ok(abs) = ctx.fs.resolve(&tex) {
@@ -662,8 +733,11 @@ pub fn resolve(ctx: &SourceCtx) -> Resolved {
                     vec![]
                 }
                 Some(game) => {
-                    let list = game_cands(scan_dirs(game, &texture_dirs(family), &vanilla_sizes, &RASTER));
-                    if list.is_empty() {
+                    let list = game_cands(scan_dirs(game, &texture_dirs(family, ctx.gui_kind), &vanilla_sizes, &RASTER));
+                    if family == Family::GuiTexture && ctx.gui_kind.is_none() {
+                        summary.note =
+                            "a GUI texture takes vanilla references by its kind: pass texture_kind (button, frame, panel or background)".into();
+                    } else if list.is_empty() {
                         summary.note = "the game folder has no vanilla art of this family".into();
                     }
                     list
@@ -789,7 +863,7 @@ pub fn resolve(ctx: &SourceCtx) -> Resolved {
         }
         let items: Vec<&Analysis> = stats_idx.iter().map(|&i| &pool[i].analysis).collect();
         let stats = styledesc::aggregate(&items);
-        paragraph = Some(styledesc::style_paragraph(&subject_phrase(tier, family, ctx.pinned), &stats));
+        paragraph = Some(styledesc::style_paragraph_for(&subject_phrase(tier, family, ctx.pinned), &stats, Some(family)));
         statistics = Some(stats);
         let model = DriftModel::fit(&points);
         drift = Some(DriftSummary {
@@ -868,6 +942,40 @@ spriteTypes = {
             assert_eq!(shelf_folder(*f).is_none(), none, "{f}");
         }
         assert_eq!(shelf_folder(Family::Focus), Some("icons/national_focus"));
+    }
+
+    /// Each family keeps to the files of its one vanilla form, and a GUI texture takes the files of its kind.
+    #[test]
+    fn form_rules_keep_each_family_to_its_vanilla_form() {
+        let accepts = |f: Family, kind: Option<GuiTextureKind>, stem: &str| texture_dirs(f, kind).iter().any(|d| d.accepts(stem));
+        assert!(accepts(Family::CommanderTrait, None, "trait_panzer_leader"));
+        for stem in ["trait_operative_seducer", "trait_add_new", "trait_unknown"] {
+            assert!(!accepts(Family::CommanderTrait, None, stem), "{stem}");
+        }
+        assert!(accepts(Family::OperationIcon, None, "phase_bruneval_attack_small"));
+        assert!(!accepts(Family::OperationIcon, None, "infiltrate_naval_forces"), "the 85x85 operation icons are another form");
+        assert!(!accepts(Family::OperationPicture, None, "phase_bruneval_attack_small"));
+        assert!(accepts(Family::OperationPicture, None, "phase_bruneval_attack"));
+        assert!(accepts(Family::BopSide, None, "bop_fin_mannerheim_good_side"));
+        for stem in ["bop_fin_mannerheim_good_improved_side", "prc_bop_left_side_max", "bop_fin_bad_rubble_side"] {
+            assert!(!accepts(Family::BopSide, None, stem), "{stem}: a coloured state variant");
+        }
+        assert_eq!(reference_sizes(Family::Building), Some(&[[128, 64]][..]), "the painted 64x64 landmarks, not the orange 32x32 ones");
+        // a GUI texture without a kind has no automatic reference; each kind has its own folders and names
+        assert!(texture_dirs(Family::GuiTexture, None).is_empty());
+        let cases = [
+            // every file of gfx/interface/buttons is a button, so the name rule is the top folder's
+            (GuiTextureKind::Button, "button_94x31", "tiled_window"),
+            (GuiTextureKind::Frame, "diplo_leader_frame", "mic_btn_frames"),
+            (GuiTextureKind::Panel, "tiled_window_1b_border", "button_94x31"),
+            (GuiTextureKind::Background, "diplo_action_declare_war_bg", "large_flag_frame"),
+        ];
+        for (kind, yes, no) in cases {
+            assert!(accepts(Family::GuiTexture, Some(kind), yes), "{kind}: {yes}");
+            assert!(!texture_dirs(Family::GuiTexture, Some(kind))[0].accepts(no), "{kind}: {no}");
+        }
+        let bg = texture_dirs(Family::GuiTexture, Some(GuiTextureKind::Background));
+        assert!(bg.iter().all(|d| d.min_side == 256), "a background is a whole window");
     }
 
     #[test]

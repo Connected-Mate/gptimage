@@ -289,6 +289,8 @@ mod tests {
             answers: json!({}),
             notes: String::new(),
             approval_id: approval.map(str::to_string),
+            vanilla_check: None,
+            vanilla_override: None,
         }
     }
 

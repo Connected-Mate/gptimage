@@ -110,7 +110,7 @@ The binaries are unsigned, so Windows SmartScreen and macOS Gatekeeper may warn.
 
 ## Tools
 
-There are 20 tools. Seven plan families by group, and each takes a required `family` whose schema lists only that group's families.
+There are 21 tools. Seven plan families by group, and each takes a required `family` whose schema lists only that group's families.
 
 | Tool | What it does |
 |---|---|
@@ -125,6 +125,7 @@ There are 20 tools. Seven plan families by group, and each takes a required `fam
 | `hoi4.image_generate`, `hoi4.image_edit` | Run a stored plan, refine a candidate |
 | `hoi4.image_process`, `hoi4.image_validate`, `hoi4.image_preview`, `hoi4.image_review` | Processing chain, checks, contact sheet, visual review |
 | `hoi4.image_install`, `hoi4.image_ledger`, `hoi4.image_cancel` | The gated install, provenance, cancel and recover |
+| `hoi4.image_login` | Opens the ChatGPT sign-in in the browser, for an agent or a setup tool |
 | `hoi4.image_audit` | A read-only audit of the whole mod: sprite reuse across families, missing textures, undefined sprites, wrong canvas sizes |
 
 Every tool is also on the command line: `hoi4-imagegen call <tool> '<json>'`. The [reference](docs/reference.md#tools) has the full table.

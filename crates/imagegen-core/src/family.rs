@@ -72,6 +72,52 @@ impl Group {
     }
 }
 
+/// The kind of a `gui_texture`: it picks the vanilla style references and adds the kind's vanilla form to the
+/// prompt. Measured on HOI4 1.19.4.1 (see `stylesrc.rs` for the folders).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum GuiTextureKind {
+    /// A clickable button plate (`gfx/interface/button_*`, `gfx/interface/buttons/`).
+    Button,
+    /// A border around a portrait, flag or bar, empty in the middle (`gfx/interface/*_frame*`).
+    Frame,
+    /// A small stretchable plate (`gfx/interface/tiles/tiled_*`).
+    Panel,
+    /// A whole window's background (`gfx/interface/*_bg`, 256 px or more on each side).
+    Background,
+}
+
+impl GuiTextureKind {
+    /// Every kind.
+    pub const ALL: [GuiTextureKind; 4] = [GuiTextureKind::Button, GuiTextureKind::Frame, GuiTextureKind::Panel, GuiTextureKind::Background];
+
+    /// Stable snake_case id.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            GuiTextureKind::Button => "button",
+            GuiTextureKind::Frame => "frame",
+            GuiTextureKind::Panel => "panel",
+            GuiTextureKind::Background => "background",
+        }
+    }
+
+    /// The vanilla form of the kind, as a prompt rule (`{w}` and `{h}` are the canvas).
+    pub fn form_rule(self) -> &'static str {
+        match self {
+            GuiTextureKind::Button => "The Hearts of Iron IV button form: one horizontal plate with slightly rounded corners and a soft bevel, a thin dark outline and a lighter top edge, in dark olive green, charcoal or worn brown leather. The face is plain: the game draws the label and icon on it. It fills the {w}x{h} canvas edge to edge.",
+            GuiTextureKind::Frame => "The Hearts of Iron IV frame form: only a border, a thin bevelled band of dark gunmetal grey (sometimes with small rivets or a thin gold line) along the edges of the {w}x{h} canvas. The middle is fully transparent: the game shows a portrait, a flag or a bar inside it.",
+            GuiTextureKind::Panel => "The Hearts of Iron IV panel form: a flat, nearly uniform dark charcoal plate (or plain aged parchment) with a thin bevelled border and slightly rounded corners, filling the {w}x{h} canvas. The game stretches it, so the middle carries no motif, only a faint even texture.",
+            GuiTextureKind::Background => "The Hearts of Iron IV window background form: a whole window plate that fills the {w}x{h} canvas, dark charcoal with a faint worn texture, a thin bevelled gunmetal border and often a darker header band along the top. A faded, dark-tinted period photograph may fade into the plate, but most of the area stays plain and dark for the window's content.",
+        }
+    }
+}
+
+impl fmt::Display for GuiTextureKind {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
 impl fmt::Display for Group {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.as_str())

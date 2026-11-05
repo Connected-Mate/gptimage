@@ -61,12 +61,22 @@ pub fn accepted(env: &dyn EnvSource) -> bool {
 /// Record acceptance of the current note.
 pub fn record(env: &dyn EnvSource, now_rfc3339: &str) -> Result<(), String> {
     let path = record_path(env).ok_or("no per-user data folder (APPDATA or HOME) to record the acceptance in")?;
+    record_to(&path, now_rfc3339)
+}
+
+/// Where [`record`] writes, resolved now so a background sign-in can record without the environment.
+pub fn record_file(env: &dyn EnvSource) -> Option<PathBuf> {
+    record_path(env)
+}
+
+/// Record acceptance of the current note in `path`.
+pub fn record_to(path: &std::path::Path, now_rfc3339: &str) -> Result<(), String> {
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent).map_err(|e| format!("cannot create {}: {e}", parent.display()))?;
     }
     let body =
         serde_json::to_vec_pretty(&Acceptance { version: RISK_NOTE_VERSION, accepted_at: now_rfc3339.to_string() }).map_err(|e| e.to_string())?;
-    fs::write(&path, body).map_err(|e| format!("cannot write {}: {e}", path.display()))
+    fs::write(path, body).map_err(|e| format!("cannot write {}: {e}", path.display()))
 }
 
 #[cfg(test)]

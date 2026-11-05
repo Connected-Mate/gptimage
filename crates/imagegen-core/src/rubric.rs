@@ -3,6 +3,11 @@
 //! Deterministic checks cannot judge composition, style or readability at game size. Those questions go to a
 //! reviewer (a person, or an agent that can look at the preview) and are recorded next to the deterministic
 //! results. An approval needs every question answered `true`; anything else is `changes_requested`.
+//!
+//! The v3 rubrics (0.3.2) ask every question against the vanilla references that `hoi4.image_preview` puts beside
+//! the candidate, because the 0.3.1 questions ("does the style match the approved references?") let a reviewer
+//! approve art that looked nothing like vanilla. The answers are no longer enough on their own: the review also runs
+//! the measured vanilla-match check (`crate::vanillamatch`). v1 and v2 stay readable for reviews recorded earlier.
 
 use serde_json::Value;
 
@@ -84,12 +89,116 @@ const ANIMATION: &[Question] = &[
     ("no_text_or_watermark", "Is the art free of text, letters, numbers, signatures and watermarks?"),
 ];
 
-/// Questions for a rubric id. Rubrics are per group (`icon_v1`, `picture_v1`, `portrait_v1`, `flag_v1`,
-/// `unit_v1`, `interface_v1`, `animation_v1`), so every family of a group, officer corps spirits included, gets its group's
-/// questions. Anything else falls back to the generic questions.
+const VANILLA_FORM: Question = (
+    "vanilla_form",
+    "Next to the vanilla references in the preview, does it have the same form (for example a focus plaque, a decision category disc, a trait ribbon medal, special project line art without any fill, a raid pictogram, or a loose subject where vanilla has one)?",
+);
+const VANILLA_MEDIUM: Question = (
+    "vanilla_medium",
+    "Next to the vanilla references, is it in the same medium and palette (painted metal and enamel, a flat pictogram, pale line art, black units with a white outline and a glow, and so on), with no fill, texture or colour vanilla does not have?",
+);
+const VANILLA_FRAMING: Question = (
+    "vanilla_framing",
+    "Next to the vanilla references, does it sit at the same size and position on the canvas, with the same margins and no backdrop, plate or frame that vanilla does not have?",
+);
+const NO_TEXT: Question = (
+    "no_text_or_watermark",
+    "Is the art free of text, letters, numbers, signatures and watermarks (unless the vanilla references carry the same marks)?",
+);
+const READABLE: Question =
+    ("readable_at_native_size", "Is the subject recognizable at the native game size (the 1x panels), as the vanilla references are?");
+const PERIOD: Question = ("period_and_theme_fit", "Does it fit the period and the theme of the feature?");
+
+/// icon_v3: form, medium and framing against the vanilla references beside the candidate.
+const ICON_V3: &[Question] = &[VANILLA_FORM, VANILLA_MEDIUM, VANILLA_FRAMING, READABLE, NO_TEXT, PERIOD];
+
+const PICTURE_V3: &[Question] = &[
+    (
+        "vanilla_composition",
+        "Next to the vanilla references in the preview, does it use the same composition, crop and viewing angle (for example technology pictures at vanilla's fixed side angle), filling the frame the way they do?",
+    ),
+    (
+        "vanilla_medium",
+        "Next to the vanilla references, is it in the same medium and treatment (painted, black and white for news, the report-card look, vanilla's overlays where they apply)?",
+    ),
+    READABLE,
+    NO_TEXT,
+    PERIOD,
+];
+
+const PORTRAIT_V3: &[Question] = &[
+    ("vanilla_framing", "Next to the vanilla references in the preview, are the head and shoulders framed at the same size and position?"),
+    ("vanilla_medium", "Next to the vanilla references, is it painted in the same style, palette and lighting?"),
+    ("face_natural", "Does the face look natural, without generation artifacts?"),
+    ("period_clothing", "Is the clothing appropriate to the period?"),
+    NO_TEXT,
+];
+
+const FLAG_V3: &[Question] = &[
+    (
+        "vanilla_style",
+        "Next to the vanilla references in the preview, is it a flat flag design in the same style (simple fields and emblems, no photo texture, no folds or pole)?",
+    ),
+    ("readable_at_normal_size", "Is the design clear at 82x52?"),
+    ("readable_at_small_size", "Is it still recognizable at 10x7?"),
+    ("distinct_from_other_flags", "Is it distinct from the other flags in the mod?"),
+    ("no_text_or_watermark", "Is it free of text and watermarks?"),
+];
+
+const UNIT_V3: &[Question] = &[
+    VANILLA_FORM,
+    ("vanilla_medium", "Next to the vanilla references, does it have the same colouring and processing (for example vanilla's green unit counters)?"),
+    ("frames_consistent", "Do all frames share the same size, position and style, and does the strip read correctly frame by frame?"),
+    READABLE,
+    NO_TEXT,
+];
+
+const INTERFACE_V3: &[Question] = &[
+    (
+        "vanilla_style",
+        "Next to the vanilla interface references in the preview (buttons, frames, panels, backgrounds), is it in the same style and material?",
+    ),
+    ("fits_the_surface", "Does the art fit the interface element it is made for, at the exact size the mod defined?"),
+    ("no_text_or_watermark", "Is the art free of text and watermarks?"),
+];
+
+const ANIMATION_V3: &[Question] = &[
+    ("vanilla_style", "Next to the vanilla references or the surrounding interface, is it in the same style, palette and brightness?"),
+    ("readable_at_native_size", "Is the subject recognizable at the native game size in every frame (look at the 1x contact sheet)?"),
+    (
+        "motion_reads_as_intended",
+        "Watching the looping preview, does the motion read as intended (a pulse, a scroll, a turn, the change between key frames) without a jump or a flash?",
+    ),
+    ("frames_consistent", "Do the frames keep one subject, one position and one palette, so nothing but the intended motion changes?"),
+    ("loop_is_seamless", "Does the last frame run into the first without a visible seam?"),
+    ("no_text_or_watermark", "Is the art free of text, letters, numbers, signatures and watermarks?"),
+];
+
+const GENERIC_V3: &[Question] = &[
+    ("vanilla_style", "Next to the vanilla references in the preview, is it in the same form, medium and framing?"),
+    ("looks_correct", "Does the art look right for its surface at the native size?"),
+    ("no_text_or_watermark", "Is it free of text and watermarks?"),
+];
+
+/// Questions for a rubric id. Rubrics are per group (`icon`, `picture`, `portrait`, `flag`, `unit`, `interface`,
+/// `animation`) and versioned: `_v3` (current, asked against the vanilla references), `_v2` (icon only, the family
+/// form question) and `_v1`. Every family of a group, officer corps spirits included, gets its group's questions.
+/// Anything else falls back to the generic questions.
 pub fn questions(rubric: &str) -> &'static [Question] {
     if rubric == "icon_v1" {
         return ICON_V1;
+    }
+    if let Some(group) = rubric.strip_suffix("_v3") {
+        return match group {
+            "icon" => ICON_V3,
+            "picture" => PICTURE_V3,
+            "portrait" => PORTRAIT_V3,
+            "flag" => FLAG_V3,
+            "unit" => UNIT_V3,
+            "interface" => INTERFACE_V3,
+            "animation" => ANIMATION_V3,
+            _ => GENERIC_V3,
+        };
     }
     match rubric.strip_suffix("_v2").or_else(|| rubric.strip_suffix("_v1")).unwrap_or(rubric) {
         "icon" => ICON,
@@ -154,9 +263,16 @@ mod tests {
         // the 0.1 gap: officer spirits fell through to the generic rubric
         for f in crate::family::Family::ALL.iter().copied() {
             let id = crate::builtin::rubric_of(f);
-            assert_ne!(questions(&id), GENERIC, "{f} resolves to the generic rubric");
+            assert!(id.ends_with("_v3"), "{f}: {id}");
+            assert_ne!(questions(&id), GENERIC_V3, "{f} resolves to the generic rubric");
+            // every v3 rubric asks against the vanilla references
+            assert!(questions(&id).iter().any(|q| q.1.contains("vanilla")), "{f}");
         }
-        assert!(questions(&crate::builtin::rubric_of(crate::family::Family::OfficerCorpsSpirit)).iter().any(|q| q.0 == "silhouette_clear"));
+        // v1 and v2 stay readable for older reviews
+        assert!(questions("picture_v1").iter().any(|q| q.0 == "treatment_correct"));
+        assert!(questions("icon_v3").iter().any(|q| q.0 == "vanilla_form"));
+        assert!(questions("icon_v3").iter().any(|q| q.0 == "vanilla_medium"));
+        assert!(questions(&crate::builtin::rubric_of(crate::family::Family::OfficerCorpsSpirit)).iter().any(|q| q.0 == "vanilla_form"));
     }
 
     #[test]

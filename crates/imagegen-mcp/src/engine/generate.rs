@@ -16,6 +16,7 @@ use imagegen_providers::types::{CallContext, EditSpec, ImageProvider, ImageReque
 use serde_json::{json, Value};
 
 use crate::api::{CancelParams, EditParams, GenerateParams};
+use imagegen_core::ledger::Entry;
 
 use super::{ActiveJob, EResult, Engine, EngineError};
 
@@ -351,7 +352,7 @@ impl Engine {
             return Err(EngineError::refused(
                 "uncertain_previous_attempt",
                 format!(
-                    "an earlier attempt with the key '{idempotency_key}' (job {open}) never finished, so it may have been charged. Run hoi4.image_cancel with reconcile = true for that job, or check the provider's account and use a new key"
+                    "an earlier attempt with the key '{idempotency_key}' (job {open}) never finished, so it may have been charged. Run hoi4.image_cancel with reconcile = true for that job, or check the provider's account and then either use a new key or retire this one with hoi4.image_cancel {{idempotency_key, abandon: true}}"
                 ),
                 RetryClass::ReconcileFirst,
             ));
@@ -500,20 +501,114 @@ impl Engine {
     /// An intent for this key with no matching end entry.
     fn unfinished_for_key(&self, key: &str) -> EResult<Option<String>> {
         let entries = self.ledger.entries()?;
-        let ended: Vec<&str> =
-            entries.iter().filter(|e| e.kind == kind::JOB_ENDED).filter_map(|e| e.data.get("job_id").and_then(Value::as_str)).collect();
+        // the end must come after the intent: a retry with the same key reuses the job id, so an earlier end entry
+        // (an abandoned or failed first attempt) does not close the second attempt
         Ok(entries
             .iter()
-            .filter(|e| e.kind == kind::JOB_INTENT && e.data.get("idempotency_key").and_then(Value::as_str) == Some(key))
-            .filter_map(|e| e.data.get("job_id").and_then(Value::as_str))
-            .find(|id| !ended.contains(id) && self.jobs.find(Some(id), None).is_none())
-            .map(str::to_string))
+            .enumerate()
+            .filter(|(_, e)| e.kind == kind::JOB_INTENT && e.data.get("idempotency_key").and_then(Value::as_str) == Some(key))
+            .filter_map(|(i, e)| e.data.get("job_id").and_then(Value::as_str).map(|id| (i, id)))
+            .find(|(i, id)| !job_ended_after(&entries, *i, id) && self.jobs.find(Some(id), None).is_none())
+            .map(|(_, id)| id.to_string()))
+    }
+
+    /// Retire an uncertain idempotency key: close the unfinished attempt(s) with the outcome `abandoned`, record when
+    /// and the warning that the first attempt may have been charged, and let the key proceed.
+    ///
+    /// Refused when the key's attempt is known to have completed (a candidate exists for it) or is still running in
+    /// this process. An attempt that already ended in any way has nothing left to abandon.
+    fn abandon(&self, p: &CancelParams) -> EResult<Value> {
+        if let Some((id, _)) = self.jobs.find(p.job_id.as_deref(), p.idempotency_key.as_deref()) {
+            return Err(EngineError::refused(
+                "job_still_running",
+                format!(
+                    "job {id} is still running in this process. Cancel it first (without abandon); abandon is only for an attempt that was cut off"
+                ),
+                RetryClass::Terminal,
+            ));
+        }
+        let entries = self.ledger.entries()?;
+        let matches = |e: &Entry| {
+            e.kind == kind::JOB_INTENT
+                && ((p.job_id.is_some() && e.data.get("job_id").and_then(Value::as_str) == p.job_id.as_deref())
+                    || (p.idempotency_key.is_some() && e.data.get("idempotency_key").and_then(Value::as_str) == p.idempotency_key.as_deref()))
+        };
+        if !entries.iter().any(matches) {
+            return Err(EngineError::new("not_found", "no recorded attempt matches that job id or idempotency key", RetryClass::Terminal));
+        }
+        let key = p
+            .idempotency_key
+            .clone()
+            .or_else(|| entries.iter().rfind(|e| matches(e)).and_then(|e| e.data.get("idempotency_key").and_then(Value::as_str).map(str::to_string)));
+        if let Some(key) = &key {
+            if let Some(done) = self.ledger.find_idempotency(key)? {
+                return Err(EngineError::refused(
+                    "attempt_completed",
+                    format!(
+                        "the attempt with the key '{key}' completed (candidate {}), so there is nothing to abandon. Calling generate with the same key and the same plan returns that candidate; use a new key to make another",
+                        done.artifact_id.as_deref().unwrap_or("recorded in the ledger")
+                    ),
+                    RetryClass::Terminal,
+                ));
+            }
+        }
+        let recovered = |job_id: &str| {
+            entries.iter().any(|e| {
+                e.kind == kind::JOB_ENDED
+                    && e.data.get("job_id").and_then(Value::as_str) == Some(job_id)
+                    && matches!(e.data.get("outcome").and_then(Value::as_str), Some("completed" | "recovered"))
+            })
+        };
+        let mut open: Vec<(String, Option<String>)> = Vec::new();
+        for (i, e) in entries.iter().enumerate().filter(|(_, e)| matches(e)) {
+            let id = e.data.get("job_id").and_then(Value::as_str).unwrap_or_default().to_string();
+            if recovered(&id) {
+                return Err(EngineError::refused(
+                    "attempt_completed",
+                    format!("job {id} is recorded as completed, so there is nothing to abandon"),
+                    RetryClass::Terminal,
+                ));
+            }
+            if !job_ended_after(&entries, i, &id) && !open.iter().any(|(o, _)| *o == id) {
+                open.push((id, e.asset_id.clone()));
+            }
+        }
+        if open.is_empty() {
+            return Ok(json!({
+                "status": "nothing_to_abandon", "idempotency_key": key,
+                "note": "every recorded attempt for this key already ended, so the key is not blocked"
+            }));
+        }
+        let when = self.now();
+        let warning = "The first attempt was cut off before an outcome was recorded, so it may have been charged. Check the provider's usage page if the cost matters.";
+        let mut ids = Vec::new();
+        for (id, asset) in &open {
+            self.ledger.append(
+                kind::JOB_ENDED,
+                asset.as_deref(),
+                None,
+                json!({"job_id": id, "outcome": "abandoned", "idempotency_key": key, "abandoned_at": when, "warning": warning}),
+            )?;
+            ids.push(id.clone());
+        }
+        Ok(json!({
+            "status": "abandoned", "job_ids": ids, "idempotency_key": key, "abandoned_at": when, "warning": warning,
+            "next": "The key can be used again, or use a new one. The ledger keeps the abandoned attempt."
+        }))
     }
 
     /// Cancel a running job, or settle one a crashed run left behind.
     pub fn cancel(&self, p: CancelParams) -> EResult<Value> {
         if p.job_id.is_none() && p.idempotency_key.is_none() {
             return Err(EngineError::invalid("give a job_id or an idempotency_key"));
+        }
+        if p.abandon.unwrap_or(false) {
+            if p.reconcile.unwrap_or(false) {
+                return Err(EngineError::invalid(
+                    "abandon and reconcile cannot be combined: reconcile asks the provider, abandon gives up on the attempt",
+                ));
+            }
+            return self.abandon(&p);
         }
         if let Some((id, job)) = self.jobs.find(p.job_id.as_deref(), p.idempotency_key.as_deref()) {
             job.cancel.cancel();
@@ -524,12 +619,11 @@ impl Engine {
         }
         // not running here: look for an unfinished job in the ledger
         let entries = self.ledger.entries()?;
-        let ended: Vec<&str> =
-            entries.iter().filter(|e| e.kind == kind::JOB_ENDED).filter_map(|e| e.data.get("job_id").and_then(Value::as_str)).collect();
-        let intent = entries
+        let (intent_idx, intent) = entries
             .iter()
-            .filter(|e| e.kind == kind::JOB_INTENT)
-            .rfind(|e| {
+            .enumerate()
+            .filter(|(_, e)| e.kind == kind::JOB_INTENT)
+            .rfind(|(_, e)| {
                 let id = e.data.get("job_id").and_then(Value::as_str);
                 let key = e.data.get("idempotency_key").and_then(Value::as_str);
                 (p.job_id.as_deref().is_some() && id == p.job_id.as_deref())
@@ -537,7 +631,7 @@ impl Engine {
             })
             .ok_or_else(|| EngineError::new("not_found", "no running or recorded job matches", RetryClass::Terminal))?;
         let job_id = intent.data.get("job_id").and_then(Value::as_str).unwrap_or_default().to_string();
-        if ended.contains(&job_id.as_str()) {
+        if job_ended_after(&entries, intent_idx, &job_id) {
             return Ok(json!({"job_id": job_id, "status": "already_ended", "note": "the ledger shows this job finished"}));
         }
         let remote: Option<JobRef> = entries
@@ -548,7 +642,7 @@ impl Engine {
         let Some(remote) = remote else {
             return Ok(json!({
                 "job_id": job_id, "status": "unknown_outcome",
-                "note": "This job used a synchronous provider, which has no job id to ask about. Whether the request was charged is unknown: check the provider's usage page, then use a new idempotency key if you want to try again."
+                "note": "This job used a synchronous provider, which has no job id to ask about. Whether the request was charged is unknown: check the provider's usage page, then retire the key with hoi4.image_cancel {idempotency_key, abandon: true} (or use a new idempotency key) if you want to try again."
             }));
         };
         let provider = self.registry.get(&remote.provider).ok_or_else(|| {
@@ -595,6 +689,11 @@ impl Engine {
         let _ = self.ledger.append(kind::JOB_ENDED, asset_id.as_deref(), None, json!({"job_id": job_id, "outcome": "cancelled"}));
         Ok(json!({"job_id": job_id, "status": "cancelled", "remote": remote}))
     }
+}
+
+/// True when the job has an end entry after the ledger position `idx`.
+fn job_ended_after(entries: &[Entry], idx: usize, job_id: &str) -> bool {
+    entries.iter().skip(idx + 1).any(|e| e.kind == kind::JOB_ENDED && e.data.get("job_id").and_then(Value::as_str) == Some(job_id))
 }
 
 fn validate_key(key: &str) -> EResult<()> {

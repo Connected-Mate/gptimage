@@ -1,4 +1,4 @@
-//! The rmcp stdio server: twenty tools named `hoi4.image_*`.
+//! The rmcp stdio server: twenty-one tools named `hoi4.image_*`.
 //!
 //! Every tool runs on a blocking worker so a slow provider call never stalls the protocol loop, which is what
 //! lets `hoi4.image_cancel` arrive while a generation is in flight. Failures are tool results with
@@ -17,7 +17,7 @@ use crate::api::*;
 use crate::engine::{EResult, Engine};
 
 /// Instructions shown to the client at start-up.
-pub const INSTRUCTIONS: &str = "HOI4 graphical assets. Work one asset at a time: hoi4.image_status (what is configured), hoi4.image_families (every family's measured canvas, naming, checks and rubric), then the generation tool of the asset's group with a required family: hoi4.image_icon, hoi4.image_picture, hoi4.image_portrait, hoi4.image_flag, hoi4.image_unit, hoi4.image_interface or hoi4.image_animation. Called without approve it returns a free plan; with approve and an idempotency_key it plans and generates (one paid call per variant). The family is fixed from the plan on: hoi4.image_process (the family's own processing always runs and cannot be skipped or replaced: callers may add only the pre-steps chroma_key, crop_to_aspect, defringe and trim_to_subject; import needs a family and refuses another family's size or pixels), hoi4.image_validate (the family's full check set), hoi4.image_preview (contact sheet; look at the native-size panels), hoi4.image_review (rubric answers; an approval returns an approval_id) and hoi4.image_install (writes the DDS or TGA and a sprite handoff) all use the artifact's own family and take no family argument for it. Install refuses unless validation ran the full check set and passed, a review approved this exact file and the hashes are unchanged. Transparency must be proven by pixels, never by the prompt. Outputs are versioned and never overwritten; hoi4.image_ledger shows which references, settings and outputs belong together. hoi4.image_audit (read only) traces which sprites and textures the mod already uses for which family and reports reuse, missing and mis-sized art. Keys are read from environment variables only.";
+pub const INSTRUCTIONS: &str = "HOI4 graphical assets. Work one asset at a time: hoi4.image_status (what is configured; when the ChatGPT login is not signed in, hoi4.image_login opens the sign-in page in the browser), hoi4.image_families (every family's measured canvas, naming, checks and rubric), then the generation tool of the asset's group with a required family: hoi4.image_icon, hoi4.image_picture, hoi4.image_portrait, hoi4.image_flag, hoi4.image_unit, hoi4.image_interface or hoi4.image_animation. Called without approve it returns a free plan; with approve and an idempotency_key it plans and generates (one paid call per variant). The family is fixed from the plan on: hoi4.image_process (the family's own processing always runs and cannot be skipped or replaced: callers may add only the pre-steps chroma_key, crop_to_aspect, defringe and trim_to_subject; import needs a family and refuses another family's size or pixels), hoi4.image_validate (the family's full check set), hoi4.image_preview (contact sheet; look at the native-size panels), hoi4.image_review (rubric answers; an approval returns an approval_id) and hoi4.image_install (writes the DDS or TGA and a sprite handoff) all use the artifact's own family and take no family argument for it. Install refuses unless validation ran the full check set and passed, a review approved this exact file and the hashes are unchanged. Transparency must be proven by pixels, never by the prompt. Outputs are versioned and never overwritten; hoi4.image_ledger shows which references, settings and outputs belong together. hoi4.image_audit (read only) traces which sprites and textures the mod already uses for which family and reports reuse, missing and mis-sized art. Keys are read from environment variables only.";
 
 /// The server.
 #[derive(Clone)]
@@ -203,17 +203,17 @@ impl ImageServer {
 
     #[tool(
         name = "hoi4.image_preview",
-        description = "Write a contact sheet: native size on dark and light, an enlarged copy on dark, light and checker backgrounds, and the plan's references side by side. Returns the sheet as an image. Judge the native-size panels first.",
+        description = "Write a contact sheet: native size on dark and light, an enlarged copy on dark, light and checker backgrounds, and the plan's references side by side. For an artifact it also makes the vanilla side-by-side sheet (the candidate beside the family's most typical vanilla images, written outside the mod) and reports the measured vanilla-match check. Returns both sheets as images. Judge the native-size panels first. An approval needs a preview of the exact file with the vanilla sheet.",
         annotations(read_only_hint = false, destructive_hint = false, idempotent_hint = false, open_world_hint = false)
     )]
     async fn preview(&self, Parameters(p): Parameters<PreviewParams>) -> Result<CallToolResult, ErrorData> {
         let include = p.include_image.unwrap_or(true);
         let engine = self.engine.clone();
         match tokio::task::spawn_blocking(move || engine.preview_with_image(&p)).await {
-            Ok(Ok((report, png))) => {
+            Ok(Ok((report, pngs))) => {
                 let mut result = CallToolResult::structured(report);
-                if include && png.len() <= 1_500_000 {
-                    result.content.push(ContentBlock::image(base64::engine::general_purpose::STANDARD.encode(&png), "image/png"));
+                for png in pngs.iter().filter(|_| include).filter(|png| png.len() <= 1_500_000) {
+                    result.content.push(ContentBlock::image(base64::engine::general_purpose::STANDARD.encode(png), "image/png"));
                 }
                 Ok(result)
             }
@@ -224,7 +224,7 @@ impl ImageServer {
 
     #[tool(
         name = "hoi4.image_review",
-        description = "Record the visual review of an exact file against the family's rubric. An approval needs a passing validation, a preview of this file and every rubric answer true, and returns the approval_id install requires. Use changes_requested or rejected otherwise.",
+        description = "Record the visual review of an exact file against the family's rubric (v3: every question is asked against the vanilla references in the preview). The review runs the measured vanilla-match check itself. An approval needs a passing validation, a preview of this file with the vanilla side-by-side sheet, a passing vanilla-match check and every rubric answer true, and returns the approval_id install requires. A deliberate mod style can approve past the vanilla check only with override_vanilla_check and an override_reason, both recorded. Use changes_requested or rejected otherwise.",
         annotations(read_only_hint = false, destructive_hint = false, idempotent_hint = false, open_world_hint = false)
     )]
     async fn review(&self, Parameters(p): Parameters<ReviewParams>) -> Result<CallToolResult, ErrorData> {
@@ -260,11 +260,20 @@ impl ImageServer {
 
     #[tool(
         name = "hoi4.image_cancel",
-        description = "Cancel a running generation by idempotency key (providers with job ids are asked to stop), or settle a job a crashed run left behind: reconcile = true asks the provider what became of it and stores the image if it finished. Synchronous providers cannot be interrupted once the request is sent.",
+        description = "Cancel a running generation by idempotency key (providers with job ids are asked to stop), or settle a job a crashed run left behind: reconcile = true asks the provider what became of it and stores the image if it finished. Synchronous providers cannot be interrupted once the request is sent. abandon = true retires an idempotency key whose first attempt was cut off (the process was killed) so the key can be used again: the ledger records the abandonment and the warning that the first attempt may have been charged, and it is refused for a key whose attempt completed.",
         annotations(read_only_hint = false, destructive_hint = false, idempotent_hint = true, open_world_hint = true)
     )]
     async fn cancel(&self, Parameters(p): Parameters<CancelParams>) -> Result<CallToolResult, ErrorData> {
         self.run(move |e| e.cancel(p)).await
+    }
+
+    #[tool(
+        name = "hoi4.image_login",
+        description = "Sign in to the ChatGPT-login provider: opens the sign-in page in the user's default browser and returns at once with its address. The user signs in with their own ChatGPT account there, and nothing is typed in the terminal. Signing in accepts the risk note, which the result includes and the page sums up. The sign-in finishes in the background, and hoi4.image_status reports it. Call it when hoi4.image_status says the ChatGPT login is not signed in or was signed out by the server. Local use only.",
+        annotations(read_only_hint = false, destructive_hint = false, idempotent_hint = true, open_world_hint = true)
+    )]
+    async fn login(&self) -> Result<CallToolResult, ErrorData> {
+        self.run(|e| e.login()).await
     }
 }
 
@@ -277,8 +286,8 @@ impl ServerHandler for ImageServer {
     }
 }
 
-/// Names of the twenty tools, in documentation order.
-pub const TOOL_NAMES: [&str; 20] = [
+/// Names of the twenty-one tools, in documentation order.
+pub const TOOL_NAMES: [&str; 21] = [
     "hoi4.image_status",
     "hoi4.image_families",
     "hoi4.image_references",
@@ -299,4 +308,5 @@ pub const TOOL_NAMES: [&str; 20] = [
     "hoi4.image_ledger",
     "hoi4.image_audit",
     "hoi4.image_cancel",
+    "hoi4.image_login",
 ];

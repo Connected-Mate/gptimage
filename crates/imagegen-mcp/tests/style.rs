@@ -405,7 +405,7 @@ fn style_drift_warns_for_an_off_style_candidate_and_never_blocks() {
     let rec = entries.iter().rev().find(|e| e.kind == "validated").unwrap();
     assert!(rec.data["findings"].as_array().unwrap().iter().any(|f| f["code"] == "GFX-STYLE-DRIFT"));
     off.preview(&id);
-    let approval = off.approve(&id, "icon_v2")["approval_id"].as_str().unwrap().to_string();
+    let approval = off.approve(&id, "icon_v3")["approval_id"].as_str().unwrap().to_string();
     off.install(&id, &approval, json!({})).expect("a style warning must never block an install");
     assert!(off.exists("gfx/interface/goals/f/focus_steel_gate.dds") || off.exists("gfx/interface/goals/iron_pact/focus_steel_gate.dds"));
 }
@@ -545,4 +545,287 @@ fn real_vanilla_leave_one_out_distances_per_family() {
             p95s[p95s.len() - 1]
         );
     }
+}
+
+// ---- 0.3.2: explicit-only style profiles and the mod's form ----
+
+/// Save a style of three red reference images with the given extra fields (`families`, `default`).
+fn save_style(h: &Harness, name: &str, extra: Value) {
+    let mut refs = Vec::new();
+    for i in 0..3 {
+        let rel = format!("references/{name}/ref_{i}.png");
+        write_png(h.root(), &rel, &spirit_icon([200 - i as u8 * 10, 30, 30], false, i));
+        refs.push(json!({"path": rel, "sha256": "", "note": "synthetic test image"}));
+    }
+    let mut style = json!({"name": name, "references": refs, "description": format!("Style {name}.")});
+    for (k, v) in extra.as_object().unwrap() {
+        style[k] = v.clone();
+    }
+    h.engine.references(serde_json::from_value(json!({"action": "style_save", "style": style})).unwrap()).unwrap();
+}
+
+fn plan_with(h: &Harness, family: &str, asset: &str, style: Option<&str>) -> Result<imagegen_core::plan::Plan, imagegen_mcp::EngineError> {
+    let mut req = json!({"family": family, "feature_slug": "f", "asset": asset, "brief": "a test subject", "provider": "openai", "quality": "low"});
+    if let Some(s) = style {
+        req["style"] = json!(s);
+    }
+    h.engine.plan(serde_json::from_value(req).unwrap())
+}
+
+fn selection(plan: &imagegen_core::plan::Plan) -> Value {
+    serde_json::to_value(plan.style_selection.as_ref().expect("every new plan says which style it applied")).unwrap()
+}
+
+#[test]
+fn a_style_without_families_is_never_applied_automatically() {
+    let game = fake_game(8);
+    let h = harness_with_game(game.path());
+    save_style(&h, "gouache", json!({"families": []}));
+    let plan = plan_spirit(&h);
+    let r = sources(&plan);
+    assert_eq!(r["chosen_tier"], 4, "the empty-families style must not become tier 1: {r:#}");
+    assert!(sent(&r).iter().all(|c| c["tier"] == 4));
+    assert!(!plan.prompt.text.contains("Style gouache."), "its text is not added either");
+    assert!(plan.references.iter().all(|x| !x.path.starts_with("references/gouache/")));
+    let s = selection(&plan);
+    assert_eq!(s["why"], "none", "{s:#}");
+    assert_eq!(s["applied"], Value::Null);
+    assert!(!plan.warnings.iter().any(|w| w.contains("applied automatically")));
+}
+
+#[test]
+fn a_style_without_a_families_key_at_all_behaves_the_same() {
+    let game = fake_game(8);
+    let h = harness_with_game(game.path());
+    save_style(&h, "plain", json!({}));
+    let plan = plan_spirit(&h);
+    assert_eq!(sources(&plan)["chosen_tier"], 4);
+    assert_eq!(selection(&plan)["why"], "none");
+}
+
+#[test]
+fn an_empty_families_style_can_still_be_named_for_any_family() {
+    let game = fake_game(8);
+    let h = harness_with_game(game.path());
+    save_style(&h, "gouache", json!({}));
+    for (family, asset) in [("idea_spirit", "iron_will"), ("mio_trait", "tough_trait"), ("focus", "iron_wall")] {
+        let plan = plan_with(&h, family, asset, Some("gouache")).unwrap_or_else(|e| panic!("{family}: {e:?}"));
+        let s = selection(&plan);
+        assert_eq!(s["why"], "explicit", "{family}: {s:#}");
+        assert_eq!(s["applied"], "gouache");
+        assert!(plan.prompt.text.contains("Style gouache."), "{family}");
+        assert_eq!(plan.style.as_deref(), Some("gouache"));
+        assert!(s["contributions"][0]["source"].as_str().unwrap().contains("gouache"), "{s:#}");
+        assert_eq!(s["contributions"][0]["references"].as_array().unwrap().len(), 3);
+    }
+}
+
+#[test]
+fn a_style_with_default_true_applies_to_every_family() {
+    let game = fake_game(8);
+    let h = harness_with_game(game.path());
+    save_style(&h, "house", json!({"default": true}));
+    let plan = plan_spirit(&h);
+    assert_eq!(sources(&plan)["chosen_tier"], 1);
+    let s = selection(&plan);
+    assert_eq!(s["why"], "default", "{s:#}");
+    assert_eq!(s["applied"], "house");
+    assert!(plan.warnings.iter().any(|w| w.contains("pinned style 'house'") && w.contains("marked default")), "{:?}", plan.warnings);
+    assert!(plan.prompt.text.contains("Style house."));
+}
+
+#[test]
+fn default_true_with_a_family_list_applies_only_to_those_families() {
+    let game = fake_game(8);
+    let h = harness_with_game(game.path());
+    save_style(&h, "focus_house", json!({"default": true, "families": ["focus"]}));
+    assert_eq!(selection(&plan_with(&h, "focus", "iron_wall", None).unwrap())["why"], "default");
+    assert_eq!(selection(&plan_spirit(&h))["why"], "none");
+}
+
+#[test]
+fn a_non_empty_families_list_still_applies_automatically_as_before() {
+    let game = fake_game(8);
+    let h = harness_with_game(game.path());
+    save_style(&h, "spirits_only", json!({"families": ["idea_spirit"]}));
+    let plan = plan_spirit(&h);
+    assert_eq!(sources(&plan)["chosen_tier"], 1);
+    let s = selection(&plan);
+    assert_eq!(s["why"], "family_list", "{s:#}");
+    assert_eq!(s["applied"], "spirits_only");
+    // a family it does not list is untouched, and naming the style for it is still refused
+    let other = plan_with(&h, "focus", "iron_wall", None).unwrap();
+    assert_eq!(selection(&other)["why"], "none");
+    let err = plan_with(&h, "focus", "iron_wall", Some("spirits_only")).unwrap_err();
+    assert!(format!("{err:?}").contains("lists only these families: idea_spirit"), "{err:?}");
+}
+
+#[test]
+fn default_false_keeps_a_listed_style_available_by_name_only() {
+    let game = fake_game(8);
+    let h = harness_with_game(game.path());
+    save_style(&h, "manual", json!({"families": ["idea_spirit"], "default": false}));
+    let plan = plan_spirit(&h);
+    assert_eq!(sources(&plan)["chosen_tier"], 4);
+    assert_eq!(selection(&plan)["why"], "none");
+    let named = plan_with(&h, "idea_spirit", "iron_will", Some("manual")).unwrap();
+    assert_eq!(selection(&named)["why"], "explicit");
+}
+
+#[test]
+fn a_family_list_style_beats_a_default_style_for_all_families() {
+    let game = fake_game(8);
+    let h = harness_with_game(game.path());
+    save_style(&h, "aaa_house", json!({"default": true}));
+    save_style(&h, "zzz_spirits", json!({"families": ["idea_spirit"]}));
+    let s = selection(&plan_spirit(&h));
+    assert_eq!(s["applied"], "zzz_spirits", "{s:#}");
+    assert_eq!(s["why"], "family_list");
+}
+
+#[test]
+fn the_plan_says_which_tier_supplied_the_references_when_no_style_applies() {
+    let game = fake_game(8);
+    let h = harness_with_game(game.path());
+    mod_spirits(h.root(), "my_feature", 12, [120, 120, 120], true);
+    let s = selection(&plan_spirit(&h));
+    assert_eq!(s["why"], "none");
+    assert_eq!(s["contributions"][0]["tier"], 3);
+    assert_eq!(s["contributions"][0]["source"], "mod assets");
+    assert!(!s["contributions"][0]["references"].as_array().unwrap().is_empty());
+}
+
+#[test]
+fn families_info_lists_each_style_and_whether_it_is_automatic() {
+    let game = fake_game(8);
+    let h = harness_with_game(game.path());
+    save_style(&h, "gouache", json!({}));
+    save_style(&h, "house", json!({"default": true}));
+    let info = h.engine.families_info(serde_json::from_value(json!({"family": "idea_spirit"})).unwrap()).unwrap();
+    let styles = info["family"]["style_sources"]["style_profiles"].as_array().unwrap().clone();
+    let by = |n: &str| styles.iter().find(|s| s["name"] == n).unwrap().clone();
+    assert_eq!(by("gouache")["applied_automatically"], Value::Null);
+    assert_eq!(by("house")["applied_automatically"], "default");
+}
+
+const MOD_FORM_LINE: &str = "Match the form and framing of the mod's reference images";
+
+#[test]
+fn mod_references_win_over_the_vanilla_form_rule_and_the_plan_says_so() {
+    let game = fake_game(8);
+    let h = harness_with_game(game.path());
+    mod_spirits(h.root(), "my_feature", 12, [120, 120, 120], true);
+    let plan = plan_spirit(&h);
+    assert!(plan.prompt.text.contains(MOD_FORM_LINE), "{}", plan.prompt.text);
+    // the line sits after the reference list, so it refers to those images
+    assert!(plan.prompt.text.find("Reference images, in the order attached").unwrap() < plan.prompt.text.find(MOD_FORM_LINE).unwrap());
+    let s = selection(&plan);
+    assert_eq!(s["form_precedence"], "mod_references");
+    assert!(s["form_note"].as_str().unwrap().contains("win over the vanilla form rule"));
+}
+
+#[test]
+fn caller_style_anchors_win_over_the_vanilla_form_and_no_vanilla_reference_goes_with_them() {
+    let game = fake_game(8);
+    let h = harness_with_game(game.path());
+    for i in 0..4 {
+        write_png(h.root(), &format!("references/tno/medal_{i}.png"), &spirit_icon([150, 150, 160], true, i));
+    }
+    let refs: Vec<Value> = (0..4).map(|i| json!({"path": format!("references/tno/medal_{i}.png"), "role": "style_anchor"})).collect();
+    let plan = h
+        .engine
+        .plan(
+            serde_json::from_value(json!({
+                "family": "idea_spirit", "feature_slug": "f", "asset": "iron_will", "brief": "an iron will", "provider": "openai",
+                "quality": "low", "references": refs
+            }))
+            .unwrap(),
+        )
+        .unwrap();
+    assert!(plan.prompt.text.contains("Match their form, framing, materials and palette"), "{}", plan.prompt.text);
+    assert!(!plan.prompt.text.contains(MOD_FORM_LINE));
+    let s = selection(&plan);
+    assert_eq!(s["form_precedence"], "caller_references");
+    // the vanilla tier was chosen but none of it is sent beside the caller's anchors
+    let src = sources(&plan);
+    assert_eq!(src["chosen_tier"], 4);
+    let chosen = src["chosen"].as_array().unwrap();
+    assert!(!chosen.is_empty());
+    assert!(chosen.iter().all(|c| c["sent_to_provider"] == false), "{chosen:?}");
+    assert!(s["contributions"].as_array().unwrap().is_empty());
+}
+
+#[test]
+fn a_shelf_copy_is_the_mods_form_too() {
+    let game = fake_game(8);
+    let h = harness_with_game(game.path());
+    let dir = ".claude/skills/some-skill/assets/gfx_references/icons/ideas";
+    for i in 0..6 {
+        write_png(h.root(), &format!("{dir}/shelf_{i}.png"), &spirit_icon([100 + i as u8 * 8, 100, 90], i % 2 == 0, i));
+    }
+    let plan = plan_spirit(&h);
+    assert_eq!(sources(&plan)["chosen_tier"], 2);
+    assert!(plan.prompt.text.contains(MOD_FORM_LINE));
+    assert_eq!(selection(&plan)["form_precedence"], "mod_references");
+}
+
+#[test]
+fn vanilla_references_leave_the_vanilla_form_rule_alone() {
+    let game = fake_game(8);
+    let h = harness_with_game(game.path());
+    let plan = plan_spirit(&h);
+    assert_eq!(sources(&plan)["chosen_tier"], 4);
+    assert!(!plan.prompt.text.contains(MOD_FORM_LINE), "{}", plan.prompt.text);
+    assert_eq!(selection(&plan)["form_precedence"], "vanilla_rule");
+    // and with no references at all
+    let h2 = openai_harness();
+    let plan = plan_spirit(&h2);
+    assert!(!plan.prompt.text.contains(MOD_FORM_LINE));
+    assert_eq!(selection(&plan)["form_precedence"], "vanilla_rule");
+}
+
+#[test]
+fn a_pinned_style_alone_does_not_trigger_the_mod_form_line() {
+    // tier 1 references are style anchors, not the mod's shipped art: only tiers 2 and 3 carry a form
+    let game = fake_game(8);
+    let h = harness_with_game(game.path());
+    save_style(&h, "spirits_only", json!({"families": ["idea_spirit"]}));
+    let plan = plan_spirit(&h);
+    assert_eq!(sources(&plan)["chosen_tier"], 1);
+    assert!(!plan.prompt.text.contains(MOD_FORM_LINE));
+}
+
+/// A special project plan whose measured references are smooth shaded bodies (as a mod's earlier filled icons are)
+/// still describes line art in its Style section: a 0.3.1 plan asked for line art with no shading in Requirements and
+/// then for "smooth, softly shaded surfaces" in Style.
+#[test]
+fn a_special_project_plan_never_asks_for_shading_in_its_style_section() {
+    let h = openai_harness();
+    for i in 0..10u32 {
+        let mut img = Rgba::new(161, 98);
+        for y in 20..80u32 {
+            for x in 40 + i..120 {
+                let v = (200 - y) as u8;
+                img.set_px(x, y, [v, v, v, 255]);
+            }
+        }
+        write_png(h.root(), &format!("gfx/interface/special_project/project_icons/mine/sp_{i:02}.png"), &img);
+    }
+    let plan = h
+        .engine
+        .plan(
+            serde_json::from_value(json!({
+                "family": "special_project_icon", "feature_slug": "f", "asset": "rocket", "brief": "a rocket on a gantry", "provider": "openai", "quality": "low"
+            }))
+            .unwrap(),
+        )
+        .unwrap();
+    let text = &plan.prompt.text;
+    let style = text.split("\nStyle:\n").nth(1).expect("a Style section").split("\n\n").next().unwrap().to_ascii_lowercase();
+    assert!(style.contains("line art") && style.contains("interior stays empty"), "{style}");
+    for w in imagegen_core::styledesc::SHADING_WORDS {
+        assert!(!style.contains(w), "'{w}' in the Style section: {style}");
+    }
+    let requirements = text.split("\nRequirements:\n").nth(1).unwrap().split("\n\n").next().unwrap();
+    assert!(requirements.contains("No shading"), "{requirements}");
 }

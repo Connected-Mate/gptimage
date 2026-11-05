@@ -139,7 +139,7 @@ fn a_blend_glow_is_drawn_on_black_and_gets_its_dim_frame_from_the_bright_one() {
     assert!(h.exists(anim["frame_sheet"].as_str().unwrap()));
 
     // install registers a frameAnimatedSpriteType with the vanilla glow fields
-    let approval = h.approve(&id, "animation_v1")["approval_id"].as_str().unwrap().to_string();
+    let approval = h.approve(&id, "animation_v3")["approval_id"].as_str().unwrap().to_string();
     h.install(&id, &approval, json!({"mode": "register"})).unwrap();
     let gfx = String::from_utf8(h.read("interface/iron_pact_animated.gfx")).unwrap();
     for line in [
@@ -172,7 +172,7 @@ fn a_spin_turns_the_base_a_full_circle_in_twenty_frames() {
     assert_eq!(v["status"], "pass", "{v:#}");
     let pv = h.preview(&id);
     assert_eq!(pv["animation"]["loop_gif_pictures"], 20);
-    let approval = h.approve(&id, "animation_v1")["approval_id"].as_str().unwrap().to_string();
+    let approval = h.approve(&id, "animation_v3")["approval_id"].as_str().unwrap().to_string();
     h.install(&id, &approval, json!({"mode": "register"})).unwrap();
     let gfx = String::from_utf8(h.read("interface/iron_pact_animated.gfx")).unwrap();
     assert!(gfx.contains("noOfFrames = 20") && gfx.contains("animation_rate_fps = 7") && gfx.contains("loadType = \"INGAME\""), "{gfx}");

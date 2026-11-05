@@ -273,6 +273,12 @@ pub struct ReviewedRecord {
     pub notes: String,
     /// Approval id, present for approvals. Install needs it.
     pub approval_id: Option<String>,
+    /// The measured vanilla-match check the review ran (absent in reviews recorded before 0.3.2).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub vanilla_check: Option<Value>,
+    /// The reviewer's override of the vanilla-match check, with its reason, when one was given.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub vanilla_override: Option<Value>,
 }
 
 /// One installed file.

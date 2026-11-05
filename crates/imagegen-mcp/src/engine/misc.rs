@@ -15,6 +15,8 @@ use serde_json::{json, Value};
 
 use crate::api::{FamiliesParams, LedgerParams, ReferencesAction, ReferencesParams};
 
+use imagegen_core::error::RetryClass;
+
 use super::{EResult, Engine, EngineError};
 
 impl Engine {
@@ -95,7 +97,7 @@ impl Engine {
             .into_iter()
             .filter_map(|name| style::load(&self.fs, &name).ok())
             .filter(|s| s.applies_to(prof.family))
-            .map(|s| json!({"name": s.name, "pinned_references": s.references.len(), "approved_by": s.approved_by, "provider": s.provider, "model": s.model}))
+            .map(|s| json!({"name": s.name, "pinned_references": s.references.len(), "approved_by": s.approved_by, "provider": s.provider, "model": s.model, "applied_automatically": s.auto_applies_to(prof.family).map(|w| w.as_str()), "families": s.families, "default": s.default}))
             .collect();
         let dirs: Vec<Value> = prof
             .imagegen
@@ -108,11 +110,11 @@ impl Engine {
             })
             .collect();
         let pinned = self.pinned_style_for(prof.family, None);
-        let resolved = self.resolve_style(prof, pinned.as_ref(), imagegen_core::stylesrc::DEFAULT_SEND, true);
+        let resolved = self.resolve_style(prof, pinned.as_ref(), imagegen_core::stylesrc::DEFAULT_SEND, true, None);
         json!({
             "style_profiles": styles,
             "reference_dirs": dirs,
-            "selection": "automatic, mod first: (1) the project's pinned style for the family, (2) the mod's copy of the asset skill's assets folder, (3) the mod's own installed assets, (4) vanilla art from the installed game. The first tier with at least 3 usable images is used. Vanilla may always be sent. A provider's own reference limit can reduce the number sent at plan time",
+            "selection": "automatic, mod first: (1) the project's pinned style for the family (only a style that lists the family or has default = true; a style with no families is available by name but never applied by itself), (2) the mod's copy of the asset skill's assets folder, (3) the mod's own installed assets, (4) vanilla art from the installed game. The first tier with at least 3 usable images is used. Vanilla may always be sent. A provider's own reference limit can reduce the number sent at plan time",
             "automatic": resolved.report,
         })
     }
@@ -313,5 +315,38 @@ impl Engine {
             out["lineage"] = json!(self.ledger.lineage(id)?);
         }
         Ok(out)
+    }
+}
+
+impl Engine {
+    /// `hoi4.image_login`: open the ChatGPT sign-in in the user's default browser and return at once. The sign-in
+    /// finishes in the background when the user completes it in the browser, and `hoi4.image_status` then reports
+    /// it. Nothing is asked and nothing is typed: signing in accepts the risk note (maintainer, 2026-11-05).
+    pub fn login(&self) -> EResult<Value> {
+        use provider_chatgpt_login::{cli, route::Route, store::CredentialStore};
+        provider_chatgpt_login::evaluate_gates(crate::plugin::plugin_mode(self.mode))
+            .map_err(|e| EngineError::new("login_unavailable", e, RetryClass::Terminal))?;
+        let store = CredentialStore::for_environment(&*self.env).map_err(|e| EngineError::new("login_unavailable", e, RetryClass::Terminal))?;
+        let revoked = Route::new(store.state_dir()).state().revoked_message();
+        if revoked.is_none() {
+            if let Ok(Some(c)) = store.load() {
+                return Ok(json!({"status": "already_signed_in", "state": provider_chatgpt_login::provider::describe(&c)}));
+            }
+        }
+        // HOI4_IMAGEGEN_NO_BROWSER only prints the address, for a machine where opening a browser is unwanted
+        let print_only = self.env.get("HOI4_IMAGEGEN_NO_BROWSER").is_some();
+        let started = cli::start_login(&*self.env, crate::plugin::plugin_mode(self.mode), &mut |url| {
+            if !print_only {
+                cli::open_browser(url);
+            }
+        })
+        .map_err(|e| EngineError::new("login_unavailable", e, RetryClass::Terminal))?;
+        Ok(json!({
+            "status": "browser_opened",
+            "url": started.url,
+            "waits_secs": started.timeout_secs,
+            "next": "Sign in with your own ChatGPT account in the browser page that opened (the url above if none did). Signing in accepts the risk note, which the page sums up. hoi4.image_status reports the sign-in once it is done.",
+            "risk_note": provider_chatgpt_login::consent::RISK_NOTE,
+        }))
     }
 }

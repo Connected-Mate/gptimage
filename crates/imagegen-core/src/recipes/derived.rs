@@ -8,7 +8,8 @@
 //! | [`DeriveKind::SmallEmblem`] | division emblem | `division_templates_small/` 30x12: the large emblem fitted to about 0.4 scale, light grey (values 124 to 211), with a black outline | fit the subject to 28x10 at most 30/76 scale, remap its luminance to 124..211, add a black outline at 20 percent of the neighbouring alpha |
 //! | [`DeriveKind::TextIcon`] | on-map counter | `gfx/texticons/unit_*_icon_small.dds`: the on-map strip, frame 1 tinted green, frame 2 (the NATO box) unchanged in 22 of 34 pairs | frame 1 RGB multiplied by the least-squares tint (0.573, 0.735, 0.573), frame 2 copied |
 //! | [`DeriveKind::Miniature`] | faction logo | `*_miniature` 32x32: frame 1's emblem fitted edge to edge (median bounding box 32 px) | frame 1's subject fitted to 32x32 |
-//! | [`DeriveKind::HalfSize`] | medal (`_large` to the small strip), landmark (large to `_small`) | medals: the small strip is the large one downscaled (median MAE 2.6 against Lanczos) | Lanczos3 to half size, frame by frame |
+//! | [`DeriveKind::HalfSize`] | medal (`_large` to the small strip) | medals: the small strip is the large one downscaled (median MAE 2.6 against Lanczos) | Lanczos3 to half size, frame by frame |
+//! | [`DeriveKind::LandmarkSmall`] | landmark (large to `_small`) | `buildings/*_icon_small` 64x32: a flat orange pictogram, yellow-orange at the top to deep orange at the bottom, with a brown edge and a faint black rim, in a box of 26x19 inside 3 px at the sides, 6 at the top and 7 at the bottom | both frames cropped together, fitted into that box, then recoloured on vanilla's orange ramp ([`LANDMARK_SMALL`]) |
 
 use crate::error::{Error, Result};
 use crate::pixels::{over, Rgba};
@@ -39,6 +40,8 @@ pub enum DeriveKind {
     Miniature,
     /// Every frame at half size.
     HalfSize,
+    /// The flat orange pictogram strip of a small landmark.
+    LandmarkSmall,
 }
 
 impl DeriveKind {
@@ -49,6 +52,7 @@ impl DeriveKind {
             DeriveKind::TextIcon => "text_icon",
             DeriveKind::Miniature => "miniature",
             DeriveKind::HalfSize => "half_size",
+            DeriveKind::LandmarkSmall => "landmark_small",
         }
     }
 }
@@ -60,7 +64,65 @@ pub fn derive(kind: DeriveKind, main: &Rgba, frames: u32) -> Result<Rgba> {
         DeriveKind::TextIcon => text_icon(main, frames),
         DeriveKind::Miniature => miniature(main, frames),
         DeriveKind::HalfSize => half_size(main, frames),
+        DeriveKind::LandmarkSmall => landmark_small(main, frames),
     }
+}
+
+/// Vanilla's small landmark ramp (HOI4 1.19.4.1, frame 1 of the 23 `gfx/interface/buildings/*_icon_small.dds` strips
+/// of 64x32): the median colour of the inside pixels whose luminance lies within 8 of 48, 64 ... 192, extended
+/// linearly to black below 48 where vanilla has almost no pixels.
+pub const LANDMARK_RAMP: [[u8; 3]; 13] = [
+    [0, 0, 0],
+    [28, 14, 3],
+    [57, 28, 6],
+    [85, 42, 9],
+    [102, 55, 11],
+    [133, 64, 13],
+    [154, 82, 17],
+    [182, 94, 20],
+    [243, 102, 19],
+    [246, 117, 23],
+    [247, 141, 30],
+    [249, 162, 36],
+    [250, 182, 42],
+];
+
+/// The small landmark look: inside luminance deciles 1, 120, 135 ... 193 (median 148, five bands top to bottom
+/// 185, 172, 160, 148, 139), edge luminance 103 (an orange-brown), and alpha 39 one pixel outside the shape.
+pub const LANDMARK_SMALL: crate::recipes::raid::GradientStyle = crate::recipes::raid::GradientStyle {
+    ramp: &LANDMARK_RAMP,
+    quantiles: [1.0, 120.0, 135.0, 139.0, 143.0, 148.0, 153.0, 158.0, 165.0, 172.0, 193.0],
+    outline: [166, 87, 18],
+    height_weight: 0.5,
+    rim_alpha: 39,
+};
+
+/// The box a small landmark's pictogram is fitted into, `[x0, y0, x1, y1)` (vanilla's median margins: 3 px at the
+/// sides, 6 at the top, 7 at the bottom of the 32x32 frame).
+pub const LANDMARK_SMALL_BOX: [u32; 4] = [3, 6, 29, 25];
+
+/// The small landmark strip: frame 1's building fitted into [`LANDMARK_SMALL_BOX`] of a 32x32 frame, every other frame
+/// moved and scaled the same way (so the ruin keeps its size and place against the intact building, and its flames
+/// may rise above the box as vanilla's do), then recoloured as vanilla's flat orange pictograms.
+pub fn landmark_small(strip: &Rgba, frames: u32) -> Result<Rgba> {
+    let parts = strip.split_frames(frames.max(1))?;
+    let b1 = parts[0].alpha_bbox(16).ok_or_else(|| Error::Image("the landmark's frame 1 has no visible subject".into()))?;
+    let [x0, y0, x1, y1] = LANDMARK_SMALL_BOX;
+    let scale = (f64::from(x1 - x0) / f64::from(b1[2] - b1[0])).min(f64::from(y1 - y0) / f64::from(b1[3] - b1[1]));
+    let (fw, fh) = (parts[0].width, parts[0].height);
+    let (tw, th) = (((f64::from(fw) * scale).round() as u32).max(1), ((f64::from(fh) * scale).round() as u32).max(1));
+    // where frame 1's box lands: centred in the vanilla box
+    let ox = f64::from(x0) + (f64::from(x1 - x0) - f64::from(b1[2] - b1[0]) * scale) / 2.0 - f64::from(b1[0]) * scale;
+    let oy = f64::from(y0) + (f64::from(y1 - y0) - f64::from(b1[3] - b1[1]) * scale) / 2.0 - f64::from(b1[1]) * scale;
+    let mut out = Vec::with_capacity(parts.len());
+    for p in &parts {
+        let small = resize_lanczos3(p, tw, th)?;
+        let mut frame = Rgba::new(32, 32);
+        frame.paste(&small, ox.round() as i64, oy.round() as i64);
+        let solid = frame.data.chunks_exact(4).filter(|p| p[3] >= 128).count();
+        out.push(if solid >= 4 { crate::recipes::raid::gradient_map(&frame, &LANDMARK_SMALL)? } else { frame });
+    }
+    Rgba::join_frames(&out)
 }
 
 /// The subject of `img` (alpha of at least 16), resized by `scale` within `max` and centred on a `canvas`.
@@ -218,6 +280,64 @@ mod tests {
         let b = m.alpha_bbox(16).unwrap();
         assert_eq!((b[2] - b[0], b[3] - b[1]), (32, 32));
         assert!(m.px(16, 16)[0] > 150 && m.px(16, 16)[1] < 80, "frame 1, not frame 2");
+    }
+
+    /// Vanilla's large landmark strips, made small by the derivation, against vanilla's own small strips of the same
+    /// landmarks: the same orange (inside median within 15 per channel), the gradient from top to bottom, and about
+    /// the same size in the frame.
+    #[test]
+    fn the_small_landmark_matches_vanillas_orange_pictograms() {
+        use crate::recipes::raid::raid_stats;
+        let g = std::env::var("HOI4_GAME_DIR")
+            .map(std::path::PathBuf::from)
+            .unwrap_or_else(|_| "C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV".into());
+        let mut stack = vec![g.join("gfx/interface/buildings")];
+        let mut files = std::collections::BTreeMap::new();
+        while let Some(d) = stack.pop() {
+            for e in std::fs::read_dir(&d).into_iter().flatten().flatten() {
+                let p = e.path();
+                if p.is_dir() {
+                    stack.push(p);
+                } else if let Some(img) = std::fs::read(&p).ok().and_then(|b| crate::dds::decode(&b).ok()) {
+                    files.insert(p.file_stem().unwrap().to_string_lossy().to_string(), img);
+                }
+            }
+        }
+        let pairs: Vec<(Rgba, Rgba)> = files
+            .iter()
+            .filter(|(n, i)| (i.width, i.height) == (128, 64) && !n.ends_with("_small"))
+            .filter_map(|(n, large)| files.get(&format!("{n}_small")).filter(|s| (s.width, s.height) == (64, 32)).map(|s| (large.clone(), s.clone())))
+            .collect();
+        if pairs.len() < 10 {
+            eprintln!("SKIPPED small landmark vs vanilla: Hearts of Iron IV not found (set HOI4_GAME_DIR)");
+            return;
+        }
+        let first = |s: &Rgba| s.split_frames(2).unwrap().swap_remove(0);
+        let van: Vec<Rgba> = pairs.iter().map(|(_, s)| first(s)).collect();
+        let ours: Vec<Rgba> = pairs.iter().map(|(l, _)| first(&landmark_small(l, 2).unwrap())).collect();
+        let halved: Vec<Rgba> = pairs.iter().map(|(l, _)| first(&half_size(l, 2).unwrap())).collect();
+        let stats = |set: &[Rgba]| raid_stats(&set.iter().collect::<Vec<_>>());
+        let (v, o, h) = (stats(&van), stats(&ours), stats(&halved));
+        let span = |set: &[Rgba]| {
+            let mut w: Vec<u32> = set.iter().filter_map(|i| i.alpha_bbox(128)).map(|b| b[2] - b[0]).collect();
+            w.sort();
+            w[w.len() / 2]
+        };
+        eprintln!(
+            "small landmark, {} pairs, medians\n  vanilla {v:?} width {}\n  half size (before) {h:?} width {}\n  ours {o:?} width {}",
+            pairs.len(),
+            span(&van),
+            span(&halved),
+            span(&ours)
+        );
+        for c in 0..3 {
+            assert!((o.core_rgb[c] - v.core_rgb[c]).abs() <= 15.0, "channel {c}: {o:?} vs {v:?}");
+        }
+        assert!(o.bands[0] > o.bands[4] + 20.0, "light at the top: {o:?}");
+        for (a, b) in o.bands.iter().zip(v.bands) {
+            assert!((a - b).abs() <= 20.0, "bands {:?} vs {:?}", o.bands, v.bands);
+        }
+        assert!((i64::from(span(&ours)) - i64::from(span(&van))).abs() <= 4);
     }
 
     #[test]

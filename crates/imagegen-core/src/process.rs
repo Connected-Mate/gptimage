@@ -42,6 +42,22 @@ pub enum Op {
         #[serde(default = "default_min_alpha")]
         min_alpha: u8,
     },
+    /// Trim to the subject, scale it to fit inside a `box_width` x `box_height` box (aspect kept), and centre it on a
+    /// transparent canvas of exactly `width` x `height`. For families whose vanilla art sits in a box that is not the
+    /// canvas less one margin on every side (medals: a 33x56 box in a 56x84 frame).
+    FitInBox {
+        /// Canvas width.
+        width: u32,
+        /// Canvas height.
+        height: u32,
+        /// Box width.
+        box_width: u32,
+        /// Box height.
+        box_height: u32,
+        /// Alpha threshold for the subject bounds.
+        #[serde(default = "default_min_alpha")]
+        min_alpha: u8,
+    },
     /// Resize to exactly `width` x `height` (Lanczos3, premultiplied alpha).
     Resize {
         /// Target width.
@@ -94,6 +110,12 @@ pub enum Op {
         /// Grain seed.
         seed: i64,
     },
+    /// The operation phase card: the report card's tone, grain and shadow on vanilla's phase picture mask (tilted
+    /// clockwise, a little smaller and lower). See `recipes::report_card::ReportCardParams::phase`.
+    PhaseCard {
+        /// Grain seed.
+        seed: i64,
+    },
     /// Two-frame strip: the fitted icon, then the same icon with the selected-state stroke and glow
     /// (faction and agency logos).
     SelectedFrame {
@@ -119,6 +141,34 @@ pub enum Op {
         kind: crate::recipes::unit_art::UnitArtKind,
         /// The NATO symbol: marks joined by `+`, as `recipes::unit_art::symbol_text` writes them.
         symbol: String,
+    },
+    /// Special project icons: the subject read from alpha (or from a flat background), fitted into vanilla's box and
+    /// redrawn as thin pale white lines on a transparent `width` x `height` canvas. See `recipes::line_art`.
+    LineArt {
+        /// Canvas width.
+        width: u32,
+        /// Canvas height.
+        height: u32,
+    },
+    /// Raid icons: the fitted subject recoloured on vanilla's gold ramp, light at the top and dark at the bottom, with
+    /// the black outline on its edge. See `recipes::raid`.
+    GoldGradient,
+    /// Doctrine icons: the units of the fitted subject filled black, warm accents kept, vanilla's pale outline and glow
+    /// around the black and a dark shadow around the accents. See `recipes::doctrine`.
+    DoctrineLook,
+    /// Technology pictures: stamp the tier numeral (and the capital-ship gem) where vanilla bakes it into the texture.
+    /// See `recipes::tech_overlay`.
+    TechOverlay {
+        /// What to stamp.
+        overlay: crate::recipes::tech_overlay::TechOverlay,
+    },
+    /// Keep frame `index` (from 0) of a strip of `frames` equal frames: the silhouette of an imported counter strip
+    /// that is not in vanilla's material, which the unit art recipe then draws again.
+    FrameOf {
+        /// Frames in the strip.
+        frames: u32,
+        /// The frame kept, from 0.
+        index: u32,
     },
     /// Light on black to alpha: alpha is the brightest channel, colour is divided by it (blend glows).
     BlackToAlpha,
@@ -157,6 +207,7 @@ impl Op {
             Op::CropToAspect { .. } => "crop_to_aspect",
             Op::TrimToSubject { .. } => "trim_to_subject",
             Op::FitSubject { .. } => "fit_subject",
+            Op::FitInBox { .. } => "fit_in_box",
             Op::Resize { .. } => "resize",
             Op::CoverResize { .. } => "cover_resize",
             Op::Defringe { .. } => "defringe",
@@ -165,10 +216,16 @@ impl Op {
             Op::FlattenOn { .. } => "flatten_on",
             Op::Conform { .. } => "conform",
             Op::ReportCard { .. } => "report_card",
+            Op::PhaseCard { .. } => "phase_card",
             Op::SelectedFrame { .. } => "selected_frame",
             Op::DisabledFrame { .. } => "disabled_frame",
             Op::UnitGlyph { .. } => "unit_glyph",
             Op::NatoFrame { .. } => "nato_frame",
+            Op::LineArt { .. } => "line_art",
+            Op::GoldGradient => "gold_gradient",
+            Op::DoctrineLook => "doctrine_look",
+            Op::TechOverlay { .. } => "tech_overlay",
+            Op::FrameOf { .. } => "frame_of",
             Op::BlackToAlpha => "black_to_alpha",
             Op::GlowFrames { .. } => "glow_frames",
             Op::ScrollFrames { .. } => "scroll_frames",
@@ -214,6 +271,7 @@ pub fn apply(img: &Rgba, op: &Op) -> Result<Rgba> {
             img.crop(b[0], b[1], b[2] - b[0], b[3] - b[1])
         }
         Op::FitSubject { width, height, margin, min_alpha } => fit_subject(img, *width, *height, *margin, *min_alpha),
+        Op::FitInBox { width, height, box_width, box_height, min_alpha } => fit_in_box(img, [*width, *height], [*box_width, *box_height], *min_alpha),
         Op::Resize { width, height } => resize_lanczos3(img, *width, *height),
         Op::CoverResize { width, height } => {
             let cropped = crop_to_aspect(img, *width, *height)?;
@@ -235,12 +293,24 @@ pub fn apply(img: &Rgba, op: &Op) -> Result<Rgba> {
         Op::ReportCard { seed } => {
             crate::recipes::report_card::report_card(img, &crate::recipes::report_card::ReportCardParams { seed: *seed, ..Default::default() })
         }
+        Op::PhaseCard { seed } => crate::recipes::report_card::report_card(
+            img,
+            &crate::recipes::report_card::ReportCardParams { seed: *seed, ..crate::recipes::report_card::ReportCardParams::phase() },
+        ),
         Op::SelectedFrame { frames } => crate::recipes::frames::selected_strip(img, *frames),
         Op::DisabledFrame { frames } => crate::recipes::frames::disabled_strip(img, *frames),
         Op::UnitGlyph { kind } => crate::recipes::unit_art::unit_glyph(img, *kind),
         Op::NatoFrame { kind, symbol } => {
             let marks = crate::recipes::unit_art::parse_symbol(symbol)?;
             crate::recipes::unit_art::counter_strip(img, *kind, &marks)
+        }
+        Op::LineArt { width, height } => crate::recipes::line_art::line_art(img, *width, *height),
+        Op::GoldGradient => crate::recipes::raid::gold_gradient(img),
+        Op::DoctrineLook => crate::recipes::doctrine::doctrine_look(img),
+        Op::TechOverlay { overlay } => crate::recipes::tech_overlay::stamp(img, overlay),
+        Op::FrameOf { frames, index } => {
+            let parts = img.split_frames(*frames)?;
+            parts.into_iter().nth(*index as usize).ok_or_else(|| Error::Invalid(format!("frame {index} of a {frames}-frame strip does not exist")))
         }
         Op::BlackToAlpha => Ok(crate::animation::black_to_alpha(img)),
         Op::GlowFrames { frames, dim } => crate::animation::glow_strip(img, *frames, *dim),
@@ -274,6 +344,11 @@ pub fn upscale_factor(img: &Rgba, op: &Op) -> Option<f64> {
             let (sw, sh) = (f64::from(b[2] - b[0]), f64::from(b[3] - b[1]));
             let (aw, ah) = (f64::from(*width - 2 * margin), f64::from(*height - 2 * margin));
             Some((aw / sw).min(ah / sh))
+        }
+        Op::LineArt { width, height } => crate::recipes::line_art::fit_scale(img, *width, *height),
+        Op::FitInBox { box_width, box_height, min_alpha, .. } => {
+            let b = img.alpha_bbox(*min_alpha)?;
+            Some((f64::from(*box_width) / f64::from(b[2] - b[0])).min(f64::from(*box_height) / f64::from(b[3] - b[1])))
         }
         _ => None,
     }
@@ -329,6 +404,22 @@ fn crop_to_aspect(img: &Rgba, aw: u32, ah: u32) -> Result<Rgba> {
     };
     let (cw, ch) = (cw.max(1) as u32, ch.max(1) as u32);
     img.crop((img.width - cw) / 2, (img.height - ch) / 2, cw, ch)
+}
+
+fn fit_in_box(img: &Rgba, canvas: [u32; 2], fit: [u32; 2], min_alpha: u8) -> Result<Rgba> {
+    let [w, h] = canvas;
+    if fit[0] == 0 || fit[1] == 0 || fit[0] > w || fit[1] > h {
+        return Err(Error::Invalid(format!("a {}x{} box does not fit a {w}x{h} canvas", fit[0], fit[1])));
+    }
+    let b = img.alpha_bbox(min_alpha).ok_or_else(|| Error::Image("no visible subject to fit".into()))?;
+    let subject = img.crop(b[0], b[1], b[2] - b[0], b[3] - b[1])?;
+    let scale = (f64::from(fit[0]) / f64::from(subject.width)).min(f64::from(fit[1]) / f64::from(subject.height));
+    let tw = ((f64::from(subject.width) * scale).round() as u32).clamp(1, fit[0]);
+    let th = ((f64::from(subject.height) * scale).round() as u32).clamp(1, fit[1]);
+    let scaled = resize_lanczos3(&subject, tw, th)?;
+    let mut out = Rgba::new(w, h);
+    out.paste(&scaled, i64::from((w - tw) / 2), i64::from((h - th) / 2));
+    Ok(out)
 }
 
 fn fit_subject(img: &Rgba, w: u32, h: u32, margin: u32, min_alpha: u8) -> Result<Rgba> {
@@ -771,6 +862,11 @@ mod tests {
             Op::DisabledFrame { frames: 2 },
             Op::UnitGlyph { kind: crate::recipes::unit_art::UnitArtKind::CounterSmall },
             Op::NatoFrame { kind: crate::recipes::unit_art::UnitArtKind::CounterLarge, symbol: "cross".into() },
+            Op::LineArt { width: 161, height: 98 },
+            Op::GoldGradient,
+            Op::DoctrineLook,
+            Op::TechOverlay { overlay: crate::recipes::tech_overlay::TechOverlay { tier: 2, gem: false, position: None } },
+            Op::FrameOf { frames: 2, index: 0 },
         ] {
             let tag = serde_json::to_value(&op).unwrap()["op"].as_str().unwrap().to_string();
             assert_eq!(tag, op.name(), "name() is the serde tag");

@@ -12,13 +12,17 @@
 //!
 //! | Recipe | Families | Required stages, in order |
 //! |---|---|---|
-//! | `icon` v1 | transparent icons, technology, modifier icon, GUI texture | `fit_subject` (`conform` when finished art was imported at an accepted size), `grayscale` for grayscale families |
+//! | `icon` v1 | transparent icons, technology, modifier icon, GUI texture | `fit_subject` (`conform` when finished art was imported at an accepted size), `grayscale` for grayscale families; technology adds `tech_overlay` when the caller asks for a tier numeral |
+//! | `raid` v1 | raid | `fit_subject`, `gold_gradient` (vanilla's gold ramp and black outline), or one `conform` for imported finished art |
+//! | `doctrine` v1 | doctrine | `fit_subject`, `doctrine_look` (black units, pale outline and glow), or one `conform` for imported finished art |
 //! | `picture` v1 | opaque pictures, news, super event | `flatten_on`, `cover_resize` or `conform`, `grayscale` for news |
 //! | `report_card` v2 | report event | `report_card` or `conform` (an imported finished card) |
+//! | `phase_card` v1 | operation picture | `phase_card` (the report card on vanilla's phase picture mask) or `conform` (an imported finished card) |
 //! | `selected_strip` v1 | faction logo, agency logo | `fit_subject`, `selected_frame` (or one `conform` for an imported finished strip) |
 //! | `landmark_strip` v1 | building | `fit_subject`, `second_frame`: the ruined state, a second candidate of the same asset (or one `conform`) |
-//! | `unit_counter` v1 | battalion and on-map counters | `unit_glyph` (silhouette to vanilla's material), `nato_frame` (the NATO box as frame 2), or one `conform` for an imported finished strip |
-//! | `division_symbol` v1 | division emblem | `unit_glyph`, or `conform` for an imported finished 76x42 symbol |
+//! | `unit_counter` v1 | battalion and on-map counters | `unit_glyph` (silhouette to vanilla's material), `nato_frame` (the NATO box as frame 2), or one `conform` for an imported finished strip that is already in vanilla's material; any other strip is drawn again from its frame 1 (`frame_of`, `unit_glyph`, `nato_frame`) |
+//! | `division_symbol` v1 | division emblem | `unit_glyph`, or `conform` for an imported finished 76x42 symbol already in vanilla's material |
+//! | `line_art` v1 | special project icon | `line_art` (any image to vanilla's pale line drawing) or `conform` for imported finished art, then `grayscale` |
 //! | `portrait` v1 | the four portraits | `flatten_on`, `extract_portrait` (or `conform` for a finished 156x210) |
 //! | `advisor_card` v1 | advisor card | `advisor_card` (or `conform` for a finished 65x67 card) |
 //! | `achievement` v1 | achievement | `fit_subject`, `achievement_triplet` |
@@ -46,6 +50,11 @@ pub const PRE_STEP_OPS: [&str; 4] = ["chroma_key", "crop_to_aspect", "defringe",
 
 /// What flat colour provider alpha is composited over in an opaque family.
 pub const FLATTEN_BACKGROUND: [u8; 3] = [0, 0, 0];
+
+/// The box a medal is fitted into on its 56x84 frame: vanilla's medal is 33 px wide and 56 px tall in the median of
+/// the 85 frames of its large strips (HOI4 1.19.4.1; margins 12 px at the sides, 13 at the top, 15 at the bottom), so
+/// it spans 0.667 of the frame. Fitted edge to edge with the default 2 px margin it spanned 0.94 to 0.95.
+pub const MEDAL_BOX: [u32; 2] = [33, 56];
 
 /// Achievement subject layers keep this margin so the template shows around them.
 pub const ACHIEVEMENT_MARGIN: u32 = 2;
@@ -85,6 +94,8 @@ pub enum Recipe {
     Picture,
     /// Report event card.
     ReportCard,
+    /// Operation phase picture: the report card on vanilla's phase mask.
+    PhaseCard,
     /// Two frames, the second selected.
     SelectedStrip,
     /// Two frames: the landmark, then its ruined state (a second candidate of the same asset), as vanilla does.
@@ -93,6 +104,12 @@ pub enum Recipe {
     UnitCounter,
     /// A division template symbol: the silhouette in vanilla's material.
     DivisionSymbol,
+    /// A special project icon: any image redrawn as vanilla's thin pale lines on transparency.
+    LineArt,
+    /// A raid icon: the subject in vanilla's gold gradient with its black outline.
+    Raid,
+    /// A doctrine icon: black units with vanilla's pale outline and glow, warm accents kept.
+    Doctrine,
     /// Portraits.
     Portrait,
     /// Advisor card.
@@ -118,10 +135,14 @@ impl Recipe {
             Recipe::Icon => "icon",
             Recipe::Picture => "picture",
             Recipe::ReportCard => "report_card",
+            Recipe::PhaseCard => "phase_card",
             Recipe::SelectedStrip => "selected_strip",
             Recipe::LandmarkStrip => "landmark_strip",
             Recipe::UnitCounter => "unit_counter",
             Recipe::DivisionSymbol => "division_symbol",
+            Recipe::LineArt => "line_art",
+            Recipe::Raid => "raid",
+            Recipe::Doctrine => "doctrine",
             Recipe::Portrait => "portrait",
             Recipe::AdvisorCard => "advisor_card",
             Recipe::Achievement => "achievement",
@@ -138,6 +159,9 @@ impl Recipe {
         match self {
             Recipe::ReportCard => crate::recipes::report_card::RECIPE_VERSION,
             Recipe::UnitCounter | Recipe::DivisionSymbol => crate::recipes::unit_art::RECIPE_VERSION,
+            Recipe::LineArt => crate::recipes::line_art::RECIPE_VERSION,
+            Recipe::Raid => crate::recipes::raid::RECIPE_VERSION,
+            Recipe::Doctrine => crate::recipes::doctrine::RECIPE_VERSION,
             Recipe::AnimGlow | Recipe::AnimKeyframes | Recipe::AnimScroll | Recipe::AnimSpin => crate::animation::RECIPE_VERSION,
             _ => 1,
         }
@@ -157,10 +181,14 @@ impl Recipe {
 pub fn recipe_of(profile: &Profile) -> Recipe {
     match profile.family {
         Family::ReportEvent => Recipe::ReportCard,
+        Family::OperationPicture => Recipe::PhaseCard,
         Family::FactionLogo | Family::AgencyLogo => Recipe::SelectedStrip,
         Family::Building => Recipe::LandmarkStrip,
         Family::CounterLarge | Family::CounterSmall => Recipe::UnitCounter,
         Family::DivisionEmblem => Recipe::DivisionSymbol,
+        Family::SpecialProjectIcon => Recipe::LineArt,
+        Family::Raid => Recipe::Raid,
+        Family::Doctrine => Recipe::Doctrine,
         Family::LeaderPortrait | Family::CommanderPortrait | Family::OperativePortrait | Family::ScientistPortrait => Recipe::Portrait,
         Family::AdvisorCard => Recipe::AdvisorCard,
         Family::Achievement => Recipe::Achievement,
@@ -215,6 +243,9 @@ pub struct ChainPlan {
     pub ops: Vec<Op>,
     /// Engine-level stages to run after the ops.
     pub finishers: Vec<Finisher>,
+    /// Why the plan differs from what the caller may expect, for example imported finished art that is drawn again
+    /// because it is not in vanilla's material.
+    pub notes: Vec<String>,
 }
 
 /// Grain seed of a report card: the first eight hex digits of the candidate's SHA-256.
@@ -263,6 +294,8 @@ pub struct FinishOptions {
     pub counter_symbol: Option<String>,
     /// The asset name, used to infer the NATO symbol.
     pub asset: Option<String>,
+    /// Technology only: the tier numeral (and gem) to stamp where vanilla bakes it into the picture.
+    pub overlay: Option<crate::recipes::tech_overlay::TechOverlay>,
 }
 
 /// Which unit art a family makes.
@@ -313,15 +346,38 @@ pub fn plan_finishing_with(
     let accepted_single = |s: [u32; 2]| profile.accepted.contains(&s) || s == canvas;
     let mut ops: Vec<Op> = Vec::new();
     let mut finishers = Vec::new();
+    let mut notes = Vec::new();
+    if opts.overlay.is_some() && profile.family != Family::Technology {
+        return Err(Error::Invalid(format!("overlay (a tier numeral) is for technology pictures, not {}", profile.family)));
+    }
     match recipe {
         Recipe::Icon => {
             if imported && accepted_single(size) {
                 ops.push(Op::Conform { width: size[0], height: size[1] });
             } else {
                 ops = transparent_icon_ops(img, canvas, keyed, profile.margin)?;
+                if profile.family == Family::Medal && canvas == [56, 84] {
+                    if let Some(last) = ops.last_mut() {
+                        *last = Op::FitInBox { width: 56, height: 84, box_width: MEDAL_BOX[0], box_height: MEDAL_BOX[1], min_alpha: 16 };
+                    }
+                }
             }
             if profile.imagegen.grayscale {
                 ops.push(Op::Grayscale);
+            }
+            if let Some(overlay) = &opts.overlay {
+                crate::recipes::tech_overlay::roman(overlay.tier)?;
+                ops.push(Op::TechOverlay { overlay: overlay.clone() });
+            }
+        }
+        Recipe::Raid | Recipe::Doctrine => {
+            if imported && accepted_single(size) {
+                ops.push(Op::Conform { width: size[0], height: size[1] });
+            } else {
+                // the doctrine glow reaches two pixels past the subject, so the subject sits that much further in
+                let margin = if recipe == Recipe::Doctrine { profile.margin + crate::recipes::doctrine::GLOW_PX } else { profile.margin };
+                ops = transparent_icon_ops(img, canvas, keyed, margin)?;
+                ops.push(if recipe == Recipe::Raid { Op::GoldGradient } else { Op::DoctrineLook });
             }
         }
         Recipe::Picture => {
@@ -335,12 +391,13 @@ pub fn plan_finishing_with(
                 ops.push(Op::Grayscale);
             }
         }
-        Recipe::ReportCard => {
+        Recipe::ReportCard | Recipe::PhaseCard => {
             if imported && is_report_card(img) {
                 ops.push(Op::Conform { width: 210, height: 176 });
             } else {
                 ops.push(Op::FlattenOn { background: FLATTEN_BACKGROUND });
-                ops.push(Op::ReportCard { seed: seed_from_sha(candidate_sha256) });
+                let seed = seed_from_sha(candidate_sha256);
+                ops.push(if recipe == Recipe::ReportCard { Op::ReportCard { seed } } else { Op::PhaseCard { seed } });
             }
         }
         Recipe::SelectedStrip | Recipe::LandmarkStrip => {
@@ -370,9 +427,24 @@ pub fn plan_finishing_with(
             } else {
                 accepted_single(size)
             };
-            if imported && finished {
+            // finished art is kept only when it already is vanilla's material; anything else is drawn again from its
+            // frame 1, so every route (generate, edit, import) ends in the unit art recipe
+            let problems = if imported && finished { crate::recipes::unit_art::material_problems(img, kind) } else { Vec::new() };
+            if imported && finished && problems.is_empty() {
                 ops.push(Op::Conform { width: size[0], height: size[1] });
             } else {
+                if imported && finished {
+                    notes.push(format!(
+                        "the imported {}x{} art is not in vanilla's {} material ({}), so it is drawn again from its frame 1 as a silhouette",
+                        size[0],
+                        size[1],
+                        profile.family,
+                        problems.join("; ")
+                    ));
+                    if recipe == Recipe::UnitCounter && frames > 1 {
+                        ops.push(Op::FrameOf { frames, index: 0 });
+                    }
+                }
                 let style = crate::recipes::unit_art::GlyphStyle::of(kind);
                 if canvas != style.frame {
                     return Err(Error::Invalid(format!(
@@ -385,6 +457,18 @@ pub fn plan_finishing_with(
                     let (symbol, _) = counter_symbol(opts)?;
                     ops.push(Op::NatoFrame { kind, symbol });
                 }
+            }
+        }
+        Recipe::LineArt => {
+            if imported && accepted_single(size) {
+                ops.push(Op::Conform { width: size[0], height: size[1] });
+            } else {
+                // the recipe reads the subject from alpha or from a flat background itself, so an opaque source is
+                // not refused here, and it redraws every line in white, so a key-coloured fringe needs no cleaning
+                ops.push(Op::LineArt { width: canvas[0], height: canvas[1] });
+            }
+            if profile.imagegen.grayscale {
+                ops.push(Op::Grayscale);
             }
         }
         Recipe::Portrait => {
@@ -458,7 +542,7 @@ pub fn plan_finishing_with(
     if !crate::lookup::derived_companions(profile.family, canvas).is_empty() {
         finishers.push(Finisher::DerivedCompanions);
     }
-    Ok(ChainPlan { ops, finishers })
+    Ok(ChainPlan { ops, finishers, notes })
 }
 
 /// Keys of every companion image a processed record of this family and canvas must carry: the recipe's, then the
@@ -473,13 +557,17 @@ pub fn companion_keys_of(profile: &Profile, canvas: [u32; 2]) -> Vec<&'static st
 /// may satisfy several consecutive stages: it stands for finished art accepted whole.
 pub fn required_stages(profile: &Profile) -> Vec<Vec<&'static str>> {
     let mut stages: Vec<Vec<&'static str>> = match recipe_of(profile) {
-        Recipe::Icon => vec![vec!["fit_subject", "conform"]],
+        Recipe::Icon => vec![vec!["fit_subject", "fit_in_box", "conform"]],
         Recipe::Picture => vec![vec!["flatten_on"], vec!["cover_resize", "conform"]],
         Recipe::ReportCard => vec![vec!["report_card", "conform"]],
+        Recipe::PhaseCard => vec![vec!["phase_card", "conform"]],
         Recipe::SelectedStrip => vec![vec!["fit_subject", "conform"], vec!["selected_frame", "conform"]],
         Recipe::LandmarkStrip => vec![vec!["fit_subject", "conform"], vec!["second_frame", "conform"]],
         Recipe::UnitCounter => vec![vec!["unit_glyph", "conform"], vec!["nato_frame", "conform"]],
         Recipe::DivisionSymbol => vec![vec!["unit_glyph", "conform"]],
+        Recipe::LineArt => vec![vec!["line_art", "conform"]],
+        Recipe::Raid => vec![vec!["fit_subject", "conform"], vec!["gold_gradient", "conform"]],
+        Recipe::Doctrine => vec![vec!["fit_subject", "conform"], vec!["doctrine_look", "conform"]],
         Recipe::Portrait => vec![vec!["flatten_on"], vec!["extract_portrait", "conform"]],
         Recipe::AdvisorCard => vec![vec!["advisor_card", "conform"]],
         Recipe::Achievement => vec![vec!["fit_subject", "conform"], vec!["achievement_triplet"]],
@@ -669,6 +757,24 @@ mod tests {
     }
 
     #[test]
+    fn operation_pictures_become_phase_cards() {
+        let p = prof(Family::OperationPicture);
+        assert_eq!((recipe_of(&p).id(), recipe_of(&p).version()), ("phase_card", 1));
+        let sha = "ab".repeat(32);
+        let plan = plan_finishing(&p, p.canvas, &Rgba::filled(300, 200, [90, 80, 70, 255]), false, false, &sha).unwrap();
+        assert_eq!(plan.ops, vec![Op::FlattenOn { background: [0, 0, 0] }, Op::PhaseCard { seed: 0xabababab }]);
+        let (card, _) = crate::process::run_chain(&Rgba::filled(300, 200, [90, 80, 70, 255]), &plan.ops).unwrap();
+        assert!(is_report_card(&card));
+        // the card passes the card checks the family's row needs (size, checker, card_corners)
+        let checks: Vec<String> = ["size", "checker", "card_corners"].iter().map(|s| s.to_string()).collect();
+        let report = crate::validate::validate_image(&card, &p, &checks, &Default::default());
+        assert!(report.findings.is_empty(), "{:?}", report.findings);
+        assert_eq!(plan_finishing(&p, p.canvas, &card, true, false, &sha).unwrap().ops, vec![Op::Conform { width: 210, height: 176 }]);
+        assert!(audit(&record(&p, &plan.ops, &[], &[], ""), &p).is_empty());
+        assert!(!audit(&record(&p, &plan.ops[..1], &[], &[], ""), &p).is_empty());
+    }
+
+    #[test]
     fn strips_are_built_by_the_chain_and_counters_only_accept_finished_art() {
         let logo = prof(Family::FactionLogo);
         let plan = plan_finishing(&logo, logo.canvas, &blob(), false, false, "").unwrap();
@@ -691,12 +797,18 @@ mod tests {
         use crate::recipes::unit_art::UnitArtKind;
         let counter = prof(Family::CounterLarge);
         assert_eq!(recipe_of(&counter), Recipe::UnitCounter);
-        assert_eq!(
-            plan_finishing(&counter, counter.canvas, &Rgba::new(152, 42), true, false, "").unwrap().ops,
-            vec![Op::Conform { width: 152, height: 42 }]
-        );
+        // a finished strip in vanilla's material is kept as it is
+        let (finished, _) =
+            crate::process::run_chain(&blob(), &plan_finishing(&counter, counter.canvas, &blob(), false, false, "").unwrap().ops).unwrap();
+        let kept = plan_finishing(&counter, counter.canvas, &finished, true, false, "").unwrap();
+        assert_eq!(kept.ops, vec![Op::Conform { width: 152, height: 42 }]);
+        assert!(kept.notes.is_empty());
+        // a blank strip of the right size is not finished art: it is drawn again from frame 1
+        let blank = plan_finishing(&counter, counter.canvas, &Rgba::new(152, 42), true, false, "").unwrap();
+        assert_eq!(blank.ops[0], Op::FrameOf { frames: 2, index: 0 });
+        assert!(blank.notes[0].contains("drawn again"), "{:?}", blank.notes);
         // generated art (or an imported drawing of another size) gets the glyph and the NATO box
-        let opts = FinishOptions { counter_symbol: None, asset: Some("medium_armor".into()) };
+        let opts = FinishOptions { counter_symbol: None, asset: Some("medium_armor".into()), ..Default::default() };
         let plan = plan_finishing_with(&counter, counter.canvas, &blob(), false, false, "", &opts).unwrap();
         assert_eq!(
             plan.ops,
@@ -708,10 +820,10 @@ mod tests {
         let imported_drawing = plan_finishing(&counter, counter.canvas, &Rgba::new(100, 42), true, false, "").unwrap();
         assert!(matches!(imported_drawing.ops[0], Op::UnitGlyph { .. }));
         // a given symbol wins over the asset name, and a bad one is refused with the list
-        let given = FinishOptions { counter_symbol: Some("infantry+support".into()), asset: Some("medium_armor".into()) };
+        let given = FinishOptions { counter_symbol: Some("infantry+support".into()), asset: Some("medium_armor".into()), ..Default::default() };
         let plan = plan_finishing_with(&counter, counter.canvas, &blob(), false, false, "", &given).unwrap();
         assert_eq!(plan.ops[1], Op::NatoFrame { kind: UnitArtKind::CounterLarge, symbol: "cross+plus".into() });
-        let bad = FinishOptions { counter_symbol: Some("laser".into()), asset: None };
+        let bad = FinishOptions { counter_symbol: Some("laser".into()), asset: None, ..Default::default() };
         assert!(plan_finishing_with(&counter, counter.canvas, &blob(), false, false, "", &bad)
             .unwrap_err()
             .to_string()
@@ -727,9 +839,11 @@ mod tests {
         let plan = plan_finishing(&emblem, emblem.canvas, &blob(), false, false, "").unwrap();
         assert_eq!(plan.ops, vec![Op::UnitGlyph { kind: UnitArtKind::DivisionEmblem }]);
         assert_eq!(plan.finishers, vec![Finisher::DerivedCompanions]);
+        let (symbol, _) = crate::process::run_chain(&blob(), &plan.ops).unwrap();
+        assert_eq!(plan_finishing(&emblem, emblem.canvas, &symbol, true, false, "").unwrap().ops, vec![Op::Conform { width: 76, height: 42 }]);
         assert_eq!(
             plan_finishing(&emblem, emblem.canvas, &Rgba::new(76, 42), true, false, "").unwrap().ops,
-            vec![Op::Conform { width: 76, height: 42 }]
+            vec![Op::UnitGlyph { kind: UnitArtKind::DivisionEmblem }]
         );
         // the processed strip passes the family's own checks
         let (strip, _) =
@@ -740,6 +854,38 @@ mod tests {
         let mut odd = counter.clone();
         odd.canvas = [80, 40];
         assert!(plan_finishing(&odd, odd.canvas, &blob(), false, false, "").is_err());
+    }
+
+    #[test]
+    fn special_project_icons_are_redrawn_as_line_art_and_the_audit_wants_the_drawing() {
+        let p = prof(Family::SpecialProjectIcon);
+        assert_eq!(recipe_of(&p), Recipe::LineArt);
+        assert_eq!((recipe_of(&p).id(), recipe_of(&p).version()), ("line_art", 1));
+        // generated art, cut out or opaque on a flat background, is always redrawn, then kept grayscale
+        let plan = plan_finishing(&p, p.canvas, &blob(), false, false, "").unwrap();
+        assert_eq!(plan.ops, vec![Op::LineArt { width: 161, height: 98 }, Op::Grayscale]);
+        let paper = Rgba::filled(300, 200, [20, 40, 90, 255]);
+        assert_eq!(plan_finishing(&p, p.canvas, &paper, false, false, "").unwrap().ops[0], Op::LineArt { width: 161, height: 98 });
+        // imported finished art at the accepted size is kept
+        assert_eq!(plan_finishing(&p, p.canvas, &Rgba::new(161, 98), true, false, "").unwrap().ops[0], Op::Conform { width: 161, height: 98 });
+        // the processed drawing passes the family's own checks
+        let (out, _) = crate::process::run_chain(&blob(), &plan.ops).unwrap();
+        let report = crate::validate::validate_image(&out, &p, &p.imagegen.checks, &Default::default());
+        assert!(report.findings.iter().all(|f| f.level != crate::validate::Level::Error), "{:?}", report.findings);
+        assert!(report.findings.iter().all(|f| f.code != "GFX-UNDERSIZED-SUBJECT"), "{:?}", report.findings);
+        // the audit wants the drawing: a bare fit, the old icon recipe's stage, is not enough
+        let line = [Op::LineArt { width: 161, height: 98 }, Op::Grayscale];
+        assert!(audit(&record(&p, &line, &[], &[], ""), &p).is_empty());
+        assert!(audit(&record(&p, &[Op::Conform { width: 161, height: 98 }, Op::Grayscale], &[], &[], ""), &p).is_empty());
+        let fit = [Op::FitSubject { width: 161, height: 98, margin: 3, min_alpha: 16 }, Op::Grayscale];
+        let missing = audit(&record(&p, &fit, &[], &[], ""), &p);
+        assert!(missing.iter().any(|m| m.contains("line_art")), "{missing:?}");
+        let no_grey = audit(&record(&p, &line[..1], &[], &[], ""), &p);
+        assert!(no_grey.iter().any(|m| m.contains("grayscale")), "{no_grey:?}");
+        // a record of the old icon recipe is refused by id
+        let mut old = record(&p, &line, &[], &[], "");
+        old.recipe.as_mut().unwrap().id = "icon".into();
+        assert!(audit(&old, &p).iter().any(|m| m.contains("recipe icon v1")));
     }
 
     /// Selected-strip emblems sit as far inside frame 1 as vanilla's, whatever minimum margin the profile sets (the
@@ -769,6 +915,111 @@ mod tests {
         let plan = c(Family::Achievement, &subject, false);
         assert_eq!(plan.finishers, vec![Finisher::AchievementTriplet]);
         assert!(matches!(plan.ops.last().unwrap(), Op::FitSubject { width: 64, height: 64, margin: 2, .. }));
+    }
+
+    fn fixture(name: &str) -> Rgba {
+        let p = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/gallery").join(name);
+        crate::pixels::decode(&std::fs::read(p).unwrap(), Some(name), Default::default()).unwrap().0
+    }
+
+    /// The gallery's counters and division emblem (hoi4-imagegen 0.2.0) were imported as finished art and conformed
+    /// unchanged, so they never got vanilla's green material. Imported again now, each is drawn again from its frame 1
+    /// and the result passes the family's checks, the material check included.
+    #[test]
+    fn imported_unit_art_that_is_not_vanillas_material_goes_through_the_unit_recipe() {
+        for (name, family) in [
+            ("combat_engineers-v2-p1.png", Family::CounterLarge),
+            ("infantry_rifle-v1-p1.png", Family::CounterSmall),
+            ("lightning_shield-v1-p1.png", Family::DivisionEmblem),
+        ] {
+            let p = prof(family);
+            let img = fixture(name);
+            let before = crate::validate::validate_image(&img, &p, &p.imagegen.checks, &Default::default());
+            assert!(before.findings.iter().any(|f| f.code == crate::validate::UNIT_MATERIAL_CODE), "{name}: {:?}", before.findings);
+            let canvas = [img.width / p.frames.max(1), img.height];
+            let opts = FinishOptions { asset: Some("engineer".into()), ..Default::default() };
+            let plan = plan_finishing_with(&p, canvas, &img, true, false, "", &opts).unwrap();
+            assert!(plan.ops.iter().any(|o| matches!(o, Op::UnitGlyph { .. })), "{name}: {:?}", plan.ops);
+            assert!(!plan.notes.is_empty());
+            let (out, _) = crate::process::run_chain(&img, &plan.ops).unwrap();
+            let after = crate::validate::validate_image(&out, &p, &p.imagegen.checks, &Default::default());
+            assert!(after.findings.iter().all(|f| f.level != crate::validate::Level::Error), "{name}: {:?}", after.findings);
+        }
+    }
+
+    #[test]
+    fn raid_and_doctrine_icons_get_their_vanilla_look_and_the_audit_wants_it() {
+        for (family, op, name) in [(Family::Raid, Op::GoldGradient, "gold_gradient"), (Family::Doctrine, Op::DoctrineLook, "doctrine_look")] {
+            let p = prof(family);
+            assert_eq!(recipe_of(&p).id(), if family == Family::Raid { "raid" } else { "doctrine" });
+            let plan = plan_finishing(&p, p.canvas, &blob(), false, false, "").unwrap();
+            assert_eq!(plan.ops.last().unwrap(), &op);
+            assert!(matches!(plan.ops[plan.ops.len() - 2], Op::FitSubject { .. }));
+            let (out, _) = crate::process::run_chain(&blob(), &plan.ops).unwrap();
+            let report = crate::validate::validate_image(&out, &p, &p.imagegen.checks, &Default::default());
+            assert!(report.findings.iter().all(|f| f.level != crate::validate::Level::Error), "{family}: {:?}", report.findings);
+            let fit = Op::FitSubject { width: p.canvas[0], height: p.canvas[1], margin: p.margin, min_alpha: 16 };
+            assert!(audit(&record(&p, &[fit.clone(), op.clone()], &[], &[], ""), &p).is_empty());
+            let missing = audit(&record(&p, &[fit], &[], &[], ""), &p);
+            assert!(missing.iter().any(|m| m.contains(name)), "{missing:?}");
+            assert!(audit(&record(&p, &[Op::Conform { width: p.canvas[0], height: p.canvas[1] }], &[], &[], ""), &p).is_empty());
+        }
+        // the gallery's raid and doctrine art, as processed by 0.2.0, goes through the look
+        let sabotage = fixture("sabotage-v1-p1.png");
+        let raid = prof(Family::Raid);
+        let (out, _) = crate::process::run_chain(&sabotage, &plan_finishing(&raid, raid.canvas, &sabotage, false, false, "").unwrap().ops).unwrap();
+        let (b, a) = (crate::recipes::raid::raid_stats(&[&sabotage]), crate::recipes::raid::raid_stats(&[&out]));
+        eprintln!("gallery sabotage: before {b:?}\n  after {a:?}");
+        assert!(a.ratios[0] > 0.7 && a.ratios[0] < 0.95, "gold after: {a:?}");
+        let report = crate::validate::validate_image(&out, &raid, &raid.imagegen.checks, &Default::default());
+        assert!(report.findings.iter().all(|f| f.level != crate::validate::Level::Error), "{:?}", report.findings);
+        let warfare = fixture("mobile_warfare-v1-p1.png");
+        let doctrine = prof(Family::Doctrine);
+        let (out, _) =
+            crate::process::run_chain(&warfare, &plan_finishing(&doctrine, doctrine.canvas, &warfare, false, false, "").unwrap().ops).unwrap();
+        let (b, a) = (crate::recipes::doctrine::doctrine_stats(&[&warfare]), crate::recipes::doctrine::doctrine_stats(&[&out]));
+        eprintln!("gallery mobile_warfare: before {b:?}\n  after {a:?}");
+        assert!(a.black_share > b.black_share + 0.2, "units turn black: {b:?} -> {a:?}");
+    }
+
+    /// The 0.3.1 riveted cruiser tank (judged wrong: a three-quarter view) gets the side-view hint; the side views do
+    /// not. The hint is a warning, so the review decides.
+    #[test]
+    fn a_three_quarter_technology_picture_gets_the_side_view_hint() {
+        let tech = prof(Family::Technology);
+        let hint = |name: &str| {
+            let r = crate::validate::validate_image(&fixture(name), &tech, &tech.imagegen.checks, &Default::default());
+            r.findings.into_iter().find(|f| f.code == crate::validate::SIDE_VIEW_CODE)
+        };
+        let three_quarter = hint("v031_riveted_cruiser_tank.png").expect("a side-view hint");
+        assert_eq!(three_quarter.level, crate::validate::Level::Warning);
+        assert!(hint("v031_sloped_armour_medium_tank.png").is_none());
+        assert!(hint("heavy_tank-v1-p1.png").is_none());
+        let rules = tech.imagegen.prompt.rules.join(" ");
+        assert!(rules.contains("exactly from the side") && rules.contains("facing right") && rules.contains("no three-quarter view"), "{rules}");
+    }
+
+    #[test]
+    fn a_technology_overlay_is_stamped_last_and_only_on_technology() {
+        use crate::recipes::tech_overlay::TechOverlay;
+        let tech = prof(Family::Technology);
+        let overlay = TechOverlay { tier: 3, gem: false, position: None };
+        let opts = FinishOptions { overlay: Some(overlay.clone()), ..Default::default() };
+        let plan = plan_finishing_with(&tech, tech.canvas, &blob(), false, false, "", &opts).unwrap();
+        assert_eq!(plan.ops.last().unwrap(), &Op::TechOverlay { overlay: overlay.clone() });
+        let (out, _) = crate::process::run_chain(&blob(), &plan.ops).unwrap();
+        assert_eq!((out.width, out.height), (146, 54));
+        // the audit accepts the extra step
+        let plain = plan_finishing(&tech, tech.canvas, &blob(), false, false, "").unwrap();
+        assert!(audit(&record(&tech, &plan.ops, &[], &[], ""), &tech).is_empty());
+        assert_eq!(plain.ops.len() + 1, plan.ops.len());
+        // refused elsewhere, and a tier out of range is refused
+        assert!(plan_finishing_with(&prof(Family::Focus), [100, 88], &blob(), false, false, "", &opts)
+            .unwrap_err()
+            .to_string()
+            .contains("technology"));
+        let bad = FinishOptions { overlay: Some(TechOverlay { tier: 11, gem: false, position: None }), ..Default::default() };
+        assert!(plan_finishing_with(&tech, tech.canvas, &blob(), false, false, "", &bad).is_err());
     }
 
     fn record(profile: &Profile, steps: &[Op], finishers: &[&str], companions: &[&str], pixels: &str) -> ProcessedRecord {

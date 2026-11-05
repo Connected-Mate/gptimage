@@ -51,6 +51,12 @@ const ADVISOR_CHECKS: &[&str] = &["size", "alpha", "checker", "card_corners", "s
 const PORTRAIT_CHECKS: &[&str] = &["size", "checker", "opaque", "style", "dds"];
 const FLAG_CHECKS: &[&str] = &["size", "opaque", "style", "tga"];
 const UNIT_CHECKS: &[&str] = &["size", "alpha", "frames", "style", "dds"];
+/// Counters and the division emblem: finished art must be vanilla's material (`GFX-UNIT-MATERIAL`).
+const COUNTER_CHECKS: &[&str] = &["size", "alpha", "frames", "unit_material", "style", "dds"];
+/// Special project icons: nothing may be filled (`GFX-FILLED-INTERIOR`).
+const LINE_ART_CHECKS: &[&str] = &["size", "alpha", "opaque_canvas", "fringe", "margin", "fill", "line_art", "checker", "style", "dds"];
+/// Technology pictures: a hint when the subject is too narrow for vanilla's side view (`GFX-TECH-VIEW`).
+const TECH_CHECKS: &[&str] = &["size", "alpha", "opaque_canvas", "fringe", "margin", "fill", "side_view", "checker", "style", "dds"];
 const INTERFACE_CHECKS: &[&str] = &["size", "alpha", "style", "dds"];
 const SUPER_CHECKS: &[&str] = &["size", "checker", "opaque", "style", "dds"];
 const ANIM_CHECKS: &[&str] = &["size", "alpha", "opaque_canvas", "margin", "frames", "animation", "checker", "style", "dds"];
@@ -67,69 +73,224 @@ const ICON_RULES: &[&str] = &[
 // form so the model draws it, and those families drop "a frame or border" from the negative list.
 const FOCUS_RULES: &[&str] = &[
     "The Hearts of Iron IV national focus emblem form: the subject sits inside a round or shield-shaped metal plaque or medallion, often with a laurel wreath, ribbons or flags around it.",
+    "Flags and ribbons use invented colours, never a real country's flag, unless the brief names that country.",
+    "The subject is large: it fills most of the plaque's face and may overlap its rim, never a small figure inside a wide empty plaque.",
     "A strong central symbol that supports the focus's story, aged painterly metal and enamel, readable contrast at {w}x{h} pixels.",
     "Real transparent background outside the plaque: no backdrop behind it.",
     "Leave a small empty margin around the plaque.",
 ];
+/// National spirits may be emblems, figures, objects or small scenes, so the form stays open and only readability at
+/// the native size is required.
+const IDEA_SPIRIT_RULES: &[&str] = &[
+    "One centred subject, an emblem, a figure, an object or a small scene, readable at {w}x{h} pixels: a few large, clear shapes with readable contrast and no fine detail that disappears at that size.",
+    "Painterly, slightly aged texture in the style of Hearts of Iron IV interface art.",
+    "Real transparent background: no backdrop, no frame, no border, no plate behind the subject.",
+    "Leave a small empty margin around the subject.",
+];
 const CONCERN_RULES: &[&str] = &[
     "The Hearts of Iron IV industrial concern form: a company badge or logo emblem, such as a shield, roundel or winged badge with the company's symbol.",
+    "The symbol is large: it fills most of the badge's face, never a small mark inside a wide empty badge.",
     "Clean painted enamel and metal, readable at {w}x{h} pixels.",
     "Real transparent background outside the badge.",
     "Leave a small empty margin around the badge.",
 ];
 const CATEGORY_ICON_RULES: &[&str] = &[
     "The Hearts of Iron IV decision category icon form: one symbol on a small dark round disc with a metal rim.",
+    "The symbol is large: it fills most of the disc and may overlap the rim, never a small mark inside a wide empty disc.",
     "Painted, slightly aged, readable at {w}x{h} pixels.",
     "Real transparent background outside the disc.",
     "Leave a small empty margin around the disc.",
 ];
 const BLUEPRINT_RULES: &[&str] = &[
-    "The Hearts of Iron IV special project icon form: a pale white or light grey line-art technical drawing, like a blueprint sketch, with thin outlines and no shading or painted fill.",
-    "A side or plan view of the project's subject, readable at {w}x{h} pixels.",
-    "Real transparent background: only the lines are visible.",
+    "The Hearts of Iron IV special project icon form: a clean technical line drawing of the project's subject, a side or plan view with clear outlines and a few inner detail lines, or one plain flat silhouette.",
+    "No shading, no painted texture, no scene and nothing around the subject: the tool redraws it as vanilla's thin pale lines, so only the outline and the main inner lines matter. Readable at {w}x{h} pixels.",
+    "Real transparent background, or one plain flat colour behind the subject.",
     "Leave a small empty margin around the drawing.",
 ];
+/// Special project negatives: what keeps the redrawn lines clean.
+const BLUEPRINT_NEGATIVE: &[&str] = &[
+    "text",
+    "letters or numbers",
+    "watermark or signature",
+    "a drawn checkerboard pattern",
+    "a frame or border",
+    "shading, gradients or painted texture",
+    "a scene, ground, sky or launch site around the subject",
+    "a paper sheet or a grid",
+];
 const RAID_RULES: &[&str] = &[
-    "The Hearts of Iron IV raid icon form: a flat single-colour gold pictogram with a thin dark outline, no shading, no gradient, no scene.",
-    "One simple symbol readable at {w}x{h} pixels.",
+    "The Hearts of Iron IV raid icon form: one simple, bold pictogram of the raid's target or means (a factory, an aircraft, a ship, a dam, a tool) as one solid shape with a few darker detail lines inside it.",
+    "Flat tones only, no painted texture and no scene: the tool recolours the shape in vanilla's gold gradient (pale gold at the top, brown at the bottom) and draws the black outline, so only the shape and its light and dark details matter.",
+    "ONE object only, large and seen from the side: no flames, smoke, ground, sky or second object around it, so the shape alone reads at {w}x{h} pixels.",
     "Real transparent background.",
     "Leave a small empty margin around the pictogram.",
 ];
 const MIO_DEPARTMENT_RULES: &[&str] = &[
-    "The Hearts of Iron IV military industrial organisation department icon form: a flat, saturated equipment icon (a plane, tank, ship or gun in one bold colour) with a small accent symbol such as a star, arrows or a cycle mark.",
-    "Simple flat shading only, readable at {w}x{h} pixels.",
-    "Real transparent background.",
-    "Leave a small empty margin around the icon.",
+    "The Hearts of Iron IV military industrial organisation department icon form: ONE piece of equipment (an aircraft, a tracked or wheeled vehicle, a ship or a piece of field equipment) as a bold, flat interface icon, seen from the side or three quarters.",
+    "The whole piece is tinted one bold, saturated colour: aircraft red or blue, land equipment olive green, ships steel blue. It is never grey, metallic, natural-coloured or photographic. Simple flat shading and a thin dark outline.",
+    "Depict the equipment itself, never plans, blueprints, drawings or models of it, even when the brief names a design bureau, a design team or a department.",
+    "At most one small accent symbol beside it, such as circular green arrows, a rising yellow zigzag arrow, a wrench, gears, a star, a shield or a gem. Readable at {w}x{h} pixels.",
+    "The equipment fills nearly the whole canvas. Real transparent background: no scene, no workshop, no paper, no panel and no plate behind it.",
+];
+/// MIO department negatives: the scene and paper the department's name invites.
+const MIO_DEPARTMENT_NEGATIVE: &[&str] = &[
+    "text",
+    "letters or numbers",
+    "watermark or signature",
+    "a drawn checkerboard pattern",
+    "a frame or border",
+    "a scene, landscape, workshop or background",
+    "grey or metallic shading, natural colours or a photographic look",
+    "a blueprint, plan, technical drawing or paper sheet",
+    "panels, dividers or tiles",
+    "drafting tools such as a compass or a ruler",
+    "a second main object",
 ];
 const MIO_TRAIT_RULES: &[&str] = &[
-    "The Hearts of Iron IV military industrial organisation trait icon form: a small round coloured badge with one flat glyph on it.",
-    "Simple flat shading, readable at {w}x{h} pixels.",
-    "Real transparent background outside the badge.",
-    "Leave a small empty margin around the badge.",
+    "The Hearts of Iron IV military industrial organisation trait icon form: one small, simple glyph of one object or symbol (a shield, a star, a wrench, binoculars, a shell, an aircraft, a turret, an anvil, rising bars), often with one small accent sign beside it, such as a green plus, a green arrow or a red target ring.",
+    "A compact interface glyph with light shading: metal, brass, steel or enamel, mostly muted greys and browns with one or two saturated accents (green, red, gold or orange). A thin dark outline and a soft dark shadow follow the whole shape. Seen from the front or three quarters, readable at {w}x{h} pixels.",
+    "Real transparent background: no badge, disc, plate or square behind the glyph.",
+    "Leave a small empty margin around it.",
+];
+/// MIO trait negatives: the badge the old rule asked for, and the painted scene a brief invites.
+const MIO_TRAIT_NEGATIVE: &[&str] = &[
+    "text",
+    "letters or numbers",
+    "watermark or signature",
+    "a drawn checkerboard pattern",
+    "a round badge, disc or plate behind the object",
+    "a detailed, realistically lit object",
+    "a scene, landscape or background",
+    "flat clip art without shading",
 ];
 const AGENCY_UPGRADE_RULES: &[&str] = &[
-    "The Hearts of Iron IV intelligence agency upgrade form: a round medallion with a painted, photo-like vignette scene inside a dark circular frame.",
-    "Muted period colours, readable at {w}x{h} pixels.",
-    "Real transparent background outside the medallion.",
-    "Leave a small empty margin around the medallion.",
+    "The Hearts of Iron IV intelligence agency upgrade form: a round painted vignette, a disc whose whole face is one small scene or close-up (a person at work, hands, a device, documents or equipment), seen at eye level or slightly from above.",
+    "A painted, semi-realistic 1930s or 1940s illustration in muted colours (olive, grey, brown, dusty pink, ochre) with a few warm accents. The scene runs to the edge of the disc, which is softly darkened. There is no ring, rim, frame or border around the disc. Readable at {w}x{h} pixels.",
+    "Real transparent background outside the disc.",
+    "Leave a small empty margin around the disc.",
+];
+/// Agency upgrade negatives: the loose object and the ring the old rules produced.
+const AGENCY_UPGRADE_NEGATIVE: &[&str] = &[
+    "text",
+    "letters or numbers",
+    "watermark or signature",
+    "a drawn checkerboard pattern",
+    "a ring, rim or metal frame around the disc",
+    "a square or rectangular picture",
+    "a loose object on a transparent background without the round scene",
+    "a black and white or sepia photograph",
 ];
 const OPERATION_ICON_RULES: &[&str] = &[
-    "The Hearts of Iron IV operation phase icon form: a round sepia or faded photograph vignette of the phase's scene, with a soft worn edge.",
-    "Period photograph look, readable at {w}x{h} pixels.",
-    "Real transparent background outside the round vignette.",
-    "Leave a small empty margin around the vignette.",
+    "The Hearts of Iron IV operation phase icon form: a round period photograph, a disc whose whole face is one documentary scene of the phase (people, vehicles, a place or an object), in monochrome sepia: warm brown-grey tones only, no other colour.",
+    "An old photograph look with soft grain. The edge of the disc is worn and slightly darkened, with no ring, rim or frame around it. Readable at {w}x{h} pixels.",
+    "Real transparent background outside the disc.",
+    "Leave a small empty margin around the disc.",
+    "This family has only this form. It is not the operation's square colour illustration or its round colour painting in a gold ring (other vanilla sprites), not the tilted photo card of the phase picture (operation_picture), and not a loose object on transparency.",
 ];
-const TRAIT_RULES: &[&str] = &[
-    "The Hearts of Iron IV unit leader trait form: a small military ribbon medal, a coloured ribbon at the top and a medallion below carrying one simple symbol.",
-    "Painted metal and cloth, readable at {w}x{h} pixels.",
+/// Operation phase icon negatives: the other operation forms vanilla keeps in the same folder.
+const OPERATION_ICON_NEGATIVE: &[&str] = &[
+    "text",
+    "letters or numbers",
+    "watermark or signature",
+    "a drawn checkerboard pattern",
+    "colour other than sepia",
+    "a gold or metal ring around the disc",
+    "a square or tilted card",
+    "a painted illustration",
+];
+const OPERATION_PICTURE_RULES: &[&str] = &[
+    "The Hearts of Iron IV operation phase picture form: one period photograph of the phase's scene that fills the whole frame, composed for a {w}x{h} crop, in monochrome sepia or warm black and white with natural film grain, a documentary press-photo look.",
+    "This family has only this form. It is not a painted illustration and not in colour, and it is not the round vignette of the phase icon (operation_icon).",
+    "Do not draw a border, a torn edge, a tilt or a shadow.",
+];
+/// Operation phase picture negatives: colour, paint and the icon's round form.
+const OPERATION_PICTURE_NEGATIVE: &[&str] = &[
+    "text, captions or headlines",
+    "watermark or signature",
+    "a frame or border",
+    "colour other than sepia",
+    "a painted illustration",
+    "a round vignette",
+];
+const MIO_POLICY_RULES: &[&str] = &[
+    "The Hearts of Iron IV military industrial organisation policy icon form: one object, or two that belong together, as a painted interface icon (crossed rifles, a ship, a light bulb in a hand, a signed contract, a spirit level, a chart with shells), seen from the front or three quarters.",
+    "Painted semi-realistic metal, wood and paper in muted colours with a few saturated accents, a thin dark outline and a soft dark shadow. No perspective depth and nothing that recedes into the distance. Readable at {w}x{h} pixels.",
+    "Real transparent background: no room, no factory hall, no landscape and no backdrop.",
+    "Leave a small empty margin around the icon.",
+];
+/// MIO policy negatives: the busy scene the brief invites.
+const MIO_POLICY_NEGATIVE: &[&str] = &[
+    "text",
+    "letters or numbers",
+    "watermark or signature",
+    "a drawn checkerboard pattern",
+    "a frame or border",
+    "a scene, room, factory hall or landscape",
+    "a row of many repeated objects or a view into the distance",
+];
+const BOP_SIDE_RULES: &[&str] = &[
+    "The Hearts of Iron IV balance of power side form: one person who leads or stands for the side, as a greyscale head-and-shoulders portrait cut out with no backdrop, or as a silver bust on a small plinth. A side that is not a person is one silver symbol in a laurel wreath.",
+    "Black and white or silver grey only, a painted, photo-like 1930s portrait or polished metal, with a soft dark outline. The figure faces the viewer or three quarters, readable at {w}x{h} pixels.",
+    "Real transparent background: no room, no scene and no plate behind the figure.",
+    "Leave a small empty margin around it.",
+];
+/// Balance of power negatives: the colourful objects and banners the old rules allowed.
+const BOP_SIDE_NEGATIVE: &[&str] = &[
+    "text",
+    "letters or numbers",
+    "watermark or signature",
+    "a drawn checkerboard pattern",
+    "colour",
+    "a banner, flag or loose object instead of a person",
+    "a scene or backdrop",
+];
+const STATE_MODIFIER_RULES: &[&str] = &[
+    "The Hearts of Iron IV state modifier icon form: one bold, simple object or symbol (a factory, a raised fist, a flag, a flame, crossed tools, a helmet, a crown), at most two elements, drawn large with chunky shapes.",
+    "High contrast: a strong dark outline, light shading and one or two saturated accents (red, orange, gold or green). It must read at {w}x{h} pixels, so no small details, no thin lines and no scene.",
+    "Real transparent background: no landscape, no ground and no backdrop.",
+    "Leave a one-pixel empty margin around the icon.",
+];
+/// State modifier negatives: what is unreadable at 32 px.
+const STATE_MODIFIER_NEGATIVE: &[&str] = &[
+    "text",
+    "letters or numbers",
+    "watermark or signature",
+    "a drawn checkerboard pattern",
+    "a frame or border",
+    "a scene, landscape or wide view",
+    "small details, thin lines or low contrast",
+];
+const COMMANDER_TRAIT_RULES: &[&str] = &[
+    "The Hearts of Iron IV unit leader trait form: a small military medal seen straight on. At the top, a short vertical ribbon with two or three coloured stripes under a thin gold bar takes about the top third. Below it hangs the trait's symbol as a grey steel or silver metal piece (a vehicle, an aircraft, a ship, an animal head, a helmet or crossed tools), often set on a small bronze laurel wreath or ring.",
+    "The symbol is monochrome metal, never painted in its own colours: only the ribbon and the wreath carry colour. Bevelled, softly shaded metal with a thin dark outline, readable at {w}x{h} pixels.",
     "Real transparent background.",
     "Leave a small empty margin around the medal.",
 ];
+/// Commander trait negatives: the painted subject without a medal that the old rules produced.
+const COMMANDER_TRAIT_NEGATIVE: &[&str] = &[
+    "text",
+    "letters or numbers",
+    "watermark or signature",
+    "a drawn checkerboard pattern",
+    "a square backdrop behind the medal",
+    "a vehicle, animal or figure painted in natural colours",
+    "a scene or ground",
+    "a symbol without the ribbon above it",
+];
 const DOCTRINE_RULES: &[&str] = &[
-    "The Hearts of Iron IV doctrine icon form: a flat pictogram, a steel-blue or teal silhouette of the unit or idea with orange accents such as chevrons, arrows or bars.",
+    "The Hearts of Iron IV doctrine icon form: flat side-view silhouettes of the units (soldiers, tanks, aircraft or ships) grouped into one compact emblem, with bright orange or yellow accents such as arrows, chevrons or bars.",
+    "Draw the units as solid flat shapes in one dark or neutral colour and the accents in bright orange or yellow: the tool fills the units black and adds vanilla's pale outline and glow around them.",
     "No painted texture or scene, readable at {w}x{h} pixels.",
     "Real transparent background.",
     "Leave a small empty margin around the pictogram.",
+];
+/// Technology pictures: one fixed view, the one every inspected vanilla picture uses.
+const TECHNOLOGY_RULES: &[&str] = &[
+    "The Hearts of Iron IV technology picture form: ONE piece of equipment (a vehicle, an artillery piece, an aircraft or a ship) seen exactly from the side, a flat side profile with no three-quarter view, no front view and no perspective, facing right: its front, nose, barrel or bow points to the right edge.",
+    "The equipment is long and low and fills most of the width, readable at {w}x{h} pixels, painted in the slightly aged style of Hearts of Iron IV interface art.",
+    "Real transparent background: no backdrop, no ground, no frame, no border, no plate.",
+    "No numerals or text on the picture: the tool stamps a tier numeral itself when one is asked for.",
+    "Leave a small empty margin around the equipment.",
 ];
 /// Negatives for families whose form is a plaque, disc, badge, medallion or medal: the frame is the form.
 const FORM_NEGATIVE: &[&str] =
@@ -152,6 +313,7 @@ const ACHIEVEMENT_NEGATIVE: &[&str] =
 const ADVISOR_RULES: &[&str] = &[
     "A head-and-shoulders portrait of one person in the painterly style of Hearts of Iron IV advisor portraits, face and shoulders centred, composed for a tall crop.",
     "Period-appropriate clothing and a plain, slightly textured backdrop. The card frame is added afterwards by the tool, so do not draw a frame or border.",
+    "An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
 ];
 const NEWS_RULES: &[&str] = &[
     "A black and white press photograph that fills the whole frame, composed for a wide {w}x{h} crop.",
@@ -159,13 +321,36 @@ const NEWS_RULES: &[&str] = &[
 ];
 const PICTURE_NEGATIVE: &[&str] = &["text, captions or headlines", "watermark or signature", "a frame or border"];
 
+/// Vanilla leader portraits (gfx/leaders, 1.19.4.1): a close head-and-shoulders crop (the face is about half the
+/// height) on a plain pale backdrop. Generated portraits use that crop and backdrop. A custom backdrop is only for
+/// council or otherwise unusual portraits.
 const PORTRAIT_RULES: &[&str] = &[
-    "A head-and-shoulders portrait in the painterly style of Hearts of Iron IV portraits, composed for a tall {w}x{h} crop.",
-    "Period-appropriate clothing and a plain, slightly textured backdrop.",
+    "A close head-and-shoulders portrait in the painterly style of Hearts of Iron IV portraits, composed for a tall {w}x{h} crop: the head fills the upper half of the frame, the face about half the height, and the shoulders run off the bottom and the sides.",
+    "Vanilla's portrait backdrop: a plain, smooth studio background, pale cream to light grey (a scientist's is pale blue-grey), a little lighter behind the head, with no objects, room, landscape, flag or pattern. Use another backdrop only when the brief asks for a council or otherwise unusual portrait.",
+    "Period-appropriate clothing.",
+    "An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
 ];
 const FRAME_STRIP_RULES: &[&str] = &[
     "One centred emblem with a strong silhouette that reads at {w}x{h} pixels, drawn in the style of Hearts of Iron IV faction and interface art.",
     "Real transparent background: no backdrop, no frame, no plate. Leave clear space around the emblem: the tool adds the second frame (its highlight or its disabled look) itself.",
+];
+const BUILDING_RULES: &[&str] = &[
+    "The Hearts of Iron IV landmark building form: one real-world landmark (a monument, a government building, a tower, a statue, a dam or an industrial site) as a small, detailed painted miniature, seen from the front at a slightly raised angle. It stands on nothing: the base of the building is the bottom of the drawing, with no ground, rock or hill under it (a dam or a canal keeps only its water).",
+    "Muted stone greys, browns and weathered copper green, crisp painted detail and a thin dark outline around the whole silhouette, readable at {w}x{h} pixels.",
+    "Real transparent background: no sky, no landscape, no hill and no backdrop. Leave a small empty margin around the building.",
+    "Frame 1 is the intact building. Frame 2, a second candidate of the same asset, shows the same building at the same scale and position as ruins (broken walls and rubble, lower than the intact building) with one small stylised orange flame above it.",
+];
+/// Landmark negatives: the hill, landscape and smoke the old rules allowed.
+const BUILDING_NEGATIVE: &[&str] = &[
+    "text",
+    "letters or numbers",
+    "watermark or signature",
+    "a drawn checkerboard pattern",
+    "a frame or border",
+    "a hill, landscape, sky or backdrop",
+    "ground, rocks or a diorama base under the building",
+    "a fantasy castle",
+    "a large smoke cloud",
 ];
 const FLAG_RULES: &[&str] = &[
     "A flat national flag design with simple shapes that stay readable at 82x52 pixels and at 10x7 pixels.",
@@ -191,7 +376,8 @@ const COUNTER_NEGATIVE: &[&str] = &[
     "watermark or signature",
 ];
 const EMBLEM_RULES: &[&str] = &[
-    "One simple emblem (an animal head, a weapon, a heraldic or military sign) as ONE bold, solid black silhouette, centred, compact, readable at {w}x{h} pixels and at 30x12 pixels.",
+    "The Hearts of Iron IV division template symbol form: one plain heraldic or unit symbol (an animal head, a skull, a helmet, a star, wings, crossed blades or tools, a tower, a plant or a lightning bolt) seen flat, straight on or in profile, which the game shows as an embossed grey-green metal sign.",
+    "Draw it as ONE bold, solid black silhouette, centred, compact, readable at {w}x{h} pixels and at 30x12 pixels.",
     "Plain flat white background, or a real transparent one. No badge, no shield plate, no ring or frame around it unless the ring is the emblem.",
     "Show inner detail only as a few thin white gaps cut into the black shape (an eye, a line between parts). No grey shading, no colour, no texture.",
     "The tool adds vanilla's green material, the lighting and the outline itself.",
@@ -204,6 +390,15 @@ const EMBLEM_NEGATIVE: &[&str] = &[
     "watermark or signature",
 ];
 const INTERFACE_RULES: &[&str] = &["Match the style of Hearts of Iron IV interface art; the exact size is {w}x{h} pixels."];
+/// GUI textures: the shared form of vanilla's interface material. A request's `texture_kind` (button, frame, panel,
+/// background) adds that kind's form ([`crate::family::GuiTextureKind::form_rule`]) and picks its vanilla references.
+const GUI_TEXTURE_RULES: &[&str] = &[
+    "The Hearts of Iron IV GUI texture form: flat interface material seen straight on, with no perspective, no scene and no subject: dark charcoal, gunmetal grey, olive green or worn leather surfaces with thin bevelled edges and a faint worn texture.",
+    "The exact size is {w}x{h} pixels, and the texture fills it the way the element it is made for does.",
+];
+/// GUI texture negatives. A frame or border is allowed: it is what a frame texture is.
+const GUI_TEXTURE_NEGATIVE: &[&str] =
+    &["text", "letters or numbers", "watermark or signature", "a drawn checkerboard pattern", "a scene or a single object", "perspective"];
 const GLOW_RULES: &[&str] = &[
     "A soft luminous glow, light only, drawn on a pure black background: the black becomes transparent, so everything that is not glow must be pure black.",
     "The glow is shaped for an interface element of {w}x{h} pixels (a ring, an outline or a halo around where the element sits), in the warm gold, red or green light of Hearts of Iron IV highlight glows.",
@@ -304,14 +499,15 @@ fn rows() -> Vec<Row> {
         },
         Row {
             margin: 1,
+            rules: IDEA_SPIRIT_RULES,
             note: "Ideas share the GFX_idea_ namespace across four families, so the prefix cannot tell them apart: the consuming script slot and this folder do. Spirits are 60x68.",
             ..base(IdeaSpirit, [60, 68], &[[60, 68], [62, 70]], "gfx/interface/ideas/{feature_slug}", "idea_", "interface/{feature_slug}_ideas.gfx")
         },
         Row {
-            margin: 1,
+            margin: 3,
             rules: CONCERN_RULES,
             negative: FORM_NEGATIVE,
-            note: "Industrial concerns and manufacturers are 64x64 (about 80 percent of their ideas); the dominant size of the shared idea folder is the spirit size, which is why this row is a documented exception in the drift test.",
+            note: "Industrial concerns and manufacturers are 64x64 (about 80 percent of their ideas); the dominant size of the shared idea folder is the spirit size, which is why this row is a documented exception in the drift test. The badge spans 58 of 64 px in the median of 505 vanilla files, so the fit margin is 3 px.",
             ..base(IdeaConcern, [64, 64], &[[64, 64]], "gfx/interface/ideas/{feature_slug}/concerns", "idea_", "interface/{feature_slug}_ideas.gfx")
         },
         Row {
@@ -326,69 +522,83 @@ fn rows() -> Vec<Row> {
             ..base(Decision, [33, 32], &[[33, 32], [38, 35], [38, 37], [38, 38], [33, 31]], "gfx/interface/decisions/{feature_slug}", "decision_", "interface/{feature_slug}_decisions.gfx")
         },
         Row {
-            margin: 3,
+            margin: 1,
             rules: CATEGORY_ICON_RULES,
             negative: FORM_NEGATIVE,
-            note: "Two vanilla category icons are 21-frame animations and are not generated here.",
+            note: "Two vanilla category icons are 21-frame animations and are not generated here. The disc is 38 px tall on the 40 px canvas in vanilla (95 percent of the height in 91 files), so the fit margin is 1 px.",
             ..base(DecisionCategoryIcon, [52, 40], &[[52, 40]], "gfx/interface/decisions/{feature_slug}/category_icons", "decision_category_", "interface/{feature_slug}_decisions.gfx")
         },
         Row {
             margin: 1,
             note: "Dynamic modifiers use this family (GFX_modifiers_*), sometimes aliased to GFX_idea_*.",
+            rules: STATE_MODIFIER_RULES,
+            negative: STATE_MODIFIER_NEGATIVE,
             ..base(StateModifier, [32, 32], &[[32, 32]], "gfx/interface/state_modifiers/{feature_slug}", "modifiers_", "interface/{feature_slug}_state_modifiers.gfx")
         },
         Row {
             margin: 3,
             grayscale: true,
+            checks: LINE_ART_CHECKS,
             rules: BLUEPRINT_RULES,
-            note: "Special project icons are pale line-art drawings on transparent, kept grayscale.",
+            negative: BLUEPRINT_NEGATIVE,
+            note: "Special project icons are pale line-art drawings on transparent: thin pure-white lines whose alpha makes them pale (median 90), about 4 percent of the canvas inked, in a box of 86 by 74 percent of the canvas. The line_art recipe redraws any generated image that way, so the model only has to give a clean shape. The line_art check refuses a filled area larger than 250 px (vanilla's largest is 171, its median 4), so filled art cannot pass validation.",
             ..base(SpecialProjectIcon, [161, 98], &[[161, 98]], "gfx/interface/special_project/project_icons/{feature_slug}", "sp_", "interface/special_projects/{feature_slug}_projects.gfx")
         },
         Row {
+            margin: 4,
             rules: RAID_RULES,
-            note: "Only the 32x32 raid icons are generated; the wide banner strips in the same folder are interface pieces. The 32x32 icon is the raid's map icon, which the game looks up as GFX_raid_type_icon_<raid type> (24 of the 25 vanilla ones are 32x32), so the asset name is the raid type key, or the raid sets custom_map_icon to the sprite.",
+            note: "Only the 32x32 raid icons are generated; the wide banner strips in the same folder are interface pieces. The 32x32 icon is the raid's map icon, which the game looks up as GFX_raid_type_icon_<raid type> (24 of the 25 vanilla ones are 32x32), so the asset name is the raid type key, or the raid sets custom_map_icon to the sprite. The pictogram spans 23 of 32 px in the median of 30 vanilla files, so the fit margin is 4 px. Vanilla's map icons are one gold ramp, light at the top and dark at the bottom, with a black outline on the shape's edge; the raid recipe's gold_gradient step recolours any subject that way.",
             ..base(Raid, [32, 32], &[[32, 32]], "gfx/interface/military_raids/{feature_slug}", "raid_type_icon_", "interface/{feature_slug}_raids.gfx")
         },
         Row {
+            margin: 1,
             rules: MIO_DEPARTMENT_RULES,
-            note: "Vanilla sprite names are free-form (GFX_military_industrial_organization_*, GFX_mio_*); this tool names them GFX_mio_department_<asset>.",
+            negative: MIO_DEPARTMENT_NEGATIVE,
+            note: "Vanilla sprite names are free-form (GFX_military_industrial_organization_*, GFX_mio_*); this tool names them GFX_mio_department_<asset>. Vanilla department icons fill the canvas (98 percent in the median of 337 files, most touch an edge), so the fit margin is 1 px.",
             ..base(MioDepartment, [48, 48], &[[48, 48]], "gfx/interface/military_industrial_organization/department_icons/{feature_slug}", "mio_department_", "interface/military_industrial_organization/{feature_slug}_mio.gfx")
         },
         Row {
+            margin: 8,
             rules: MIO_TRAIT_RULES,
-            negative: FORM_NEGATIVE,
-            note: "Trait icons are 48x48. The trait and policy folders are measured together; policies are the 60x60 files.",
+            negative: MIO_TRAIT_NEGATIVE,
+            note: "Trait icons are 48x48. The trait and policy folders are measured together; policies are the 60x60 files. All 44 vanilla trait icons keep 8 px clear on their tightest side (the badge spans 32 of 48 px), where the in-game frame likely overlaps, so the fit margin is 8 px.",
             ..base(MioTrait, [48, 48], &[[48, 48]], "gfx/interface/military_industrial_organization/trait_icons/{feature_slug}", "mio_trait_", "interface/military_industrial_organization/{feature_slug}_mio.gfx")
         },
         Row {
             note: "Policy icons are the 60x60 files of the combined trait and policy measurement, which is why this row is a documented exception in the drift test.",
+            rules: MIO_POLICY_RULES,
+            negative: MIO_POLICY_NEGATIVE,
             ..base(MioPolicy, [60, 60], &[[60, 60]], "gfx/interface/military_industrial_organization/policy_icons/{feature_slug}", "mio_policy_", "interface/military_industrial_organization/{feature_slug}_mio.gfx")
         },
         Row {
             note: "Only the 72x88 side icons are generated; the multi-frame strips in the folder need separate frame art.",
+            rules: BOP_SIDE_RULES,
+            negative: BOP_SIDE_NEGATIVE,
             ..base(BopSide, [72, 88], &[[72, 88]], "gfx/interface/bop/{feature_slug}", "bop_", "interface/{feature_slug}_bop.gfx")
         },
         Row {
             sprite: Some(("interface/{feature_slug}_medals.gfx", "GFX_medal_icon_{asset}_large", &[])),
-            note: "A unit medal: script names GFX_medal_icon_<x> with frame = N, and every vanilla GFX_medal_icon_* has a GFX_medal_icon_*_large twin at twice the size (28x42 and 56x84 frames). This tool makes one 56x84 frame registered as the _large sprite and derives the 28x42 GFX_medal_icon_<asset> from it, the way vanilla's small strips are its large ones downscaled; script uses frame = 1. The measured dominant 16x28 files are older medal sprites that no vanilla script or GUI names.",
+            note: "A unit medal: script names GFX_medal_icon_<x> with frame = N, and every vanilla GFX_medal_icon_* has a GFX_medal_icon_*_large twin at twice the size (28x42 and 56x84 frames). This tool makes one 56x84 frame registered as the _large sprite and derives the 28x42 GFX_medal_icon_<asset> from it, the way vanilla's small strips are its large ones downscaled; script uses frame = 1. The medal is fitted into vanilla's box, 33x56 in the 56x84 frame (the median of the 85 frames of vanilla's large strips), not edge to edge. The measured dominant 16x28 files are older medal sprites that no vanilla script or GUI names.",
             ..base(Medal, [56, 84], &[[56, 84]], "gfx/interface/medals/{feature_slug}", "medal_icon_", "interface/{feature_slug}_medals.gfx")
         },
         Row {
+            margin: 8,
             rules: AGENCY_UPGRADE_RULES,
-            negative: FORM_NEGATIVE,
-            note: "Vanilla names these GFX_agency_*.",
+            negative: AGENCY_UPGRADE_NEGATIVE,
+            note: "Vanilla names these GFX_agency_*. All 15 vanilla upgrades keep exactly 8 px clear (the medallion spans 52 of 68 px), where the in-game frame likely overlaps, so the fit margin is 8 px.",
             ..base(AgencyUpgrade, [68, 68], &[[68, 68]], "gfx/interface/operatives/icons/{feature_slug}", "agency_", "interface/{feature_slug}_agency_upgrades.gfx")
         },
         Row {
             sprite: Some(("interface/{feature_slug}_operations.gfx", "GFX_phase_{asset}_small", &[])),
+            margin: 6,
             rules: OPERATION_ICON_RULES,
-            negative: FORM_NEGATIVE,
-            note: "The 59x58 operation phase icon: an operation phase's icon names it in full, and all 73 vanilla ones are GFX_phase_<x>_small at 59x58, beside the phase's 210x176 picture GFX_phase_<x> (operation_picture). The folder also holds 48x48 and 85x85 operation icons.",
-            ..base(OperationIcon, [59, 58], &[[59, 58], [48, 48], [85, 85]], "gfx/interface/operations/{feature_slug}/icons", "phase_", "interface/{feature_slug}_operations.gfx")
+            negative: OPERATION_ICON_NEGATIVE,
+            note: "The 59x58 operation phase icon: an operation phase's icon names it in full, and all 73 vanilla ones are GFX_phase_<x>_small at 59x58, beside the phase's 210x176 picture GFX_phase_<x> (operation_picture). The folder also holds the 85x85 square and 48x48 ringed operation icons, a different coloured form that is not accepted here. All 71 vanilla phase icons keep exactly 6 px clear (the vignette spans 46 of 58 px), where the in-game frame likely overlaps, so the fit margin is 6 px.",
+            ..base(OperationIcon, [59, 58], &[[59, 58]], "gfx/interface/operations/{feature_slug}/icons", "phase_", "interface/{feature_slug}_operations.gfx")
         },
         Row {
-            rules: TRAIT_RULES,
-            negative: FORM_NEGATIVE,
+            rules: COMMANDER_TRAIT_RULES,
+            negative: COMMANDER_TRAIT_NEGATIVE,
             note: "Commander and personal traits are both 23x33 and both named GFX_trait_*; the script slot (trait group) tells them apart.",
             ..base(CommanderTrait, [23, 33], &[[23, 33]], "gfx/interface/traits/{feature_slug}", "trait_", "interface/{feature_slug}_traits.gfx")
         },
@@ -398,7 +608,7 @@ fn rows() -> Vec<Row> {
         },
         Row {
             rules: DOCTRINE_RULES,
-            note: "Only the 64x64 doctrine icons are generated; the wide 212x83 and banner art in the folder are interface pieces.",
+            note: "Only the 64x64 doctrine icons are generated; the wide 212x83 and banner art in the folder are interface pieces. Vanilla draws the units as black silhouettes with a pale outline and glow (luminance 180 at alpha 136 one pixel out, alpha 37 two pixels out) and the warm accents with a dark shadow; the doctrine recipe's doctrine_look step turns any subject into that.",
             ..base(Doctrine, [64, 64], &[[64, 64]], "gfx/interface/doctrines/{feature_slug}", "doctrine_", "interface/{feature_slug}_doctrines.gfx")
         },
         // ---- picture group
@@ -420,17 +630,20 @@ fn rows() -> Vec<Row> {
             ..base(DecisionCategoryPicture, [114, 101], &[[114, 101]], "gfx/interface/decisions/{feature_slug}/category_pictures", "decision_cat_picture_", "interface/{feature_slug}_decisions.gfx")
         },
         Row {
-            note: "LOW CONFIDENCE. The 210x176 operation phase picture: a phase's picture names it in full, and all 71 vanilla ones are GFX_phase_<x> (GFX_operations_* are the 85x85 and 48x48 operation icons). The pixel class of this size alone was not measured, so opacity follows the picture convention.",
+            rules: OPERATION_PICTURE_RULES,
+            negative: OPERATION_PICTURE_NEGATIVE,
+            checks: CARD_CHECKS,
+            note: "LOW CONFIDENCE. The 210x176 operation phase picture: a phase's picture names it in full, and all 71 vanilla ones are GFX_phase_<x> (GFX_operations_* are the 85x85 and 48x48 operation icons). The model draws an opaque photograph and the phase_card step turns it into vanilla's tilted card with transparent corners, so the art is checked for the corners, never for opacity. Vanilla's 71 phase pictures (operations/images) are sepia photographs on tilted worn cards with transparent corners, 86 percent of the canvas covered like the report event cards.",
             ..base(OperationPicture, [210, 176], &[[210, 176]], "gfx/interface/operations/{feature_slug}/pictures", "phase_", "interface/{feature_slug}_operations.gfx")
         },
         Row {
             background: Background::Transparent,
             margin: 2,
-            checks: ICON_CHECKS,
-            rules: ICON_RULES,
+            checks: TECH_CHECKS,
+            rules: TECHNOLOGY_RULES,
             negative: ICON_NEGATIVE,
             sprite: Some(("interface/{feature_slug}_technologies.gfx", "GFX_{asset}_medium", &[])),
-            note: "The engine binds technology art by name: GFX_<technology key>_medium, so the asset name is the technology key. 131x52 (341 files) is the other common size. Measured transparent, so it follows the icon chain.",
+            note: "The engine binds technology art by name: GFX_<technology key>_medium, so the asset name is the technology key. 131x52 (341 files) is the other common size. Measured transparent, so it follows the icon chain. Every inspected vanilla picture is a flat side profile facing right, and the subject's box is long and low (width over height: median 3.09, 10th percentile 2.30 at 146x54), which the side_view check uses as a hint. Tier numerals are baked into vanilla's textures, not drawn by the GUI; the process input overlay stamps them in vanilla's glyphs and place.",
             ..base(Technology, [146, 54], &[[146, 54], [131, 52]], "gfx/interface/technologies/{feature_slug}", "", "interface/{feature_slug}_technologies.gfx")
         },
         Row {
@@ -487,28 +700,32 @@ fn rows() -> Vec<Row> {
             sprite: Some(("interface/{feature_slug}_counters.gfx", "GFX_unit_{asset}_icon_medium", &[])),
             rules: COUNTER_RULES,
             negative: COUNTER_NEGATIVE,
-            note: "The battalion icon: a strip of two 76x42 frames (152x42, noOfFrames = 2). Frame 1 is the unit's side-view silhouette in vanilla's fixed green material (red equals blue, lit from above, a soft black halo), frame 2 the NATO box (the same grey box in all 111 vanilla strips) with the sub-unit's symbol. The model draws only a black silhouette; the unit_counter recipe renders both frames, with the symbol given as counter_symbol or inferred from the asset name. Finished strips can still be imported. The game looks it up as GFX_unit_<sub-unit key>_icon_medium, so the asset name is the sub-unit key (not its sprite key).",
+            checks: COUNTER_CHECKS,
+            note: "The battalion icon: a strip of two 76x42 frames (152x42, noOfFrames = 2). Frame 1 is the unit's side-view silhouette in vanilla's fixed green material (red equals blue, lit from above, a soft black halo), frame 2 the NATO box (the same grey box in all 111 vanilla strips) with the sub-unit's symbol. The model draws only a black silhouette; the unit_counter recipe renders both frames, with the symbol given as counter_symbol or inferred from the asset name. An imported finished strip is kept only when it already is vanilla's material (the unit_material check); any other is drawn again from its frame 1. The game looks it up as GFX_unit_<sub-unit key>_icon_medium, so the asset name is the sub-unit key (not its sprite key).",
             ..base(CounterLarge, [76, 42], &[[76, 42]], "gfx/interface/counters/divisions_large/{feature_slug}", "unit_", "")
         },
         Row {
             sprite: Some(("interface/{feature_slug}_counters.gfx", "GFX_unit_{asset}_icon_medium_white", &[])),
             rules: COUNTER_RULES,
             negative: COUNTER_NEGATIVE,
-            note: "The on-map counter: a strip of two 30x12 frames (60x12, noOfFrames = 2), light grey because the game multiplies it by the country colour. Generated like the large counter: the silhouette is area-averaged down to vanilla's 9 px height and rendered grey with a tight dark halo, frame 2 is the small NATO box. The game looks it up as GFX_unit_<sub-unit key>_icon_medium_white; the tooltip text icon GFX_unit_<sub-unit key>_icon_small (60x12, 2 frames, under gfx/texticons) is derived from it: frame 1 tinted green as vanilla's are, frame 2 kept.",
+            checks: COUNTER_CHECKS,
+            note: "The on-map counter: a strip of two 30x12 frames (60x12, noOfFrames = 2), light grey because the game multiplies it by the country colour. Generated like the large counter: the silhouette is area-averaged down to vanilla's 9 px height and rendered grey with a tight dark halo, frame 2 is the small NATO box. The game looks it up as GFX_unit_<sub-unit key>_icon_medium_white; the tooltip text icon GFX_unit_<sub-unit key>_icon_small (60x12, 2 frames, under gfx/texticons) is derived from it: frame 1 tinted green as vanilla's are, frame 2 kept. An imported finished strip is kept only when it already is vanilla's grey material; any other is drawn again from its frame 1.",
             ..base(CounterSmall, [30, 12], &[[30, 12]], "gfx/interface/counters/divisions_small/{feature_slug}", "onmap_unit_", "")
         },
         Row {
             frames: 1,
             margin: 1,
             sprite: Some(("interface/{feature_slug}_counters.gfx", "GFX_div_templ_{n}_large", &[])),
-            note: "Single frame, 76x42 (the large division template symbol). The game offers the symbols as GFX_div_templ_<n>_large with GFX_div_templ_<n>_small (30x12); vanilla uses 0-43 and 65-121. Install picks n, the next number after vanilla's 121 and every number the mod or an earlier install already uses, records it, and derives the grey 30x12 small symbol. The model draws a black silhouette; the division_symbol recipe fits it at vanilla's size (median ink area, centred at 38, 21.5) and renders vanilla's green material. Finished symbols can still be imported.",
+            note: "Single frame, 76x42 (the large division template symbol). The game offers the symbols as GFX_div_templ_<n>_large with GFX_div_templ_<n>_small (30x12); vanilla uses 0-43 and 65-121. Install picks n, the next number after vanilla's 121 and every number the mod or an earlier install already uses, records it, and derives the grey 30x12 small symbol. The model draws a black silhouette; the division_symbol recipe fits it at vanilla's size (median ink area, centred at 38, 21.5) and renders vanilla's green material. An imported finished symbol is kept only when it already is vanilla's material; any other is drawn again as a silhouette.",
+            checks: COUNTER_CHECKS,
             rules: EMBLEM_RULES,
             negative: EMBLEM_NEGATIVE,
             ..base(DivisionEmblem, [76, 42], &[[76, 42]], "gfx/interface/counters/division_templates_large/{feature_slug}", "custom_", "")
         },
         Row {
             automation: Automation::Generate,
-            rules: FRAME_STRIP_RULES,
+            rules: BUILDING_RULES,
+            negative: BUILDING_NEGATIVE,
             sprite: Some(("interface/buildings/{feature_slug}_landmarks.gfx", "GFX_{asset}_icon", &[])),
             note: "Landmark buildings are two frames: a 64x64 frame (128x64 strip, the raid window's GFX_<x>_icon) or a 32x32 frame (64x32 strip, the province window's GFX_<x>_icon_small, which the building's special_icon names). A 64x64 landmark also gets the small strip, halved frame by frame; one made at 32x32 is the small sprite alone. Frame 2 is the ruined state, a second candidate of the same asset.",
             ..base(Building, [64, 64], &[[64, 64], [32, 32]], "gfx/interface/buildings/{feature_slug}", "building_", "")
@@ -535,6 +752,8 @@ fn rows() -> Vec<Row> {
             ..base(ModifierStatIcon, [30, 20], &[[30, 20]], "gfx/interface/modifiers/{feature_slug}", "modifier_", "interface/{feature_slug}_modifiers.gfx")
         },
         Row {
+            rules: GUI_TEXTURE_RULES,
+            negative: GUI_TEXTURE_NEGATIVE,
             note: "General GUI textures have 856 distinct sizes in vanilla: the size comes from the consuming GUI element and the mod must define it (a canvas in the plan, or a gui_texture row in profiles.json).",
             ..base(GuiTexture, [0, 0], &[], "gfx/interface/{feature_slug}", "gui_", "interface/{feature_slug}_gui.gfx")
         },
@@ -623,13 +842,10 @@ pub fn animation_of(family: Family) -> Option<AnimationSpec> {
     })
 }
 
-/// The rubric id of a family: one per group (officer spirits and every other icon get the icon rubric).
+/// The rubric id of a family: one per group (officer spirits and every other icon get the icon rubric). v3 asks
+/// every question against the vanilla references beside the candidate in the preview.
 pub fn rubric_of(family: Family) -> String {
-    match family.group() {
-        // icon_v2 adds the family-form question (the per-family form rules)
-        crate::family::Group::Icon => "icon_v2".to_string(),
-        g => format!("{}_v1", g.as_str()),
-    }
+    format!("{}_v3", family.group().as_str())
 }
 
 /// The evidence text of a family: the measurement sentence, then what the measurement does not say.
@@ -713,6 +929,31 @@ pub fn profiles() -> Vec<Profile> {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn portraits_are_close_on_vanillas_backdrop_and_spirits_only_need_to_read() {
+        let set = by_family();
+        for f in [Family::LeaderPortrait, Family::CommanderPortrait, Family::OperativePortrait, Family::ScientistPortrait] {
+            let r = set[&f].imagegen.prompt.rules.join(" ");
+            assert!(r.contains("close head-and-shoulders") && r.contains("face about half the height"), "{f}");
+            assert!(r.contains("Vanilla's portrait backdrop") && r.contains("council or otherwise unusual"), "{f}");
+            assert!(!r.contains("slightly textured backdrop"), "{f}");
+        }
+        // idea spirits may be scenes or emblems: the rule allows both and asks only for readability
+        let r = set[&Family::IdeaSpirit].imagegen.prompt.rules.join(" ");
+        assert!(r.contains("or a small scene") && r.contains("readable at {w}x{h} pixels"), "{r}");
+        assert!(!r.contains("never a scene"));
+        let focus = set[&Family::Focus].imagegen.prompt.rules.join(" ");
+        assert!(focus.contains("invented colours, never a real country's flag, unless the brief names that country"));
+    }
+
+    #[test]
+    fn portraits_ask_for_an_invented_person() {
+        // the backend refused fictional leaders described by nation and office as likenesses of real people
+        for rules in [super::PORTRAIT_RULES, super::ADVISOR_RULES] {
+            assert!(rules.iter().any(|r| r.contains("must not resemble any real historical figure")));
+        }
+    }
+
     use super::*;
     use crate::measurement::{self as m, data};
 
@@ -881,7 +1122,7 @@ mod tests {
     }
 
     #[test]
-    fn the_notes_the_maintainer_named_hold() {
+    fn the_documented_family_notes_hold() {
         let set = by_family();
         let sprite = |f: Family| set[&f].imagegen.sprite.as_ref().map(|s| s.name.clone());
         assert_eq!(set[&Family::IdeaSpirit].canvas, [60, 68]);
@@ -967,7 +1208,7 @@ mod tests {
             assert!(p.imagegen.rubric.starts_with(f.group().as_str()), "{f}");
             if p.imagegen.background == Background::Opaque {
                 // cards keep transparent corners on purpose: they are checked for the corners instead of for opacity
-                let card = matches!(f, Family::ReportEvent | Family::AdvisorCard);
+                let card = matches!(f, Family::ReportEvent | Family::OperationPicture | Family::AdvisorCard);
                 let want = if card { "card_corners" } else { "opaque" };
                 assert!(p.imagegen.checks.iter().any(|c| c == want), "{f} must check {want}");
                 assert_eq!(p.imagegen.checks.iter().any(|c| c == "opaque"), !card, "{f}");
@@ -987,5 +1228,190 @@ mod tests {
                 panic!("{f} and {other} share the path pattern {key}");
             }
         }
+    }
+
+    /// Words that can trip a provider's violence moderation stay out of the built-in rules: the forms name equipment,
+    /// vehicles and insignia in neutral words. The MIO department rule keeps the model off paper and scenes.
+    #[test]
+    fn rules_use_neutral_words_and_the_mio_department_asks_for_the_equipment_itself() {
+        let charged = ["gun", "guns", "weapon", "weapons", "kill", "blood", "attack", "bomb", "bombs", "explosion", "combat", "war"];
+        for (f, p) in by_family() {
+            let text = p.imagegen.prompt.rules.join(" ").to_ascii_lowercase();
+            let hit: Vec<&str> = text.split(|c: char| !c.is_ascii_alphanumeric()).filter(|w| charged.contains(w)).collect();
+            assert!(hit.is_empty(), "{f}: the rules use {hit:?}: {text}");
+        }
+        let mio = &by_family()[&Family::MioDepartment];
+        let rules = mio.imagegen.prompt.rules.join(" ");
+        assert!(rules.contains("Depict the equipment itself") && rules.contains("design bureau"), "{rules}");
+        let negative = mio.imagegen.prompt.negative.join("; ");
+        for n in ["a scene", "blueprint", "panels, dividers", "a second main object"] {
+            assert!(negative.contains(n), "{n}: {negative}");
+        }
+        let sp = &by_family()[&Family::SpecialProjectIcon];
+        assert!(sp.imagegen.prompt.rules.join(" ").contains("line drawing"));
+        assert!(sp.imagegen.prompt.negative.iter().any(|n| n.contains("shading")));
+    }
+
+    /// The families whose output drifted from vanilla's form state that form in their first rule, and
+    /// nothing in their rules or negatives contradicts it. The phrases are the measured vanilla form (HOI4 1.19.4.1).
+    #[test]
+    fn reviewed_families_state_their_vanilla_form() {
+        let set = by_family();
+        let cases: [(Family, &str, &[&str]); 12] = [
+            (Family::AgencyUpgrade, "intelligence agency upgrade form: a round painted vignette", &["no ring, rim, frame or border around the disc"]),
+            (Family::Building, "landmark building form: one real-world landmark", &["no ground, rock or hill", "Frame 2", "ruins", "orange flame"]),
+            (Family::CommanderTrait, "unit leader trait form: a small military medal", &["ribbon", "monochrome metal"]),
+            (Family::DivisionEmblem, "division template symbol form", &["solid black silhouette"]),
+            (Family::MioTrait, "trait icon form: one small, simple glyph", &["light shading", "no badge, disc, plate"]),
+            (
+                Family::OperationIcon,
+                "operation phase icon form: a round period photograph",
+                &["monochrome sepia", "only this form", "operation_picture"],
+            ),
+            (Family::OperationPicture, "operation phase picture form: one period photograph", &["only this form", "operation_icon"]),
+            (Family::GuiTexture, "GUI texture form: flat interface material", &["straight on"]),
+            (Family::MioDepartment, "department icon form: ONE piece of equipment", &["one bold, saturated colour", "never grey, metallic"]),
+            (Family::MioPolicy, "policy icon form: one object", &["No perspective depth"]),
+            (Family::BopSide, "balance of power side form: one person", &["greyscale head-and-shoulders portrait", "silver bust"]),
+            (Family::StateModifier, "state modifier icon form: one bold, simple object", &["at most two elements", "no small details"]),
+        ];
+        for (f, form, more) in cases {
+            let p = &set[&f].imagegen.prompt;
+            assert!(p.rules[0].contains(form), "{f}: first rule {}", p.rules[0]);
+            let rules = p.rules.join(" ");
+            for m in more {
+                assert!(rules.contains(m), "{f}: {m} missing from {rules}");
+            }
+            // the old rules asked for a loose subject with no frame, which is not these families' form
+            assert!(!rules.contains("One centred subject"), "{f}");
+        }
+        let neg = |f: Family| set[&f].imagegen.prompt.negative.join("; ");
+        assert!(!neg(Family::MioTrait).contains("a frame or border") && neg(Family::MioTrait).contains("round badge"));
+        assert!(neg(Family::OperationIcon).contains("colour other than sepia") && neg(Family::OperationIcon).contains("square or tilted card"));
+        assert!(neg(Family::OperationPicture).contains("round vignette") && neg(Family::OperationPicture).contains("painted illustration"));
+        assert!(neg(Family::CommanderTrait).contains("natural colours"));
+        assert!(!neg(Family::GuiTexture).contains("frame"), "a frame texture is a frame");
+        assert!(neg(Family::Building).contains("hill, landscape") && neg(Family::Building).contains("diorama base"));
+        assert!(neg(Family::BopSide).contains("colour") && neg(Family::MioPolicy).contains("view into the distance"));
+        assert!(neg(Family::StateModifier).contains("small details") && neg(Family::MioDepartment).contains("grey or metallic"));
+        // one form, one size: the 85x85 and 48x48 operation icons are another form
+        assert_eq!(set[&Family::OperationIcon].accepted, vec![[59, 58]]);
+        // the form rule of each GUI texture kind
+        for k in crate::family::GuiTextureKind::ALL {
+            assert!(k.form_rule().contains(&format!("{} form", k.as_str().replace("background", "window background"))), "{k}");
+        }
+    }
+
+    // ------------------------------------------------------------ emblem scale against the installed game
+
+    fn vanilla_files(folder: &str, prefix: &str, size: [u32; 2]) -> Vec<crate::pixels::Rgba> {
+        let g = std::env::var("HOI4_GAME_DIR")
+            .map(std::path::PathBuf::from)
+            .unwrap_or_else(|_| "C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV".into());
+        let mut stack = vec![g.join(folder)];
+        let mut paths = Vec::new();
+        while let Some(d) = stack.pop() {
+            for e in std::fs::read_dir(&d).into_iter().flatten().flatten() {
+                let p = e.path();
+                if p.is_dir() {
+                    stack.push(p);
+                } else if p.extension().is_some_and(|x| x == "dds") && p.file_name().unwrap().to_string_lossy().starts_with(prefix) {
+                    paths.push(p);
+                }
+            }
+        }
+        paths.sort();
+        // size [0, 0] asks for the large medal strips: 84 px tall, a whole number of 56 px frames
+        let wanted = |img: &crate::pixels::Rgba| {
+            if size == [0, 0] {
+                img.height == 84 && img.width >= 56 && img.width.is_multiple_of(56)
+            } else {
+                [img.width, img.height] == size
+            }
+        };
+        paths.iter().filter_map(|p| crate::dds::decode(&std::fs::read(p).ok()?).ok()).filter(|img| wanted(img)).collect()
+    }
+
+    /// The 56x84 frames of vanilla's large medal strips (every vanilla medal is a strip of such frames).
+    fn medal_frames() -> Vec<crate::pixels::Rgba> {
+        let mut out = Vec::new();
+        for strip in vanilla_files("gfx/interface/medals", "", [0, 0]) {
+            out.extend(strip.split_frames(strip.width / 56).unwrap_or_default());
+        }
+        out
+    }
+
+    /// The emblem of the plaque, disc, badge and pictogram families is fitted at vanilla's size: for each vanilla file
+    /// a solid subject of the same aspect goes through the family's own finishing, and the median span (the larger of
+    /// the width and height shares of the visible box) is compared with vanilla's median. The first five are never
+    /// smaller than vanilla's by more than one pixel; the last five, fitted to vanilla's margins, are within one pixel
+    /// either way. Measured on HOI4 1.19.4.1: focus 0.966, decision category icon 0.950, MIO department 0.979,
+    /// doctrine 0.953, commander trait 0.909, MIO trait 0.667, agency upgrade 0.765, operation icon 0.793, raid
+    /// 0.719, idea concern 0.906.
+    #[test]
+    fn plaque_and_disc_emblems_are_fitted_at_vanillas_size() {
+        // (family, folder, file prefix, also not larger than vanilla)
+        let cases: [(Family, &str, &str, bool); 11] = [
+            (Family::Focus, "gfx/interface/goals", "goal", false),
+            (Family::DecisionCategoryIcon, "gfx/interface/decisions", "decision_category", false),
+            (Family::MioDepartment, "gfx/interface/military_industrial_organization/department_icons", "", false),
+            (Family::Doctrine, "gfx/interface/doctrines", "", false),
+            (Family::CommanderTrait, "gfx/interface/traits", "trait_", false),
+            (Family::MioTrait, "gfx/interface/military_industrial_organization/trait_icons", "", true),
+            (Family::AgencyUpgrade, "gfx/interface/operatives/icons", "", true),
+            (Family::OperationIcon, "gfx/interface/operations", "", true),
+            (Family::Raid, "gfx/interface/military_raids", "", true),
+            (Family::IdeaConcern, "gfx/interface/ideas", "idea_", true),
+            (Family::Medal, "gfx/interface/medals", "", true),
+        ];
+        let span = |img: &crate::pixels::Rgba| {
+            let b = img.alpha_bbox(16).unwrap();
+            (f64::from(b[2] - b[0]) / f64::from(img.width)).max(f64::from(b[3] - b[1]) / f64::from(img.height))
+        };
+        let median = |mut v: Vec<f64>| {
+            v.sort_by(f64::total_cmp);
+            v[v.len() / 2]
+        };
+        let set = by_family();
+        let mut report = String::new();
+        for (family, folder, prefix, both_ways) in cases {
+            let p = &set[&family];
+            let mut files = if family == Family::Medal { medal_frames() } else { vanilla_files(folder, prefix, p.canvas) };
+            if family == Family::Focus {
+                files.extend(vanilla_files(folder, "focus", p.canvas));
+            }
+            if files.len() < 10 {
+                eprintln!("SKIPPED emblem scale vs vanilla ({family}): Hearts of Iron IV not found (set HOI4_GAME_DIR)");
+                continue;
+            }
+            let mut van = Vec::new();
+            let mut ours = Vec::new();
+            // vanilla's span over every file; ours over an even sample of at most 40 shapes, which keeps the test
+            // quick in debug builds
+            let step = files.len().div_ceil(40);
+            van.extend(files.iter().filter(|f| f.alpha_bbox(16).is_some()).map(span));
+            for f in files.iter().step_by(step).filter(|f| f.alpha_bbox(16).is_some()) {
+                let b = f.alpha_bbox(16).unwrap();
+                // the same shape, eight times larger, as a generated cut-out
+                let (w, h) = ((b[2] - b[0]) * 8, (b[3] - b[1]) * 8);
+                let mut src = crate::pixels::Rgba::new(w + 40, h + 40);
+                for y in 20..20 + h {
+                    for x in 20..20 + w {
+                        src.set_px(x, y, [120, 100, 80, 255]);
+                    }
+                }
+                let plan = crate::chain::plan_finishing(p, p.canvas, &src, false, false, "").unwrap();
+                let (out, _) = crate::process::run_chain(&src, &plan.ops).unwrap();
+                ours.push(span(&out));
+            }
+            let (v, o) = (median(van), median(ours));
+            let px = 1.0 / f64::from(p.canvas[0].min(p.canvas[1]));
+            report.push_str(&format!("{family}: vanilla {v:.3}, ours {o:.3} ({} files)\n", files.len()));
+            assert!(o >= v - px - 1e-9, "{family}: our emblem spans {o:.3} of the canvas, vanilla's {v:.3}\n{report}");
+            if both_ways {
+                assert!(o <= v + px + 1e-9, "{family}: our emblem spans {o:.3} of the canvas, larger than vanilla's {v:.3}\n{report}");
+            }
+        }
+        eprintln!("emblem span vs vanilla (median)\n{report}");
     }
 }

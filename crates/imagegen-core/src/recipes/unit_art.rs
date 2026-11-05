@@ -230,6 +230,10 @@ fn luminance(r: f64, g: f64, b: f64) -> f64 {
     0.299 * r + 0.587 * g + 0.114 * b
 }
 
+/// On an opaque image, how far from the dark shape's median luminance toward white a light mark inside it becomes a
+/// hole (see [`silhouette_coverage`]).
+pub const OPAQUE_HOLE_SHARE: f64 = 0.45;
+
 /// Coverage of the silhouette in a generated image: 1 on the shape, 0 on the background, soft in between.
 ///
 /// * An image with real transparency (at least 5 percent of its pixels clear) gives its alpha. When the shape is dark,
@@ -238,6 +242,11 @@ fn luminance(r: f64, g: f64, b: f64) -> f64 {
 ///   rises from 30 to 60 percent of the strongest contrast against it. Light details inside a dark shape become holes
 ///   the same way.
 pub fn silhouette_coverage(img: &Rgba) -> Result<Plane> {
+    coverage_with(img, true)
+}
+
+/// [`silhouette_coverage`], with the coloured-mark holes of an opaque image on or off (the tests compare both).
+fn coverage_with(img: &Rgba, coloured_holes: bool) -> Result<Plane> {
     let (w, h) = (img.width as usize, img.height as usize);
     if w < 4 || h < 4 {
         return Err(Error::Image(format!("a {w}x{h} image is too small to read a silhouette from")));
@@ -303,6 +312,27 @@ pub fn silhouette_coverage(img: &Rgba) -> Result<Plane> {
         let (lo, hi) = (0.3 * ink, 0.6 * ink);
         for (i, v) in d.iter().enumerate() {
             cov.v[i] = ((v - lo) / (hi - lo)).clamp(0.0, 1.0) as f32;
+        }
+        // light coloured marks inside a dark shape are holes, as on real alpha. Contrast with a white border alone
+        // cannot see them: a yellow bolt on a blue shield differs from white as much as the shield does, so 0.3.1 drew the whole
+        // shield and lost the bolt. Here the threshold sits lower than on alpha (0.45 of the way from the shape's
+        // median to white, not 0.6) because a coloured mark is darker than a white gap: gold (250, 200, 40) has
+        // luminance 197, a mid gold 152, against 150 for a shield of median 65.
+        let lum: Vec<f64> = flat.iter().map(|p| luminance(p[0], p[1], p[2])).collect();
+        let mut shape: Vec<f64> = lum.iter().zip(&cov.v).filter(|(_, c)| **c >= 0.5).map(|(l, _)| *l).collect();
+        shape.sort_by(f64::total_cmp);
+        if let Some(&median) = shape.get(shape.len() / 2).filter(|_| coloured_holes) {
+            if median < 128.0 {
+                let t = median + OPAQUE_HOLE_SHARE * (255.0 - median);
+                // only coloured marks (chroma 60 and up): a white or grey mark in a black drawing already differs little
+                // from white paper, and the shape's grey antialiasing and shading must stay exactly as they were
+                for ((c, l), p) in cov.v.iter_mut().zip(&lum).zip(&flat) {
+                    let chroma = p[0].max(p[1]).max(p[2]) - p[0].min(p[1]).min(p[2]);
+                    if chroma >= 60.0 {
+                        *c *= (1.0 - ((l - (t - 20.0)) / 40.0).clamp(0.0, 1.0)) as f32;
+                    }
+                }
+            }
         }
     }
     if cov.bbox(0.5).is_none() {
@@ -1107,6 +1137,104 @@ pub fn counter_strip(frame1: &Rgba, kind: UnitArtKind, marks: &[Mark]) -> Result
     Rgba::join_frames(&[first, nato_box(size, marks)])
 }
 
+// ------------------------------------------------------------------ material check
+
+/// Share of the glyph pixels of frame 1 that must lie on the kind's material for finished art to count as vanilla's.
+pub const MATERIAL_SHARE: f64 = 0.85;
+/// How far a glyph pixel may be from the material: green from `k * red + c`, red from blue, grey channels apart.
+pub const MATERIAL_TOLERANCE: f64 = 14.0;
+/// Median amount by which frame 2's box may be lighter than vanilla's grey (border left out). Only lighter counts: the
+/// symbol's black marks darken the box, and on the 30x12 box they can cover most of it.
+pub const BOX_TOLERANCE: f64 = 14.0;
+
+/// Everything that keeps `img`, finished unit art of `kind` at its full size (the two-frame strip of a counter, the
+/// single frame of a division symbol), from being vanilla's material. Empty when it matches.
+///
+/// Frame 1 is checked pixel by pixel: the opaque glyph pixels (alpha 250 and up, luminance 40 and up, blue support
+/// "+" pixels left out) must lie on the kind's material: green with red equal to blue and green following red as
+/// vanilla's does, or grey for the on-map counter. At least 20 such pixels must exist. Frame 2 of a counter must be
+/// vanilla's NATO box: its black border and its grey rows (marks left out) within [`BOX_TOLERANCE`] of the template.
+/// The vanilla files of `divisions_large`, `division_templates_large` and the grey `divisions_small` pass (see the
+/// tests, all but 3 of 111 battalion strips, 2 of 81 on-map strips and 3 of 101 symbols, which are special art);
+/// the gallery's imported white and yellow line art does not.
+pub fn material_problems(img: &Rgba, kind: UnitArtKind) -> Vec<String> {
+    let style = GlyphStyle::of(kind);
+    let frames = if kind == UnitArtKind::DivisionEmblem { 1 } else { 2 };
+    let want = [style.frame[0] * frames, style.frame[1]];
+    if [img.width, img.height] != want {
+        return vec![format!("finished {} art is {}x{}, this is {}x{}", kind.as_str(), want[0], want[1], img.width, img.height)];
+    }
+    let parts = match img.split_frames(frames) {
+        Ok(p) => p,
+        Err(e) => return vec![e.to_string()],
+    };
+    let mut problems = Vec::new();
+    let f1 = &parts[0];
+    let (mut n, mut on) = (0usize, 0usize);
+    for p in f1.data.chunks_exact(4) {
+        let [r, g, b] = [p[0], p[1], p[2]].map(f64::from);
+        let lum = luminance(r, g, b);
+        if p[3] < 250 || lum < 40.0 || b > g + 10.0 {
+            continue;
+        }
+        n += 1;
+        let ok = match style.tint {
+            Tint::Green { k, c } => (r - b).abs() <= MATERIAL_TOLERANCE && (g - (k * r + c)).abs() <= MATERIAL_TOLERANCE,
+            _ => (r - g).abs() <= MATERIAL_TOLERANCE && (g - b).abs() <= MATERIAL_TOLERANCE,
+        };
+        if ok {
+            on += 1;
+        }
+    }
+    let material = match style.tint {
+        Tint::Green { .. } => "vanilla's green counter material (red equal to blue, green following red)",
+        _ => "vanilla's light grey on-map material (red, green and blue equal)",
+    };
+    // the on-map glyph is tiny: vanilla's marine and no-intel glyphs have 9 such pixels
+    let min_pixels = if kind == UnitArtKind::CounterSmall { 8 } else { 20 };
+    if n < min_pixels {
+        problems.push(format!("frame 1 has {n} opaque glyph pixels; vanilla's unit art is a solid silhouette in {material}"));
+    } else if (on as f64) < MATERIAL_SHARE * n as f64 {
+        problems.push(format!(
+            "{:.0} percent of frame 1's glyph pixels are in {material}; at least {:.0} percent must be",
+            100.0 * on as f64 / n as f64,
+            100.0 * MATERIAL_SHARE
+        ));
+    }
+    if frames == 2 {
+        let size = if kind == UnitArtKind::CounterLarge { BoxSize::Large } else { BoxSize::Small };
+        let template = nato_box(size, &[]);
+        let f2 = &parts[1];
+        let (mut border, mut border_ok, mut grey, mut diffs) = (0usize, 0usize, 0usize, Vec::new());
+        for (t, p) in template.data.chunks_exact(4).zip(f2.data.chunks_exact(4)) {
+            if t[3] != 255 {
+                continue;
+            }
+            let lp = if p[3] < 128 { 255.0 } else { luminance(f64::from(p[0]), f64::from(p[1]), f64::from(p[2])) };
+            if t[0] == 0 {
+                border += 1;
+                if lp < 60.0 {
+                    border_ok += 1;
+                }
+            } else {
+                diffs.push((lp - f64::from(t[0])).max(0.0));
+                if lp >= 60.0 {
+                    grey += 1;
+                }
+            }
+        }
+        let inside = diffs.len().max(1);
+        diffs.sort_by(f64::total_cmp);
+        let med = diffs.get(diffs.len() / 2).copied().unwrap_or(f64::MAX);
+        if (border_ok as f64) < 0.6 * border as f64 || med > BOX_TOLERANCE || (grey as f64) < 0.3 * inside as f64 {
+            problems.push(format!(
+                "frame 2 is not vanilla's NATO box: {border_ok} of {border} border pixels are black, {grey} of {inside} box pixels are grey, and the box is {med:.1} lighter than vanilla's in the median (at most {BOX_TOLERANCE})"
+            ));
+        }
+    }
+    problems
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1155,6 +1283,66 @@ mod tests {
         }
         assert!(silhouette_coverage(&busy).unwrap_err().to_string().contains("flat colour"));
         assert!(silhouette_coverage(&Rgba::filled(64, 64, [255, 255, 255, 255])).is_err(), "a blank image");
+    }
+
+    fn source(name: &str) -> Rgba {
+        let p = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/gallery").join(name);
+        crate::pixels::decode(&std::fs::read(p).unwrap(), Some(name), Default::default()).unwrap().0
+    }
+
+    /// The 0.3.1 lightning bolt (a yellow bolt on a blue shield, opaque on white, here at half size) came out as a
+    /// plain green shield: contrast with the white paper saw the bolt as part of the shape. Coloured light marks inside
+    /// a dark shape are now holes, so the bolt is cut into the shield.
+    #[test]
+    fn a_coloured_bolt_inside_a_dark_shield_stays_visible() {
+        let bolt = source("v031_lightning_bolt-v1_half.png");
+        let count_holes = |cov: &Plane| {
+            let b = cov.bbox(0.5).unwrap();
+            // clear pixels inside the shield's box, away from its curved bottom
+            let mut n = 0;
+            for y in b[1] + (b[3] - b[1]) / 6..b[1] + (b[3] - b[1]) * 2 / 3 {
+                for x in b[0] + (b[2] - b[0]) / 6..b[2] - (b[2] - b[0]) / 6 {
+                    if cov.at(x, y) < 0.5 {
+                        n += 1;
+                    }
+                }
+            }
+            n
+        };
+        let (with, without) = (coverage_with(&bolt, true).unwrap(), coverage_with(&bolt, false).unwrap());
+        let (h_with, h_without) = (count_holes(&with), count_holes(&without));
+        eprintln!("bolt pixels cut into the shield: {h_with} now, {h_without} in 0.3.1");
+        assert!(h_without < 200 && h_with > 3000, "{h_without} {h_with}");
+        // and the bolt survives the fit to 76x42: a clear stroke crosses the green shield
+        let glyph = unit_glyph(&bolt, UnitArtKind::DivisionEmblem).unwrap();
+        let b = glyph.alpha_bbox(250).unwrap();
+        let inner_clear =
+            (b[1] + 3..b[3] - 6).flat_map(|y| (b[0] + 4..b[2] - 4).map(move |x| (x, y))).filter(|(x, y)| glyph.px(*x, *y)[3] < 128).count();
+        assert!(inner_clear >= 15, "the bolt is {inner_clear} px inside the shield");
+        // a synthetic thin bolt, 3 percent of the shield's width, is kept too
+        let mut img = Rgba::filled(800, 600, [255, 255, 255, 255]);
+        for y in 100..500u32 {
+            for x in 200..600u32 {
+                let on_bolt = (i64::from(x) - 400 - (i64::from(y) - 300) / 3).abs() < 12;
+                img.set_px(x, y, if on_bolt { [235, 190, 40, 255] } else { [30, 60, 120, 255] });
+            }
+        }
+        let cov = silhouette_coverage(&img).unwrap();
+        assert!(cov.at(400, 300) < 0.1 && cov.at(300, 300) > 0.9, "a thin gold bolt is a hole");
+    }
+
+    /// The 0.3.1 counters and the bear emblem were judged good: their output does not change. The bear (real alpha)
+    /// and the rifle (real alpha) are pinned by hash; on the opaque black-on-white cavalry the coloured-mark rule
+    /// changes no coverage value at all.
+    #[test]
+    fn the_good_031_unit_art_is_unchanged() {
+        let bear = unit_glyph(&source("v031_bear_standing-v1.png"), UnitArtKind::DivisionEmblem).unwrap();
+        assert_eq!(bear.pixels_sha256(), "97ebbf483fb30675b878691311d3362fc70d024a496608ff1577793b5c74ae33");
+        let rifle = unit_glyph(&source("v031_rifle_infantry-v1.png"), UnitArtKind::CounterSmall).unwrap();
+        assert_eq!(rifle.pixels_sha256(), "557f3c8fedb79f1dcd5740f59bf745665dfa7b1eba19a9118bc83ceabc75863f");
+        let horse = source("v031_cavalry_horse-v1_half.png");
+        assert_eq!(coverage_with(&horse, true).unwrap(), coverage_with(&horse, false).unwrap());
+        assert_eq!(coverage_with(&drawn_tank(400, 300), true).unwrap(), coverage_with(&drawn_tank(400, 300), false).unwrap());
     }
 
     #[test]
@@ -1607,6 +1795,77 @@ mod tests {
         // faint grey, its wheels move with the other marks), so one pixel of difference costs much more there
         assert!(sum_l / n < 2.5 && sum_s / n < 8.0, "mean large {}, small {}", sum_l / n, sum_s / n);
         assert!(worst_l < 5.0 && worst_s < 18.0, "worst large {worst_l}, small {worst_s}");
+    }
+
+    /// Every vanilla strip and symbol counts as finished art in vanilla's material; the gallery's imported line art and
+    /// a recoloured vanilla counter do not; our own processed strips do.
+    #[test]
+    fn the_material_check_accepts_vanilla_and_refuses_other_art() {
+        // the gallery's imported art (hoi4-imagegen 0.2.0 conformed it unchanged)
+        let fixture = |name: &str| {
+            let p = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/gallery").join(name);
+            crate::pixels::decode(&std::fs::read(p).unwrap(), Some(name), Default::default()).unwrap().0
+        };
+        for (name, kind) in [
+            ("combat_engineers-v2-p1.png", UnitArtKind::CounterLarge),
+            ("infantry_rifle-v1-p1.png", UnitArtKind::CounterSmall),
+            ("lightning_shield-v1-p1.png", UnitArtKind::DivisionEmblem),
+        ] {
+            let p = material_problems(&fixture(name), kind);
+            eprintln!("{name}: {p:?}");
+            assert!(!p.is_empty(), "{name} passed the material check");
+        }
+        // our own strips pass
+        for kind in [UnitArtKind::CounterLarge, UnitArtKind::CounterSmall] {
+            let glyph = unit_glyph(&drawn_tank(800, 600), kind).unwrap();
+            let strip = counter_strip(&glyph, kind, &[Mark::Cross, Mark::Plus]).unwrap();
+            assert!(material_problems(&strip, kind).is_empty(), "{kind:?}: {:?}", material_problems(&strip, kind));
+        }
+        let emblem = unit_glyph(&drawn_tank(800, 600), UnitArtKind::DivisionEmblem).unwrap();
+        assert!(material_problems(&emblem, UnitArtKind::DivisionEmblem).is_empty());
+        assert!(!material_problems(&emblem, UnitArtKind::CounterLarge).is_empty(), "wrong size");
+        // vanilla
+        let Some(_) = game_dir() else {
+            eprintln!("SKIPPED material check vs vanilla: Hearts of Iron IV not found (set HOI4_GAME_DIR)");
+            return;
+        };
+        for (kind, folder, size) in [
+            (UnitArtKind::CounterLarge, "divisions_large", (152, 42)),
+            (UnitArtKind::CounterSmall, "divisions_small", (60, 12)),
+            (UnitArtKind::DivisionEmblem, "division_templates_large", (76, 42)),
+        ] {
+            let files = vanilla(folder, size);
+            let (mut checked, mut failed) = (0, Vec::new());
+            for (name, img) in &files {
+                // coloured on-map counters (a few nations' own) are not the grey material, as the measurement found
+                let f1 = img.split_frames(if kind == UnitArtKind::DivisionEmblem { 1 } else { 2 }).unwrap().swap_remove(0);
+                if vanilla_mask(kind, &f1).is_none() {
+                    continue;
+                }
+                checked += 1;
+                let p = material_problems(img, kind);
+                if !p.is_empty() {
+                    failed.push(format!("{name}: {p:?}"));
+                }
+            }
+            eprintln!("{}: {checked} vanilla files checked, {} refused", kind.as_str(), failed.len());
+            assert!(checked >= 50, "{kind:?}: only {checked}");
+            // HOI4 1.19.4.1: 3 of 111 battalion strips, 2 of 81 grey on-map strips and 3 of 101 symbols are refused,
+            // special art such as the guided missile, transport helicopter and mothership counters, whose frame 2 is
+            // not the standard NATO box
+            assert!(failed.len() * 20 <= checked, "{kind:?}: more than 5 percent of vanilla refused: {failed:#?}");
+            // vanilla's counter recoloured red is refused
+            let (_, first) = files
+                .iter()
+                .find(|(_, i)| vanilla_mask(kind, &i.split_frames(if kind == UnitArtKind::DivisionEmblem { 1 } else { 2 }).unwrap()[0]).is_some())
+                .unwrap();
+            let mut red = first.clone();
+            for p in red.data.chunks_exact_mut(4) {
+                p.swap(1, 2);
+                p[0] = p[0].saturating_add(60);
+            }
+            assert!(!material_problems(&red, kind).is_empty(), "{kind:?}: a recoloured strip passed");
+        }
     }
 
     /// With HOI4_UNIT_ART_DUMP set, writes vanilla frame 1 next to our rendering of its own silhouette, for a look.
