@@ -26,11 +26,11 @@ const options = [
   `<div class="table"></div>
     <div class="t1 hero"><div class="ice">AI art</div><div class="brass">ready for</div><div class="brass">HOI4</div></div>
     <div class="fan">
-      ${plate("assets/gallery/source_png/iron_pact-v1.png", 330, 330, "left:0;top:150px;transform:rotate(-8deg)")}
-      ${plate("assets/picked/idea_spirit/women_welders-v1-fit.png", 330, 330, "left:250px;top:40px;transform:rotate(3deg);z-index:2")}
-      ${plate("assets/regen/military_reforms/military_reforms-v1-fit.png", 330, 330, "left:520px;top:190px;transform:rotate(9deg);z-index:3")}
-      ${plate(`assets/regen/${tno}/${tno}-v1-fit.png`, 300, 300, "left:120px;top:470px;transform:rotate(-4deg);z-index:4")}
-      ${plate("assets/picked/doctrine/howitzer_battery_night-v1-fit.png", 300, 300, "left:430px;top:520px;transform:rotate(5deg);z-index:5")}
+      ${plate("assets/regen/embassy_flags_handshake_v033/embassy_flags_handshake_v033-v1-p1.png", 330, 330, "left:0;top:150px;transform:rotate(-8deg)")}
+      ${plate("assets/picked/idea_spirit/women_welders-v1-p1.png", 330, 330, "left:250px;top:40px;transform:rotate(3deg);z-index:2")}
+      ${plate("assets/regen/military_reforms/military_reforms-v1-p1.png", 330, 330, "left:520px;top:190px;transform:rotate(9deg);z-index:3")}
+      ${plate(`assets/regen/${tno}/${tno}-v1-p1.png`, 300, 300, "left:120px;top:470px;transform:rotate(-4deg);z-index:4")}
+      ${plate("assets/picked/raid/paratrooper_canopy-v1-p1.png", 300, 300, "left:430px;top:520px;transform:rotate(5deg);z-index:5")}
     </div>
     ${brand}`,
   // 2: raw model output to the game's file
@@ -43,10 +43,10 @@ const options = [
   // 3: the "many more" wall
   `<div class="paper"></div>
     <div class="wall">${[
-      "assets/picked/idea_spirit/women_welders-v1-fit.png", "assets/gallery/source_png/iron_pact-v1.png", "assets/picked/raid/paratrooper_canopy-v1-fit.png",
-      "assets/regen/military_reforms/military_reforms-v1-fit.png", "assets/gallery/fit/armistice-v1.png", "assets/picked/operation_icon/telephone_with_bug-v1-fit.png",
-      "assets/gallery/fit/iron_will-v1.png", "assets/picked/doctrine/howitzer_battery_night-v1-fit.png", "assets/gallery/fit/heavy_tank-v1.png",
-      "assets/picked/idea_concern/shell_filling_hall-v1-fit.png", "assets/gallery/source_png/hold_the_line-v1.png", "assets/gallery/fit/defenders_of_order-v1.png",
+      "assets/picked/idea_spirit/women_welders-v1-p1.png", "assets/regen/signed_treaty_quill_v033/signed_treaty_quill_v033-v1-p1.png", "assets/picked/raid/paratrooper_canopy-v1-p1.png",
+      "assets/regen/military_reforms/military_reforms-v1-p1.png", "assets/gallery/processed_png/armistice-v1-p1.png", "assets/picked/operation_icon/telephone_with_bug-v1-p1.png",
+      "assets/gallery/processed_png/iron_will-v1-p1.png", "assets/picked/doctrine/howitzer_battery_night-v1-p1.png", "assets/gallery/processed_png/heavy_tank-v1-p1.png",
+      "assets/picked/idea_concern/shell_filling_hall-v1-p1.png", "assets/gallery/processed_png/hold_the_line-v1-p1.png", "assets/gallery/processed_png/defenders_of_order-v1-p1.png",
     ].map((s) => `<div class="w plate"><img src="${A(s)}" alt="" /></div>`).join("")}</div>
     <div class="shade"></div>
     <div class="t3 hero"><div class="brass">40</div><div class="ice">asset families</div></div>
@@ -56,7 +56,7 @@ const options = [
     <div class="t4 hero"><span class="ice">Your mod's</span> <span class="brass">style</span></div>
     <div class="refs">${["ref_2", "ref_3", "ref_6"].map((r) => `<img src="${A(`assets/tno/refs/${r}.png`)}" alt="" />`).join("")}</div>
     <div class="arrow4 brass hero">›</div>
-    <div class="out plate"><img src="${A(`assets/regen/${tno}/${tno}-v1-fit.png`)}" alt="" /></div>
+    <div class="out plate"><img src="${A(`assets/regen/${tno}/${tno}-v1-p1.png`)}" alt="" /></div>
     ${brand}`,
   // 5: in the game
   `<div class="steel"></div>
@@ -77,7 +77,7 @@ const css = `
     #root .brand img { width: 96px; height: 96px; object-fit: contain; filter: drop-shadow(0 8px 14px rgba(0,0,0,.7)); }
     #root .brand span { font-size: 52px; }
     #root .pl { position: absolute; display: flex; align-items: center; justify-content: center; }
-    #root .pl img { max-width: 86%; max-height: 86%; object-fit: contain; filter: drop-shadow(0 16px 20px rgba(0,0,0,.6)); }
+    #root .pl img { width: 86%; height: 86%; object-fit: contain; filter: drop-shadow(0 16px 20px rgba(0,0,0,.6)); }
     #root .t1 { position: absolute; left: 80px; top: 250px; font-size: 150px; z-index: 6; }
     #root .fan { position: absolute; left: 1080px; top: 50px; width: 820px; height: 900px; transform: scale(.92); transform-origin: 100% 0; }
     #root .t2 { position: absolute; left: 0; right: 0; top: 70px; text-align: center; font-size: 104px; white-space: nowrap; }
@@ -90,7 +90,7 @@ const css = `
     #root .t2b .chip { font-size: 34px; }
     #root .wall { position: absolute; left: -40px; top: -30px; width: 2000px; display: grid; grid-template-columns: repeat(4, 470px); gap: 30px; transform: rotate(-6deg) scale(1.08); transform-origin: 50% 50%; }
     #root .wall .w { width: 470px; height: 360px; display: flex; align-items: center; justify-content: center; }
-    #root .wall .w img { max-width: 82%; max-height: 82%; object-fit: contain; }
+    #root .wall .w img { width: 82%; height: 82%; object-fit: contain; }
     #root .shade { position: absolute; inset: 0; background: radial-gradient(ellipse 60% 55% at 50% 52%, rgba(8,10,12,.9) 0%, rgba(8,10,12,.55) 60%, rgba(8,10,12,.2) 100%); }
     #root .t3 { position: absolute; left: 0; right: 0; top: 230px; text-align: center; }
     #root .t3 .brass { font-size: 400px; }
