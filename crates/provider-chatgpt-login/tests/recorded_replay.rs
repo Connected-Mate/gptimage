@@ -162,3 +162,40 @@ fn a_moderation_refusal_is_reported_as_such_and_never_retried() {
     assert_eq!((e.kind, e.retry), (ErrorKind::ModerationBlocked, RetryClass::Terminal));
     assert!(e.message.contains("safety system"), "{}", e.message);
 }
+
+// ------------------------------------------------------------------ the 2026-11-05 effort refusals (recorded real)
+
+/// RECORDED-REAL: the backend's answers of 2026-11-05 to gpt-6-luna at high and then at medium effort, captured by the
+/// imagegen-docs session with `HOI4_IMAGEGEN_RECORD_RESPONSES` and scrubbed by `scripts/make_replay_fixture.py`.
+/// Both echo the model and the asked effort in response.created, then the image tool fails with
+/// `image_generation_user_error` / `invalid_value` / param `complexity` ("Complexity '<effort>' is not supported for
+/// this image model.") and response.failed.
+const HIGH_REFUSED: &str = include_str!("fixtures/recorded-real/effort-high-refused-2026-11-05.sse");
+const MEDIUM_REFUSED: &str = include_str!("fixtures/recorded-real/effort-medium-refused-2026-11-05.sse");
+
+fn no_sleep() -> CallContext {
+    struct NoSleep;
+    impl imagegen_providers::types::Sleeper for NoSleep {
+        fn sleep(&self, _d: std::time::Duration) {}
+    }
+    CallContext { sleeper: Arc::new(NoSleep), ..CallContext::new() }
+}
+
+#[test]
+fn the_recorded_effort_refusals_are_read_as_effort_refusals() {
+    for (fixture, effort) in [(HIGH_REFUSED, "high"), (MEDIUM_REFUSED, "medium")] {
+        assert!(fixture.contains("\"param\":\"complexity\"") && fixture.contains(&format!("Complexity '{effort}'")));
+        assert!(provider_chatgpt_login::provider::is_effort_refusal(&format!("Complexity '{effort}' is not supported for this image model.")));
+    }
+}
+
+#[test]
+fn the_recorded_refusal_of_high_moves_on_and_a_refusal_of_every_rung_is_one_terminal_error() {
+    let (_d, f, p) = replay(200, HIGH_REFUSED.to_string(), None);
+    f.respond(Method::Post, BACKEND_PATH, 200, &[("content-type", "text/event-stream")], MEDIUM_REFUSED.to_string());
+    let e = p.generate(&request(), &no_sleep()).unwrap_err();
+    assert_eq!((e.kind, e.retry), (ErrorKind::BadRequest, RetryClass::Terminal));
+    assert!(e.message.contains("high: Complexity 'high'") && e.message.contains("medium: Complexity 'medium'"), "{}", e.message);
+    let sent: Vec<serde_json::Value> = f.requests().iter().map(|r| serde_json::from_slice(&r.body).unwrap()).collect();
+    assert_eq!(sent.iter().map(|b| b["reasoning"]["effort"].as_str().unwrap().to_string()).collect::<Vec<_>>(), ["high", "medium"]);
+}
