@@ -86,6 +86,18 @@ pub struct RouteState {
     /// The backoff after a 429, if one is in force.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub rate_limit: Option<RateLimit>,
+    /// Reasoning efforts the backend refused recently, skipped until `until_epoch` so each image is one request.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub refused_efforts: Vec<RefusedEffort>,
+}
+
+/// A reasoning effort the backend refused, remembered for a while.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct RefusedEffort {
+    /// The effort, for example `high`.
+    pub effort: String,
+    /// Skipped until this epoch second; then it is tried again.
+    pub until_epoch: i64,
 }
 
 impl RouteState {

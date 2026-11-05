@@ -74,7 +74,8 @@ fn the_recorded_response_yields_its_real_image_and_proves_luna_at_high_effort() 
     assert!(out.notes.iter().any(|n| n.starts_with("revised prompt:")));
     assert_eq!(out.provider_request_id.as_deref(), Some("resp_recorded"));
     let usage = out.usage.expect("the backend reported usage");
-    assert_eq!(usage["total_tokens"], 2690);
+    assert_eq!(usage["reasoning_effort"], "high", "the effort the image ran at is data on the candidate");
+    assert_eq!(usage["backend_usage"]["total_tokens"], 2690);
     assert!(out.usage_unknown, "plan quota has no price, so spend stays unknown");
 }
 
@@ -89,7 +90,7 @@ fn the_fixture_carries_no_account_identifiers() {
 fn another_model_injected_into_the_recording_is_refused() {
     for (from, to, needle) in [
         ("\"model\":\"gpt-6-luna\"", "\"model\":\"gpt-6-astra\"", "instead of gpt-6-luna"),
-        ("\"effort\":\"high\"", "\"effort\":\"medium\"", "instead of high"),
+        ("\"effort\":\"high\"", "\"effort\":\"medium\"", "instead of the asked high"),
         ("\"model\":\"gpt-6-luna\",", "", "did not report which model"),
         ("\"effort\":\"high\",", "", "did not report the reasoning effort"),
     ] {
@@ -160,4 +161,67 @@ fn a_moderation_refusal_is_reported_as_such_and_never_retried() {
     let e = p.generate(&request(), &CallContext::new()).unwrap_err();
     assert_eq!((e.kind, e.retry), (ErrorKind::ModerationBlocked, RetryClass::Terminal));
     assert!(e.message.contains("safety system"), "{}", e.message);
+}
+
+// ------------------------------------------------------------------ the 2026-11-05 effort refusals (recorded real)
+
+/// RECORDED-REAL: the backend's answers of 2026-11-05 to gpt-6-luna at high and then at medium effort, captured by the
+/// imagegen-docs session with `HOI4_IMAGEGEN_RECORD_RESPONSES` and scrubbed by `scripts/make_replay_fixture.py`.
+/// Both echo the model and the asked effort in response.created, then the image tool fails with
+/// `image_generation_user_error` / `invalid_value` / param `complexity` ("Complexity '<effort>' is not supported for
+/// this image model.") and response.failed.
+const HIGH_REFUSED: &str = include_str!("fixtures/recorded-real/effort-high-refused-2026-11-05.sse");
+const MEDIUM_REFUSED: &str = include_str!("fixtures/recorded-real/effort-medium-refused-2026-11-05.sse");
+
+fn no_sleep() -> CallContext {
+    struct NoSleep;
+    impl imagegen_providers::types::Sleeper for NoSleep {
+        fn sleep(&self, _d: std::time::Duration) {}
+    }
+    CallContext { sleeper: Arc::new(NoSleep), ..CallContext::new() }
+}
+
+#[test]
+fn the_recorded_effort_refusals_are_read_as_effort_refusals() {
+    for (fixture, effort) in [(HIGH_REFUSED, "high"), (MEDIUM_REFUSED, "medium")] {
+        assert!(fixture.contains("\"param\":\"complexity\"") && fixture.contains(&format!("Complexity '{effort}'")));
+        assert!(provider_chatgpt_login::provider::is_effort_refusal(&format!("Complexity '{effort}' is not supported for this image model.")));
+    }
+}
+
+/// The two recorded refusals, then an accepted low-effort answer. The low answer is the 2026-11-01 recording with its
+/// effort changed to low (recorded-real replay with an injected value): no real low-effort response exists yet.
+#[test]
+fn after_the_recorded_refusals_of_high_and_medium_low_is_used_and_recorded() {
+    let (_d, f, p) = replay(200, HIGH_REFUSED.to_string(), None);
+    f.respond(Method::Post, BACKEND_PATH, 200, &[("content-type", "text/event-stream")], MEDIUM_REFUSED.to_string());
+    f.respond(
+        Method::Post,
+        BACKEND_PATH,
+        200,
+        &[("content-type", "text/event-stream")],
+        RECORDED.replace("\"effort\":\"high\"", "\"effort\":\"low\""),
+    );
+    let out = p.generate(&request(), &no_sleep()).unwrap();
+    assert_eq!(out.usage.clone().unwrap()["reasoning_effort"], "low");
+    assert_eq!(out.usage.unwrap()["refused_efforts"], serde_json::json!(["high", "medium"]));
+    assert!(out.notes[0].contains("gpt-6-luna at low reasoning effort"), "{:?}", out.notes);
+    let sent: Vec<serde_json::Value> = f.requests().iter().map(|r| serde_json::from_slice(&r.body).unwrap()).collect();
+    assert_eq!(sent.iter().map(|b| b["reasoning"]["effort"].as_str().unwrap().to_string()).collect::<Vec<_>>(), ["high", "medium", "low"]);
+}
+
+#[test]
+fn a_refusal_of_every_rung_is_one_terminal_error_and_nothing_goes_without_an_effort() {
+    let (_d, f, p) = replay(200, HIGH_REFUSED.to_string(), None);
+    f.respond(Method::Post, BACKEND_PATH, 200, &[("content-type", "text/event-stream")], MEDIUM_REFUSED.to_string());
+    // injected: low refused, then the request without an effort refused as well (no real recording of these yet)
+    let low = MEDIUM_REFUSED.replace("'medium'", "'low'").replace("\"effort\":\"medium\"", "\"effort\":\"low\"");
+    f.respond(Method::Post, BACKEND_PATH, 200, &[("content-type", "text/event-stream")], low.clone());
+    f.respond(Method::Post, BACKEND_PATH, 200, &[("content-type", "text/event-stream")], low);
+    let e = p.generate(&request(), &no_sleep()).unwrap_err();
+    assert_eq!((e.kind, e.retry), (ErrorKind::BadRequest, RetryClass::Terminal));
+    assert!(e.message.contains("high: Complexity 'high'") && e.message.contains("backend default: Complexity"), "{}", e.message);
+    assert_eq!(f.requests().len(), 4, "high, medium, low, then once without an effort");
+    let last: serde_json::Value = serde_json::from_slice(&f.requests()[3].body).unwrap();
+    assert!(last.get("reasoning").is_none());
 }

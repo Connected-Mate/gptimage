@@ -56,7 +56,7 @@ fn local_builds_register_it_without_any_flag() {
         assert!(!e.plugin.signed_in);
         assert!(e.plugin.reasons[0].contains("hoi4-imagegen login"));
         assert!(e.registry.get("chatgpt_login").is_some());
-        assert_eq!(e.status()["chatgpt_login"]["model"], "gpt-6-luna at high reasoning effort");
+        assert_eq!(e.status()["chatgpt_login"]["model"], format!("gpt-6-luna at {}", provider_chatgpt_login::EFFORT_POLICY));
     }
 }
 
