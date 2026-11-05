@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/klimPaskov/hoi4-imagegen-mcp/main/docs/images/logo.svg" width="96" height="96" alt="HOI4 Imagegen">
+  <img src="https://raw.githubusercontent.com/klimPaskov/hoi4-imagegen-mcp/main/docs/images/logo.png" width="96" height="96" alt="HOI4 Imagegen">
 </p>
 
 <h1 align="center">HOI4 Imagegen</h1>
