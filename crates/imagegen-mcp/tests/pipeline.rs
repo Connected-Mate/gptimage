@@ -87,7 +87,7 @@ fn install_refuses_until_validation_review_and_hashes_are_in_order() {
 
     // approving without a preview is refused
     let answers: serde_json::Map<String, Value> =
-        imagegen_core::rubric::questions("icon_v1").iter().map(|(k, _)| (k.to_string(), json!(true))).collect();
+        imagegen_core::rubric::questions("icon_v2").iter().map(|(k, _)| (k.to_string(), json!(true))).collect();
     let review = |verdict: &str, answers: Value| {
         h.engine.review(serde_json::from_value(json!({"target": processed, "verdict": verdict, "reviewer": "t", "answers": answers})).unwrap())
     };
@@ -249,9 +249,9 @@ fn policy_gates_follow_the_maintainer_decisions() {
         )
     };
     assert_eq!(code(&plan("idea_spirit", "a").unwrap_err()), "family_forbidden_by_project");
-    // every family is generated end to end except the three whose second frame is different art
-    assert_eq!(code(&plan("counter_large", "a").unwrap_err()), "family_import_only");
-    assert_eq!(code(&plan("division_emblem", "a").unwrap_err()), "family_import_only");
+    // every family is generated end to end, the counters and the division symbol too
+    assert!(plan("counter_large", "a").is_ok());
+    assert!(plan("division_emblem", "a").is_ok());
     // the advisor card needs the mod's frame template: refused before anything is spent, naming the paths it looked for
     let e = plan("advisor_card", "a").unwrap_err();
     assert_eq!(code(&e), "templates_missing");
@@ -400,7 +400,7 @@ fn fake_checkerboards_are_rejected_at_validation() {
     // the failed validation blocks approval and install
     h.preview(&id);
     let answers: serde_json::Map<String, Value> =
-        imagegen_core::rubric::questions("icon_v1").iter().map(|(k, _)| (k.to_string(), json!(true))).collect();
+        imagegen_core::rubric::questions("icon_v2").iter().map(|(k, _)| (k.to_string(), json!(true))).collect();
     let e = h
         .engine
         .review(serde_json::from_value(json!({"target": id, "verdict": "approved", "reviewer": "t", "answers": answers})).unwrap())

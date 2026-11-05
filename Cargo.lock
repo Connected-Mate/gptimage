@@ -1083,7 +1083,7 @@ dependencies = [
 
 [[package]]
 name = "imagegen-cli"
-version = "0.2.2"
+version = "0.3.0"
 dependencies = [
  "base64 0.22.1",
  "clap",
@@ -1098,7 +1098,7 @@ dependencies = [
 
 [[package]]
 name = "imagegen-core"
-version = "0.2.2"
+version = "0.3.0"
 dependencies = [
  "gif",
  "hoi4-engine",
@@ -1116,7 +1116,7 @@ dependencies = [
 
 [[package]]
 name = "imagegen-mcp"
-version = "0.2.2"
+version = "0.3.0"
 dependencies = [
  "base64 0.22.1",
  "clap",
@@ -1134,13 +1134,14 @@ dependencies = [
 
 [[package]]
 name = "imagegen-providers"
-version = "0.2.2"
+version = "0.3.0"
 dependencies = [
  "base64 0.22.1",
  "imagegen-core",
  "schemars",
  "serde",
  "serde_json",
+ "sha2",
  "tempfile",
  "thiserror",
  "ureq",
@@ -1856,7 +1857,7 @@ dependencies = [
 
 [[package]]
 name = "provider-chatgpt-login"
-version = "0.2.2"
+version = "0.3.0"
 dependencies = [
  "base64 0.22.1",
  "getrandom 0.4.3",

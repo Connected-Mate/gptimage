@@ -106,6 +106,20 @@ pub enum Op {
         /// Frames in the strip; two.
         frames: u32,
     },
+    /// Unit art: read the silhouette from a generated image (a dark shape on a flat background, or real alpha), fit
+    /// it at vanilla's size and place, and light it in vanilla's material (green counters and division symbols, the
+    /// grey on-map counter the game tints). See `recipes::unit_art`.
+    UnitGlyph {
+        /// Which unit art.
+        kind: crate::recipes::unit_art::UnitArtKind,
+    },
+    /// Two-frame counter strip: the finished glyph, then vanilla's NATO box with the symbol's marks.
+    NatoFrame {
+        /// Which counter (`counter_large` or `counter_small`).
+        kind: crate::recipes::unit_art::UnitArtKind,
+        /// The NATO symbol: marks joined by `+`, as `recipes::unit_art::symbol_text` writes them.
+        symbol: String,
+    },
     /// Light on black to alpha: alpha is the brightest channel, colour is divided by it (blend glows).
     BlackToAlpha,
     /// Two-frame blend glow from its bright frame: frame 1 is the glow at `dim` of its alpha, frame 2 the glow.
@@ -153,6 +167,8 @@ impl Op {
             Op::ReportCard { .. } => "report_card",
             Op::SelectedFrame { .. } => "selected_frame",
             Op::DisabledFrame { .. } => "disabled_frame",
+            Op::UnitGlyph { .. } => "unit_glyph",
+            Op::NatoFrame { .. } => "nato_frame",
             Op::BlackToAlpha => "black_to_alpha",
             Op::GlowFrames { .. } => "glow_frames",
             Op::ScrollFrames { .. } => "scroll_frames",
@@ -221,6 +237,11 @@ pub fn apply(img: &Rgba, op: &Op) -> Result<Rgba> {
         }
         Op::SelectedFrame { frames } => crate::recipes::frames::selected_strip(img, *frames),
         Op::DisabledFrame { frames } => crate::recipes::frames::disabled_strip(img, *frames),
+        Op::UnitGlyph { kind } => crate::recipes::unit_art::unit_glyph(img, *kind),
+        Op::NatoFrame { kind, symbol } => {
+            let marks = crate::recipes::unit_art::parse_symbol(symbol)?;
+            crate::recipes::unit_art::counter_strip(img, *kind, &marks)
+        }
         Op::BlackToAlpha => Ok(crate::animation::black_to_alpha(img)),
         Op::GlowFrames { frames, dim } => crate::animation::glow_strip(img, *frames, *dim),
         Op::ScrollFrames { frames } => crate::animation::scroll_strip(img, *frames),
@@ -743,8 +764,14 @@ mod tests {
         assert_eq!(v, serde_json::json!({"op": "disabled_frame", "frames": 2}));
         assert_eq!(serde_json::from_value::<Op>(serde_json::json!({"op": "selected_frame", "frames": 2})).unwrap(), Op::SelectedFrame { frames: 2 });
         assert!(serde_json::from_value::<Op>(serde_json::json!({"op": "selected_frame", "frames": 2, "x": 1})).is_err());
-        for op in [Op::Conform { width: 1, height: 1 }, Op::ReportCard { seed: 1 }, Op::SelectedFrame { frames: 2 }, Op::DisabledFrame { frames: 2 }]
-        {
+        for op in [
+            Op::Conform { width: 1, height: 1 },
+            Op::ReportCard { seed: 1 },
+            Op::SelectedFrame { frames: 2 },
+            Op::DisabledFrame { frames: 2 },
+            Op::UnitGlyph { kind: crate::recipes::unit_art::UnitArtKind::CounterSmall },
+            Op::NatoFrame { kind: crate::recipes::unit_art::UnitArtKind::CounterLarge, symbol: "cross".into() },
+        ] {
             let tag = serde_json::to_value(&op).unwrap()["op"].as_str().unwrap().to_string();
             assert_eq!(tag, op.name(), "name() is the serde tag");
         }

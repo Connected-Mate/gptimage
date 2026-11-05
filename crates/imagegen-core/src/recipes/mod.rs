@@ -16,6 +16,7 @@
 //! | Horizontal frame strips | Rust only | [`strip`] |
 //! | Flatten on colour | Rust only | [`flatten`] |
 //! | Companions the game looks up (small emblem, text icon, miniature, half size) | Rust only, fitted to vanilla | [`derived`] |
+//! | Unit art: silhouette to vanilla material, NATO box frame 2 | Rust only, fitted to vanilla | [`unit_art`] |
 //!
 //! `convert_to_dds.py` is already [`crate::dds::write_a8r8g8b8`].
 
@@ -32,3 +33,4 @@ pub mod pillow;
 pub mod portrait;
 pub mod report_card;
 pub mod strip;
+pub mod unit_art;

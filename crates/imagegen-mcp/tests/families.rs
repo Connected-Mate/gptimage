@@ -97,7 +97,7 @@ fn an_idea_artifact_cannot_be_validated_reviewed_or_installed_as_anything_else()
     assert_eq!(ok["status"], "pass");
 
     // everything downstream is the idea family's: rubric, paths and sprite names
-    let approval = approve_with(&h, &id, "icon_v1");
+    let approval = approve_with(&h, &id, "icon_v2");
     let out = h.install(&id, &approval, json!({})).unwrap();
     assert_eq!(out["final_files"][0]["path"], "gfx/interface/ideas/f/idea_iron_will.dds");
     assert_eq!(out["sprite"]["names"], json!(["GFX_idea_iron_will"]));
@@ -132,7 +132,7 @@ fn importing_an_advisor_sized_image_as_a_focus_icon_is_refused() {
 fn the_pixels_of_an_installed_idea_icon_cannot_become_a_decision_icon() {
     let h = openai_harness();
     let id = make(&h, "icon", "idea_spirit", "iron_will", "k-idea-2");
-    let approval = approve_with(&h, &id, "icon_v1");
+    let approval = approve_with(&h, &id, "icon_v2");
     h.install(&id, &approval, json!({})).unwrap();
 
     // the installed DDS itself, and the same pixels re-encoded as a PNG, are refused as a decision icon
@@ -151,7 +151,7 @@ fn the_pixels_of_an_installed_idea_icon_cannot_become_a_decision_icon() {
     let path = write_import(&h, "doctrine.png", &doctrine);
     let d = import(&h, &path, "doctrine", "tactics").unwrap();
     let did = d["artifact_id"].as_str().unwrap().to_string();
-    let approval = approve_with(&h, &did, "icon_v1");
+    let approval = approve_with(&h, &did, "icon_v2");
     h.install(&did, &approval, json!({})).unwrap();
     let e = import(&h, &path, "idea_concern", "same_pixels").unwrap_err();
     assert_eq!(code(&e), "GFX-FAMILY-REUSE");
@@ -166,7 +166,7 @@ fn the_pixels_of_an_installed_idea_icon_cannot_become_a_decision_icon() {
 fn a_provider_that_echoes_another_familys_art_is_refused_before_it_is_stored() {
     let h = openai_harness();
     let id = make(&h, "icon", "idea_spirit", "iron_will", "k-idea-3");
-    let approval = approve_with(&h, &id, "icon_v1");
+    let approval = approve_with(&h, &id, "icon_v2");
     h.install(&id, &approval, json!({})).unwrap();
     // the provider now answers with exactly the installed idea pixels, for a decision icon
     let installed = "gfx/interface/ideas/f/idea_iron_will.dds";
@@ -257,7 +257,7 @@ fn validation_cannot_skip_checks_and_the_gate_notices_a_short_check_set() {
     assert!(serde_json::from_value::<ValidateParams>(json!({"targets": ["x"], "profile": "focus"})).is_err());
 
     let id = make(&h, "icon", "decision", "rally", "k-dec-1");
-    let approval = approve_with(&h, &id, "icon_v1");
+    let approval = approve_with(&h, &id, "icon_v2");
     // the recorded validation carries the hash of the family's full check set
     let want = check_set_hash(&imagegen_core::profile::ProfileSet::builtin().for_family(Family::Decision).unwrap().imagegen.checks);
     let recorded: ValidatedRecord =
@@ -274,7 +274,7 @@ fn validation_cannot_skip_checks_and_the_gate_notices_a_short_check_set() {
     assert_eq!(code(&e), "install_gate_checks_incomplete", "{e}");
     // and review will not approve on top of it either
     let answers: serde_json::Map<String, Value> =
-        imagegen_core::rubric::questions("icon_v1").iter().map(|(k, _)| (k.to_string(), json!(true))).collect();
+        imagegen_core::rubric::questions("icon_v2").iter().map(|(k, _)| (k.to_string(), json!(true))).collect();
     let e = h
         .engine
         .review(serde_json::from_value(json!({"target": id, "verdict": "approved", "reviewer": "t", "answers": answers})).unwrap())

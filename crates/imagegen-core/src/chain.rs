@@ -17,7 +17,8 @@
 //! | `report_card` v2 | report event | `report_card` or `conform` (an imported finished card) |
 //! | `selected_strip` v1 | faction logo, agency logo | `fit_subject`, `selected_frame` (or one `conform` for an imported finished strip) |
 //! | `landmark_strip` v1 | building | `fit_subject`, `second_frame`: the ruined state, a second candidate of the same asset (or one `conform`) |
-//! | `imported_art` v1 | counters, division emblem | `conform` to the exact strip |
+//! | `unit_counter` v1 | battalion and on-map counters | `unit_glyph` (silhouette to vanilla's material), `nato_frame` (the NATO box as frame 2), or one `conform` for an imported finished strip |
+//! | `division_symbol` v1 | division emblem | `unit_glyph`, or `conform` for an imported finished 76x42 symbol |
 //! | `portrait` v1 | the four portraits | `flatten_on`, `extract_portrait` (or `conform` for a finished 156x210) |
 //! | `advisor_card` v1 | advisor card | `advisor_card` (or `conform` for a finished 65x67 card) |
 //! | `achievement` v1 | achievement | `fit_subject`, `achievement_triplet` |
@@ -88,8 +89,10 @@ pub enum Recipe {
     SelectedStrip,
     /// Two frames: the landmark, then its ruined state (a second candidate of the same asset), as vanilla does.
     LandmarkStrip,
-    /// Art made elsewhere, taken at its exact size.
-    ImportedArt,
+    /// A counter strip: the silhouette in vanilla's material, then the NATO box.
+    UnitCounter,
+    /// A division template symbol: the silhouette in vanilla's material.
+    DivisionSymbol,
     /// Portraits.
     Portrait,
     /// Advisor card.
@@ -117,7 +120,8 @@ impl Recipe {
             Recipe::ReportCard => "report_card",
             Recipe::SelectedStrip => "selected_strip",
             Recipe::LandmarkStrip => "landmark_strip",
-            Recipe::ImportedArt => "imported_art",
+            Recipe::UnitCounter => "unit_counter",
+            Recipe::DivisionSymbol => "division_symbol",
             Recipe::Portrait => "portrait",
             Recipe::AdvisorCard => "advisor_card",
             Recipe::Achievement => "achievement",
@@ -133,6 +137,7 @@ impl Recipe {
     pub fn version(self) -> u32 {
         match self {
             Recipe::ReportCard => crate::recipes::report_card::RECIPE_VERSION,
+            Recipe::UnitCounter | Recipe::DivisionSymbol => crate::recipes::unit_art::RECIPE_VERSION,
             Recipe::AnimGlow | Recipe::AnimKeyframes | Recipe::AnimScroll | Recipe::AnimSpin => crate::animation::RECIPE_VERSION,
             _ => 1,
         }
@@ -154,7 +159,8 @@ pub fn recipe_of(profile: &Profile) -> Recipe {
         Family::ReportEvent => Recipe::ReportCard,
         Family::FactionLogo | Family::AgencyLogo => Recipe::SelectedStrip,
         Family::Building => Recipe::LandmarkStrip,
-        Family::CounterLarge | Family::CounterSmall | Family::DivisionEmblem => Recipe::ImportedArt,
+        Family::CounterLarge | Family::CounterSmall => Recipe::UnitCounter,
+        Family::DivisionEmblem => Recipe::DivisionSymbol,
         Family::LeaderPortrait | Family::CommanderPortrait | Family::OperativePortrait | Family::ScientistPortrait => Recipe::Portrait,
         Family::AdvisorCard => Recipe::AdvisorCard,
         Family::Achievement => Recipe::Achievement,
@@ -249,6 +255,41 @@ fn transparent_icon_ops(img: &Rgba, canvas: [u32; 2], keyed: bool, margin: u32) 
     Ok(ops)
 }
 
+/// What the caller may choose about a family's finishing beyond the image itself.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct FinishOptions {
+    /// Counters: the NATO symbol of frame 2 (`recipes::unit_art::parse_symbol`). When absent it is inferred from the
+    /// asset name, which for a counter is the sub-unit key.
+    pub counter_symbol: Option<String>,
+    /// The asset name, used to infer the NATO symbol.
+    pub asset: Option<String>,
+}
+
+/// Which unit art a family makes.
+pub fn unit_art_kind(family: Family) -> Option<crate::recipes::unit_art::UnitArtKind> {
+    use crate::recipes::unit_art::UnitArtKind;
+    match family {
+        Family::CounterLarge => Some(UnitArtKind::CounterLarge),
+        Family::CounterSmall => Some(UnitArtKind::CounterSmall),
+        Family::DivisionEmblem => Some(UnitArtKind::DivisionEmblem),
+        _ => None,
+    }
+}
+
+/// The NATO symbol a counter's frame 2 gets, and where it came from (`given` or `inferred from the asset name`).
+pub fn counter_symbol(opts: &FinishOptions) -> Result<(String, &'static str)> {
+    use crate::recipes::unit_art::{infer_symbol, parse_symbol, symbol_text};
+    match &opts.counter_symbol {
+        Some(s) => Ok((symbol_text(&parse_symbol(s)?), "given")),
+        None => Ok((symbol_text(&infer_symbol(opts.asset.as_deref().unwrap_or(""))), "inferred from the asset name")),
+    }
+}
+
+/// What the family's processing is for `img`, the image after the caller's pre-steps, with default options.
+pub fn plan_finishing(profile: &Profile, canvas: [u32; 2], img: &Rgba, imported: bool, keyed: bool, candidate_sha256: &str) -> Result<ChainPlan> {
+    plan_finishing_with(profile, canvas, img, imported, keyed, candidate_sha256, &FinishOptions::default())
+}
+
 /// What the family's processing is for `img`, the image after the caller's pre-steps.
 ///
 /// * `canvas` is the effective canvas of one frame.
@@ -256,10 +297,18 @@ fn transparent_icon_ops(img: &Rgba, canvas: [u32; 2], keyed: bool, margin: u32) 
 ///   art that already has an accepted size is taken at that size, which the chain records as `conform`.
 /// * `keyed` is true when the caller's pre-steps include a `chroma_key`, which is what creates transparency.
 /// * `candidate_sha256` seeds the report card's grain.
-pub fn plan_finishing(profile: &Profile, canvas: [u32; 2], img: &Rgba, imported: bool, keyed: bool, candidate_sha256: &str) -> Result<ChainPlan> {
+/// * `opts` carries the counter's NATO symbol and the asset name it may be inferred from.
+pub fn plan_finishing_with(
+    profile: &Profile,
+    canvas: [u32; 2],
+    img: &Rgba,
+    imported: bool,
+    keyed: bool,
+    candidate_sha256: &str,
+    opts: &FinishOptions,
+) -> Result<ChainPlan> {
     let recipe = recipe_of(profile);
     let frames = profile.frames.max(1);
-    let strip = [canvas[0] * frames, canvas[1]];
     let size = [img.width, img.height];
     let accepted_single = |s: [u32; 2]| profile.accepted.contains(&s) || s == canvas;
     let mut ops: Vec<Op> = Vec::new();
@@ -314,15 +363,29 @@ pub fn plan_finishing(profile: &Profile, canvas: [u32; 2], img: &Rgba, imported:
                 }
             }
         }
-        Recipe::ImportedArt => {
-            let accepted_strip = size[0].is_multiple_of(frames) && accepted_single([size[0] / frames, size[1]]);
-            if !imported || !accepted_strip {
-                return Err(Error::Invalid(format!(
-                    "{} is art that another tool makes: bring it in with import as exactly {}x{}, or as {frames} frame files with import.frames",
-                    profile.family, strip[0], strip[1]
-                )));
+        Recipe::UnitCounter | Recipe::DivisionSymbol => {
+            let kind = unit_art_kind(profile.family).expect("unit families have a unit art kind");
+            let finished = if recipe == Recipe::UnitCounter {
+                size[0].is_multiple_of(frames) && accepted_single([size[0] / frames, size[1]])
+            } else {
+                accepted_single(size)
+            };
+            if imported && finished {
+                ops.push(Op::Conform { width: size[0], height: size[1] });
+            } else {
+                let style = crate::recipes::unit_art::GlyphStyle::of(kind);
+                if canvas != style.frame {
+                    return Err(Error::Invalid(format!(
+                        "{} art is drawn on vanilla's {}x{} frame, and this profile's canvas is {}x{}. Import finished art at the profile's size instead",
+                        profile.family, style.frame[0], style.frame[1], canvas[0], canvas[1]
+                    )));
+                }
+                ops.push(Op::UnitGlyph { kind });
+                if recipe == Recipe::UnitCounter {
+                    let (symbol, _) = counter_symbol(opts)?;
+                    ops.push(Op::NatoFrame { kind, symbol });
+                }
             }
-            ops.push(Op::Conform { width: size[0], height: size[1] });
         }
         Recipe::Portrait => {
             ops.push(Op::FlattenOn { background: FLATTEN_BACKGROUND });
@@ -415,7 +478,8 @@ pub fn required_stages(profile: &Profile) -> Vec<Vec<&'static str>> {
         Recipe::ReportCard => vec![vec!["report_card", "conform"]],
         Recipe::SelectedStrip => vec![vec!["fit_subject", "conform"], vec!["selected_frame", "conform"]],
         Recipe::LandmarkStrip => vec![vec!["fit_subject", "conform"], vec!["second_frame", "conform"]],
-        Recipe::ImportedArt => vec![vec!["conform"]],
+        Recipe::UnitCounter => vec![vec!["unit_glyph", "conform"], vec!["nato_frame", "conform"]],
+        Recipe::DivisionSymbol => vec![vec!["unit_glyph", "conform"]],
         Recipe::Portrait => vec![vec!["flatten_on"], vec!["extract_portrait", "conform"]],
         Recipe::AdvisorCard => vec![vec!["advisor_card", "conform"]],
         Recipe::Achievement => vec![vec!["fit_subject", "conform"], vec!["achievement_triplet"]],
@@ -620,13 +684,62 @@ mod tests {
             vec![Finisher::SecondFrame, Finisher::DerivedCompanions],
             "frame 2 (the ruined landmark) comes from a second candidate, then the small strip is derived"
         );
+    }
+
+    #[test]
+    fn unit_art_is_generated_from_a_silhouette_and_finished_strips_are_still_imported() {
+        use crate::recipes::unit_art::UnitArtKind;
         let counter = prof(Family::CounterLarge);
+        assert_eq!(recipe_of(&counter), Recipe::UnitCounter);
         assert_eq!(
             plan_finishing(&counter, counter.canvas, &Rgba::new(152, 42), true, false, "").unwrap().ops,
             vec![Op::Conform { width: 152, height: 42 }]
         );
-        assert!(plan_finishing(&counter, counter.canvas, &Rgba::new(100, 42), true, false, "").is_err());
-        assert!(plan_finishing(&counter, counter.canvas, &Rgba::new(152, 42), false, false, "").is_err());
+        // generated art (or an imported drawing of another size) gets the glyph and the NATO box
+        let opts = FinishOptions { counter_symbol: None, asset: Some("medium_armor".into()) };
+        let plan = plan_finishing_with(&counter, counter.canvas, &blob(), false, false, "", &opts).unwrap();
+        assert_eq!(
+            plan.ops,
+            vec![
+                Op::UnitGlyph { kind: UnitArtKind::CounterLarge },
+                Op::NatoFrame { kind: UnitArtKind::CounterLarge, symbol: "oval+bar_medium".into() }
+            ]
+        );
+        let imported_drawing = plan_finishing(&counter, counter.canvas, &Rgba::new(100, 42), true, false, "").unwrap();
+        assert!(matches!(imported_drawing.ops[0], Op::UnitGlyph { .. }));
+        // a given symbol wins over the asset name, and a bad one is refused with the list
+        let given = FinishOptions { counter_symbol: Some("infantry+support".into()), asset: Some("medium_armor".into()) };
+        let plan = plan_finishing_with(&counter, counter.canvas, &blob(), false, false, "", &given).unwrap();
+        assert_eq!(plan.ops[1], Op::NatoFrame { kind: UnitArtKind::CounterLarge, symbol: "cross+plus".into() });
+        let bad = FinishOptions { counter_symbol: Some("laser".into()), asset: None };
+        assert!(plan_finishing_with(&counter, counter.canvas, &blob(), false, false, "", &bad)
+            .unwrap_err()
+            .to_string()
+            .contains("not a NATO symbol"));
+        // the on-map counter also derives its text icon
+        let small = prof(Family::CounterSmall);
+        let plan = plan_finishing(&small, small.canvas, &blob(), false, false, "").unwrap();
+        assert_eq!(plan.ops[0], Op::UnitGlyph { kind: UnitArtKind::CounterSmall });
+        assert_eq!(plan.finishers, vec![Finisher::DerivedCompanions]);
+        // the division symbol: glyph only, its small symbol derived
+        let emblem = prof(Family::DivisionEmblem);
+        assert_eq!(recipe_of(&emblem), Recipe::DivisionSymbol);
+        let plan = plan_finishing(&emblem, emblem.canvas, &blob(), false, false, "").unwrap();
+        assert_eq!(plan.ops, vec![Op::UnitGlyph { kind: UnitArtKind::DivisionEmblem }]);
+        assert_eq!(plan.finishers, vec![Finisher::DerivedCompanions]);
+        assert_eq!(
+            plan_finishing(&emblem, emblem.canvas, &Rgba::new(76, 42), true, false, "").unwrap().ops,
+            vec![Op::Conform { width: 76, height: 42 }]
+        );
+        // the processed strip passes the family's own checks
+        let (strip, _) =
+            crate::process::run_chain(&blob(), &plan_finishing(&counter, counter.canvas, &blob(), false, false, "").unwrap().ops).unwrap();
+        let report = crate::validate::validate_image(&strip, &counter, &counter.imagegen.checks, &Default::default());
+        assert!(report.findings.iter().all(|f| f.level != crate::validate::Level::Error), "{:?}", report.findings);
+        // a profile whose canvas is not vanilla's frame cannot be drawn by the recipe
+        let mut odd = counter.clone();
+        odd.canvas = [80, 40];
+        assert!(plan_finishing(&odd, odd.canvas, &blob(), false, false, "").is_err());
     }
 
     /// Selected-strip emblems sit as far inside frame 1 as vanilla's, whatever minimum margin the profile sets (the
@@ -760,10 +873,17 @@ mod tests {
         let emblem = prof(Family::DivisionEmblem);
         let conform = [Op::Conform { width: 76, height: 42 }];
         assert!(audit(&record(&emblem, &conform, derive, &["small"], ""), &emblem).is_empty());
+        let glyph = [Op::UnitGlyph { kind: crate::recipes::unit_art::UnitArtKind::DivisionEmblem }];
+        assert!(audit(&record(&emblem, &glyph, derive, &["small"], ""), &emblem).is_empty());
         assert!(!audit(&record(&emblem, &conform, &[], &[], ""), &emblem).is_empty());
         let counter = prof(Family::CounterSmall);
         let conform = [Op::Conform { width: 60, height: 12 }];
         assert!(audit(&record(&counter, &conform, derive, &["text_icon"], ""), &counter).is_empty());
+        let kind = crate::recipes::unit_art::UnitArtKind::CounterSmall;
+        let generated = [Op::UnitGlyph { kind }, Op::NatoFrame { kind, symbol: "cross".into() }];
+        assert!(audit(&record(&counter, &generated, derive, &["text_icon"], ""), &counter).is_empty());
+        let no_box = audit(&record(&counter, &generated[..1], derive, &["text_icon"], ""), &counter);
+        assert!(no_box.iter().any(|m| m.contains("nato_frame")), "the NATO box cannot be skipped: {no_box:?}");
         assert!(!audit(&record(&counter, &conform, &[], &[], ""), &counter).is_empty());
         assert_eq!(companion_keys_of(&counter, counter.canvas), vec!["text_icon"]);
         assert_eq!(companion_keys_of(&prof(Family::Achievement), [64, 64]), vec!["_grey", "_not_eligible"]);

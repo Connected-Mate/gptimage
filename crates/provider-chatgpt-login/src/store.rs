@@ -105,6 +105,16 @@ impl CredentialStore {
         }
     }
 
+    /// The per-user folder for this store's side files (the cross-process lock and the route state). It is the
+    /// folder of the credential file, or the per-user data folder for the keychain. `None` only when the
+    /// environment names no home, and then the route fails closed instead of guessing a folder.
+    pub fn state_dir(&self) -> Option<PathBuf> {
+        match &self.backend {
+            Backend::File(p) => p.parent().map(Path::to_path_buf),
+            Backend::Keychain { legacy_file } => legacy_file.as_ref().and_then(|f| f.parent()).map(Path::to_path_buf),
+        }
+    }
+
     /// The file path, when this is a file store.
     pub fn path(&self) -> Option<&Path> {
         match &self.backend {

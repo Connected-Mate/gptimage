@@ -319,7 +319,7 @@ fn a_processed_artifact_without_its_mandatory_recipe_fails_validation_and_the_in
     // a failing validation cannot be approved, and the gate names the chain even when an approval id is made up
     h.preview(&no_fit);
     let answers: serde_json::Map<String, Value> =
-        imagegen_core::rubric::questions("icon_v1").iter().map(|(k, _)| (k.to_string(), json!(true))).collect();
+        imagegen_core::rubric::questions("icon_v2").iter().map(|(k, _)| (k.to_string(), json!(true))).collect();
     let e = h
         .engine
         .review(serde_json::from_value(json!({"target": no_fit, "verdict": "approved", "reviewer": "t", "answers": answers})).unwrap())
@@ -616,7 +616,7 @@ fn a_strip_family_can_be_imported_as_two_frame_files() {
         .unwrap();
     assert_eq!(p["size"], json!([152, 42]));
     assert_eq!(names(&p, "steps"), vec!["conform"]);
-    assert_eq!(p["recipe"]["id"], "imported_art");
+    assert_eq!(p["recipe"]["id"], "unit_counter");
     let strip = png_of(&h, p["path"].as_str().unwrap());
     let parts = strip.split_frames(2).unwrap();
     assert_eq!(parts[0], frame(40));
@@ -633,10 +633,6 @@ fn a_strip_family_can_be_imported_as_two_frame_files() {
     let mut both = base(json!(["incoming/f1.png", "incoming/f2.png"]), "counter_large");
     both["path"] = json!("incoming/f1.png");
     assert!(refuse(both).message.contains("exactly one"));
-    // counters are not generated, so a counter plan is refused
-    let req: PlanRequest =
-        serde_json::from_value(json!({"family": "counter_large", "feature_slug": "f", "asset": "a", "brief": "x", "provider": "openai"})).unwrap();
-    assert_eq!(code(&h.engine.plan(req).unwrap_err()), "family_import_only");
 }
 
 #[test]
@@ -915,4 +911,120 @@ fn an_on_map_counter_registers_the_vanilla_name_and_its_text_icon() {
     // the battalion icon is GFX_unit_<key>_icon_medium
     let out = import_and_install(&h, "counter_large", "mountain_rangers", &shape(76, 42, 2, [90, 120, 90]));
     assert_eq!(out["sprite"]["names"], json!(["GFX_unit_mountain_rangers_icon_medium"]));
+}
+
+// ------------------------------------------------------------------ (g) unit art generated from a silhouette
+
+/// What a model returns for a unit: one solid black side-view silhouette (a tank with a white gap above the tracks)
+/// on a plain white 1536x1024 canvas. Synthetic.
+fn tank_silhouette_png() -> Vec<u8> {
+    let (w, h) = (1536u32, 1024u32);
+    let mut img = Rgba::filled(w, h, [255, 255, 255, 255]);
+    for y in 0..h {
+        for x in 0..w {
+            let (u, v) = (f64::from(x) / f64::from(w), f64::from(y) / f64::from(h));
+            let hull = (0.15..0.85).contains(&u) && (0.5..0.72).contains(&v);
+            let turret = (0.35..0.6).contains(&u) && (0.36..0.5).contains(&v);
+            let barrel = (0.6..0.9).contains(&u) && (0.41..0.45).contains(&v);
+            let gap = (0.2..0.8).contains(&u) && (0.64..0.66).contains(&v);
+            if (hull || turret || barrel) && !gap {
+                img.set_px(x, y, [15, 15, 15, 255]);
+            }
+        }
+    }
+    encode_png(&img).unwrap()
+}
+
+#[test]
+fn counters_and_division_symbols_are_generated_processed_validated_and_installed() {
+    use imagegen_core::recipes::unit_art::{nato_box, parse_symbol, BoxSize};
+    let h = chain_harness();
+    // the battalion counter: the NATO symbol inferred from the sub-unit key
+    let cand = generate(&h, "counter_large", "medium_armor", &tank_silhouette_png(), "k-unit-1");
+    let p = process(&h, &cand, json!({})).unwrap();
+    assert_eq!(p["recipe"], json!({"id": "unit_counter", "version": 1}));
+    assert_eq!(names(&p, "steps"), vec!["unit_glyph", "nato_frame"]);
+    assert_eq!(p["counter_symbol"], json!({"symbol": "oval+bar_medium", "source": "inferred from the asset name"}));
+    assert_eq!(p["chain"]["complete"], true, "{:#}", p["chain"]);
+    let id = p["artifact_id"].as_str().unwrap().to_string();
+    let strip = png_of(&h, p["path"].as_str().unwrap());
+    assert_eq!((strip.width, strip.height), (152, 42));
+    let f = strip.split_frames(2).unwrap();
+    let b = f[0].alpha_bbox(200).unwrap();
+    assert!(b[0] > 2 && b[2] < 74 && b[1] > 2 && b[3] < 40, "frame 1 keeps vanilla's margins: {b:?}");
+    let opaque: Vec<[u8; 4]> = f[0].data.chunks_exact(4).filter(|p| p[3] == 255 && p[0] > 30).map(|p| [p[0], p[1], p[2], p[3]]).collect();
+    assert!(opaque.len() > 100 && opaque.iter().all(|p| p[0] == p[2] && p[1] > p[0]), "frame 1 is vanilla's green");
+    assert_eq!(f[1], nato_box(BoxSize::Large, &parse_symbol("medium_armor").unwrap()), "frame 2 is the NATO box");
+    let approval = approve(&h, &id, "counter_large");
+    let out = h.install(&id, &approval, json!({"mode": "register"})).unwrap();
+    assert_eq!(out["sprite"]["names"], json!(["GFX_unit_medium_armor_icon_medium"]));
+    let file = out["final_files"][0]["path"].as_str().unwrap();
+    assert_eq!(file, "gfx/interface/counters/divisions_large/iron_pact/unit_medium_armor.dds");
+    let installed = dds::decode(&h.read(file)).unwrap();
+    assert_eq!(installed, strip);
+    let gfx = String::from_utf8(h.read("interface/iron_pact_counters.gfx")).unwrap();
+    assert!(gfx.contains("GFX_unit_medium_armor_icon_medium") && gfx.contains("noOfFrames = 2"), "{gfx}");
+
+    // the on-map counter: a given symbol, a grey glyph, the small box and the derived text icon
+    let cand = generate(&h, "counter_small", "medium_armor", &tank_silhouette_png(), "k-unit-2");
+    assert!(process(&h, &cand, json!({"counter_symbol": "laser"})).unwrap_err().message.contains("not a NATO symbol"));
+    let p = process(&h, &cand, json!({"counter_symbol": "infantry+support"})).unwrap();
+    assert_eq!(p["counter_symbol"], json!({"symbol": "cross+plus", "source": "given"}));
+    let id = p["artifact_id"].as_str().unwrap().to_string();
+    let strip = png_of(&h, p["path"].as_str().unwrap());
+    let f = strip.split_frames(2).unwrap();
+    let grey: Vec<[u8; 4]> = f[0].data.chunks_exact(4).filter(|p| p[3] == 255).map(|p| [p[0], p[1], p[2], p[3]]).collect();
+    assert!(grey.len() > 40 && grey.iter().all(|p| p[0] == p[1] && p[1] == p[2]), "the on-map glyph is grey for the country tint");
+    assert_eq!(f[1], nato_box(BoxSize::Small, &parse_symbol("infantry+support").unwrap()));
+    let approval = approve(&h, &id, "counter_small");
+    let out = h.install(&id, &approval, json!({"mode": "register"})).unwrap();
+    assert_eq!(out["sprite"]["names"], json!(["GFX_unit_medium_armor_icon_medium_white", "GFX_unit_medium_armor_icon_small"]));
+    let icon = dds::decode(&h.read("gfx/texticons/iron_pact/unit_medium_armor_icon_small.dds")).unwrap();
+    assert_eq!((icon.width, icon.height), (60, 12));
+
+    // the division symbol: a green glyph, the next free number and the derived small symbol
+    let cand = generate(&h, "division_emblem", "iron_tank", &tank_silhouette_png(), "k-unit-3");
+    assert!(process(&h, &cand, json!({"counter_symbol": "infantry"})).unwrap_err().message.contains("counter_symbol is for"));
+    let p = process(&h, &cand, json!({})).unwrap();
+    assert_eq!(p["recipe"], json!({"id": "division_symbol", "version": 1}));
+    assert_eq!(names(&p, "steps"), vec!["unit_glyph"]);
+    assert_eq!(p["companions"][0]["key"], "small");
+    let id = p["artifact_id"].as_str().unwrap().to_string();
+    let emblem = png_of(&h, p["path"].as_str().unwrap());
+    assert_eq!((emblem.width, emblem.height), (76, 42));
+    let b = emblem.alpha_bbox(200).unwrap();
+    let (cx, cy) = (f64::from(b[0] + b[2]) / 2.0, f64::from(b[1] + b[3]) / 2.0);
+    assert!((cx - 38.0).abs() <= 1.5 && (cy - 21.5).abs() <= 1.5, "centred where vanilla's are: {cx},{cy}");
+    let approval = approve(&h, &id, "division_emblem");
+    let out = h.install(&id, &approval, json!({"mode": "register"})).unwrap();
+    assert_eq!(out["division_template_number"], 122);
+    assert_eq!(out["sprite"]["names"], json!(["GFX_div_templ_122_large", "GFX_div_templ_122_small"]));
+}
+
+// ------------------------------------------------------------------ install lock
+
+/// Installs that run at the same time into one feature must all land in its handoff note. Each install reads the
+/// note, appends its block and writes it back, so without the project's install lock one block could be lost.
+#[test]
+fn parallel_installs_into_one_feature_keep_every_handoff_block() {
+    let h = chain_harness();
+    let subject = synthetic_icon_png();
+    let assets = ["gate_a", "gate_b", "gate_c", "gate_d"];
+    let mut ready = Vec::new();
+    for (i, asset) in assets.iter().enumerate() {
+        let cand = generate(&h, "decision", asset, &subject, &format!("k-par-{i}"));
+        let id = process(&h, &cand, json!({})).unwrap()["artifact_id"].as_str().unwrap().to_string();
+        let approval = approve(&h, &id, "decision");
+        ready.push((id, approval));
+    }
+    std::thread::scope(|s| {
+        for (id, approval) in &ready {
+            let h = &h;
+            s.spawn(move || h.install(id, approval, json!({})).unwrap());
+        }
+    });
+    let note = std::fs::read_to_string(h.dir.path().join("docs/assets/iron_pact/gfx_handoff.md")).unwrap();
+    for asset in assets {
+        assert!(note.contains(&format!("GFX_decision_{asset}")), "{asset} missing from the handoff note:\n{note}");
+    }
 }

@@ -92,6 +92,8 @@ pub fn status_error(status: u16, body: &[u8], secrets: &[String]) -> ProviderErr
         || lower.contains("blocked_by_safety");
     let (kind, retry) = match status {
         401 | 403 => (ErrorKind::Auth, RetryClass::RequiresAuthorization),
+        // out of credits or payment required: the user has to top up, so never retry on our own
+        402 => (ErrorKind::RateLimited, RetryClass::RequiresAuthorization),
         429 => (ErrorKind::RateLimited, RetryClass::SafeSameInputs),
         400 | 422 if moderated => (ErrorKind::ModerationBlocked, RetryClass::Terminal),
         400 | 404 | 405 | 409 | 413 | 415 | 422 => (ErrorKind::BadRequest, RetryClass::Terminal),
@@ -182,6 +184,10 @@ mod tests {
         let s: Vec<String> = vec![];
         assert_eq!(status_error(401, b"{}", &s).kind, ErrorKind::Auth);
         assert_eq!(status_error(429, b"{}", &s).retry, RetryClass::SafeSameInputs);
+        assert_eq!(
+            (status_error(402, b"{}", &s).kind, status_error(402, b"{}", &s).retry),
+            (ErrorKind::RateLimited, RetryClass::RequiresAuthorization)
+        );
         let m = status_error(400, br#"{"error":{"code":"moderation_blocked","message":"blocked"}}"#, &s);
         assert_eq!((m.kind, m.retry), (ErrorKind::ModerationBlocked, RetryClass::Terminal));
         assert_eq!(status_error(400, b"{}", &s).kind, ErrorKind::BadRequest);

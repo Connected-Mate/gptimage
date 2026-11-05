@@ -1,0 +1,109 @@
+{
+  "id": "together",
+  "display_name": "Together AI images",
+  "doc_url": "https://docs.together.ai/docs/images-overview",
+  "doc_urls": [
+    "https://docs.together.ai/docs/images-overview",
+    "https://docs.together.ai/reference/post-images-generations",
+    "https://www.together.ai/pricing"
+  ],
+  "retrieved": "2026-11-02",
+  "checked": "2026-11-02",
+  "live_verified": false,
+  "env_vars": ["TOGETHER_API_KEY"],
+  "hosts": ["api.together.ai", "api.together.xyz"],
+  "terms_note": "Not live-verified: built from Together's documentation and pricing page (read 2026-11-02), no recorded call. Together documents no width or height limits, so the size rules below are conservative assumptions. Reference images are documented as URLs, so sending data URLs is an assumption. Input images may be billed too, which the docs do not price. Check each model's license and Paradox's and Steam's rules for AI-generated mod assets before publishing.",
+  "models": [
+    {
+      "id": "black-forest-labs/FLUX.2-dev",
+      "status": { "state": "current" },
+      "recommended": true,
+      "max_refs": 4,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "arbitrary", "multiple": 16, "min_pixels": 262144, "max_pixels": 2097152, "max_edge": 2048, "max_ratio": 3.0 },
+      "cost": { "kind": "per_image", "usd_by_quality": [["default", 0.0154]] },
+      "async_job": false,
+      "supports_edit": true,
+      "notes": "$0.0154 per image on the pricing page. Reference images go in reference_images. The maximum count is not documented, 4 is a conservative assumption."
+    },
+    {
+      "id": "black-forest-labs/FLUX.2-pro",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 4,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "arbitrary", "multiple": 16, "min_pixels": 262144, "max_pixels": 2097152, "max_edge": 2048, "max_ratio": 3.0 },
+      "cost": { "kind": "per_image", "usd_by_quality": [["default", 0.03]] },
+      "async_job": false,
+      "supports_edit": true,
+      "notes": "$0.03 per image. Documented to support reference images."
+    },
+    {
+      "id": "black-forest-labs/FLUX.2-flex",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 4,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "arbitrary", "multiple": 16, "min_pixels": 262144, "max_pixels": 2097152, "max_edge": 2048, "max_ratio": 3.0 },
+      "cost": { "kind": "per_image", "usd_by_quality": [["default", 0.03]] },
+      "async_job": false,
+      "supports_edit": true,
+      "notes": "$0.03 per image. Best typography of the FLUX.2 family per Together."
+    },
+    {
+      "id": "black-forest-labs/FLUX.2-max",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 4,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "arbitrary", "multiple": 16, "min_pixels": 262144, "max_pixels": 2097152, "max_edge": 2048, "max_ratio": 3.0 },
+      "cost": { "kind": "per_megapixel", "first": 0.07, "additional": 0.07 },
+      "async_job": false,
+      "supports_edit": true,
+      "notes": "$0.070 per megapixel on the pricing page."
+    },
+    {
+      "id": "black-forest-labs/FLUX.1.1-pro",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 0,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "arbitrary", "multiple": 32, "min_pixels": 262144, "max_pixels": 2073600, "max_edge": 1440, "max_ratio": 3.0 },
+      "cost": { "kind": "per_megapixel", "first": 0.04, "additional": 0.04 },
+      "async_job": false,
+      "supports_edit": false,
+      "notes": "$0.04 per megapixel. Uses width and height. No reference images."
+    },
+    {
+      "id": "black-forest-labs/FLUX.1-kontext-pro",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 1,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "aspect_tiers", "ratios": ["1:1", "2:3", "3:2", "3:4", "4:3", "9:16", "16:9", "21:9"], "tier": "1k" },
+      "cost": { "kind": "per_megapixel", "first": 0.04, "additional": 0.04 },
+      "async_job": false,
+      "supports_edit": true,
+      "notes": "$0.04 per megapixel. Editing through image_url (one image). Takes aspect_ratio instead of width and height. The accepted ratio list is an assumption."
+    },
+    {
+      "id": "black-forest-labs/FLUX.1-kontext-max",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 1,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "aspect_tiers", "ratios": ["1:1", "2:3", "3:2", "3:4", "4:3", "9:16", "16:9", "21:9"], "tier": "1k" },
+      "cost": { "kind": "per_megapixel", "first": 0.08, "additional": 0.08 },
+      "async_job": false,
+      "supports_edit": true,
+      "notes": "$0.08 per megapixel. Highest-quality Kontext. Same request style as Kontext pro."
+    }
+  ]
+}

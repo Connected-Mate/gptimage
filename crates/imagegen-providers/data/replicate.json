@@ -1,0 +1,87 @@
+{
+  "id": "replicate",
+  "display_name": "Replicate (predictions API)",
+  "doc_url": "https://replicate.com/docs/reference/http",
+  "doc_urls": [
+    "https://replicate.com/docs/reference/http",
+    "https://replicate.com/docs/topics/predictions/input-files",
+    "https://replicate.com/black-forest-labs/flux-schnell/api/schema",
+    "https://replicate.com/black-forest-labs/flux-dev/api/schema",
+    "https://replicate.com/black-forest-labs/flux-1.1-pro/api/schema",
+    "https://replicate.com/black-forest-labs/flux-kontext-pro/api/schema",
+    "https://replicate.com/black-forest-labs/flux-2-pro/api/schema"
+  ],
+  "retrieved": "2026-11-02",
+  "checked": "2026-11-02",
+  "live_verified": false,
+  "env_vars": ["REPLICATE_API_TOKEN"],
+  "hosts": ["api.replicate.com", ".replicate.delivery"],
+  "terms_note": "Not live-verified: built from Replicate's HTTP reference and each model's published input schema and price on 2026-11-02, with no live call. Prices are per output image (or per run plus megapixels for flux-2-pro) as shown on each model page. Replicate states FLUX.1 outputs generated on Replicate may be used commercially, while weights run elsewhere may not. Inputs, outputs and logs of API predictions are removed after one hour by default, so results are downloaded at once. None of these models documents native transparency.",
+  "models": [
+    {
+      "id": "black-forest-labs/flux-schnell",
+      "status": { "state": "current" },
+      "recommended": true,
+      "max_refs": 0,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "aspect_tiers", "ratios": ["1:1", "16:9", "21:9", "3:2", "2:3", "4:5", "5:4", "3:4", "4:3", "9:16", "9:21"], "tier": "1MP" },
+      "cost": { "kind": "per_image", "usd_by_quality": [["default", 0.003]] },
+      "async_job": true,
+      "supports_edit": false,
+      "notes": "$3 per thousand output images (https://replicate.com/black-forest-labs/flux-schnell, read 2026-11-02). Text to image only, 1 to 4 steps, apache-2.0. Not live-verified."
+    },
+    {
+      "id": "black-forest-labs/flux-dev",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 0,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "aspect_tiers", "ratios": ["1:1", "16:9", "21:9", "3:2", "2:3", "4:5", "5:4", "3:4", "4:3", "9:16", "9:21"], "tier": "1MP" },
+      "cost": { "kind": "per_image", "usd_by_quality": [["default", 0.025]] },
+      "async_job": true,
+      "supports_edit": false,
+      "notes": "$0.025 per output image (https://replicate.com/black-forest-labs/flux-dev, read 2026-11-02). Text to image here. The model also has an img2img input that this adapter does not use. Not live-verified."
+    },
+    {
+      "id": "black-forest-labs/flux-1.1-pro",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 0,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "aspect_tiers", "ratios": ["1:1", "16:9", "3:2", "2:3", "4:5", "5:4", "9:16", "3:4", "4:3"], "tier": "1MP" },
+      "cost": { "kind": "per_image", "usd_by_quality": [["default", 0.04]] },
+      "async_job": true,
+      "supports_edit": false,
+      "notes": "$0.04 per output image (https://replicate.com/black-forest-labs/flux-1.1-pro, read 2026-11-02). Text to image. Not live-verified."
+    },
+    {
+      "id": "black-forest-labs/flux-kontext-pro",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 1,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "aspect_tiers", "ratios": ["1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3", "4:5", "5:4", "21:9", "9:21", "2:1", "1:2"], "tier": "1MP" },
+      "cost": { "kind": "per_image", "usd_by_quality": [["default", 0.04]] },
+      "async_job": true,
+      "supports_edit": true,
+      "notes": "$0.04 per output image (https://replicate.com/black-forest-labs/flux-kontext-pro, read 2026-11-02). The one input_image is the image to edit or the single reference. No mask. Replicate notes 2 is the highest safety tolerance allowed when an input image is used. Not live-verified."
+    },
+    {
+      "id": "black-forest-labs/flux-2-pro",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 8,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "aspect_tiers", "ratios": ["1:1", "16:9", "3:2", "2:3", "4:5", "5:4", "9:16", "3:4", "4:3"], "tier": "1MP" },
+      "cost": { "kind": "per_megapixel", "first": 0.03, "additional": 0.015 },
+      "async_job": true,
+      "supports_edit": true,
+      "notes": "$0.015 per run plus $0.015 per input megapixel and $0.015 per output megapixel (https://replicate.com/black-forest-labs/flux-2-pro, read 2026-11-02), so one 1 MP output costs $0.03 and each input image adds about $0.015. Up to 8 input images. Not live-verified."
+    }
+  ]
+}

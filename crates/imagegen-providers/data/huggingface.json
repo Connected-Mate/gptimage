@@ -1,0 +1,33 @@
+{
+  "id": "huggingface",
+  "display_name": "Hugging Face Inference Providers (hf-inference)",
+  "doc_url": "https://huggingface.co/docs/inference-providers/tasks/text-to-image",
+  "doc_urls": [
+    "https://huggingface.co/docs/inference-providers/tasks/text-to-image",
+    "https://huggingface.co/docs/inference-providers/providers/hf-inference",
+    "https://huggingface.co/docs/inference-providers/pricing",
+    "https://raw.githubusercontent.com/huggingface/huggingface_hub/main/src/huggingface_hub/inference/_providers/hf_inference.py"
+  ],
+  "retrieved": "2026-11-02",
+  "checked": "2026-11-02",
+  "live_verified": false,
+  "live_evidence": "One real call on 2026-11-02 (tests/fixtures/huggingface/recorded.json): the router accepted the token and the route and answered HTTP 402, no remaining credits, on a free account without a payment method. A successful generation is not live-verified.",
+  "env_vars": ["HF_TOKEN"],
+  "hosts": ["router.huggingface.co"],
+  "terms_note": "Not live-verified: built from the task page and the huggingface_hub client source (read 2026-11-02), no recorded call. The route is POST https://router.huggingface.co/hf-inference/models/<model> with {inputs, parameters}, answered with raw image bytes. The task page does not print the URL, it comes from the client source. Free accounts have no included credits, so a call needs a PRO plan or purchased credits. hf-inference is billed by compute time, so the price is unknown. Other providers behind the router (fal-ai, replicate, nscale) use their own request formats and are not used here. Each model has its own license. Check Paradox's and Steam's rules for AI-generated mod assets before publishing.",
+  "models": [
+    {
+      "id": "stabilityai/stable-diffusion-3-medium-diffusers",
+      "status": { "state": "current" },
+      "recommended": true,
+      "max_refs": 0,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "arbitrary", "multiple": 64, "min_pixels": 262144, "max_pixels": 1048576, "max_edge": 1536, "max_ratio": 2.0 },
+      "cost": { "kind": "unpublished_proxy", "proxy_usd_by_quality": [], "proxy_of": "none: hf-inference bills compute time at the hardware price" },
+      "async_job": false,
+      "supports_edit": false,
+      "notes": "The hf-inference text-to-image model named in the docs. The width and height limits are not documented, the 64 multiple and about 1 MP cap are conservative assumptions. No references or edits on this route."
+    }
+  ]
+}

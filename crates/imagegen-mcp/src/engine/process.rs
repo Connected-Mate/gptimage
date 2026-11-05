@@ -71,7 +71,18 @@ impl Engine {
         // 1. the caller's pre-steps, 2. the family's finishing steps, 3. the engine-level stages
         let (prepared, mut records) = run_chain_limited(&img, &pre, limit)?;
         let keyed = pre.iter().any(|o| matches!(o, Op::ChromaKey { .. }));
-        let plan = chain::plan_finishing(&profile, artifact.canvas, &prepared, imported, keyed, &artifact.recorded_sha256)?;
+        if p.counter_symbol.is_some() && recipe != Recipe::UnitCounter {
+            return Err(EngineError::invalid(format!("counter_symbol is for counter_large and counter_small, not {}", profile.family)));
+        }
+        let opts = chain::FinishOptions { counter_symbol: p.counter_symbol.clone(), asset: Some(artifact.asset.clone()) };
+        let plan = chain::plan_finishing_with(&profile, artifact.canvas, &prepared, imported, keyed, &artifact.recorded_sha256, &opts)?;
+        let symbol = match recipe {
+            Recipe::UnitCounter if plan.ops.iter().any(|o| matches!(o, Op::NatoFrame { .. })) => {
+                let (text, source) = chain::counter_symbol(&opts)?;
+                Some(json!({"symbol": text, "source": source}))
+            }
+            _ => None,
+        };
         let (mut main, finishing) = run_chain_limited(&prepared, &plan.ops, limit)?;
         records.extend(finishing);
         if p.second_frame_candidate.is_some() && !plan.finishers.contains(&Finisher::SecondFrame) {
@@ -183,6 +194,7 @@ impl Engine {
             "steps": record.steps,
             "finishers": record.recipe.as_ref().map(|r| r.finishers.clone()).unwrap_or_default(),
             "companions": record.companions,
+            "counter_symbol": symbol,
             "chain": {"complete": problems.is_empty(), "problems": problems},
             "quick_check": {
                 "status": quick.status,

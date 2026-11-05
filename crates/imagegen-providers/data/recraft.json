@@ -1,0 +1,101 @@
+{
+  "id": "recraft",
+  "display_name": "Recraft API (raster models)",
+  "doc_url": "https://www.recraft.ai/docs/api-reference/endpoints",
+  "doc_urls": [
+    "https://www.recraft.ai/docs/api-reference/endpoints",
+    "https://www.recraft.ai/docs/api-reference/pricing",
+    "https://www.recraft.ai/docs/api-reference/models/overview.md",
+    "https://www.recraft.ai/docs/api-reference/appendix",
+    "https://www.recraft.ai/docs/api-reference/tools/image-to-image.md",
+    "https://www.recraft.ai/docs/api-reference/tools/background.md",
+    "https://www.recraft.ai/docs/api-reference/error-handling.md"
+  ],
+  "checked": "2026-11-02",
+  "live_verified": false,
+  "credit_usd": 0.001,
+  "retrieved": "2026-11-02",
+  "env_vars": ["RECRAFT_API_KEY"],
+  "hosts": ["external.api.recraft.ai", ".recraft.ai"],
+  "terms_note": "Not live-verified: built from the vendor documentation read on 2026-11-02, no call was made. Prices are per raster image from the pricing page (credits are 1/1000 of a dollar: 35 credits is $0.035). Only raster models are offered because this tool needs PNG, and any model id ending in _vector is refused. Native transparent output is not documented for generation (the background tools and a background_color control exist but say nothing about alpha), so transparency is proven from pixels. Recraft has a separate remove-background tool at $0.01 per request that this adapter does not call. Output terms were not read, so nothing is promised here. Check Paradox's and Steam's rules for AI-generated mod assets before publishing. Image links last about 24 hours.",
+  "models": [
+    {
+      "id": "recraftv4_1",
+      "status": { "state": "current" },
+      "recommended": true,
+      "max_refs": 1,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "fixed", "sizes": [[1024, 1024], [1536, 768], [768, 1536], [1280, 832], [832, 1280], [1216, 896], [896, 1216], [1152, 896], [896, 1152], [832, 1344], [1280, 896], [896, 1280], [1344, 768], [768, 1344]] },
+      "cost": { "kind": "per_image", "usd_by_quality": [["default", 0.035]] },
+      "async_job": false,
+      "supports_edit": true,
+      "notes": "POST /v1/images/generations (JSON, response_format b64_json, image_format png). Edits use POST /v1/images/imageToImage (multipart image, strength 0.5 which is an adapter default, 0 is nearly identical and 1 least similar), which re-renders the whole image. No negative_prompt (V2 and V3 only). No mask. Not live-verified."
+    },
+    {
+      "id": "recraftv4_1_flash",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 0,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "fixed", "sizes": [[1024, 1024], [1536, 768], [768, 1536], [1280, 832], [832, 1280], [1216, 896], [896, 1216], [1152, 896], [896, 1152], [832, 1344], [1280, 896], [896, 1280], [1344, 768], [768, 1344]] },
+      "cost": { "kind": "per_image", "usd_by_quality": [["default", 0.007]] },
+      "async_job": false,
+      "supports_edit": false,
+      "notes": "Fast, low-cost raster model. Docs: no style support, and image-to-image does not accept it, so it cannot edit. Not live-verified."
+    },
+    {
+      "id": "recraftv4",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 1,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "fixed", "sizes": [[1024, 1024], [1536, 768], [768, 1536], [1280, 832], [832, 1280], [1216, 896], [896, 1216], [1152, 896], [896, 1152], [832, 1344], [1280, 896], [896, 1280], [1344, 768], [768, 1344]] },
+      "cost": { "kind": "per_image", "usd_by_quality": [["default", 0.04]] },
+      "async_job": false,
+      "supports_edit": true,
+      "notes": "Same routes as recraftv4_1. The 1K size list is documented for the V4.1 family and V4 alike. Not live-verified."
+    },
+    {
+      "id": "recraftv4_styles",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 10,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "fixed", "sizes": [[1024, 1024], [1536, 768], [768, 1536], [1280, 832], [832, 1280], [1216, 896], [896, 1216], [1152, 896], [896, 1152], [832, 1344], [1280, 896], [896, 1280], [1344, 768], [768, 1344]] },
+      "cost": { "kind": "per_image", "usd_by_quality": [["default", 0.035]] },
+      "async_job": false,
+      "supports_edit": true,
+      "notes": "Always needs a style, here 1 to 10 style anchor references sent as multipart style_references (64 MB in all). Style references add $0.005 per request, which the estimate includes. It cannot edit: image-to-image does not support V4 styles. Not live-verified."
+    },
+    {
+      "id": "recraftv3",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 1,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "fixed", "sizes": [[1024, 1024], [2048, 1024], [1024, 2048], [1536, 1024], [1024, 1536], [1365, 1024], [1024, 1365], [1280, 1024], [1024, 1280], [1024, 1707], [1434, 1024], [1024, 1434], [1820, 1024], [1024, 1820]] },
+      "cost": { "kind": "per_image", "usd_by_quality": [["default", 0.04]] },
+      "async_job": false,
+      "supports_edit": true,
+      "notes": "Previous generation. Takes negative_prompt. Its documented size list reaches 2048 px on the long side. Image-to-image is priced the same, $0.04. Not live-verified."
+    },
+    {
+      "id": "recraftv2",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 0,
+      "mask": false,
+      "alpha": "none",
+      "sizes": { "kind": "fixed", "sizes": [[1024, 1024], [2048, 1024], [1024, 2048], [1536, 1024], [1024, 1536], [1365, 1024], [1024, 1365], [1280, 1024], [1024, 1280], [1024, 1707], [1434, 1024], [1024, 1434], [1820, 1024], [1024, 1820]] },
+      "cost": { "kind": "per_image", "usd_by_quality": [["default", 0.022]] },
+      "async_job": false,
+      "supports_edit": false,
+      "notes": "Cheapest, oldest raster model. Takes negative_prompt. Image-to-image lists V3, V4 and V4.1 only, so it cannot edit. Not live-verified."
+    }
+  ]
+}

@@ -3,6 +3,7 @@ name = "provider-chatgpt-login"
 description = "ChatGPT-login image provider for local use: signs in with your own ChatGPT account (gpt-6-luna, high effort). Never part of a hosted deployment."
 version.workspace = true
 edition.workspace = true
+# std's File::try_lock (cross-process file lock) is stable from 1.89; the pinned toolchain is newer.
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true

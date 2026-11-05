@@ -196,12 +196,17 @@ impl Engine {
             if let ModelStatus::Deprecated { shutdown } = &model.status {
                 warnings.push(format!("model {model_id} is deprecated and shuts down on {shutdown}"));
             }
-            if transparent && model.alpha == AlphaSupport::None {
+            // the unit art recipes read a silhouette from a flat background themselves, so no alpha is needed there
+            let keys_itself = matches!(
+                imagegen_core::chain::recipe_of(&profile),
+                imagegen_core::chain::Recipe::UnitCounter | imagegen_core::chain::Recipe::DivisionSymbol
+            );
+            if transparent && model.alpha == AlphaSupport::None && !keys_itself {
                 warnings.push(format!(
                     "{model_id} has no documented native transparency. A prompt cannot prove it: the result is validated from pixels and an opaque result is rejected. Use a model with native alpha or a matte workflow if this icon must be transparent"
                 ));
             }
-            if transparent && model.alpha == AlphaSupport::Preview {
+            if transparent && model.alpha == AlphaSupport::Preview && !keys_itself {
                 warnings.push(format!("{model_id} documents transparent backgrounds as a preview; the pixels are checked either way"));
             }
         }
