@@ -1,6 +1,6 @@
 # Asset gallery: all 40 families
 
-Every family below was made by the tool itself, on the [ChatGPT login](chatgpt-login.md) (your own ChatGPT plan, no API key, no money). Each image is a real output: planned, generated, processed, validated, reviewed and installed by `hoi4-imagegen`, then shown here at its native size on a dark tile. Small art is enlarged by a whole number so the pixels stay crisp. The images are not retouched. They are installed files, not in-game captures: the tool says "installed", never "verified in game". [`gallery/manifest.json`](gallery/manifest.json) lists the family, prompt, model, date and SHA-256 of every image.
+Every example below was made by the tool itself on the [ChatGPT login](chatgpt-login.md) with version 0.3 or later: planned, generated, processed and validated by `hoi4-imagegen`, and passed by its check against the game's own art. Each is shown at its native size on a dark tile, enlarged by a whole number when small so the pixels stay crisp. Nothing is retouched. They are files the tool made, not in-game captures. The [big gallery](gallery/big/README.md) has many more per family beside vanilla references, and [`gallery/examples.json`](gallery/examples.json) lists the brief and build of each example here.
 
 <p align="center"><a href="gallery/contact-sheet.webp"><img src="gallery/contact-sheet.webp" alt="All 40 families on one contact sheet" width="100%"></a></p>
 
@@ -29,7 +29,7 @@ Planned with `hoi4.image_icon`.
 
 ### agency_upgrade
 
-<img src="gallery/agency_upgrade.webp" alt="Example agency_upgrade asset made by hoi4-imagegen" width="272">
+*An example follows when hoi4-imagegen 0.3.4 lands. The 0.2.x example was removed.*
 
 **Vanilla form (since 0.3.2).** Measured on the 15 vanilla upgrades (`agency_cryptology_1`, `agency_invisible_ink`, `agency_portable_radios`): a round disc whose whole face is one small painted scene or close-up, a semi-realistic 1930s or 1940s illustration in muted colours. The scene runs to the softly darkened edge of the disc. There is no ring or frame around it. The example above predates this rule and shows a loose object instead, which is not the vanilla form.
 
@@ -57,7 +57,7 @@ common/intelligence_agency_upgrades/intelligence_agency_upgrades.txt:73 picture 
 
 ### bop_side
 
-<img src="gallery/bop_side.webp" alt="Example bop_side asset made by hoi4-imagegen" width="216">
+<img src="gallery/bop_side.webp" alt="Example bop_side asset made by hoi4-imagegen" width="144">
 
 **Vanilla form (since 0.3.2).** Measured on the 86 vanilla 72x88 sides (`bop_FIN_mannerheim_good_side`, `bop_ITA_king_side`, `PRC_bop_left_side`): a greyscale head-and-shoulders portrait cut out with no backdrop, a silver bust on a small plinth, or for a side that is not a person a silver symbol in a laurel wreath. 61 of the 86 files are fully grey. The coloured ones are the `_improved` and `_max` state variants, which are left out of the references. Banners and loose objects are not the vanilla form.
 
@@ -85,7 +85,7 @@ common/bop/PRC.txt:10 icon = GFX_PRC_bop_left_side
 
 ### commander_trait
 
-<img src="gallery/commander_trait.webp" alt="Example commander_trait asset made by hoi4-imagegen" width="161">
+<img src="gallery/commander_trait.webp" alt="Example commander_trait asset made by hoi4-imagegen" width="92">
 
 **Vanilla form (since 0.3.2).** Measured on the 81 vanilla army and navy leader traits at 23x33 (`trait_panzer_leader`, `trait_desert_fox`, `trait_admiral_marksman`): a small medal seen straight on. A short striped ribbon under a thin gold bar sits on top, and below it the symbol hangs as grey steel or silver metal, often on a bronze wreath. The symbol is never painted in its own colours (median saturation 0.02). The operative traits, shield plaques without a ribbon, are left out of the references. The tank above predates this rule and is not the vanilla form.
 
@@ -113,7 +113,7 @@ common/unit_leader/*.txt: 189 of 196 leader traits have GFX_trait_<key>; traits 
 
 ### decision
 
-<img src="gallery/decision.webp" alt="Example decision asset made by hoi4-imagegen" width="231">
+<img src="gallery/decision.webp" alt="Example decision asset made by hoi4-imagegen" width="132">
 
 | | |
 |---|---|
@@ -140,7 +140,7 @@ common/decisions/ARG.txt:764 icon = oil -> interface/decisions.gfx:723 GFX_decis
 
 ### decision_category_icon
 
-<img src="gallery/decision_category_icon.webp" alt="Example decision_category_icon asset made by hoi4-imagegen" width="260">
+<img src="gallery/decision_category_icon.webp" alt="Example decision_category_icon asset made by hoi4-imagegen" width="156">
 
 | | |
 |---|---|
@@ -166,7 +166,7 @@ common/decisions/categories/00_decision_categories.txt:16 icon = generic_propaga
 
 ### doctrine
 
-<img src="gallery/doctrine.webp" alt="Example doctrine asset made by hoi4-imagegen" width="256">
+<img src="gallery/doctrine.webp" alt="Example doctrine asset made by hoi4-imagegen" width="192">
 
 | | |
 |---|---|
@@ -192,7 +192,7 @@ common/doctrines/subdoctrines/land/combat_support_subdoctrines.txt:282 icon = GF
 
 ### focus
 
-<img src="gallery/focus.webp" alt="Example focus asset made by hoi4-imagegen" width="300">
+<img src="gallery/focus.webp" alt="Example focus asset made by hoi4-imagegen" width="200">
 
 | | |
 |---|---|
@@ -219,7 +219,7 @@ common/national_focus/*.txt: all 3,007 icon values are full GFX_ names (interfac
 
 ### idea_concern
 
-<img src="gallery/idea_concern.webp" alt="Example idea_concern asset made by hoi4-imagegen" width="256">
+<img src="gallery/idea_concern.webp" alt="Example idea_concern asset made by hoi4-imagegen" width="192">
 
 | | |
 |---|---|
@@ -245,7 +245,7 @@ common/ideas/CSA.txt:8 picture = generic_air_manufacturer_2 -> interface/ideas.g
 
 ### idea_spirit
 
-<img src="gallery/idea_spirit.webp" alt="Example idea_spirit asset made by hoi4-imagegen" width="240">
+<img src="gallery/idea_spirit.webp" alt="Example idea_spirit asset made by hoi4-imagegen" width="180">
 
 | | |
 |---|---|
@@ -272,7 +272,7 @@ common/ideas/CSA.txt:8 picture = generic_air_manufacturer_2 -> interface/ideas.g
 
 ### medal
 
-<img src="gallery/medal.webp" alt="Example medal asset made by hoi4-imagegen" width="168">
+*No current image of this family passes the vanilla-match check yet, so the 0.2.x example was removed. One follows as the runs go on.*
 
 | | |
 |---|---|
@@ -298,7 +298,7 @@ common/unit_medals/00_default.txt:41 icon = "GFX_medal_icon_nor" with frame = 1;
 
 ### mio_department
 
-<img src="gallery/mio_department.webp" alt="Example mio_department asset made by hoi4-imagegen" width="240">
+<img src="gallery/mio_department.webp" alt="Example mio_department asset made by hoi4-imagegen" width="144">
 
 **Vanilla form (since 0.3.2).** Measured on the 337 vanilla department icons (`generic_mio_department_icon_air_transport`, `generic_mio_department_icon_armored_car_conversion`): one piece of equipment as a bold, flat icon, tinted one saturated colour by its type (aircraft red or blue, land equipment olive green, ships steel blue), with a thin dark outline and often one small accent symbol such as circular arrows, a rising zigzag arrow, a wrench or gears. It covers 57 percent of the canvas, and 31 percent of its pixels are strongly coloured. Grey or metallic shading, scenes and blueprints are never part of it.
 
@@ -326,7 +326,7 @@ common/military_industrial_organization/organizations/00_generic_organization.tx
 
 ### mio_policy
 
-<img src="gallery/mio_policy.webp" alt="Example mio_policy asset made by hoi4-imagegen" width="240">
+<img src="gallery/mio_policy.webp" alt="Example mio_policy asset made by hoi4-imagegen" width="180">
 
 **Vanilla form (since 0.3.2).** Measured on the 20 vanilla policy icons (`mio_policy_welding`, `mio_policy_ruthless_contracts`, `mio_policy_modular_assembly`): one object, or two that belong together, as a painted icon with a dark outline and a soft shadow on transparency. There is no room, no factory hall and no view into the distance.
 
@@ -354,7 +354,7 @@ common/military_industrial_organization/policies/_general_policies.txt:77 icon =
 
 ### mio_trait
 
-<img src="gallery/mio_trait.webp" alt="Example mio_trait asset made by hoi4-imagegen" width="240">
+*An example follows when hoi4-imagegen 0.3.4 lands. The 0.2.x example was removed.*
 
 **Vanilla form (since 0.3.2).** Measured on the 44 vanilla trait icons (`generic_mio_trait_icon_armor_value`, `generic_mio_trait_icon_detection`, `generic_mio_trait_icon_build_cost_ic`): one small, simple glyph of one object or symbol with light shading, often with a small accent sign such as a green plus or a red target ring. Every file has a dark outline and a soft dark shadow, and about 29 percent of the canvas is covered. There is no badge or disc behind the object. The rule before 0.3.2 asked for a round badge, which vanilla does not use.
 
@@ -382,7 +382,7 @@ interface/military_industrial_organization/industrial_organization_policies_and_
 
 ### officer_corps_spirit
 
-<img src="gallery/officer_corps_spirit.webp" alt="Example officer_corps_spirit asset made by hoi4-imagegen" width="225">
+<img src="gallery/officer_corps_spirit.webp" alt="Example officer_corps_spirit asset made by hoi4-imagegen" width="135">
 
 | | |
 |---|---|
@@ -408,7 +408,7 @@ common/ideas/army_spirits.txt:4 bold_attack_spirit has no picture -> interface/o
 
 ### operation_icon
 
-<img src="gallery/operation_icon.webp" alt="Example operation_icon asset made by hoi4-imagegen" width="236">
+<img src="gallery/operation_icon.webp" alt="Example operation_icon asset made by hoi4-imagegen" width="177">
 
 **Vanilla form (since 0.3.2).** This family is the 59x58 operation phase icon, and only that. All 71 vanilla ones (`operations/phases_small/phase_bruneval_attack_small`, `phase_capture_tito_infiltration_small`) are a round sepia photograph whose edge is worn and slightly darkened, with no ring and no colour (median saturation 0.15, under 0.1 percent of the pixels coloured). The 85x85 square colour illustrations and the 48x48 ringed colour paintings in the same folder are a different form: they are no longer accepted sizes and never references. The example above predates this rule and shows a loose object, which is not the vanilla form.
 
@@ -437,7 +437,7 @@ common/operation_phases/00_operation_phases.txt icon values (73, full names) -> 
 
 ### personal_trait
 
-<img src="gallery/personal_trait.webp" alt="Example personal_trait asset made by hoi4-imagegen" width="161">
+<img src="gallery/personal_trait.webp" alt="Example personal_trait asset made by hoi4-imagegen" width="92">
 
 | | |
 |---|---|
@@ -463,7 +463,7 @@ common/unit_leader/*.txt: 189 of 196 leader traits have GFX_trait_<key>; traits 
 
 ### raid
 
-<img src="gallery/raid.webp" alt="Example raid asset made by hoi4-imagegen" width="224">
+<img src="gallery/raid.webp" alt="Example raid asset made by hoi4-imagegen" width="128">
 
 | | |
 |---|---|
@@ -489,7 +489,7 @@ common/raids/_documentation.md:22 and :232 (automatic lookup GFX_raid_type_icon_
 
 ### special_project_icon
 
-<img src="gallery/special_project_icon.webp" alt="Example special_project_icon asset made by hoi4-imagegen" width="322">
+<img src="gallery/special_project_icon.webp" alt="Example special_project_icon asset made by hoi4-imagegen" width="161">
 
 | | |
 |---|---|
@@ -515,7 +515,7 @@ common/special_projects/projects/air_projects.txt:1071 icon = GFX_sp_air_axial_j
 
 ### state_modifier
 
-<img src="gallery/state_modifier.webp" alt="Example state_modifier asset made by hoi4-imagegen" width="224">
+<img src="gallery/state_modifier.webp" alt="Example state_modifier asset made by hoi4-imagegen" width="128">
 
 **Vanilla form (since 0.3.2).** Measured on the 100 vanilla 32x32 state modifiers (`modifier_generic_sabotage`, `modifiers_ETH_state_development`): one bold, simple object or symbol, at most two elements, with chunky shapes, a strong dark outline and one or two saturated accents, covering 62 percent of the canvas. There is no scene or landscape, because small details do not read at 32 px.
 
@@ -547,7 +547,7 @@ Planned with `hoi4.image_picture`.
 
 ### achievement
 
-<img src="gallery/achievement.webp" alt="Example achievement asset made by hoi4-imagegen" width="256">
+<img src="gallery/achievement.webp" alt="Example achievement asset made by hoi4-imagegen" width="192">
 
 | | |
 |---|---|
@@ -573,7 +573,7 @@ gfx/achievements: 292 achievement keys have <key>.dds, <key>_grey.dds and (291) 
 
 ### decision_category_picture
 
-<img src="gallery/decision_category_picture.webp" alt="Example decision_category_picture asset made by hoi4-imagegen" width="228">
+*No current image of this family passes the vanilla-match check yet, so the 0.2.x example was removed. One follows as the runs go on.*
 
 | | |
 |---|---|
@@ -626,7 +626,7 @@ events/*.txt: 830 of 833 picture values are full GFX_ names (interface/eventpict
 
 ### operation_picture
 
-<img src="gallery/operation_picture.webp" alt="Example operation_picture asset made by hoi4-imagegen" width="420">
+<img src="gallery/operation_picture.webp" alt="Example operation_picture asset made by hoi4-imagegen" width="210">
 
 **Vanilla form (since 0.3.2).** This family is the 210x176 operation phase picture, and only that. All 71 vanilla ones (`operations/images/phase_bruneval_attack`, `phase_capture_cyphers_raid`) are period photographs in sepia or warm black and white, never paintings and never colour. In vanilla they sit on the same tilted, worn photo card as the report event pictures, with transparent corners (86 percent of the canvas covered). The prompt asks for the photograph and says it is not the round phase icon. The example above is a painted illustration and predates this rule.
 
@@ -654,7 +654,7 @@ common/operation_phases/lar_historical_operations.txt:47 picture = GFX_phase_bru
 
 ### report_event
 
-<img src="gallery/report_event.webp" alt="Example report_event asset made by hoi4-imagegen" width="420">
+<img src="gallery/report_event.webp" alt="Example report_event asset made by hoi4-imagegen" width="210">
 
 | | |
 |---|---|
@@ -712,7 +712,7 @@ Planned with `hoi4.image_portrait`.
 
 ### advisor_card
 
-<img src="gallery/advisor_card.webp" alt="Example advisor_card asset made by hoi4-imagegen" width="260">
+<img src="gallery/advisor_card.webp" alt="Example advisor_card asset made by hoi4-imagegen" width="195">
 
 | | |
 |---|---|
@@ -738,7 +738,7 @@ common/characters/*.txt: all 2,887 small values are full GFX_ names (interface/i
 
 ### commander_portrait
 
-<img src="gallery/commander_portrait.webp" alt="Example commander_portrait asset made by hoi4-imagegen" width="312">
+<img src="gallery/commander_portrait.webp" alt="Example commander_portrait asset made by hoi4-imagegen" width="156">
 
 | | |
 |---|---|
@@ -764,7 +764,7 @@ common/characters/*.txt: 2,045 of 2,047 large values are full GFX_ names (interf
 
 ### leader_portrait
 
-<img src="gallery/leader_portrait.webp" alt="Example leader_portrait asset made by hoi4-imagegen" width="312">
+<img src="gallery/leader_portrait.webp" alt="Example leader_portrait asset made by hoi4-imagegen" width="156">
 
 | | |
 |---|---|
@@ -790,7 +790,7 @@ common/characters/*.txt: 2,045 of 2,047 large values are full GFX_ names (interf
 
 ### operative_portrait
 
-<img src="gallery/operative_portrait.webp" alt="Example operative_portrait asset made by hoi4-imagegen" width="312">
+*An example follows when hoi4-imagegen 0.3.4 lands. The 0.2.x example was removed.*
 
 | | |
 |---|---|
@@ -816,7 +816,7 @@ common/characters/*.txt: 2,045 of 2,047 large values are full GFX_ names (interf
 
 ### scientist_portrait
 
-<img src="gallery/scientist_portrait.webp" alt="Example scientist_portrait asset made by hoi4-imagegen" width="312">
+*An example follows when hoi4-imagegen 0.3.4 lands. The 0.2.x example was removed.*
 
 | | |
 |---|---|
@@ -846,7 +846,7 @@ Planned with `hoi4.image_flag`.
 
 ### flag
 
-<img src="gallery/flag.webp" alt="Example flag asset made by hoi4-imagegen" width="246">
+<img src="gallery/flag.webp" alt="Example flag asset made by hoi4-imagegen" width="164">
 
 | | |
 |---|---|
@@ -963,7 +963,7 @@ interface/subuniticons.gfx:81 GFX_unit_engineer_icon_medium for sub-unit enginee
 
 ### counter_small
 
-<img src="gallery/counter_small.webp" alt="Example counter_small asset made by hoi4-imagegen" width="240">
+<img src="gallery/counter_small.webp" alt="Example counter_small asset made by hoi4-imagegen" width="180">
 
 | | |
 |---|---|
@@ -995,7 +995,7 @@ interface/subuniticons.gfx:201 GFX_unit_infantry_icon_medium_white (noOfFrames =
 
 ### division_emblem
 
-<img src="gallery/division_emblem.webp" alt="Example division_emblem asset made by hoi4-imagegen" width="228">
+<img src="gallery/division_emblem.webp" alt="Example division_emblem asset made by hoi4-imagegen" width="152">
 
 **Vanilla form (since 0.3.2).** Measured on the 101 vanilla symbols (`custom_template_000` to `custom_template_121`): one plain heraldic or unit symbol, such as an animal head, a skull, a helmet, a star or wings, shown as an embossed grey-green metal sign that covers about 21 percent of the canvas. The model draws it as one black silhouette and the `division_symbol` recipe renders vanilla's material. The red symbol above was imported before the recipe existed and is not the vanilla form.
 
@@ -1027,7 +1027,7 @@ interface/subuniticons.gfx:318 GFX_div_templ_0_large to :418 GFX_div_templ_121_l
 
 ### faction_logo
 
-<img src="gallery/faction_logo.webp" alt="Example faction_logo asset made by hoi4-imagegen" width="400">
+<img src="gallery/faction_logo.webp" alt="Example faction_logo asset made by hoi4-imagegen" width="200">
 
 | | |
 |---|---|
@@ -1085,7 +1085,7 @@ interface/*.gui name sprites in full
 
 ### modifier_stat_icon
 
-<img src="gallery/modifier_stat_icon.webp" alt="Example modifier_stat_icon asset made by hoi4-imagegen" width="240">
+<img src="gallery/modifier_stat_icon.webp" alt="Example modifier_stat_icon asset made by hoi4-imagegen" width="120">
 
 | | |
 |---|---|

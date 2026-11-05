@@ -1,0 +1,3206 @@
+{
+ "focus": [
+  {
+   "asset": "blast_furnace_dawn",
+   "brief": "A Finnish steelworks blast furnace glowing orange at dawn above snowy pines, small silhouettes of workers at the gate, hopeful mood of rebuilding after a hard winter.",
+   "style": null
+  },
+  {
+   "asset": "treaty_handshake",
+   "brief": "A Persian envoy and a British diplomat in 1930s suits shake hands across a green felt table with a brass globe between them, quiet and hopeful mood.",
+   "style": null
+  },
+  {
+   "asset": "armoured_column_parade",
+   "brief": "A column of Brazilian light tanks rolling through a dusty avenue in the 1940s, hatches open, crowds waving from balconies, triumphant mood.",
+   "style": null
+  },
+  {
+   "asset": "cruiser_launch_slipway",
+   "brief": "A new Italian light cruiser sliding down the slipway into a Genoa harbour, bunting overhead and dockworkers cheering, festive and proud.",
+   "style": null
+  },
+  {
+   "asset": "fighter_dawn_scramble",
+   "brief": "Polish single-seat fighters taking off from a grass airfield at first light, ground crew running clear, tense and determined mood.",
+   "style": null
+  },
+  {
+   "asset": "assembly_ballot_vote",
+   "brief": "A Swedish voter in a wool coat dropping a folded ballot into a wooden box before a columned assembly hall, calm and quiet civic mood.",
+   "style": null
+  },
+  {
+   "asset": "wheat_and_gold_vault",
+   "brief": "An open bank vault in Buenos Aires with stacked gold bars beside heaped wheat sheaves, a promise of economic recovery in the 1930s.",
+   "style": null
+  },
+  {
+   "asset": "railway_viaduct_opening",
+   "brief": "A Turkish steam locomotive crossing a new stone viaduct high in the Anatolian mountains, villagers watching from the ridge, triumphant mood. Soft flat gouache look.",
+   "style": "gouache"
+  },
+  {
+   "asset": "oil_gusher_celebration",
+   "brief": "A Mexican oil derrick erupting in a black gusher while oilfield workers throw their hats in the air, a festive mood of national pride in the late 1930s.",
+   "style": null
+  },
+  {
+   "asset": "irrigation_canal_gates",
+   "brief": "Thai farmers opening wooden irrigation sluice gates so water flows into green rice terraces, hopeful early-morning mood.",
+   "style": null
+  },
+  {
+   "asset": "village_radio_tower",
+   "brief": "A tall radio mast above a Chinese village square where families gather around a loudspeaker, radio waves rippling outward, 1940s. Grainy ink and sepia sketch look.",
+   "style": "ink"
+  },
+  {
+   "asset": "frontier_fortress_turret",
+   "brief": "A French frontier fortress with an armoured gun turret rising from a green hillside, barbed wire in front, grim and steady mood.",
+   "style": null
+  },
+  {
+   "asset": "coastal_radar_mast",
+   "brief": "A British coastal radar mast on white chalk cliffs scanning above a calm grey sea in 1940, tense watchful mood. Bold two-colour carved print.",
+   "style": "linocut"
+  },
+  {
+   "asset": "atlantic_convoy",
+   "brief": "An American merchant convoy crossing a grey Atlantic with escort destroyers on the flanks and smoke on the horizon, grim resolve.",
+   "style": null
+  },
+  {
+   "asset": "cyclotron_laboratory",
+   "brief": "A young researcher beside a brass-coiled cyclotron magnet in a university laboratory, dials and glass tubes glowing, hopeful 1940s scientific mood.",
+   "style": null
+  },
+  {
+   "asset": "highland_road_builders",
+   "brief": "Ethiopian highland workers breaking rock with picks and hauling carts to build a mountain road, steep green valley behind them, 1930s hopeful effort.",
+   "style": null
+  },
+  {
+   "asset": "howitzer_hillside",
+   "brief": "A heavy Soviet howitzer on a snowy hillside with its crew in dark silhouette, barrel raised against a pale sky, grim determination.",
+   "style": null
+  },
+  {
+   "asset": "paratrooper_drop",
+   "brief": "A wing of transport aircraft over red Australian desert releasing a cloud of white parachutes, long shadows on the sand, tense 1940s mood.",
+   "style": null
+  },
+  {
+   "asset": "submarine_leaving_pen",
+   "brief": "A sleek Japanese submarine gliding out of a concrete pen at dusk with its crew on deck, water dark and still, tense and quiet.",
+   "style": null
+  },
+  {
+   "asset": "orange_quay_trade",
+   "brief": "Crates of Valencia oranges stacked on a quay beside a steamship, dockers loading by hand, festive early 1950s trade mood.",
+   "style": null
+  },
+  {
+   "asset": "torch_over_square",
+   "brief": "A burning torch raised high over a crowd of silhouetted citizens in a night city square under fictional striped banners, tense yet defiant.",
+   "style": null
+  },
+  {
+   "asset": "opera_mask_scroll",
+   "brief": "A Chinese opera mask on a lacquered stand beside an unrolled scroll of mountain scenery and a lute, calm 1930s cultural mood.",
+   "style": null
+  },
+  {
+   "asset": "steam_locomotive_power",
+   "brief": "A Yugoslav steam locomotive thundering along a river gorge with timber wagons behind it, smoke streaming, confident mood of national infrastructure.",
+   "style": null
+  },
+  {
+   "asset": "land_reform_plough",
+   "brief": "A southern Italian peasant family marking out their own field with boundary stakes beside a plough and oxen, hopeful early 1950s mood. Bold two-colour carved print.",
+   "style": "linocut"
+  },
+  {
+   "asset": "steelworks_blast_furnace_v033",
+   "brief": "Industry: a blast furnace pouring molten steel into a ladle, sparks flying.",
+   "style": null
+  },
+  {
+   "asset": "assembly_line_trucks_v033",
+   "brief": "Industry: army trucks rolling off a long assembly line.",
+   "style": null
+  },
+  {
+   "asset": "infantry_bayonet_charge_v033",
+   "brief": "Military: infantrymen charging with fixed bayonets across a muddy field.",
+   "style": null
+  },
+  {
+   "asset": "fortified_border_line_v033",
+   "brief": "Military: a line of concrete bunkers and dragon's teeth along a border.",
+   "style": null
+  },
+  {
+   "asset": "signed_treaty_quill_v033",
+   "brief": "Diplomacy: a signed treaty with two wax seals and a quill pen.",
+   "style": null
+  },
+  {
+   "asset": "embassy_flags_handshake_v033",
+   "brief": "Diplomacy: two envoys shaking hands under two invented national flags.",
+   "style": null
+  },
+  {
+   "asset": "parliament_dome_ballots_v033",
+   "brief": "Politics: a parliament dome with ballot papers falling before it.",
+   "style": null
+  },
+  {
+   "asset": "rally_crowd_banners_v033",
+   "brief": "Politics: a rally crowd raising banners in invented colours.",
+   "style": null
+  },
+  {
+   "asset": "battleship_broadside_v033",
+   "brief": "Naval: a battleship firing a broadside at sea.",
+   "style": null
+  },
+  {
+   "asset": "submarine_periscope_v033",
+   "brief": "Naval: a submarine periscope breaking the waves at dusk.",
+   "style": null
+  },
+  {
+   "asset": "bomber_formation_v033",
+   "brief": "Air: a formation of twin-engine bombers over clouds.",
+   "style": null
+  },
+  {
+   "asset": "laboratory_microscope_v033",
+   "brief": "Research: a laboratory microscope beside glass flasks and notes.",
+   "style": null
+  }
+ ],
+ "idea_spirit": [
+  {
+   "asset": "war_bond_rally",
+   "brief": "Housewives and factory workers queueing at a bond booth in an American small town, a tall gauge with stars rising beside them, hopeful wartime mood.",
+   "style": null
+  },
+  {
+   "asset": "ration_book_table",
+   "brief": "A modest British kitchen table with a small loaf, two eggs, a tin kettle and a blank ration book, quiet make-do mood.",
+   "style": null
+  },
+  {
+   "asset": "scrap_metal_drive",
+   "brief": "Japanese village children dragging a hand cart of old pots, pans and scrap iron down a lane lined with cherry trees, determined 1940s mood.",
+   "style": null
+  },
+  {
+   "asset": "blackout_street",
+   "brief": "A darkened London street with shuttered windows, a single shaded lamp and searchlights crossing the night sky, tense watchful mood.",
+   "style": null
+  },
+  {
+   "asset": "women_welders",
+   "brief": "Soviet women in headscarves welding at a bench in an aircraft factory, bright sparks flying, proud and tireless mood.",
+   "style": null
+  },
+  {
+   "asset": "youth_spade_march",
+   "brief": "Rows of Italian teenage boys in plain uniforms marching down a country road with spades over their shoulders, 1930s, disciplined mood.",
+   "style": null
+  },
+  {
+   "asset": "newsroom_press_run",
+   "brief": "An Argentine newsroom with a rotary press spinning and blank newspaper sheets flying through the air, journalists at desks, hopeful and busy.",
+   "style": null
+  },
+  {
+   "asset": "barricade_curfew",
+   "brief": "Soldiers behind a sandbag barricade and an armoured car in an empty Turkish city square at dusk, shuttered shops, grim mood of martial law.",
+   "style": null
+  },
+  {
+   "asset": "village_loom_wheel",
+   "brief": "A Spanish village room with a hand loom and spinning wheel, homespun cloth and clay jugs, quiet mood of self-reliance.",
+   "style": null
+  },
+  {
+   "asset": "faiths_united_gate",
+   "brief": "A priest, an imam and a rabbi in plain robes standing together before a Yugoslav town gate with villagers behind them, hopeful unity.",
+   "style": null
+  },
+  {
+   "asset": "scorched_earth_field",
+   "brief": "Peasants setting fire to their own wheat field beside a retreating road, black smoke towering over the steppe, grim defiance. Bold two-colour carved print.",
+   "style": "linocut"
+  },
+  {
+   "asset": "lantern_farmhouse_table",
+   "brief": "A large Polish farm family eating together around a lantern-lit table, grandmother at the head, quiet mood of tradition and home.",
+   "style": null
+  },
+  {
+   "asset": "highland_militia_dawn",
+   "brief": "Ethiopian farmers with old rifles and cloaks gathering in a highland village at dawn, mist in the valley, resolute volunteer spirit.",
+   "style": null
+  },
+  {
+   "asset": "emergency_cabinet_room",
+   "brief": "A French cabinet room at night, lamplit map table and a few empty chairs, a lone minister standing at a tall window, tense mood.",
+   "style": null
+  },
+  {
+   "asset": "market_piggy_bank",
+   "brief": "A Thai child dropping a coin into a clay savings pot beside a bustling market stall, festive mood of thrift and community.",
+   "style": null
+  },
+  {
+   "asset": "factory_belt_hall",
+   "brief": "A vast Brazilian factory hall full of lathes driven by overhead leather belts, workers at every machine, busy mobilisation mood.",
+   "style": null
+  },
+  {
+   "asset": "alpine_village_guard",
+   "brief": "Swiss mountain villagers with rifles and a cowbell standing watch above a snowy pass, calm and watchful readiness.",
+   "style": null
+  },
+  {
+   "asset": "rebuilding_housing_blocks",
+   "brief": "Hungarian bricklayers raising new apartment blocks among cleared rubble, scaffolding and cranes against a pale morning sky, early 1950s hopeful mood.",
+   "style": null
+  },
+  {
+   "asset": "harvest_festival_garlands",
+   "brief": "Bulgarian villagers dancing around wheat sheaves and garlands while a fiddler plays, a festive harvest mood. Soft flat gouache look.",
+   "style": "gouache"
+  },
+  {
+   "asset": "station_refugee_welcome",
+   "brief": "Swedish villagers handing bread and blankets to weary refugee families stepping off a train at a snowy station, compassionate quiet mood.",
+   "style": null
+  },
+  {
+   "asset": "shadow_at_the_door",
+   "brief": "The long shadow of a man in a trench coat and fedora falling across a quiet apartment door at night, grim mood of watchfulness. Bold two-colour carved print.",
+   "style": "linocut"
+  },
+  {
+   "asset": "village_schoolhouse",
+   "brief": "Children in a Mexican village schoolhouse learning with slates while a young teacher points at a globe, sunbeams through the window, hopeful 1930s mood.",
+   "style": null
+  },
+  {
+   "asset": "weary_veterans_trench",
+   "brief": "Weary veterans resting against the mud wall of a rain-soaked trench with helmets low, a distant glow on the horizon, grim exhaustion. Grainy ink and sepia sketch look.",
+   "style": "ink"
+  },
+  {
+   "asset": "rooftop_wardens",
+   "brief": "Dutch air-raid wardens with helmets and wooden rattles on a gabled rooftop scanning the night sky over canals, tense and vigilant.",
+   "style": null
+  }
+ ],
+ "idea_concern": [
+  {
+   "asset": "tank_assembly_hall",
+   "brief": "A Czech tank works interior with armoured hulls on rails beneath overhead cranes, welders' sparks and turrets waiting in rows.",
+   "style": null
+  },
+  {
+   "asset": "shipyard_gantry_hulls",
+   "brief": "A Scottish shipyard with a great gantry crane over two half-built hulls on slipways, riveters' scaffolding and grey river beyond.",
+   "style": null
+  },
+  {
+   "asset": "aircraft_plant_fuselages",
+   "brief": "An American aircraft plant with silver fuselages hanging in a long line from the ceiling, wings stacked below and morning light through high windows.",
+   "style": null
+  },
+  {
+   "asset": "gun_foundry_pour",
+   "brief": "A gun foundry where a glowing ladle pours molten steel into a mould for a long barrel, workers in leather aprons shielding their faces. Bold two-colour carved print.",
+   "style": "linocut"
+  },
+  {
+   "asset": "optics_workshop_lenses",
+   "brief": "A Japanese optics workshop bench with binoculars, a rangefinder, polished lenses and brass tools under a single lamp, careful quiet craft. Grainy ink and sepia sketch look.",
+   "style": "ink"
+  },
+  {
+   "asset": "radio_valve_works",
+   "brief": "A Dutch radio works bench covered with glowing valves, copper coils, dials and field radio sets in leather cases.",
+   "style": null
+  },
+  {
+   "asset": "truck_assembly_line",
+   "brief": "A line of half-built army lorries on an assembly floor, cabs waiting for engines, tyres stacked against the wall, Italian factory.",
+   "style": null
+  },
+  {
+   "asset": "locomotive_erecting_shop",
+   "brief": "A Hungarian locomotive works erecting shop with a steam engine boiler lifted by a crane above its wheels, steam drifting through iron rafters.",
+   "style": null
+  },
+  {
+   "asset": "rifle_armoury_racks",
+   "brief": "A Belgian arms factory proof room with rows of bolt-action rifles in racks and a bench of gleaming machined parts and gauges.",
+   "style": null
+  },
+  {
+   "asset": "bored_barrel_aa_gun",
+   "brief": "A Swedish ordnance works where a long anti-aircraft gun barrel is bored on a huge lathe, curls of bright steel on the floor, snowy yard outside.",
+   "style": null
+  },
+  {
+   "asset": "radial_engine_test_stand",
+   "brief": "A British engine works with a radial aircraft engine on a test stand, propeller blurred, fitters in overalls watching gauges.",
+   "style": null
+  },
+  {
+   "asset": "armoured_car_yard",
+   "brief": "A yard full of freshly built armoured cars with open hatches parked in neat rows beside a brick factory with tall chimneys, French works.",
+   "style": null
+  },
+  {
+   "asset": "shell_filling_hall",
+   "brief": "Women in headscarves lining up rows of artillery shells on long tables inside a bright Soviet munitions hall, orderly and busy.",
+   "style": null
+  },
+  {
+   "asset": "torpedo_shop_cradles",
+   "brief": "A naval torpedo workshop with gleaming torpedoes resting in wooden cradles beside a chain hoist, German shipyard interior, damp and bluish light.",
+   "style": null
+  },
+  {
+   "asset": "armour_plate_rolling",
+   "brief": "A rolling mill where a glowing slab of armour plate is pulled between huge rollers, sparks scattering, steelworkers in the glare, Czech mood of power.",
+   "style": null
+  },
+  {
+   "asset": "motorcycle_sidecar_row",
+   "brief": "A Polish factory floor with motorcycles and sidecar combinations lined up in a row, headlamps shining, workers wiping tanks with rags.",
+   "style": null
+  },
+  {
+   "asset": "chemical_works_retorts",
+   "brief": "A Norwegian explosives and chemical works beside a fjord, glass retorts, steel vats and pipe tangles under a pale sky, steam rising.",
+   "style": null
+  },
+  {
+   "asset": "cable_drum_yard",
+   "brief": "A cable works yard stacked with huge wooden drums of telegraph cable and coils of copper wire beside a railway siding, Spanish setting.",
+   "style": null
+  },
+  {
+   "asset": "tractor_tank_works",
+   "brief": "A Ukrainian tractor works where crawler tractors and early tanks sit side by side on the same assembly line, vast hall and misty light.",
+   "style": null
+  },
+  {
+   "asset": "flying_boat_hangar",
+   "brief": "A giant hangar with a four-engined flying boat on a slipway, ground crew on its wing, bay water glittering outside, Australian works.",
+   "style": null
+  },
+  {
+   "asset": "brass_cartridge_mill",
+   "brief": "A brass rolling mill with coils of golden metal, stamping presses and trays of shining cartridge cases, American small town works.",
+   "style": null
+  },
+  {
+   "asset": "pontoon_bridge_sections",
+   "brief": "Stacks of steel pontoon bridge sections and girders in an Austrian engineering yard, a crane lifting one over a flowing river.",
+   "style": null
+  },
+  {
+   "asset": "diesel_engine_hall",
+   "brief": "A Swiss diesel engine works with a massive marine engine block under assembly, polished pistons and gauges, quiet precise craft. Soft flat gouache look.",
+   "style": "gouache"
+  },
+  {
+   "asset": "searchlight_signal_works",
+   "brief": "A signals works with big searchlight drums, signal lamps and field telephones lined along a workbench, a Turkish factory in warm evening light.",
+   "style": "linocut"
+  }
+ ],
+ "officer_corps_spirit": [
+  {
+   "asset": "lancer_charge",
+   "brief": "Polish cavalry officers at full gallop with lances lowered across a meadow, pennants streaming, bold and spirited mood of attack.",
+   "style": null
+  },
+  {
+   "asset": "lantern_trench_map",
+   "brief": "A calm French officer studying a trench map by lantern light in a deep dugout, sandbags around him, careful defensive caution.",
+   "style": null
+  },
+  {
+   "asset": "staff_college_desk",
+   "brief": "A staff officer's tidy desk with a large map, dividers, ruler, pencils and binoculars under a green lamp, quiet professionalism.",
+   "style": null
+  },
+  {
+   "asset": "alpine_ice_axe",
+   "brief": "An Italian mountain officer with ice axe and rope on a high glacier, a line of troops behind him against bright peaks. Bold two-colour carved print.",
+   "style": "linocut"
+  },
+  {
+   "asset": "veranda_pith_helmet",
+   "brief": "A British colonial officer in a pith helmet seated on a shaded veranda with a map and tea, tropical garden and distant hills.",
+   "style": null
+  },
+  {
+   "asset": "naval_sword_telescope",
+   "brief": "A naval officer's dress sword, brass telescope and bicorne hat resting on a sea chest, soft window light, gentlemanly tradition.",
+   "style": null
+  },
+  {
+   "asset": "sword_and_blossom",
+   "brief": "A sheathed Japanese officer's sword with a tasselled hilt resting beside a flowering cherry branch, quiet mood of honour.",
+   "style": null
+  },
+  {
+   "asset": "campfire_rice_bowl",
+   "brief": "A young Chinese officer sharing a bowl of rice with his soldiers around a night campfire, warm comradeship and humble mood.",
+   "style": null
+  },
+  {
+   "asset": "desert_patrol_truck",
+   "brief": "An Australian officer on the running board of a sand-coloured truck in tall dunes, scanning the horizon with binoculars, daring long-range raid.",
+   "style": null
+  },
+  {
+   "asset": "braided_hussar",
+   "brief": "A Hungarian hussar officer in a braided jacket and plumed shako on a prancing horse, festive and proud cavalry pageantry.",
+   "style": null
+  },
+  {
+   "asset": "ski_scout_forest",
+   "brief": "A Finnish officer in white snow camouflage on skis gliding silently between frosted pines, rifle slung, still and watchful. Grainy ink and sepia sketch look.",
+   "style": "ink"
+  },
+  {
+   "asset": "palace_guard_gate",
+   "brief": "A ceremonial Swedish palace guard officer in a plumed helmet and white gloves standing at a gilded gate, calm formal dignity.",
+   "style": null
+  }
+ ],
+ "decision": [
+  {
+   "asset": "ration_coupon_booklet",
+   "brief": "A small booklet of perforated coupons with one corner torn off, marked only with plain oval stamps, simple sturdy object.",
+   "style": null
+  },
+  {
+   "asset": "telegraph_key",
+   "brief": "A single brass telegraph key on a worn wooden base, urgent 1930s mood, one bold object.",
+   "style": null
+  },
+  {
+   "asset": "ballot_box",
+   "brief": "A wooden ballot box with a slot in the lid and a folded slip half dropped in, one bold object. Bold two-colour carved print.",
+   "style": "linocut"
+  },
+  {
+   "asset": "iron_plough",
+   "brief": "A single iron plough with wooden handles standing in a furrow, one bold simple object.",
+   "style": null
+  },
+  {
+   "asset": "rope_bound_crate",
+   "brief": "A sturdy wooden supply crate bound with rope and stencilled only with a plain black circle, one bold object.",
+   "style": null
+  },
+  {
+   "asset": "gloved_handshake",
+   "brief": "Two gloved hands clasped in a firm handshake, one in a grey glove and one in a brown glove, bold simple symbol.",
+   "style": null
+  },
+  {
+   "asset": "studio_microphone",
+   "brief": "A vintage round radio studio microphone on a short chrome stand, polished and gleaming, one bold simple object.",
+   "style": null
+  },
+  {
+   "asset": "dynamite_bundle",
+   "brief": "A bundle of dynamite sticks tied with twine and a short fuse trailing off, tense bold object.",
+   "style": null
+  },
+  {
+   "asset": "rolled_blueprint",
+   "brief": "A rolled blueprint tied with a ribbon beside a drawing compass, one bold simple object.",
+   "style": null
+  },
+  {
+   "asset": "oil_barrel",
+   "brief": "A dark steel oil drum with rolled rims and a bright drip on its side, one bold object.",
+   "style": null
+  },
+  {
+   "asset": "anvil_and_hammer",
+   "brief": "A blacksmith's anvil with a heavy hammer resting across it, a few glowing sparks, one bold object. Bold two-colour carved print.",
+   "style": "linocut"
+  },
+  {
+   "asset": "storm_lantern",
+   "brief": "A single glowing storm lantern with a wire cage and a curved handle, warm light, simple bold object. Soft flat gouache look.",
+   "style": "gouache"
+  },
+  {
+   "asset": "rubber_stamp_pad",
+   "brief": "A wooden rubber stamp beside an open ink pad with a clean red smudge, bureaucratic bold object.",
+   "style": null
+  },
+  {
+   "asset": "street_megaphone",
+   "brief": "A large conical tin megaphone pointing outward with curved sound lines radiating from it, one bold propaganda object.",
+   "style": null
+  },
+  {
+   "asset": "brass_spyglass",
+   "brief": "An extended brass spyglass of a ship's officer, single bold object. Grainy ink and sepia sketch look.",
+   "style": "ink"
+  },
+  {
+   "asset": "grain_sack_scoop",
+   "brief": "A plump burlap grain sack tied at the neck with a tin scoop resting in the spilled wheat, one bold object.",
+   "style": null
+  },
+  {
+   "asset": "semaphore_signal",
+   "brief": "A railway semaphore signal post with its arm raised, one bold simple silhouette against the sky.",
+   "style": null
+  },
+  {
+   "asset": "pocket_compass",
+   "brief": "An open brass pocket compass with a clear red needle and a hinged lid, one bold simple object.",
+   "style": null
+  },
+  {
+   "asset": "church_bell",
+   "brief": "A large cast bronze church bell hanging from a thick wooden beam with a rope dangling, one bold object.",
+   "style": null
+  },
+  {
+   "asset": "pickaxe_shovel_cross",
+   "brief": "A pickaxe and a shovel crossed over each other, worn wooden handles, bold symbol of labour.",
+   "style": null
+  },
+  {
+   "asset": "sandbag_wall",
+   "brief": "A short stack of three tied sandbags in a stepped pile, bold simple defensive object.",
+   "style": null
+  },
+  {
+   "asset": "padlock_and_chain",
+   "brief": "A heavy iron padlock hanging from a thick looped chain, closed tight, bold symbol of sealed borders.",
+   "style": null
+  },
+  {
+   "asset": "field_telephone",
+   "brief": "A military field telephone in a leather case with a hand crank and handset, one bold object.",
+   "style": null
+  },
+  {
+   "asset": "sand_hourglass",
+   "brief": "A wooden-framed hourglass with the sand half run through, one bold simple object of waiting and time.",
+   "style": null
+  }
+ ],
+ "decision_category_icon": [
+  {
+   "asset": "propaganda_poster_wall",
+   "brief": "A brick wall pasted with blank posters beside a roller brush and a paste bucket, emblem of propaganda campaigns.",
+   "style": null
+  },
+  {
+   "asset": "military_reform_manual",
+   "brief": "A crossed rifle and sabre laid over an open field manual with a sharpened pencil, emblem of army reform.",
+   "style": null
+  },
+  {
+   "asset": "industrial_gear_chimney",
+   "brief": "A large cogwheel in front of a tall smoking factory chimney and a girder frame, emblem of an industrial programme.",
+   "style": null
+  },
+  {
+   "asset": "border_post_barrier",
+   "brief": "A striped border post and a lowered barrier gate with coils of barbed wire, grim emblem of border conflicts. Bold two-colour carved print.",
+   "style": "linocut"
+  },
+  {
+   "asset": "espionage_window_figure",
+   "brief": "A silhouette of a trench-coated figure behind a lamp-lit frosted window, a blank cipher disc in the foreground, emblem of espionage.",
+   "style": null
+  },
+  {
+   "asset": "colonial_steamship_palm",
+   "brief": "A steamship at a tropical jetty with a palm tree and a rolled map, emblem of colonial affairs.",
+   "style": null
+  },
+  {
+   "asset": "relief_bread_soup",
+   "brief": "A large soup kettle with a ladle beside loaves of bread and a stack of tin bowls, emblem of relief efforts. Soft flat gouache look.",
+   "style": "gouache"
+  },
+  {
+   "asset": "science_flask_rocket",
+   "brief": "A glass laboratory flask with bubbling liquid, an orbiting atom and a small finned rocket, emblem of scientific research.",
+   "style": null
+  },
+  {
+   "asset": "trade_scales_crates",
+   "brief": "A pair of market scales balanced over crates and sacks with a coin on one pan, emblem of trade agreements.",
+   "style": null
+  },
+  {
+   "asset": "reconstruction_crane",
+   "brief": "A tower crane lifting a girder above a half-rebuilt street, rubble at its base, emblem of reconstruction.",
+   "style": null
+  },
+  {
+   "asset": "anchor_ship_wheel",
+   "brief": "A heavy ship's anchor crossed with a wooden helm wheel, emblem of the naval programme.",
+   "style": null
+  },
+  {
+   "asset": "propeller_wings",
+   "brief": "A two-bladed aircraft propeller flanked by a pair of simple spread wings, emblem of the air programme.",
+   "style": null
+  }
+ ],
+ "state_modifier": [
+  {
+   "asset": "flooded_fields",
+   "brief": "Low farmland under shallow brown floodwater with a half-submerged fence and a lone cottage roof above the water.",
+   "style": null
+  },
+  {
+   "asset": "fortified_region",
+   "brief": "A concrete bunker with a gun slit and tank traps spread across a hillside, barbed wire in front.",
+   "style": null
+  },
+  {
+   "asset": "ruined_city_skyline",
+   "brief": "A skyline of broken walls and roofless buildings with a crooked church tower standing against smoke, grim mood.",
+   "style": null
+  },
+  {
+   "asset": "rich_oil_field",
+   "brief": "Several oil derricks and a storage tank standing in desert scrub, a dark pool at the base, abundant resources.",
+   "style": null
+  },
+  {
+   "asset": "partisan_hideout",
+   "brief": "A hidden camp of branch lean-tos and a thin campfire smoke trail deep in a dark forest, secretive mood.",
+   "style": null
+  },
+  {
+   "asset": "refugee_camp_tents",
+   "brief": "Rows of canvas tents and bundles of belongings beside a muddy track, a small family walking in under rain.",
+   "style": null
+  },
+  {
+   "asset": "mountain_pass_road",
+   "brief": "A narrow winding road climbing through a steep mountain pass between two snowy peaks, a lone signpost at the top. Grainy ink and sepia sketch look.",
+   "style": "ink"
+  },
+  {
+   "asset": "harbour_cranes",
+   "brief": "A busy harbour with two dockside cranes, a moored cargo steamer and stacked crates under a gull-filled sky. Bold two-colour carved print.",
+   "style": "linocut"
+  },
+  {
+   "asset": "marshland_reeds",
+   "brief": "A wet marsh with tall reeds, a flat-bottomed boat and standing pools reflecting a low sky, difficult terrain.",
+   "style": null
+  },
+  {
+   "asset": "coal_mine_headframe",
+   "brief": "A coal mine headframe with a spinning winding wheel and a line of coal tubs on a rail, black slag heap behind.",
+   "style": null
+  },
+  {
+   "asset": "scorched_farmland",
+   "brief": "Burnt wheat fields with blackened stalks, a broken plough and a thin line of smoke curling over a farm, grim mood.",
+   "style": null
+  },
+  {
+   "asset": "terraced_vineyards",
+   "brief": "Green terraced vineyard slopes above a small village and a river bend, ripe grapes on the vines, peaceful abundance.",
+   "style": null
+  }
+ ],
+ "special_project_icon": [
+  {
+   "asset": "rocket_gantry_steppe",
+   "brief": "A slender liquid-fuel rocket standing on a steel launch gantry in a pale Kazakh steppe at dawn, tiny engineers at its base, hopeful and quietly ambitious mood.",
+   "style": null
+  },
+  {
+   "asset": "jet_engine_test_cell",
+   "brief": "A turbojet engine on a test stand in a hangar",
+   "style": null,
+   "brief_before_moderation_rewording": "A bare turbojet engine on a test stand inside a British brick hangar, white exhaust glow lighting oil-stained walls, a technician in overalls watching dials from behind thick glass."
+  },
+  {
+   "asset": "radar_masts_chalk_cliffs",
+   "brief": "A chain of tall lattice radar masts along white chalk cliffs of southern England with the sea beyond, bold carved two-colour linocut shapes, quiet vigilant mood.",
+   "style": "linocut"
+  },
+  {
+   "asset": "cyclotron_basement",
+   "brief": "A huge circular magnet cyclotron in a university basement, scientists in white coats gathered around it, eerie blue glow, tense secretive mood in the early forties.",
+   "style": null
+  },
+  {
+   "asset": "super_heavy_tank_hall",
+   "brief": "An enormous prototype super-heavy tank with twin turrets rolling out of a Czech factory hall, workers dwarfed beside its tracks, grim and awestruck mood.",
+   "style": null
+  },
+  {
+   "asset": "carrier_on_slipway",
+   "brief": "A half-built aircraft carrier on a Japanese shipyard slipway wrapped in scaffolding and cranes, flat deck stretching into morning mist, tiny workers below, proud mood.",
+   "style": null
+  },
+  {
+   "asset": "long_range_bomber_ocean",
+   "brief": "A four-engined long-range bomber flying alone over a vast empty ocean at sunset, polished silver wings catching the last light, determined and solitary mood.",
+   "style": null
+  },
+  {
+   "asset": "codebreaking_drums",
+   "brief": "A room-sized electromechanical code-breaking machine of rotating drums and tangled wiring in a Polish villa cellar, young women operators tending it, tense hushed mood.",
+   "style": null
+  },
+  {
+   "asset": "standard_rifle_drafting",
+   "brief": "A new semi-automatic rifle lying on a Finnish drafting table beside blueprints and calipers, snowy window behind, grainy sepia ink sketch with careful cross-hatching.",
+   "style": "ink"
+  },
+  {
+   "asset": "field_hospital_convoy",
+   "brief": "A convoy of canvas-tented mobile field hospital trucks in a Chinese mountain valley, nurses carrying stretchers, hopeful mood, plain white tents without any emblems.",
+   "style": null
+  },
+  {
+   "asset": "landing_craft_beach",
+   "brief": "A prototype flat-bottomed landing craft with its bow ramp lowered on an Australian beach, trucks driving out through surf spray, bright triumphant mood.",
+   "style": null
+  },
+  {
+   "asset": "synthetic_fuel_refinery",
+   "brief": "A sprawling synthetic fuel refinery of tall pipes and cracking towers in a Romanian valley at dusk, orange flames flaring from stacks, heavy industrial mood.",
+   "style": null
+  }
+ ],
+ "raid": [
+  {
+   "asset": "dynamite_bundle",
+   "brief": "A bundle of dynamite sticks tied with rope and a short lit fuse sparking, set against a dark Greek hillside rail cutting.",
+   "style": null
+  },
+  {
+   "asset": "burning_biplane",
+   "brief": "A single parked biplane fighter on a grass airstrip with flames licking its wings, raid on a Philippine airfield at night.",
+   "style": null
+  },
+  {
+   "asset": "commando_dinghy",
+   "brief": "A rubber dinghy packed with dark-clad commandos paddling toward a rocky Norwegian fjord shore under a pale northern sky, tense silent mood.",
+   "style": null
+  },
+  {
+   "asset": "toppled_harbour_crane",
+   "brief": "A tall harbour crane toppling sideways over a burning ship hull at a quayside, port raid in a French fishing town.",
+   "style": null
+  },
+  {
+   "asset": "broken_arch_bridge",
+   "brief": "A stone arch bridge cracking apart in the middle with a plume of smoke and falling blocks, bold carved shapes in linocut style over a Yugoslav gorge.",
+   "style": "linocut"
+  },
+  {
+   "asset": "burning_supply_crates",
+   "brief": "A stack of wooden supply crates and fuel drums engulfed in towering flames, a supply dump hit in the Burmese jungle at night.",
+   "style": null
+  },
+  {
+   "asset": "radar_dish_hilltop",
+   "brief": "A rotating radar dish on a lattice tower atop a windswept Scottish hilltop, tilted and sparking after an attack.",
+   "style": null
+  },
+  {
+   "asset": "twisted_rails",
+   "brief": "A section of railway track bent and twisted upward like ribbons, splintered sleepers scattered around, a cut line across the Russian steppe.",
+   "style": null
+  },
+  {
+   "asset": "ammunition_shells_stack",
+   "brief": "A neat pyramid of artillery shells stacked behind sandbags with a thin trail of smoke curling from the top, grainy sepia ink sketch of an Italian depot.",
+   "style": "ink"
+  },
+  {
+   "asset": "paratrooper_canopy",
+   "brief": "A single parachute canopy drifting down through a dark Cretan sky carrying a small supply container, calm before the raid.",
+   "style": null
+  },
+  {
+   "asset": "cut_telegraph_wires",
+   "brief": "A wooden telegraph pole with severed wires hanging and swaying, snapped insulators, lonely road in the Ethiopian highlands.",
+   "style": null
+  },
+  {
+   "asset": "coastal_gun_blown",
+   "brief": "A coastal artillery gun in its concrete emplacement blasted apart, barrel bent skyward amid smoke and flying debris, raid on a Dutch dune battery.",
+   "style": null
+  }
+ ],
+ "mio_department": [
+  {
+   "asset": "tank_drafting_table",
+   "brief": "A drafting table holding a tank side-view blueprint, a set square and a brass compass, lit by a green desk lamp in a Czech design bureau.",
+   "style": null
+  },
+  {
+   "asset": "radial_engine_stand",
+   "brief": "A nine-cylinder radial aircraft engine mounted on a workshop stand with polished cylinder fins, a Japanese engine works in warm light.",
+   "style": null
+  },
+  {
+   "asset": "ship_hull_model",
+   "brief": "A wooden ship hull model on a naval architect's drawing board with dividers and curved ruler, Swedish shipyard office with rain at the window.",
+   "style": null
+  },
+  {
+   "asset": "rifle_in_vise",
+   "brief": "A rifle receiver clamped in a workbench vise with files and a half-finished wooden stock beside it, a small Belgian arms workshop.",
+   "style": null
+  },
+  {
+   "asset": "howitzer_barrel_casting",
+   "brief": "A long howitzer barrel being lifted from a glowing mould in a foundry, molten sparks and heavy chains, bold two-colour linocut carved look.",
+   "style": "linocut"
+  },
+  {
+   "asset": "valve_radio_set",
+   "brief": "A valve radio transmitter with glowing vacuum tubes and a tall antenna mast outside the window, a radio works in Argentina at twilight.",
+   "style": null
+  },
+  {
+   "asset": "rangefinder_lens_bench",
+   "brief": "A large binocular rangefinder and loose glass lenses on a velvet-lined optics bench, careful quiet mood, German-style precision workshop but fictional.",
+   "style": null
+  },
+  {
+   "asset": "depot_trucks_crates",
+   "brief": "A boxy cargo truck parked beside stacked wooden crates and fuel drums in a Brazilian logistics depot yard, afternoon sun.",
+   "style": null
+  },
+  {
+   "asset": "steel_sample_crucible",
+   "brief": "A crucible pouring bright molten steel into a mould beside rows of cut test bars, a metallurgy laboratory in a British northern town.",
+   "style": null
+  },
+  {
+   "asset": "torpedo_on_cradle",
+   "brief": "A gleaming torpedo resting on a wheeled cradle inside an Italian naval ordnance works, soft flat gouache look with matte colours.",
+   "style": "gouache"
+  },
+  {
+   "asset": "wind_tunnel_wing",
+   "brief": "A small wing model mounted inside a wind tunnel with fine smoke streams curling over it, a Soviet aircraft design bureau, hopeful scientific mood.",
+   "style": null
+  },
+  {
+   "asset": "armour_plate_mill",
+   "brief": "A thick glowing steel armour plate emerging from heavy rolling mill rollers, sparks flying, Yugoslav steelworks in grim industrial mood.",
+   "style": null
+  }
+ ],
+ "mio_trait": [
+  {
+   "asset": "thick_sloped_plate",
+   "brief": "A thick sloped armour plate with neat rows of rivets, a bright dent from a test shell in its surface, solid and reassuring mood.",
+   "style": null
+  },
+  {
+   "asset": "turbocharged_engine",
+   "brief": "A compact engine block with shining pistons and a snail-shaped turbocharger glowing hot, set on a bench in a Swedish workshop.",
+   "style": null
+  },
+  {
+   "asset": "stamped_parts_line",
+   "brief": "Rows of identical stamped metal parts moving along a factory conveyor belt, cheap quick manufacture in a busy American plant.",
+   "style": null
+  },
+  {
+   "asset": "micrometer_on_shaft",
+   "brief": "A brass micrometer gripping a polished steel shaft, fine shavings curled beside it, grainy sepia ink sketch of precision machining.",
+   "style": "ink"
+  },
+  {
+   "asset": "sealed_export_crate",
+   "brief": "A wooden crate tied with ribbon and a red wax seal ready to be loaded on a ship, an export order leaving a Swiss harbour.",
+   "style": null
+  },
+  {
+   "asset": "pilot_helmet_goggles",
+   "brief": "A worn leather flying helmet with big goggles resting on a wooden crate beside a propeller blade, warm morning light at a test airfield.",
+   "style": null
+  },
+  {
+   "asset": "gunsight_reticle",
+   "brief": "A brass telescopic gunsight with a fine crosshair lens glinting, sitting on a green cloth, calm mood.",
+   "style": null
+  },
+  {
+   "asset": "gear_cluster",
+   "brief": "A cluster of interlocking steel gears of different sizes with a drip of fresh oil, a reliable transmission built in a Polish workshop.",
+   "style": null
+  },
+  {
+   "asset": "welding_torch_sparks",
+   "brief": "A welder's torch throwing a fountain of bright sparks along a hull seam, protective mask hanging nearby, shipyard in Finland.",
+   "style": null
+  },
+  {
+   "asset": "field_radio_pack",
+   "brief": "A portable field radio set with dials and a coiled cable and whip antenna, resting on a map case in a Chinese army camp.",
+   "style": null
+  },
+  {
+   "asset": "half_built_prototype",
+   "brief": "A half-assembled prototype vehicle on a workshop bench, tools scattered around it, skeleton frame without panels, bold carved two-colour linocut look.",
+   "style": "linocut"
+  },
+  {
+   "asset": "smoke_flow_wing",
+   "brief": "A wing section in a wind tunnel with ribbons of smoke flowing smoothly along it, hopeful scientific mood at a French research institute.",
+   "style": null
+  }
+ ],
+ "mio_policy": [
+  {
+   "asset": "identical_rifles_line",
+   "brief": "A long assembly line of identical rifles hanging on overhead hooks stretching into the distance of a vast factory hall, relentless output.",
+   "style": null
+  },
+  {
+   "asset": "gauge_inspector",
+   "brief": "A factory inspector reading a brass pressure gauge on a production line",
+   "style": null,
+   "brief_before_moderation_rewording": "A factory inspector in a white coat checking a shell with a brass gauge under bright lamp light, strict quiet mood."
+  },
+  {
+   "asset": "coin_chest_subsidy",
+   "brief": "An open treasure chest overflowing with coins beside a thick ledger book, a state subsidy for a Turkish arms works.",
+   "style": null
+  },
+  {
+   "asset": "blueprints_exchanged",
+   "brief": "Two pairs of hands passing rolled blueprints to each other across a table in front of two different factory windows, patent sharing, friendly mood.",
+   "style": null
+  },
+  {
+   "asset": "interchangeable_parts_rows",
+   "brief": "Rows of identical bolts, nuts and gears laid out evenly in a grid beside a master gauge, tidy standardisation, soft flat gouache look.",
+   "style": "gouache"
+  },
+  {
+   "asset": "master_and_apprentice_hands",
+   "brief": "Weathered hands of a master machinist guiding the hands of a young apprentice on a lathe handle, Finnish factory, warm hopeful mood.",
+   "style": null
+  },
+  {
+   "asset": "microscope_grant_purse",
+   "brief": "A brass microscope next to a small leather purse of money and a stack of notebooks, a research grant for an Italian laboratory.",
+   "style": null
+  },
+  {
+   "asset": "scrap_metal_drive",
+   "brief": "Villagers pushing a hand cart piled high with scrap iron, old pots and railings toward a collection yard, determined wartime mood in Britain.",
+   "style": null
+  },
+  {
+   "asset": "factory_night_shift",
+   "brief": "A large factory with every window glowing yellow against a dark blue night sky and smoke rising from stacks, night shift at work in the USSR.",
+   "style": null
+  },
+  {
+   "asset": "worker_housing_blocks",
+   "brief": "Rows of modest apartment blocks beside a factory with washing hung on balconies and children playing, a workers welfare estate in Czechoslovakia.",
+   "style": null
+  },
+  {
+   "asset": "nationalised_works_gate",
+   "brief": "A grand iron factory gate opening on a busy yard, a plain banner above it, state-owned works in Mexico, proud mood.",
+   "style": null
+  },
+  {
+   "asset": "licence_stamp_press",
+   "brief": "A heavy brass seal press stamping a blank licence document, bold carved two-colour linocut look, foreign production rights agreed in a quiet office.",
+   "style": "linocut"
+  }
+ ],
+ "bop_side": [
+  {
+   "asset": "crown_on_cushion_banner",
+   "brief": "A jewelled crown on a tall embroidered banner pole with draped velvet, the monarchist side in a struggle between monarchists and republicans, Balkan kingdom feel.",
+   "style": null
+  },
+  {
+   "asset": "phrygian_cap_spear",
+   "brief": "A red Phrygian cap raised on a tall spear wound with a plain tricolour ribbon, the republican side in a struggle against the crown.",
+   "style": null
+  },
+  {
+   "asset": "smokestacks_gear_pillar",
+   "brief": "A towering cogwheel with factory smokestacks rising behind it, the industrial side in a struggle between industry and farmers, bold carved two-colour linocut look.",
+   "style": "linocut"
+  },
+  {
+   "asset": "wheat_sheaf_scythe",
+   "brief": "A tied sheaf of golden wheat with a crossed scythe standing upright, the farmers side in a struggle between farmers and industry, Bulgarian countryside.",
+   "style": null
+  },
+  {
+   "asset": "sabres_shield_helmet",
+   "brief": "A tall heater shield with crossed sabres and a crested helmet on top, the army side in a struggle between the army and parliament.",
+   "style": null
+  },
+  {
+   "asset": "parliament_columns_scales",
+   "brief": "A slim facade of white columns with a pair of balanced scales above, the parliament side in a struggle against military rule.",
+   "style": null
+  },
+  {
+   "asset": "bell_tower_cross",
+   "brief": "A tall church bell tower with a plain cross on top and swallows circling, the church side in a Spanish struggle between clergy and secular reformers.",
+   "style": null
+  },
+  {
+   "asset": "raised_hammer_torch",
+   "brief": "A raised sledgehammer entwined with a burning torch, the labour side in a struggle between workers and factory owners.",
+   "style": null
+  },
+  {
+   "asset": "open_book_torch",
+   "brief": "A large open book with blank pages and a flaming torch rising from its spine, the liberal intellectuals side in a struggle against censorship.",
+   "style": null
+  },
+  {
+   "asset": "estate_gate_oak",
+   "brief": "A tall wrought-iron estate gate framing an old oak tree, the landowning aristocrats side in a struggle against land reform, soft flat gouache look.",
+   "style": "gouache"
+  },
+  {
+   "asset": "anchor_and_rope_standard",
+   "brief": "A tall standard bearing a large anchor wrapped in thick rope, the navy side in a rivalry between navy and army for budget.",
+   "style": null
+  },
+  {
+   "asset": "clan_mountain_standard",
+   "brief": "A hill-clan standard with stylised mountain peaks, ox horns and a spear tip, the regional autonomists side in a struggle against the central state in Persia.",
+   "style": null
+  }
+ ],
+ "medal": [
+  {
+   "asset": "eight_point_star_blue",
+   "brief": "A silver eight-pointed star medal with a small centre disc, hanging from a pale blue ribbon with white edge stripes, Finnish winter feel.",
+   "style": null
+  },
+  {
+   "asset": "laurel_wreath_crimson",
+   "brief": "A gold laurel wreath medal around a plain sword, hanging from a deep crimson ribbon with a thin gold stripe, French feel.",
+   "style": null
+  },
+  {
+   "asset": "crescent_star_red",
+   "brief": "A silver crescent moon medal holding a small star, hanging from a bright red ribbon with white borders, Turkish feel.",
+   "style": null
+  },
+  {
+   "asset": "bronze_eagle_black",
+   "brief": "A bronze eagle with spread wings medal, hanging from a black ribbon with narrow orange stripes, Polish feel.",
+   "style": null
+  },
+  {
+   "asset": "maltese_cross_swords",
+   "brief": "A white-enamelled cross with crossed swords behind it, hanging from an orange ribbon with dark blue edges, bold carved two-colour linocut look.",
+   "style": "linocut"
+  },
+  {
+   "asset": "sunburst_disc_white",
+   "brief": "A gilded radiating sunburst disc medal with a red centre, hanging from a white ribbon with a red central stripe, Japanese feel.",
+   "style": null
+  },
+  {
+   "asset": "lion_medal_tricolour",
+   "brief": "A gold crowned lion medal, hanging from a green, yellow and red striped ribbon, Ethiopian highland feel.",
+   "style": null
+  },
+  {
+   "asset": "anchor_wreath_navy",
+   "brief": "A silver anchor inside an oak wreath medal, hanging from a navy blue ribbon with white stripes, British naval honour.",
+   "style": null
+  },
+  {
+   "asset": "winged_propeller_sky",
+   "brief": "A gilded winged propeller medal, hanging from a sky-blue ribbon with yellow edges, Brazilian air force honour.",
+   "style": null
+  },
+  {
+   "asset": "edelweiss_green",
+   "brief": "A silver edelweiss flower medal with a gold centre, hanging from a dark green ribbon with white edge lines, Yugoslav mountain troops honour.",
+   "style": null
+  },
+  {
+   "asset": "white_elephant_crimson",
+   "brief": "A white-enamelled elephant medal framed by gold rays, hanging from a crimson ribbon with a blue central stripe, Thai feel, soft flat gouache look.",
+   "style": "gouache"
+  },
+  {
+   "asset": "coiled_dragon_yellow",
+   "brief": "A gold coiled dragon medal with a pearl, hanging from a bright yellow ribbon with blue stripes, Chinese feel.",
+   "style": null
+  }
+ ],
+ "agency_upgrade": [
+  {
+   "asset": "rotor_cipher_desk",
+   "brief": "A rotor cipher machine with lit keys on a desk beside a stack of coded sheets and a banker lamp, quiet intense office mood.",
+   "style": null
+  },
+  {
+   "asset": "engraving_press_workshop",
+   "brief": "An engraver's plate and small press with ink-stained rollers and a magnifying lens, a forgery workshop hidden in a Parisian attic, bold carved two-colour linocut look.",
+   "style": "linocut"
+  },
+  {
+   "asset": "intercept_operator_antennas",
+   "brief": "A radio operator with headphones at a bank of receivers, a wire antenna array outside the window in a Swedish forest, listening intently.",
+   "style": null
+  },
+  {
+   "asset": "microfilm_light_table",
+   "brief": "A tiny roll of microfilm and a magnifying glass over a glowing light table, careful tense mood in a spy lab.",
+   "style": null
+  },
+  {
+   "asset": "safe_house_window",
+   "brief": "A shuttered townhouse window with a single lit lamp behind a curtain on a narrow cobbled Lisbon street at night, a safe house.",
+   "style": null
+  },
+  {
+   "asset": "telescope_behind_curtain",
+   "brief": "A brass telescope on a tripod peeking from behind a heavy curtain, overlooking a busy foreign embassy street, watchful mood.",
+   "style": null
+  },
+  {
+   "asset": "parachute_training_tower",
+   "brief": "A tall wooden parachute training tower with a billowing canopy descending, recruits watching below in a Polish training field.",
+   "style": null
+  },
+  {
+   "asset": "chemistry_bench_flasks",
+   "brief": "A lab bench with glass flasks, a dropper and a vial of colourless liquid beside a sheet being warmed, secret writing chemistry.",
+   "style": null
+  },
+  {
+   "asset": "rooftop_pigeon_loft",
+   "brief": "A rooftop pigeon loft with carrier pigeons perched at open doors over British chimneys at sunrise, soft flat gouache look.",
+   "style": "gouache"
+  },
+  {
+   "asset": "pocket_watch_camera",
+   "brief": "A miniature camera hidden inside an open pocket watch case on a polished table, clever small gadget, warm mood.",
+   "style": null
+  },
+  {
+   "asset": "steel_filing_vault",
+   "brief": "A heavy steel filing cabinet with a large combination lock and thick folders spilling from the top drawer, counterintelligence records room.",
+   "style": null
+  },
+  {
+   "asset": "disguise_wardrobe_rack",
+   "brief": "A dressing room rack of hats, wigs, spectacles and coats of different trades hanging beside a lit mirror, playful mood.",
+   "style": null
+  }
+ ],
+ "operation_icon": [
+  {
+   "asset": "ministry_door_ajar",
+   "brief": "A heavy oak ministry door standing slightly ajar with warm light spilling through the crack onto a marble floor.",
+   "style": null
+  },
+  {
+   "asset": "envelope_and_cap",
+   "brief": "A thick envelope sliding across a table toward an officer's peaked cap, the bribe of a Balkan officer, tense mood.",
+   "style": null
+  },
+  {
+   "asset": "blueprint_tube_safe",
+   "brief": "A rolled blueprint tube half pulled from an open wall safe, bold carved two-colour linocut look, quiet theft at night.",
+   "style": "linocut"
+  },
+  {
+   "asset": "telephone_with_bug",
+   "brief": "A black desk telephone with a tiny microphone attached under the handset, with coiled cable, planted bug in a Berlin-style office but fictional.",
+   "style": null
+  },
+  {
+   "asset": "passport_stamp",
+   "brief": "A rubber stamp pressed onto a blank travel pass, ink pad beside it, forged papers made in a back room.",
+   "style": null
+  },
+  {
+   "asset": "rifles_in_hay_cart",
+   "brief": "A farm cart loaded with hay and rifle barrels poking out the side, weapons smuggled across a Spanish mountain border.",
+   "style": null
+  },
+  {
+   "asset": "bolt_cutters_cable",
+   "brief": "A pair of long bolt cutters about to snip a thick cable, sabotage tool in strong lighting.",
+   "style": null
+  },
+  {
+   "asset": "loose_brick_note",
+   "brief": "A loose brick pulled from an old Prague wall revealing a folded paper note behind it, dead drop, grainy sepia ink sketch.",
+   "style": "ink"
+  },
+  {
+   "asset": "fedora_raised_collar",
+   "brief": "A lone fedora hat resting on top of a coat with a raised collar hung on a rack, recruiting an informant in a smoky cafe.",
+   "style": null
+  },
+  {
+   "asset": "chained_briefcase",
+   "brief": "A leather briefcase locked with a heavy chain and padlock, secret codebook theft, dramatic shadows.",
+   "style": null
+  },
+  {
+   "asset": "suitcase_radio",
+   "brief": "An open suitcase containing a compact clandestine radio transmitter with dials and a short wire antenna, resistance in occupied Norway.",
+   "style": null
+  },
+  {
+   "asset": "folded_officer_uniform",
+   "brief": "A neatly folded officer uniform tunic with a cap and polished boots on a wooden chair, disguise prepared for infiltration.",
+   "style": null
+  }
+ ],
+ "commander_trait": [
+  {
+   "asset": "single_tank_side",
+   "brief": "A single medium tank seen from the side with a long gun and wide tracks, bold simple shape, armoured warfare expert.",
+   "style": null
+  },
+  {
+   "asset": "ice_axe",
+   "brief": "A single sturdy ice axe with a wooden shaft and steel pick, a mountaineering expert, strong simple outline.",
+   "style": null
+  },
+  {
+   "asset": "fox_head_big_ears",
+   "brief": "The head of a desert fox with very large ears and a narrow muzzle, cunning mobile commander of sand campaigns.",
+   "style": null
+  },
+  {
+   "asset": "stone_bastion_tower",
+   "brief": "A single squat stone fortress tower with battlements, solid and unmovable defensive commander, strong simple shape.",
+   "style": "linocut"
+  },
+  {
+   "asset": "fuel_jerrycan",
+   "brief": "A single dented metal fuel jerrycan with a cross-pressed side and spout, a logistics master keeping armies moving.",
+   "style": null
+  },
+  {
+   "asset": "rearing_horse",
+   "brief": "A rearing cavalry horse head and forelegs with flowing mane, charging cavalry spirit, bold simple outline.",
+   "style": null
+  },
+  {
+   "asset": "turret_gun_barrels",
+   "brief": "A single naval gun turret with three long barrels raised, a naval gunnery specialist, strong simple shape.",
+   "style": null
+  },
+  {
+   "asset": "machete_leaf",
+   "brief": "A single broad-bladed machete lying across one large palm leaf, a jungle fighter at home in dense tropical country, bold simple outline.",
+   "style": null
+  },
+  {
+   "asset": "crossed_skis_poles",
+   "brief": "A pair of wooden skis crossed with two poles, a winter warfare specialist, bold simple shape.",
+   "style": null
+  },
+  {
+   "asset": "pickaxe_and_shovel",
+   "brief": "A pickaxe and a shovel crossed in an X, an army engineer commander who fortifies the front, simple strong shape.",
+   "style": null
+  },
+  {
+   "asset": "parachute_canopy_cords",
+   "brief": "A single open parachute canopy with hanging cords seen from the front, airborne assault leader, bold simple shape.",
+   "style": "ink"
+  },
+  {
+   "asset": "periscope_waves",
+   "brief": "A single submarine periscope rising from rippling waves with a small wake, silent undersea hunter, bold simple shape.",
+   "style": null
+  }
+ ],
+ "personal_trait": [
+  {
+   "asset": "clenched_gauntlet",
+   "brief": "A single clenched armoured gauntlet fist raised upright, steel plates catching the light, an unbreakable iron will, bold simple shape.",
+   "style": null
+  },
+  {
+   "asset": "silver_microphone",
+   "brief": "A single gleaming silver vintage microphone on a short stand, silver-tongued orator, bold simple shape.",
+   "style": null
+  },
+  {
+   "asset": "plain_dagger",
+   "brief": "A single narrow dagger with a plain black grip pointed downward, a ruthless leader, bold simple shape.",
+   "style": null
+  },
+  {
+   "asset": "tortoise_shell",
+   "brief": "A single tortoise seen from the side with a domed patterned shell, a cautious leader, simple shape.",
+   "style": null
+  },
+  {
+   "asset": "chess_knight",
+   "brief": "A single chess knight piece with a carved horse head, brilliant strategist, bold simple shape, grainy sepia ink sketch.",
+   "style": "ink"
+  },
+  {
+   "asset": "hound_head",
+   "brief": "The head of a loyal hound with floppy ears looking upward, devoted follower, bold simple shape.",
+   "style": null
+  },
+  {
+   "asset": "marionette_cross",
+   "brief": "A single wooden marionette control cross with several strings hanging down, a scheming political manipulator, simple shape.",
+   "style": null
+  },
+  {
+   "asset": "dented_helmet",
+   "brief": "A single steel helmet with a deep dent and scuffed paint on one side, a war hero who survived the trenches.",
+   "style": null
+  },
+  {
+   "asset": "burning_torch",
+   "brief": "A single burning torch with a bright flame held upright, an inspirational leader, bold simple shape.",
+   "style": null
+  },
+  {
+   "asset": "bulging_coin_purse",
+   "brief": "A single fat coin purse tied at the neck with a few coins spilling out, a corrupt leader, soft flat gouache look.",
+   "style": "gouache"
+  },
+  {
+   "asset": "wide_open_eye",
+   "brief": "A single wide staring eye with small sharp pupil, a paranoid leader who trusts nobody, bold simple shape.",
+   "style": null
+  },
+  {
+   "asset": "round_spectacles",
+   "brief": "A single pair of round wire-rimmed spectacles resting open, a bookish scholar leader who studies before acting, bold simple shape.",
+   "style": null
+  }
+ ],
+ "doctrine": [
+  {
+   "asset": "tank_column_dust",
+   "brief": "A fast column of tanks racing across the open steppe trailing a long plume of dust under a huge sky, Soviet deep battle, mobile warfare.",
+   "style": null
+  },
+  {
+   "asset": "infantry_wave_mud",
+   "brief": "A dense wave of infantry silhouettes with fixed bayonets surging across a muddy field under a heavy sky, mass assault, grim mood.",
+   "style": null
+  },
+  {
+   "asset": "map_table_arrows",
+   "brief": "Officers' hands moving pins and arrows over a large map table lit by a hanging lamp, a French interwar methodical battle plan, grainy sepia ink sketch.",
+   "style": "ink"
+  },
+  {
+   "asset": "howitzer_battery_night",
+   "brief": "A row of massed howitzers firing together at night with bright muzzle flashes lighting crews and shell casings, superior firepower.",
+   "style": null
+  },
+  {
+   "asset": "carrier_launch_dawn",
+   "brief": "An aircraft carrier launching a squadron of strike aircraft into an orange dawn over a flat sea, Japanese carrier strike doctrine.",
+   "style": null
+  },
+  {
+   "asset": "destroyer_convoy_grey",
+   "brief": "A destroyer escort steaming beside a line of merchant ships on a grey Atlantic sea with heavy swells, Canadian convoy duty.",
+   "style": null
+  },
+  {
+   "asset": "bomber_formation_city",
+   "brief": "A tight formation of heavy bombers flying high above a distant city skyline at dusk, vapour trails stretching behind, strategic bombing.",
+   "style": null
+  },
+  {
+   "asset": "partisan_forest_lookout",
+   "brief": "Armed partisans in a Yugoslav mountain forest, one lookout watching from a rock ridge with rifle and scarf, quiet determined mood.",
+   "style": null
+  },
+  {
+   "asset": "bunker_hedgehogs_pine",
+   "brief": "Concrete bunkers and rows of anti-tank obstacles in a Finnish pine forest line, bold carved two-colour linocut look, stubborn defence.",
+   "style": "linocut"
+  },
+  {
+   "asset": "paratroopers_over_fields",
+   "brief": "A sky full of parachutes descending over patchwork farmland and a river at dawn, airborne assault doctrine, tense hopeful mood.",
+   "style": null
+  },
+  {
+   "asset": "alpine_troops_ridge",
+   "brief": "A line of alpine troops roped together climbing a snowy ridge with packs and ice axes under a huge sky, Italian mountain doctrine.",
+   "style": null
+  },
+  {
+   "asset": "battle_line_broadside",
+   "brief": "A line of battleships steaming in column and firing a broadside at dusk, orange flashes on dark water, classic fleet doctrine.",
+   "style": null
+  }
+ ],
+ "report_event": [
+  {
+   "asset": "finnish_border_patrol",
+   "brief": "Finnish border guards in snow-dusted greatcoats pause at a striped barrier gate in a pine forest, one pointing at distant footprints while a young conscript grips his rifle, tense winter morning.",
+   "style": null
+  },
+  {
+   "asset": "brazil_coffee_harvest",
+   "brief": "Pickers in straw hats strip coffee cherries on a steep Brazilian hillside plantation, sacks piled beside mule carts, an overseer on horseback watching, warm hazy afternoon.",
+   "style": null
+  },
+  {
+   "asset": "turkish_dockers_strike",
+   "brief": "Turkish dockworkers in caps and waistcoats sit on crates across a quayside gate with folded arms, a line of policemen facing them, idle cranes behind, tense standoff.",
+   "style": null
+  },
+  {
+   "asset": "polish_wreath_procession",
+   "brief": "Polish villagers in folk costume carry an enormous wreath of wheat sheaves down a dirt road, children trailing behind, a wooden church in the distance, festive late summer; grainy ink and sepia look.",
+   "style": "ink"
+  },
+  {
+   "asset": "yangtze_flood_rescue",
+   "brief": "Chinese villagers wade through brown floodwater loading belongings onto flat boats, a mother lifting a child high, thatched roofs half-submerged, grim overcast day.",
+   "style": null
+  },
+  {
+   "asset": "ethiopian_airfield_dawn",
+   "brief": "Ethiopian ground crew in white cotton shawls push a small biplane across a dusty highland airstrip while officers in pith helmets watch, hopeful early morning light.",
+   "style": null
+  },
+  {
+   "asset": "spanish_refugee_column",
+   "brief": "A long column of weary villagers with mule carts and bundles trudges along a dry Spanish mountain road, a small child riding a donkey, dusty grim late afternoon.",
+   "style": null
+  },
+  {
+   "asset": "swedish_ship_launch",
+   "brief": "Shipyard workers in flat caps cheer as a freshly built coastal freighter slides down a greased slipway into a grey Swedish fjord, pennants fluttering, triumphant mood.",
+   "style": null
+  },
+  {
+   "asset": "outback_rail_derailment",
+   "brief": "Australian railwaymen and passing farmers gather around a steam locomotive tilted off the track in red outback dust, steam still rising, stunned and grim faces.",
+   "style": null
+  },
+  {
+   "asset": "yugoslav_village_council",
+   "brief": "Elders in wool vests and embroidered caps debate beneath a walnut tree in a Balkan village square, a teacher holding a ledger, children peeking from behind a wall; bold two-colour carved print.",
+   "style": "linocut"
+  },
+  {
+   "asset": "thai_rice_barge_market",
+   "brief": "Thai farmers in narrow wooden boats load rice sacks onto a larger barge along a canal lined with stilt houses, merchants bargaining, bright humid morning.",
+   "style": null
+  },
+  {
+   "asset": "mexican_refinery_march",
+   "brief": "Mexican oil workers in overalls and wide hats march down a dirt road beside tall wooden derricks carrying plain cloth banners, determined and festive.",
+   "style": null
+  },
+  {
+   "asset": "italian_bridge_opening",
+   "brief": "Villagers and a mayor wearing a sash cut a ribbon on a new stone arch bridge over an alpine stream, brass band mid-note, children on shoulders, festive 1930s day.",
+   "style": null
+  },
+  {
+   "asset": "pampas_cattle_drive",
+   "brief": "Argentine gauchos on horseback drive cattle across the pampas toward a railway loading pen, dust cloud rising, grain silos and a wooden station on the horizon, quiet golden light.",
+   "style": null
+  },
+  {
+   "asset": "soviet_first_tractor",
+   "brief": "Collective farm villagers in headscarves and caps crowd around the first tractor delivered on a flatbed truck, an old farmer touching it warily, children climbing aboard, hopeful.",
+   "style": null
+  },
+  {
+   "asset": "british_shelter_digging",
+   "brief": "Neighbours of a terraced British street dig a corrugated shelter into a back garden while a warden in a tin helmet watches, determined, cloudy 1939; soft flat matte paint look.",
+   "style": "gouache"
+  },
+  {
+   "asset": "japanese_fishing_return",
+   "brief": "Japanese fishermen haul nets and baskets from wooden boats onto a pebbled beach at dawn, wives in kimonos waiting at the waterline, mist over the bay, quiet mood.",
+   "style": null
+  },
+  {
+   "asset": "persian_caravan_checkpoint",
+   "brief": "Persian customs officials in tall lambskin hats inspect a camel caravan at a mud-brick checkpoint in the desert, merchants with bundles waiting patiently in dry heat.",
+   "style": null
+  },
+  {
+   "asset": "french_reservists_farewell",
+   "brief": "French reservists in greatcoats say farewell to families on a small rural station platform, a mother tying a scarf round her son's neck, steam locomotive waiting, bittersweet autumn.",
+   "style": null
+  },
+  {
+   "asset": "nile_dam_labourers",
+   "brief": "Hundreds of Egyptian labourers carry baskets of earth up an embankment at a Nile dam site while a foreman blows a whistle and engineers set up a theodolite, bright sun.",
+   "style": null
+  },
+  {
+   "asset": "canadian_log_haul",
+   "brief": "Canadian lumberjacks in plaid jackets guide a horse team hauling huge logs along a snowy track to a frozen river, breath steaming, camp cabins behind; grainy ink and sepia look.",
+   "style": "ink"
+  },
+  {
+   "asset": "greek_sponge_divers",
+   "brief": "Greek sponge divers in bulky canvas suits and brass helmets are helped aboard a caique boat while villagers watch from a sunlit stone harbour wall.",
+   "style": null
+  },
+  {
+   "asset": "chilean_mine_rescue_wait",
+   "brief": "Chilean miners with lamps gather at an Andean mine entrance while rescuers lower ropes, wives in shawls clutching each other, anxious grey afternoon.",
+   "style": null
+  },
+  {
+   "asset": "norwegian_ski_patrol",
+   "brief": "Norwegian ski soldiers in white overgarments glide in single file across a snowy valley, rifles slung, an instructor on skis watching, quiet and cold.",
+   "style": null
+  }
+ ],
+ "news_event": [
+  {
+   "asset": "signing_ceremony_hall",
+   "brief": "Delegates in dark suits and uniforms sit at a long table in a chandeliered hall, pens above documents, secretaries standing behind, flashbulbs flaring, solemn wide view.",
+   "style": null
+  },
+  {
+   "asset": "crowded_central_station",
+   "brief": "A huge crowd of travellers with suitcases fills a station under an iron-and-glass roof, steam clouds drifting, porters pushing trolleys, a soldier embracing his sweetheart, tense bustle.",
+   "style": null
+  },
+  {
+   "asset": "liner_among_tugboats",
+   "brief": "A great ocean liner with twin funnels towers over small tugboats at a busy British quay, dock crowds waving hats, gulls overhead; soft flat matte paint look.",
+   "style": "gouache"
+  },
+  {
+   "asset": "rally_in_great_square",
+   "brief": "Tens of thousands fill a vast city square before a balcony stage, fists raised, plain cloth banners, rooftops and lamp posts crowded with onlookers, wide panorama.",
+   "style": null
+  },
+  {
+   "asset": "state_funeral_boulevard",
+   "brief": "A horse-drawn gun carriage bearing a coffin draped in a fictional flag passes silent crowds of mourners in black along a wide leafless boulevard.",
+   "style": null
+  },
+  {
+   "asset": "biplane_air_show",
+   "brief": "Spectators in hats and summer dresses look skyward as a formation of biplane fighters trails smoke over a grass airfield with hangars, festive and bright.",
+   "style": null
+  },
+  {
+   "asset": "parliament_in_session",
+   "brief": "A packed debating chamber with tiered benches of men in suits, a speaker on a raised chair, a crowded gallery above, shafts of dusty light, tense argument.",
+   "style": null
+  },
+  {
+   "asset": "emigrant_steamer_arrival",
+   "brief": "Thousands of emigrants crowd the decks and rails of a steamer arriving at a South American port with palms and warehouses, handkerchiefs waving, hopeful.",
+   "style": null
+  },
+  {
+   "asset": "fleet_review_anchorage",
+   "brief": "A line of grey battleships at anchor is reviewed by a white yacht carrying officials, sailors manning the rails, small spectator boats crowding the bay; bold two-colour carved print.",
+   "style": "linocut"
+  },
+  {
+   "asset": "pontoon_river_crossing",
+   "brief": "Columns of infantry and horse-drawn guns cross a long pontoon bridge over a wide river in morning mist while engineers wave them on.",
+   "style": null
+  },
+  {
+   "asset": "bombed_street_cleanup",
+   "brief": "Rescue workers and civilians clear rubble from a collapsed row of terraced houses, a fire engine at the kerb, smoke drifting, a dazed woman in a coat standing aside.",
+   "style": null
+  },
+  {
+   "asset": "coronation_coach_crowds",
+   "brief": "Dense crowds line a decorated boulevard as a gilded coach drawn by white horses passes under a cavalry escort, confetti falling, festive.",
+   "style": null
+  },
+  {
+   "asset": "aircraft_factory_visit",
+   "brief": "Dignitaries in overcoats walk through a vast assembly hall lined with bare-metal aircraft fuselages, workers pausing to watch, proud and orderly.",
+   "style": null
+  },
+  {
+   "asset": "refugee_ferry_crossing",
+   "brief": "An overloaded river ferry packed with refugees clutching bundles and bicycles crosses beneath a heavy sky, a child perched on a suitcase, grim mood; grainy ink and sepia look.",
+   "style": "ink"
+  },
+  {
+   "asset": "football_stadium_goal",
+   "brief": "Tens of thousands in a concrete bowl stadium throw hats into the air as a goal is scored, players tiny on the pitch, festive wide shot.",
+   "style": null
+  },
+  {
+   "asset": "airship_at_mooring_mast",
+   "brief": "A huge passenger airship moors at a tall mast above a grass field, ground crew holding ropes, a crowd of onlookers in hats pointing upward.",
+   "style": null
+  },
+  {
+   "asset": "bridge_border_talks",
+   "brief": "Two groups of officers in different greatcoats face each other at the middle of a steel river bridge, a car at each end, bare winter trees, tense stillness.",
+   "style": null
+  },
+  {
+   "asset": "arctic_port_unloading",
+   "brief": "Cranes unload crates from freighters at a snowy Arctic port, lines of dockers in furs hauling sledges, grey ships lined along the ice-rimmed quay.",
+   "style": null
+  },
+  {
+   "asset": "armistice_street_dancing",
+   "brief": "Jubilant crowds dance on a boulevard waving hats and scarves, strangers embracing, confetti drifting, a halted tram covered in cheering people.",
+   "style": null
+  },
+  {
+   "asset": "alpine_tunnel_opening",
+   "brief": "A decorated locomotive waits before a ribbon stretched across the mouth of a new alpine tunnel, officials in top hats and miners with lamps gathered, snow peaks behind; soft flat matte paint look.",
+   "style": "gouache"
+  },
+  {
+   "asset": "village_radio_listeners",
+   "brief": "Families and farmers gather around a large radio set on a cafe table in a village square, listening gravely, an old man removing his cap.",
+   "style": null
+  },
+  {
+   "asset": "tank_column_avenue",
+   "brief": "A column of light tanks rolls down a cobbled avenue of a capital while civilians watch silently from windows and balconies, tense wide street view.",
+   "style": null
+  },
+  {
+   "asset": "lancer_regiment_review",
+   "brief": "A regiment of mounted lancers with plumed helmets passes a reviewing stand across a parade ground, long afternoon shadows, officers saluting.",
+   "style": null
+  },
+  {
+   "asset": "relief_train_arrival",
+   "brief": "A long relief train arrives in a ruined rail yard as hungry townspeople surge toward unloaded food crates, soldiers keeping order, grey postwar morning.",
+   "style": null
+  }
+ ],
+ "decision_category_picture": [
+  {
+   "asset": "war_industry_foundry",
+   "brief": "Molten steel pours in a vast foundry, workers silhouetted against orange glow, unfinished tank hulls waiting on rails behind them.",
+   "style": null
+  },
+  {
+   "asset": "frontier_ridge_watch",
+   "brief": "Frontier guards on a mountain ridge study a distant valley through binoculars beside a stone blockhouse and barbed wire, tense dawn.",
+   "style": null
+  },
+  {
+   "asset": "propaganda_press_hall",
+   "brief": "A rotary press hall with giant paper rolls and bundled blank posters, workers in aprons, a loudspeaker horn on a pole outside the window; bold two-colour carved print.",
+   "style": "linocut"
+  },
+  {
+   "asset": "espionage_wet_alley",
+   "brief": "A figure in a trench coat and hat stands beneath a street lamp in a wet cobbled alley, collar turned up, a second silhouette watching from a window above.",
+   "style": null
+  },
+  {
+   "asset": "trade_quay_handshake",
+   "brief": "Merchants with ledgers shake hands on a sunny quay while stevedores load crates and sacks onto a freighter, palm trees and cranes behind.",
+   "style": null
+  },
+  {
+   "asset": "reconstruction_bricklayers",
+   "brief": "Masons stack bricks along a rebuilt city street with scaffolding and a small crane, children playing on rubble heaps, hopeful sunrise.",
+   "style": null
+  },
+  {
+   "asset": "naval_slipway_gantries",
+   "brief": "A massive cruiser hull rises on a gantry-covered slipway, welders showering sparks and riveters on planks, harbour water glinting behind; soft flat matte paint look.",
+   "style": "gouache"
+  },
+  {
+   "asset": "colonial_veranda_harbour",
+   "brief": "A colonial administrator in white linen and local clerks stand on a veranda overlooking a tropical harbour where a steamer arrives, ceiling fans turning, quiet tension.",
+   "style": null
+  },
+  {
+   "asset": "science_lab_glass_coils",
+   "brief": "Scientists in white coats gather around a large apparatus of glass tubes and copper coils in a dim laboratory, one adjusting dials, a blue arc glowing.",
+   "style": null
+  },
+  {
+   "asset": "railway_survey_embankment",
+   "brief": "Surveyors with a theodolite stand on a broad plain beside a half-built embankment while workers lay sleepers and a steam locomotive waits.",
+   "style": null
+  },
+  {
+   "asset": "barracks_square_drill",
+   "brief": "A drill sergeant lines up recruits in fresh uniforms on a barracks square beneath a wooden training tower, early morning mist, orderly mood.",
+   "style": null
+  },
+  {
+   "asset": "embassy_ballroom_diplomacy",
+   "brief": "Diplomats in formal dress murmur in a chandeliered embassy ballroom around a large globe, waiters carrying trays, quiet careful atmosphere.",
+   "style": null
+  }
+ ],
+ "operation_picture": [
+  {
+   "asset": "depot_fence_infiltration",
+   "brief": "A figure in dark clothes cuts through a wire fence beside a floodlit depot at night while a guard with a dog patrols far behind.",
+   "style": null
+  },
+  {
+   "asset": "park_bench_dead_drop",
+   "brief": "An elderly man on a park bench slips a folded newspaper under the slats at dusk among autumn leaves while a woman with a pram strolls past unaware; grainy ink and sepia look.",
+   "style": "ink"
+  },
+  {
+   "asset": "fog_border_envelope",
+   "brief": "Two men exchange an envelope across a rickety wooden barrier at a lonely border crossing in fog, lantern glow, a guard hut dark behind them.",
+   "style": null
+  },
+  {
+   "asset": "safe_house_window",
+   "brief": "A lit upstairs window with the curtain slightly parted, a silhouette peering out at an empty rainy street below, wet cobblestones gleaming.",
+   "style": null
+  },
+  {
+   "asset": "candlelit_suitcase_radio",
+   "brief": "A radio operator with headphones hunches over a suitcase transmitter on a kitchen table lit by one candle, shutters closed, paper code sheets scattered.",
+   "style": null
+  },
+  {
+   "asset": "quay_hull_sabotage",
+   "brief": "A dark figure fixes a charge to a cargo ship hull at a night quay while searchlights sweep and crane silhouettes loom overhead.",
+   "style": null
+  },
+  {
+   "asset": "platform_suitcase_swap",
+   "brief": "A man and a woman swap identical suitcases on a steam-filled platform while the crowd blurs around them and a conductor raises his whistle; soft flat matte paint look.",
+   "style": "gouache"
+  },
+  {
+   "asset": "rooftop_binocular_watch",
+   "brief": "An agent lies on a rooftop at dusk with binoculars, watching the courtyard of a ministry across a European city of chimneys and church spires.",
+   "style": null
+  },
+  {
+   "asset": "filing_room_camera",
+   "brief": "A spy photographs documents with a tiny camera in a darkened filing room, a single flashlight beam crossing rows of metal cabinets.",
+   "style": null
+  },
+  {
+   "asset": "istanbul_cafe_newspaper",
+   "brief": "Two men share a newspaper over small coffee cups at a corner cafe table in Istanbul while a third man watches from behind a pillar.",
+   "style": null
+  },
+  {
+   "asset": "moonlit_parachute_drop",
+   "brief": "A parachutist descends over a moonlit forest clearing while resistance fighters below wave shaded lanterns beside waiting crates.",
+   "style": null
+  },
+  {
+   "asset": "attic_wall_microphone",
+   "brief": "A technician in an attic drills into plaster to place a hidden microphone wire, tools laid neatly on a cloth, a single bare bulb overhead.",
+   "style": null
+  }
+ ],
+ "technology": [
+  {
+   "asset": "sloped_armour_medium_tank",
+   "brief": "A Soviet medium tank with sloped armour, wide tracks and a long gun, shown in side view, slightly mud-splashed, without markings.",
+   "style": null
+  },
+  {
+   "asset": "riveted_cruiser_tank",
+   "brief": "An early British cruiser tank with a riveted hull, small turret and large road wheels, shown in three-quarter view.",
+   "style": null
+  },
+  {
+   "asset": "casemate_assault_gun",
+   "brief": "A low boxy German assault gun with a short barrel and no turret, shown from the side with wide tracks and a flat roof.",
+   "style": null
+  },
+  {
+   "asset": "italian_tankette",
+   "brief": "A tiny two-man Italian tankette with a pair of machine guns and a riveted hull, shown from the side; bold two-colour carved print.",
+   "style": "linocut"
+  },
+  {
+   "asset": "bubble_canopy_fighter",
+   "brief": "A single-engine American fighter with a bubble canopy and four-blade propeller, shown in three-quarter view with landing gear down.",
+   "style": null
+  },
+  {
+   "asset": "radial_carrier_fighter",
+   "brief": "A slender Japanese carrier fighter with radial engine, light rounded wings and a long canopy, shown in side view in flight attitude.",
+   "style": null
+  },
+  {
+   "asset": "twin_engine_medium_bomber",
+   "brief": "A British twin-engine medium bomber with a glazed nose and wide wings, shown in three-quarter view on its landing gear.",
+   "style": null
+  },
+  {
+   "asset": "four_engine_heavy_bomber",
+   "brief": "An American four-engine heavy bomber with a polished metal skin, gun turrets and tall tail, shown in side view.",
+   "style": null
+  },
+  {
+   "asset": "early_jet_fighter",
+   "brief": "A Swedish early jet fighter of the early 1950s with swept wings and a bubble canopy, shown in three-quarter view with a nose air intake.",
+   "style": null
+  },
+  {
+   "asset": "twin_funnel_destroyer",
+   "brief": "A long slim destroyer with two funnels, single gun mounts and a raked bow, shown in side view as if cutting through a calm sea; soft flat matte paint look.",
+   "style": "gouache"
+  },
+  {
+   "asset": "surfaced_attack_submarine",
+   "brief": "A diesel-electric attack submarine running surfaced with a deck gun, conning tower and narrow hull, shown in side view.",
+   "style": null
+  },
+  {
+   "asset": "french_field_howitzer",
+   "brief": "A French field howitzer on a split trail carriage with spoked wheels and a lifted barrel, shown in three-quarter view.",
+   "style": null
+  },
+  {
+   "asset": "finnish_antitank_gun",
+   "brief": "A compact Finnish anti-tank gun with a low shield, long barrel and small wheels, finished in winter white, shown from the side.",
+   "style": null
+  },
+  {
+   "asset": "canvas_cargo_truck",
+   "brief": "A three-ton cargo truck with a canvas tilt over the bed and rugged tyres, shown in three-quarter view from the front left.",
+   "style": null
+  },
+  {
+   "asset": "twin_barrel_aa_gun",
+   "brief": "A Swedish twin-barrel anti-aircraft gun on a four-legged firing platform with a raised muzzle and a gunner seat, shown in three-quarter view.",
+   "style": null
+  },
+  {
+   "asset": "backpack_field_radio",
+   "brief": "A Polish backpack field radio set with a handset on a curly cord, dials, a whip antenna and canvas straps, shown on its own.",
+   "style": null
+  },
+  {
+   "asset": "mobile_radar_array",
+   "brief": "A British mobile radar with a rectangular dipole array on a tall mast mounted on a trailer, shown in three-quarter view.",
+   "style": null
+  },
+  {
+   "asset": "czech_bolt_rifle",
+   "brief": "A bolt-action rifle with a polished wooden stock and a leather sling, laid out in clean side view; grainy ink and sepia look.",
+   "style": "ink"
+  },
+  {
+   "asset": "water_cooled_heavy_mg",
+   "brief": "A water-cooled heavy machine gun on a wheeled mount with a shield and a fabric ammunition belt, shown in side view.",
+   "style": null
+  },
+  {
+   "asset": "towed_field_kitchen",
+   "brief": "A Hungarian field kitchen on two wheels with a tall chimney, steaming cauldron lid and wooden tow bar, shown in three-quarter view.",
+   "style": null
+  },
+  {
+   "asset": "four_wheel_armoured_car",
+   "brief": "A four-wheeled armoured car with a rounded turret, machine gun and sloped hull plates, shown in side view.",
+   "style": null
+  },
+  {
+   "asset": "italian_battleship_profile",
+   "brief": "A sleek Italian battleship with three triple turrets, a tall bridge tower and a pointed bow, shown in side profile on calm water.",
+   "style": null
+  },
+  {
+   "asset": "scout_floatplane",
+   "brief": "A Norwegian scout floatplane on twin pontoons with a high wing and a radial engine, shown in three-quarter view; bold two-colour carved print.",
+   "style": "linocut"
+  },
+  {
+   "asset": "armoured_half_track",
+   "brief": "An American armoured half-track personnel carrier with front wheels, rear tracks and a mounted machine gun, shown in side view.",
+   "style": null
+  }
+ ],
+ "achievement": [
+  {
+   "asset": "summit_pennant_sunrise",
+   "brief": "Mountaineers plant a plain pennant on a snowy summit at sunrise, ropes trailing behind them, a sea of clouds below.",
+   "style": null
+  },
+  {
+   "asset": "cruiser_night_battle",
+   "brief": "A lone cruiser fires a broadside at night, flashes lighting rough waves and a distant burning ship on the horizon.",
+   "style": null
+  },
+  {
+   "asset": "finished_suspension_bridge",
+   "brief": "A great suspension bridge newly completed over a wide strait with a steam train crossing it, gulls wheeling in golden light.",
+   "style": null
+  },
+  {
+   "asset": "lifeboat_storm_rescue",
+   "brief": "A lifeboat crew heaves exhausted survivors out of a stormy sea, oars flashing, a distant wrecked steamer on the rocks.",
+   "style": null
+  },
+  {
+   "asset": "handshake_over_globe",
+   "brief": "Two statesmen in dark suits shake hands over a table holding a large globe, a white dove perched on the chair back, calm light.",
+   "style": null
+  },
+  {
+   "asset": "polar_sled_expedition",
+   "brief": "Explorers and sled dogs trudge across polar ice with a ship frozen in the background, long blue shadows, tired but determined.",
+   "style": null
+  },
+  {
+   "asset": "record_flight_pass",
+   "brief": "A monoplane flies low through a mountain pass at dawn, valley mist below, its pilot's scarf trailing in the slipstream.",
+   "style": null
+  },
+  {
+   "asset": "triumphal_arch_cheers",
+   "brief": "Soldiers march beneath a stone triumphal arch while crowds throw flowers and wave hats, bright sky, victorious mood.",
+   "style": null
+  },
+  {
+   "asset": "concrete_dam_spillway",
+   "brief": "A giant concrete dam with white water spilling, engineers in hard hats on the crest looking proud; bold two-colour carved print.",
+   "style": "linocut"
+  },
+  {
+   "asset": "observatory_night_dome",
+   "brief": "An observatory dome opens to a starry night sky while an astronomer in a long coat peers through a large telescope; soft flat matte paint look.",
+   "style": "gouache"
+  },
+  {
+   "asset": "armoured_breakthrough_gap",
+   "brief": "A column of tanks bursts through a smoky gap in a hill line, infantry cheering and following behind, dust and sunlight.",
+   "style": null
+  },
+  {
+   "asset": "grain_wagon_bounty",
+   "brief": "A wagon heaped with golden grain is pulled by oxen past smiling farmers and stacked sheaves under a warm evening sky.",
+   "style": null
+  }
+ ],
+ "super_event": [
+  {
+   "asset": "armistice_railway_carriage",
+   "brief": "Two delegations face each other across a table inside a wood-panelled railway carriage in a forest clearing, rain streaking the windows, grim and formal, no flags.",
+   "style": null
+  },
+  {
+   "asset": "coronation_cathedral_vault",
+   "brief": "A young monarch in ermine robes kneels to be crowned beneath a soaring gothic cathedral vault, golden light pouring through stained glass onto kneeling clergy.",
+   "style": null
+  },
+  {
+   "asset": "capital_under_snow",
+   "brief": "A domed capital skyline under heavy snowfall at dusk, lit windows glowing, a lone tram crossing an empty avenue, quiet and hushed; soft flat matte paint look.",
+   "style": "gouache"
+  },
+  {
+   "asset": "convoy_at_dawn",
+   "brief": "A long line of merchant ships and escort destroyers steams across a grey Atlantic as dawn turns the horizon orange, spray on the bows.",
+   "style": null
+  },
+  {
+   "asset": "revolution_toppled_statue",
+   "brief": "A crowd surges through a city square waving plain cloth banners around a toppled equestrian statue, smoke drifting, tense and chaotic.",
+   "style": null
+  },
+  {
+   "asset": "fleet_anchored_fjord_night",
+   "brief": "A battle fleet lies at anchor in a fjord at night, searchlight beams crossing the still black water, mountains looming, calm but ominous.",
+   "style": null
+  },
+  {
+   "asset": "treaty_on_battleship_deck",
+   "brief": "Officers sign a document at a table on a battleship deck beneath a huge gun turret, sailors at attention, sea wind lifting papers.",
+   "style": null
+  },
+  {
+   "asset": "factory_opening_ribbon",
+   "brief": "A gleaming new factory hall with rows of workers in clean overalls watches a ribbon being cut, smokestacks behind, hopeful sunrise light.",
+   "style": null
+  },
+  {
+   "asset": "victory_parade_avenue",
+   "brief": "Tanks and marching troops move down a vast avenue under a triumphal arch while confetti falls from crowded balconies; grainy ink and sepia look.",
+   "style": "ink"
+  },
+  {
+   "asset": "ruined_city_dawn",
+   "brief": "Survivors walk among broken cathedral towers and gutted buildings at dawn, smoke rising in thin columns, a grim but quietly resilient mood.",
+   "style": null
+  },
+  {
+   "asset": "desert_column_sunrise",
+   "brief": "A long column of trucks and tanks crosses a sea of dunes at sunrise, dust plumes streaming and long shadows stretching across the sand.",
+   "style": null
+  },
+  {
+   "asset": "paratroop_drop_sunset",
+   "brief": "Hundreds of parachutes fill a sunset sky above rolling farmland and a winding river, transport planes dark against the glowing clouds.",
+   "style": null
+  }
+ ],
+ "leader_portrait": [
+  {
+   "asset": "finnish_winter_president",
+   "brief": "A stern Finnish president in his sixties, grey overcoat with a fur collar, steel spectacles, tired but resolute expression, snow-lit window behind him. Bold carved two-colour linocut look.",
+   "style": "linocut"
+  },
+  {
+   "asset": "brazilian_populist_president",
+   "brief": "A confident populist politician of a South American republic in his fifties, white linen suit, thin moustache, warm broad smile, sunlit balcony with palm fronds behind him, hopeful 1930s mood.",
+   "style": null,
+   "brief_before_moderation_rewording": "A confident Brazilian president in his fifties, white linen suit, thin moustache, warm broad smile, sunlit balcony with palm fronds behind him, hopeful 1930s mood."
+  },
+  {
+   "asset": "turkish_republican_statesman",
+   "brief": "A statesman of an Anatolian republic in his fifties, dark double-breasted suit, composed and proud, standing before a plain modern parliament wall in clear morning light.",
+   "style": null,
+   "brief_before_moderation_rewording": "A Turkish republican statesman in his fifties, dark double-breasted suit, piercing pale eyes, composed and proud, standing before a plain modern parliament wall in clear morning light."
+  },
+  {
+   "asset": "british_wartime_premier",
+   "brief": "A weary British prime minister in his sixties, rumpled tweed three-piece suit, furrowed brow, grim determination, sandbagged street and barrage balloons hazy behind him.",
+   "style": null
+  },
+  {
+   "asset": "balkan_queen_regent",
+   "brief": "A young Yugoslav queen regent in her twenties, black mourning dress, pearl choker and short veil, solemn composed expression, candlelit palace hall glowing behind her.",
+   "style": null
+  },
+  {
+   "asset": "japanese_cabinet_leader",
+   "brief": "A Japanese prime minister in his fifties, round spectacles, formal black morning coat, rigid dignified expression, paper screens and cherry blossom branches behind him.",
+   "style": null
+  },
+  {
+   "asset": "chinese_revolutionary_chair",
+   "brief": "A Chinese republican revolutionary leader in a high-collared grey tunic, cropped hair, intense fierce gaze, bare rust-coloured hills and a faded cloth backdrop behind, grim resolve.",
+   "style": null
+  },
+  {
+   "asset": "soviet_party_chairman",
+   "brief": "A heavy-set Soviet party chairman, bald and round-faced, plain buttoned khaki tunic, stern but weary eyes, smoking factory chimneys visible through a window behind him.",
+   "style": null
+  },
+  {
+   "asset": "spanish_caudillo_general",
+   "brief": "A tall thin Spanish nationalist general-dictator, grey moustache, gold-braided tunic with a sash, severe expression, dark cathedral arches casting heavy shadows behind him.",
+   "style": null
+  },
+  {
+   "asset": "mongolian_steppe_regent",
+   "brief": "An elderly Mongolian regent in an embroidered silk deel and fur-trimmed hat, wise lined face, calm gaze, windswept steppe and felt yurts behind, soft flat gouache colours.",
+   "style": "gouache"
+  },
+  {
+   "asset": "ethiopian_highland_ras",
+   "brief": "A dignified Ethiopian ras with a long beard, gold-embroidered black cape and wide-brimmed hat, calm commanding gaze, highland monastery on a crag behind. Grainy ink and sepia sketch.",
+   "style": "ink"
+  },
+  {
+   "asset": "persian_young_monarch",
+   "brief": "A slim young Persian monarch in a braided military uniform with a sash, dark moustache, wary yet hopeful expression, turquoise-tiled mosque dome rising behind him.",
+   "style": null
+  },
+  {
+   "asset": "swedish_social_democrat",
+   "brief": "A calm Swedish prime minister in his fifties, round glasses, neat grey suit, gentle pragmatic smile, harbour windows with pale northern light behind him, quiet optimistic mood.",
+   "style": null
+  },
+  {
+   "asset": "argentine_colonel_president",
+   "brief": "A charismatic Argentine colonel-president in his forties, open-collared uniform tunic, slicked dark hair, confident grin, a cheering crowd on a plaza blurred behind him.",
+   "style": null
+  },
+  {
+   "asset": "mexican_reform_president",
+   "brief": "A Mexican reformist president in his fifties, dark suit, thick moustache, stern warm eyes, oil derricks and an adobe wall behind him. Bold carved two-colour linocut look.",
+   "style": "linocut"
+  },
+  {
+   "asset": "australian_outback_premier",
+   "brief": "A rugged Australian prime minister in his sixties, square jaw, sunburnt face, brown suit, dry half-grin, red outback horizon and a corrugated-iron shed behind him.",
+   "style": null
+  },
+  {
+   "asset": "thai_field_marshal_premier",
+   "brief": "A Thai field marshal premier in a white tropical uniform with a high collar, round face, calm sly smile, ornate gilded temple spire shimmering behind him.",
+   "style": null
+  },
+  {
+   "asset": "american_new_deal_president",
+   "brief": "A cheerful American president in his fifties, pinstripe suit, wire-rimmed glasses, hopeful chin-up smile, limestone portico and a bright sky behind, festive optimistic mood.",
+   "style": null
+  },
+  {
+   "asset": "french_woman_premier",
+   "brief": "A French woman premier in her fifties, tailored dark suit, hat with a small veil, sharp intelligent gaze, Parisian zinc rooftops behind her, tense mood before a crisis.",
+   "style": null
+  },
+  {
+   "asset": "central_european_chancellor",
+   "brief": "A Central European republican chancellor in his sixties, wing collar and pince-nez, gaunt worried face, tall arched city hall windows behind him, anxious interwar mood.",
+   "style": null
+  },
+  {
+   "asset": "egyptian_boy_king",
+   "brief": "A young plump Egyptian king in a red tarboosh and white naval dress uniform, shy smile, palace garden with palms and a fountain softly lit behind him.",
+   "style": null
+  },
+  {
+   "asset": "irish_scholar_premier",
+   "brief": "A tall bespectacled Irish prime minister in his fifties, long dark coat, austere scholarly expression, a row of grey Georgian doors behind him in drizzle.",
+   "style": null
+  },
+  {
+   "asset": "indian_nationalist_woman",
+   "brief": "An Indian nationalist woman leader in her forties, white cotton sari with a shawl, spectacles, fierce calm gaze, a vast crowd with raised banners blurred behind her.",
+   "style": null
+  },
+  {
+   "asset": "chilean_patrician_president",
+   "brief": "An elderly Chilean president in his seventies, black suit, white goatee, patrician sadness in his eyes, snowcapped Andean peaks seen through a window behind him.",
+   "style": null
+  }
+ ],
+ "commander_portrait": [
+  {
+   "asset": "finnish_ski_colonel",
+   "brief": "A Finnish colonel in a white winter camouflage smock and fur-flapped cap, frosted moustache, alert steady eyes, birch forest and falling snow behind him.",
+   "style": null
+  },
+  {
+   "asset": "royal_navy_admiral",
+   "brief": "A British admiral in a double-breasted navy greatcoat with gold-braided peaked cap, binoculars at his chest, weathered calm face, grey sea and a destroyer on the horizon.",
+   "style": null
+  },
+  {
+   "asset": "japanese_army_general",
+   "brief": "A Japanese army general in a khaki tunic with a sabre belt and peaked cap, round spectacles, impassive expression, soft mist over pine hills behind him. Soft flat matte gouache colours.",
+   "style": "gouache"
+  },
+  {
+   "asset": "soviet_tank_commander",
+   "brief": "A young Soviet tank commander in a padded leather helmet and dark overalls, goggles pushed up, grease-smudged determined face, a steel turret hatch and dusty steppe behind.",
+   "style": null
+  },
+  {
+   "asset": "italian_bersaglieri_colonel",
+   "brief": "An Italian colonel of light infantry in a tunic and a wide hat bristling with cock feathers, proud grin and twirled moustache, sunlit olive hills behind him.",
+   "style": null
+  },
+  {
+   "asset": "chinese_nationalist_general",
+   "brief": "A Chinese nationalist general in a pressed grey-blue uniform and peaked cap with a leather Sam Browne belt, lean stern face, a smoky ruined city wall behind him.",
+   "style": null
+  },
+  {
+   "asset": "polish_cavalry_colonel",
+   "brief": "A Polish cavalry colonel in a four-cornered rogatywka cap and long grey greatcoat, thick moustache, gloved hand on a sabre hilt, misty autumn fields and a horse beside him.",
+   "style": null
+  },
+  {
+   "asset": "american_pacific_general",
+   "brief": "An American general in a khaki shirt and an officer's cap with a corncob pipe, squinting at the distance, palms and a landing-craft beach blurred behind him.",
+   "style": null
+  },
+  {
+   "asset": "turkish_highland_colonel",
+   "brief": "A Turkish colonel in a woolly kalpak and olive tunic with a bandolier, hawk-nosed and watchful, rocky Anatolian ridgeline in cold dawn light behind him. Grainy ink and sepia sketch.",
+   "style": "ink"
+  },
+  {
+   "asset": "yugoslav_partisan_commander",
+   "brief": "A Yugoslav woman partisan commander in a patched side cap and wool jacket, rifle sling on her shoulder, tired fierce eyes, beech forest and rising campfire smoke behind her.",
+   "style": null
+  },
+  {
+   "asset": "australian_slouch_general",
+   "brief": "An Australian general in a slouch hat with one brim pinned up and open-collar bush shirt, sun-creased face, quiet confident stare, dry scrub and tents behind him.",
+   "style": null
+  },
+  {
+   "asset": "french_navy_vice_admiral",
+   "brief": "A French vice admiral in a dark naval jacket with gold sleeve rings and a kepi, trimmed white beard, proud thoughtful expression, a stone harbour fort at golden hour behind him.",
+   "style": null
+  }
+ ],
+ "operative_portrait": [
+  {
+   "asset": "trench_coat_watcher",
+   "brief": "A lean man in a turned-up trench coat and low fedora, face half in shadow, glancing sideways, wet cobbled street lamp-lit behind him, tense mood.",
+   "style": null
+  },
+  {
+   "asset": "attic_radio_operator",
+   "brief": "A young woman radio operator in headphones hunched over a hidden transmitter in a cramped attic, one hand on a Morse key, a slit of dim light across her face.",
+   "style": null
+  },
+  {
+   "asset": "swiss_diplomat_attache",
+   "brief": "A neutral diplomat in a morning coat and striped trousers, leather attache case in hand, polished and unreadable expression, marble embassy hall and tall windows behind him.",
+   "style": "linocut"
+  },
+  {
+   "asset": "bicycle_courier_girl",
+   "brief": "A teenage French courier girl in a beret and cardigan, wheeling a bicycle with a bread basket, sly innocent smile, a sunny village lane behind her, hopeful mood.",
+   "style": null
+  },
+  {
+   "asset": "istanbul_cafe_informant",
+   "brief": "A Turkish informant in a fez and rumpled suit, sipping tea at a cafe table with a folded newspaper, watchful eyes, steam and a crowded bazaar street blurred behind him.",
+   "style": null
+  },
+  {
+   "asset": "shanghai_fedora_agent",
+   "brief": "A Japanese agent in a fedora and tailored western suit, cigarette between his fingers, neon-lit Shanghai waterfront with sampans and gaslight blurred behind him.",
+   "style": null
+  },
+  {
+   "asset": "lisbon_fur_collar_spy",
+   "brief": "A glamorous woman spy in a veiled hat and fur-collared coat, gloved hand holding a cigarette holder, appraising stare, an elegant Lisbon hotel lobby behind her.",
+   "style": null
+  },
+  {
+   "asset": "priest_disguise_smuggler",
+   "brief": "A Polish resistance courier disguised as a country priest in a black cassock and wide hat, rosary in hand, a sharp glance hiding purpose, a village chapel behind him.",
+   "style": null
+  },
+  {
+   "asset": "factory_worker_infiltrator",
+   "brief": "A Soviet infiltrator in a worker's flat cap and oil-stained overalls, lunch tin under his arm, blank dutiful face, steaming machinery hall behind him. Grainy ink and sepia sketch.",
+   "style": "ink"
+  },
+  {
+   "asset": "tango_hall_informant",
+   "brief": "An Argentine informant in a white dinner jacket and slicked hair, lounging by a smoky tango hall bar, charming smirk with a watchful eye, warm amber lights behind him.",
+   "style": null
+  },
+  {
+   "asset": "bowler_hat_umbrella_officer",
+   "brief": "A British intelligence officer disguised as a city clerk in a bowler hat and rolled umbrella, neat moustache, mild expression, foggy London pavement behind him.",
+   "style": null
+  },
+  {
+   "asset": "thai_fisherman_scout",
+   "brief": "A Thai scout disguised as a fisherman in a conical straw hat and rolled trousers, holding a net, quiet watchful smile, long-tail boats on a calm river behind him.",
+   "style": null
+  }
+ ],
+ "scientist_portrait": [
+  {
+   "asset": "rocket_engineer_blueprints",
+   "brief": "A German-speaking rocket engineer in his thirties, rolled sleeves and a tie, pencil behind his ear, leaning over large rocket blueprints in a hangar lit by tall windows.",
+   "style": null
+  },
+  {
+   "asset": "chemist_flask_goggles",
+   "brief": "A British chemist in a white lab coat and safety goggles pushed up on his forehead, holding a glowing flask, shelves of glassware in a cramped laboratory behind him.",
+   "style": null
+  },
+  {
+   "asset": "nuclear_physicist_blackboard",
+   "brief": "A pensive Danish physicist in tweed with tousled hair and a pipe, standing before a blackboard covered in scrawled diagrams, soft grey light from a high window. Bold two-colour linocut.",
+   "style": "linocut"
+  },
+  {
+   "asset": "radar_engineer_antenna",
+   "brief": "An American radar engineer in shirt sleeves and horn-rimmed glasses, standing beside a rotating dish antenna on a coastal cliff, windblown hair and an eager smile.",
+   "style": null
+  },
+  {
+   "asset": "aircraft_designer_drafting",
+   "brief": "An Italian aircraft designer in his forties at a drafting table, pencil and set square in hand, a sleek wing model on the desk, warm afternoon light through a hangar door.",
+   "style": null
+  },
+  {
+   "asset": "japanese_radio_physicist",
+   "brief": "A Japanese physicist in round glasses and a dark high-collar jacket, adjusting the dials of a large vacuum-tube apparatus, quiet concentration, a wood-panelled laboratory behind him.",
+   "style": null
+  },
+  {
+   "asset": "woman_physicist_chamber",
+   "brief": "A French woman physicist in a white lab coat with her hair tied back, peering at a glass cloud chamber, thoughtful and radiant, instruments gleaming behind her.",
+   "style": null
+  },
+  {
+   "asset": "soviet_metallurgist_foundry",
+   "brief": "A broad-shouldered Soviet metallurgist in a leather apron and cap, holding tongs, face lit orange by molten steel, a vast foundry hall blazing behind him.",
+   "style": null
+  },
+  {
+   "asset": "swedish_geologist_tweed",
+   "brief": "A Swedish geologist in a heavy wool jacket and spectacles, examining a rock sample with a hand lens, field tent and misty pine hills behind him. Soft flat matte gouache.",
+   "style": "gouache"
+  },
+  {
+   "asset": "codebreaker_mathematician",
+   "brief": "A shy British mathematician in a rumpled sweater and wire glasses, surrounded by punched paper strips and a cipher machine in a cluttered hut, intense stare.",
+   "style": null
+  },
+  {
+   "asset": "indian_astronomer_dome",
+   "brief": "An Indian astronomer in a pressed white shirt and waistcoat, one hand on a brass telescope in an open-domed observatory, starry twilight sky visible behind him, quiet wonder.",
+   "style": null
+  },
+  {
+   "asset": "penicillin_doctor_microscope",
+   "brief": "An Australian medical researcher in a white coat bending over a microscope with petri dishes beside her, calm hopeful expression, bright clinic window behind.",
+   "style": null
+  }
+ ],
+ "advisor_card": [
+  {
+   "asset": "finance_minister_ledger",
+   "brief": "A portly finance minister in a three-piece suit and pince-nez, hand resting on a thick ledger, cautious frown, an oak-panelled treasury office behind him.",
+   "style": null
+  },
+  {
+   "asset": "chief_of_staff_map",
+   "brief": "A grey-haired chief of staff in a decorated general's uniform, standing over a large map table with a pointer, stern focused expression, dim war-room lamps behind him.",
+   "style": null
+  },
+  {
+   "asset": "police_chief_trenchcoat",
+   "brief": "A hard-faced police chief in a long leather coat and peaked cap, arms folded, cold watchful eyes, a rainy street with a parked black car behind him.",
+   "style": null
+  },
+  {
+   "asset": "propaganda_chief_megaphone",
+   "brief": "A slick propaganda chief in a sharp suit, hair swept back, smiling confidently beside a large loudspeaker and rolls of poster paper in a busy print shop.",
+   "style": null
+  },
+  {
+   "asset": "industrialist_top_hat",
+   "brief": "A wealthy industrialist in a top hat and fur-collared coat, gold watch chain across his waistcoat, satisfied smirk, smoking factory chimneys glowing behind him.",
+   "style": "linocut"
+  },
+  {
+   "asset": "bishop_in_vestments",
+   "brief": "An elderly bishop in embroidered vestments and a tall mitre, kindly yet shrewd expression, hands clasped over a staff, candlelit stone cathedral nave behind him.",
+   "style": null
+  },
+  {
+   "asset": "economist_spectacles",
+   "brief": "A thin economist in thick spectacles and a rumpled tweed jacket, holding a sheaf of charts, mild distracted look, a cluttered university study with bookshelves behind him.",
+   "style": null
+  },
+  {
+   "asset": "foreign_minister_gloves",
+   "brief": "A suave foreign minister in a tailsuit with white gloves and a silk top hat under one arm, diplomatic smile, ornate embassy salon with a chandelier behind him.",
+   "style": null
+  },
+  {
+   "asset": "war_minister_greatcoat",
+   "brief": "A stocky war minister in a greatcoat with broad lapels, bristling grey moustache, gesturing firmly with one fist, a wall of telephones and dispatches behind him. Grainy ink and sepia sketch.",
+   "style": "ink"
+  },
+  {
+   "asset": "labour_minister_woman",
+   "brief": "A confident woman labour minister in a plain wool suit and a brooch, sleeves ready for work, warm determined smile, a bustling factory floor of workers behind her.",
+   "style": null
+  },
+  {
+   "asset": "spymaster_in_shadow",
+   "brief": "A pale intelligence chief in a dark overcoat and round glasses, fingertips pressed together, half his face in shadow, a wall of locked filing cabinets behind him.",
+   "style": null
+  },
+  {
+   "asset": "naval_minister_sea_cap",
+   "brief": "A jovial naval minister in a white-topped officer's cap and dark double-breasted jacket, binoculars around his neck, a model battleship on the desk beside him, sea light through windows.",
+   "style": null
+  }
+ ],
+ "flag": [
+  {
+   "asset": "VOR_democratic",
+   "brief": "A fictional flag of three horizontal bands of sky blue, white and navy, with a small golden sun with short straight rays at the centre of the white band.",
+   "style": null
+  },
+  {
+   "asset": "KRA_communist",
+   "brief": "A fictional flag with a plain crimson field, a large golden five-pointed star at the centre encircled by a ring of golden wheat ears, and a thin golden border.",
+   "style": null
+  },
+  {
+   "asset": "MOS_fascist",
+   "brief": "A fictional flag with a black field, a bold upright red sword at the centre with a gold hilt, and a narrow white border running around all four edges. Bold carved two-colour linocut look.",
+   "style": "linocut"
+  },
+  {
+   "asset": "ELD_monarchist",
+   "brief": "A fictional flag with a royal blue field, a golden crown above two crossed sceptres at the centre, and an ermine-white border with small black tails along the edge.",
+   "style": null
+  },
+  {
+   "asset": "TAV_neutral",
+   "brief": "A fictional flag with a plain white field, a single large green olive branch curving across the centre, and a thin horizontal green stripe along the bottom edge.",
+   "style": null
+  },
+  {
+   "asset": "BAR_republican",
+   "brief": "A fictional flag with a red field crossed by a broad white diagonal stripe from the lower hoist to the upper fly, and a blue triangle at the hoist.",
+   "style": null
+  },
+  {
+   "asset": "NAZ_theocratic",
+   "brief": "A fictional flag with a deep green field, a golden crescent cradling a large golden eight-pointed star at the centre, and a white border band at top and bottom.",
+   "style": null
+  },
+  {
+   "asset": "SIL_democratic",
+   "brief": "A fictional flag with a forest green field and an off-centre white cross edged in thin red, the vertical arm of the cross set close to the hoist.",
+   "style": null
+  },
+  {
+   "asset": "ORK_communist",
+   "brief": "A fictional flag with a red field, a large golden cogwheel with a white-outlined hollow centre, and a thick black diagonal stripe running from the upper hoist to the lower fly. Soft flat matte gouache colours.",
+   "style": "gouache"
+  },
+  {
+   "asset": "DAS_fascist",
+   "brief": "A fictional flag with a black field, a golden rising sun with straight rays on the centre line, and a broad red horizontal band across the lower third.",
+   "style": null
+  },
+  {
+   "asset": "HEL_monarchist",
+   "brief": "A fictional flag with a yellow field bearing a red rampant lion facing the hoist, and a blue canton at the upper hoist containing three small golden crowns.",
+   "style": null
+  },
+  {
+   "asset": "QUA_republican",
+   "brief": "A fictional flag with two horizontal bands of ochre over teal, and a red disc at the centre bearing a white five-pointed star.",
+   "style": null
+  },
+  {
+   "asset": "JOR_neutral",
+   "brief": "A fictional flag with a plain blue field, a white stylised mountain peak silhouette at the centre, and a thin white border around the edge.",
+   "style": null
+  },
+  {
+   "asset": "MIR_theocratic",
+   "brief": "A fictional flag with a white field, a large golden domed temple with a slender spire under a rayed halo at the centre, and red bands along the top and bottom edges. Grainy ink and sepia sketch.",
+   "style": "ink"
+  },
+  {
+   "asset": "TOL_democratic",
+   "brief": "A fictional flag with three vertical bands of red, white and navy, and a golden spreading oak tree standing at the centre of the white band.",
+   "style": null
+  },
+  {
+   "asset": "PAV_communist",
+   "brief": "A fictional flag with a red field, a white vertical stripe at the hoist, and a golden mountain peak topped by a small yellow star near the centre.",
+   "style": null
+  },
+  {
+   "asset": "ZEL_fascist",
+   "brief": "A fictional flag with a black field, a bold red saltire edged in white, and a golden axe head at the centre where the diagonals cross.",
+   "style": null
+  },
+  {
+   "asset": "ISK_monarchist",
+   "brief": "A fictional flag of horizontal stripes alternating purple and white, with a white canton at the upper hoist holding a golden crowned eagle with spread wings.",
+   "style": null
+  },
+  {
+   "asset": "BRO_republican",
+   "brief": "A fictional flag with two horizontal bands of green over white, and a yellow circle at the centre enclosing a small red liberty cap.",
+   "style": null
+  },
+  {
+   "asset": "NEV_democratic",
+   "brief": "A fictional flag with a blue field bearing a ring of small white stars around a golden anchor at the centre. Bold carved two-colour linocut look.",
+   "style": "linocut"
+  },
+  {
+   "asset": "CAS_neutral",
+   "brief": "A fictional flag split on the diagonal into pale grey in the upper hoist and sea green in the lower fly, with a small white circle at the centre.",
+   "style": null
+  },
+  {
+   "asset": "KHO_theocratic",
+   "brief": "A fictional flag with a deep purple field, a white cross with flared arms at the centre rimmed in gold, and a narrow golden border around the edge.",
+   "style": null
+  },
+  {
+   "asset": "ULM_communist",
+   "brief": "A fictional flag with a plain red field and a thick blue vertical band at the hoist carrying one large white five-pointed star.",
+   "style": null
+  },
+  {
+   "asset": "SAV_republican",
+   "brief": "A fictional flag of diagonal bands of green and gold meeting at a white central disc that holds a small red mountain peak.",
+   "style": null
+  }
+ ],
+ "building": [
+  {
+   "asset": "twin_spire_cathedral",
+   "brief": "A grand Gothic cathedral with twin spires and a rose window, standing alone on a hilltop square in France, warm afternoon light on pale stone, quiet and hopeful.",
+   "style": null
+  },
+  {
+   "asset": "anatolian_hill_fortress",
+   "brief": "A crenellated Turkish hilltop fortress with round towers and thick curtain walls above a rocky slope, dusty golden light, tense watchful mood.",
+   "style": null
+  },
+  {
+   "asset": "cornish_cliff_lighthouse",
+   "brief": "A tall white-and-red banded lighthouse on a Cornish sea cliff, its keeper's cottage beside it, waves crashing below under a stormy sky, tense and lonely mood.",
+   "style": null
+  },
+  {
+   "asset": "silesian_radio_mast",
+   "brief": "A tall lattice radio mast with guy wires and a small brick transmitter hut in a Polish pine forest clearing, grey dawn light, tense and secretive mood.",
+   "style": null
+  },
+  {
+   "asset": "steel_arch_harbour_bridge",
+   "brief": "A great steel arch bridge spanning a sunlit Australian harbour inlet, with a train crossing its deck and small ferries passing beneath, triumphant mood.",
+   "style": null
+  },
+  {
+   "asset": "japanese_five_tier_pagoda",
+   "brief": "A five-tier wooden Japanese pagoda with curved tiled eaves among crimson autumn maples, a gravel courtyard in front of it, quiet and serene mood.",
+   "style": null
+  },
+  {
+   "asset": "pampas_grain_elevator",
+   "brief": "A row of towering concrete grain silos with a railway siding and a loading gantry on the Argentine pampas, golden wheat fields and a huge sky around it.",
+   "style": null
+  },
+  {
+   "asset": "alpine_cable_car_station",
+   "brief": "A timber-and-stone cable car station clinging to an Italian Alpine ridge, steel cables rising into clouds, snow-dusted fir trees and a festive mood.",
+   "style": null
+  },
+  {
+   "asset": "soviet_canyon_dam",
+   "brief": "A monumental concrete hydroelectric dam wedged into a mountain canyon, spillway gates open with white water thundering down, pylons marching along the ridge, triumphant mood.",
+   "style": null
+  },
+  {
+   "asset": "siamese_golden_palace",
+   "brief": "A Thai royal palace with tiered white-and-gold roofs and slender gilded spires around a walled courtyard, tropical sun gleaming on the tiles. Soft flat matte gouache colours.",
+   "style": "gouache"
+  },
+  {
+   "asset": "domed_mosque_minarets",
+   "brief": "A large Ottoman-style mosque with a great central dome, semi-domes and four pencil minarets, shown from a quiet stone courtyard at dusk with warm lanterns.",
+   "style": null
+  },
+  {
+   "asset": "victory_obelisk_monument",
+   "brief": "A tall stone obelisk monument with a stepped base and a bronze wreath relief on a windswept Yugoslav hilltop, a few small trees around it. Grainy ink and sepia sketch.",
+   "style": "ink"
+  }
+ ],
+ "faction_logo": [
+  {
+   "asset": "crossed_swords_laurel",
+   "brief": "A round emblem of two crossed swords inside a laurel wreath, in steel grey and gold on a deep red disc, formal and martial.",
+   "style": null
+  },
+  {
+   "asset": "five_star_alliance",
+   "brief": "A round blue emblem with a ring of white stars circling a large central golden star, with a thin gold rim, democratic and hopeful.",
+   "style": null
+  },
+  {
+   "asset": "eagle_shield_pact",
+   "brief": "A heraldic shield emblem bearing a spread-winged eagle in gold over a black field, with a red border and a small crown above it. Bold carved two-colour linocut look.",
+   "style": "linocut"
+  },
+  {
+   "asset": "anchor_rope_naval_league",
+   "brief": "A round emblem of a large anchor wrapped with rope on a navy blue disc, surrounded by a ring of white waves, calm maritime mood.",
+   "style": null
+  },
+  {
+   "asset": "torch_of_liberty",
+   "brief": "A round emblem of a raised torch with a bright orange flame and rays of light on a deep green disc, with a gold rim, triumphant and hopeful.",
+   "style": null
+  },
+  {
+   "asset": "cogwheel_workers_front",
+   "brief": "A round red emblem with a large golden cogwheel at the centre, crossed by a wheat sheaf and a hammer-free wrench, with a thin black rim.",
+   "style": null
+  },
+  {
+   "asset": "rising_sun_east_union",
+   "brief": "A round emblem of a half-risen golden sun with long alternating rays over a calm teal sea, ringed by a thin crimson band.",
+   "style": null
+  },
+  {
+   "asset": "winged_wheel_railway_bloc",
+   "brief": "A shield emblem of a spoked locomotive wheel with outstretched wings, silver on a dark blue field with a gold border.",
+   "style": null
+  },
+  {
+   "asset": "lion_and_crown_commonwealth",
+   "brief": "A round emblem of a crowned lion standing on its hind legs on a deep purple disc, with a wreath of oak leaves around it. Soft flat matte gouache colours.",
+   "style": "gouache"
+  },
+  {
+   "asset": "mountain_fist_pact",
+   "brief": "A shield emblem of a clenched gauntlet in front of snow-capped peaks, silver and white on a slate blue field with a bold red edge.",
+   "style": null
+  },
+  {
+   "asset": "olive_branch_dove_accord",
+   "brief": "A round pale blue emblem of a white dove carrying an olive branch above a simple globe, with a thin silver rim, a peaceful neutral mood.",
+   "style": null
+  },
+  {
+   "asset": "crossed_spears_star_horde",
+   "brief": "A round emblem of two crossed spears below a bright yellow star on a deep orange disc, with a thick black border, fierce and proud.",
+   "style": null
+  }
+ ],
+ "agency_logo": [
+  {
+   "asset": "all_seeing_eye_bureau",
+   "brief": "A round emblem of a single open eye with a radiating gold iris inside a pyramid-free triangle, on a black disc with a thin gold rim.",
+   "style": null
+  },
+  {
+   "asset": "skeleton_key_directorate",
+   "brief": "A round emblem of a large old skeleton key set upright on a dark green disc, with a ring of small silver stars around it.",
+   "style": null
+  },
+  {
+   "asset": "keyhole_shield_service",
+   "brief": "A shield emblem with a glowing keyhole in the centre of a dark navy field, framed by a silver border and a faint beam of light.",
+   "style": "linocut"
+  },
+  {
+   "asset": "dagger_and_rose_section",
+   "brief": "A round emblem of an upright dagger entwined by a single red rose on a charcoal disc, with a thin silver ring around it.",
+   "style": null
+  },
+  {
+   "asset": "compass_rose_intelligence",
+   "brief": "A round emblem of an eight-pointed compass rose in gold and cream on a deep blue disc, with a fine outer ring of tick marks.",
+   "style": null
+  },
+  {
+   "asset": "lantern_in_the_dark",
+   "brief": "A round emblem of a glowing oil lantern on a hook against a deep indigo night, its warm light forming a halo, mysterious and quiet.",
+   "style": null
+  },
+  {
+   "asset": "owl_watch_office",
+   "brief": "A round emblem of a wide-eyed owl with spread wings perched on a branch, in sepia browns and gold on a dark disc.",
+   "style": null
+  },
+  {
+   "asset": "padlock_and_chain_cipher",
+   "brief": "A round emblem of a heavy brass padlock wrapped by a chain, on a steel grey disc with a thin red rim, secretive and stern.",
+   "style": null
+  },
+  {
+   "asset": "masked_face_special_branch",
+   "brief": "A round emblem of a half-face domino mask in white and black on a crimson disc, with a small golden star on the brow. Grainy ink and sepia sketch.",
+   "style": "ink"
+  },
+  {
+   "asset": "fox_head_counterintel",
+   "brief": "A round emblem of a sly red fox head in profile with pricked ears on a dark forest green disc, with a thin cream border.",
+   "style": null
+  },
+  {
+   "asset": "hourglass_and_quill_archive",
+   "brief": "A round emblem of an hourglass crossed with a feather quill on a deep burgundy disc, a thin gold rim around it, scholarly and watchful.",
+   "style": null
+  },
+  {
+   "asset": "lighthouse_beam_signals",
+   "brief": "A round emblem of a small lighthouse sending a broad beam across a night sea, in teal and pale yellow on a navy disc, calm and vigilant.",
+   "style": null
+  }
+ ],
+ "counter_large": [
+  {
+   "asset": "infantry_rifleman",
+   "brief": "Bold white silhouette of a standing rifleman in a rounded helmet, rifle held diagonally across the chest, simple chunky shapes with no interior detail.",
+   "style": null
+  },
+  {
+   "asset": "cavalry_horse",
+   "brief": "Bold white silhouette of a rearing cavalry horse seen in profile with a rider's sabre raised, thick simple outline, clear against a dark ground.",
+   "style": null
+  },
+  {
+   "asset": "mountain_ice_axe",
+   "brief": "Bold white silhouette of a mountain trooper's ice axe crossed over a coil of rope, with a small jagged peak behind, thick chunky shapes.",
+   "style": null
+  },
+  {
+   "asset": "marines_anchor",
+   "brief": "Bold white silhouette of a large ship's anchor with a heavy chain loop, a short rifle crossing behind the shank, simple and easily readable.",
+   "style": null
+  },
+  {
+   "asset": "paratrooper_canopy",
+   "brief": "Bold white silhouette of an open parachute canopy with taut lines descending to a small hanging soldier, broad scalloped dome and simple shapes.",
+   "style": null
+  },
+  {
+   "asset": "light_tank",
+   "brief": "Bold white side-view silhouette of a small light tank with a short-barrelled turret and small road wheels, low and compact, thick unbroken outline.",
+   "style": null
+  },
+  {
+   "asset": "medium_tank",
+   "brief": "Bold white side-view silhouette of a medium tank with a rounded turret, long gun barrel and a row of road wheels under a sloped hull.",
+   "style": null
+  },
+  {
+   "asset": "heavy_tank",
+   "brief": "Bold white side-view silhouette of a heavy tank with a tall boxy turret, thick gun barrel and wide tracks, massive and squat.",
+   "style": null
+  },
+  {
+   "asset": "anti_tank_gun",
+   "brief": "Bold white silhouette of a towed anti-tank gun with a long slender barrel, angular shield and two spoked wheels with split trails.",
+   "style": null
+  },
+  {
+   "asset": "field_artillery",
+   "brief": "Bold white silhouette of a field howitzer with the barrel angled upward, recoil cylinder, large wheels and spread trail legs.",
+   "style": null
+  },
+  {
+   "asset": "anti_air_gun",
+   "brief": "Bold white silhouette of a quad-barrelled anti-aircraft gun pointing steeply skyward on a rotating pedestal with a small gunner seat.",
+   "style": null
+  },
+  {
+   "asset": "engineers_bridge",
+   "brief": "Bold white silhouette of a simple girder bridge spanning a gap between two banks, with a crossed shovel and hammer beneath the arch.",
+   "style": null
+  },
+  {
+   "asset": "signal_pole",
+   "brief": "Bold white silhouette of a tall telegraph pole with two crossbars and insulators, a looping wire sagging away from each side.",
+   "style": null
+  },
+  {
+   "asset": "motorised_truck",
+   "brief": "Bold white side-view silhouette of a canvas-topped army truck with a boxy cab, rounded cargo hood and two large wheels.",
+   "style": null
+  },
+  {
+   "asset": "bicycle_infantry",
+   "brief": "Bold white silhouette of a soldier riding a bicycle with a rifle slung on his back, thick wheel rings and simple frame lines.",
+   "style": null
+  },
+  {
+   "asset": "ski_troops",
+   "brief": "Bold white silhouette of a skier mid-stride with two long poles and skis, a rifle slung across the back, dynamic angular posture.",
+   "style": null
+  },
+  {
+   "asset": "camel_corps",
+   "brief": "Bold white silhouette of a camel in profile with a single hump, a rider sitting upright on a saddle and a rifle strapped to the side.",
+   "style": null
+  },
+  {
+   "asset": "armoured_car",
+   "brief": "Bold white side-view silhouette of a four-wheeled armoured car with a small turret, short gun and sloped plated body.",
+   "style": null
+  },
+  {
+   "asset": "rocket_artillery",
+   "brief": "Bold white silhouette of a truck-mounted rocket launcher with a rack of angled rails, several rockets pointing skyward, thick simple shapes.",
+   "style": null
+  },
+  {
+   "asset": "flamethrower",
+   "brief": "Bold white silhouette of a soldier carrying twin fuel tanks on his back and a long nozzle spraying a tongue of flame forward.",
+   "style": null
+  },
+  {
+   "asset": "recon_motorcycle",
+   "brief": "Bold white side-view silhouette of a motorcycle with a sidecar and a small mounted machine gun, large spoked wheels and a hunched rider.",
+   "style": null
+  },
+  {
+   "asset": "military_police",
+   "brief": "Bold white silhouette of a helmeted sentry standing at attention with a baton and a wide armband, a simple upright shield shape beside him.",
+   "style": null
+  },
+  {
+   "asset": "machine_gun_team",
+   "brief": "Bold white silhouette of a heavy machine gun on a tripod with a belt feed, a crouching gunner behind it, compact chunky forms.",
+   "style": null
+  },
+  {
+   "asset": "mortar_crew",
+   "brief": "Bold white silhouette of a short mortar tube on a baseplate with a bipod, a kneeling soldier dropping a round into the barrel.",
+   "style": null
+  }
+ ],
+ "counter_small": [
+  {
+   "asset": "rifle_infantry",
+   "brief": "A single bold white rifle seen in profile, long barrel, stock and a hint of a bolt, reduced to one thick wide stroke-like shape.",
+   "style": null
+  },
+  {
+   "asset": "light_tank_side",
+   "brief": "Very simple wide white side silhouette of a light tank, low hull, tiny turret and a short barrel, no interior detail.",
+   "style": null
+  },
+  {
+   "asset": "heavy_tank_side",
+   "brief": "Very simple wide white side silhouette of a heavy tank with a tall boxy turret and a long thick barrel on a broad track block.",
+   "style": null
+  },
+  {
+   "asset": "howitzer_barrel",
+   "brief": "Bold white silhouette of a single artillery barrel tilted upward on a squat carriage with one wheel, extremely simple and wide.",
+   "style": null
+  },
+  {
+   "asset": "horse_head",
+   "brief": "Bold white silhouette of a horse head and arched neck in profile, ears forward, mane reduced to a few chunky notches.",
+   "style": null
+  },
+  {
+   "asset": "truck_side",
+   "brief": "Wide white side silhouette of a cargo truck: boxy cab, long flat bed and two big wheels, nothing more.",
+   "style": null
+  },
+  {
+   "asset": "motorcycle_side",
+   "brief": "Wide white side silhouette of a motorcycle with two chunky wheels and a hunched rider, very few shapes.",
+   "style": null
+  },
+  {
+   "asset": "bicycle_side",
+   "brief": "Wide white side silhouette of a bicycle: two thick wheel rings joined by a simple frame and handlebar.",
+   "style": null
+  },
+  {
+   "asset": "crossed_skis",
+   "brief": "Two long white skis crossed in an X with a pair of short poles, bold wide shapes with rounded tips.",
+   "style": null
+  },
+  {
+   "asset": "small_anchor",
+   "brief": "A chunky white ship's anchor with a wide crossbar, flat curved flukes and a ring at the top, extremely simple.",
+   "style": null
+  },
+  {
+   "asset": "parachute_canopy",
+   "brief": "A wide white half-dome parachute canopy with three short lines meeting at a tiny hanging figure, bold and minimal.",
+   "style": null
+  },
+  {
+   "asset": "ice_axe",
+   "brief": "A single white ice axe lying diagonally, a thick shaft with a curved pick and a flat adze, bold simple shapes.",
+   "style": null
+  },
+  {
+   "asset": "camel_head",
+   "brief": "Bold white silhouette of a camel head and long curved neck in profile with a flat muzzle, reduced to one wide shape.",
+   "style": null
+  },
+  {
+   "asset": "armoured_car_side",
+   "brief": "Wide white side silhouette of an armoured car with a low sloped body, small turret and two big wheels.",
+   "style": null
+  },
+  {
+   "asset": "rocket_rack",
+   "brief": "A white diagonal rack of three rockets with pointed tips on a short wide base, bold and simple.",
+   "style": null
+  },
+  {
+   "asset": "mortar_tube",
+   "brief": "A thick white mortar tube leaning at an angle on a small round baseplate, one bold wide shape.",
+   "style": null
+  },
+  {
+   "asset": "machine_gun",
+   "brief": "Wide white silhouette of a machine gun on a short tripod with a perforated barrel jacket and a boxy receiver.",
+   "style": null
+  },
+  {
+   "asset": "signal_pole",
+   "brief": "A bold white pole with two short crossbars and a drooping wire on each side, wide and minimal.",
+   "style": null
+  },
+  {
+   "asset": "field_telephone",
+   "brief": "A white field telephone box with a handset resting on top and a short coil of cable, chunky blocky shapes.",
+   "style": null
+  },
+  {
+   "asset": "bridge_span",
+   "brief": "A wide white bridge span as a flat deck on two pillars with a simple triangular truss above, very minimal.",
+   "style": null
+  },
+  {
+   "asset": "flamethrower_nozzle",
+   "brief": "A white flamethrower wand pointing right with a single teardrop flame at its tip, thick and extremely simple.",
+   "style": null
+  },
+  {
+   "asset": "half_track",
+   "brief": "Wide white side silhouette of a half-track: a boxy open body, a front wheel and a short band of tracks at the rear.",
+   "style": null
+  },
+  {
+   "asset": "tank_destroyer_side",
+   "brief": "Wide white side silhouette of a low turretless tank destroyer with a sloped casemate and a long gun barrel.",
+   "style": null
+  },
+  {
+   "asset": "anti_air_barrels",
+   "brief": "Four short white gun barrels fanned upward from a squat round mount, bold wide shapes with flat tops.",
+   "style": null
+  }
+ ],
+ "division_emblem": [
+  {
+   "asset": "lightning_bolt",
+   "brief": "A jagged golden lightning bolt striking down across a deep blue wide shield, with a thin white edge line, bold and simple.",
+   "style": null
+  },
+  {
+   "asset": "bear_standing",
+   "brief": "A brown bear rearing on its hind legs with claws raised, set on a pale green wide shield with a dark border.",
+   "style": null
+  },
+  {
+   "asset": "thistle_bloom",
+   "brief": "A purple thistle bloom on a spiked green stem with two sharp leaves, set on a wide cream shape with a navy border.",
+   "style": null
+  },
+  {
+   "asset": "lion_passant",
+   "brief": "A golden lion walking in profile with one paw raised and a tufted tail, on a wide crimson shield with a thin gold rim.",
+   "style": null
+  },
+  {
+   "asset": "snowflake_star",
+   "brief": "A six-armed white snowflake with branching points on a wide icy-blue shape, with a darker blue border.",
+   "style": null
+  },
+  {
+   "asset": "stone_tower",
+   "brief": "A tall crenellated stone tower with a small arched door, in grey and white on a wide red banner shape.",
+   "style": null
+  },
+  {
+   "asset": "trident_waves",
+   "brief": "A golden three-pronged trident rising from stylised teal waves, set on a wide deep navy shape.",
+   "style": null
+  },
+  {
+   "asset": "crossed_axes",
+   "brief": "Two crossed battle axes in silver with dark wooden handles, on a wide forest-green shape with a black border.",
+   "style": null
+  },
+  {
+   "asset": "radiant_sun",
+   "brief": "A round yellow sun with a ring of straight and wavy rays on a wide sky-blue shape, edged with orange.",
+   "style": null
+  },
+  {
+   "asset": "charging_bull",
+   "brief": "A black bull lowering its curved horns and charging forward in profile, on a wide ochre-yellow shape with a red border.",
+   "style": null
+  },
+  {
+   "asset": "wolf_head",
+   "brief": "A grey wolf head in profile with open jaws and pointed ears, on a wide dark-green shape with a pale border.",
+   "style": null
+  },
+  {
+   "asset": "winged_wheel",
+   "brief": "A white spoked wheel with one spread feathered wing on each side, on a wide maroon shape with a gold rim.",
+   "style": null
+  }
+ ],
+ "modifier_stat_icon": [
+  {
+   "asset": "supply_crate",
+   "brief": "A single wooden supply crate with crossed slat bands and a rope handle on each side, bold and simple.",
+   "style": null
+  },
+  {
+   "asset": "organisation_chain",
+   "brief": "Two interlocked chain links in heavy outline, one slightly turned, with a short curved arrow circling them.",
+   "style": null
+  },
+  {
+   "asset": "attack_bayonet",
+   "brief": "A rifle with a fixed bayonet pointing right, with a small bold arrow above it showing the thrust forward.",
+   "style": null
+  },
+  {
+   "asset": "defence_shield",
+   "brief": "A sturdy heater-shaped shield with a bold raised centre ridge and thick rim, nothing else.",
+   "style": null
+  },
+  {
+   "asset": "speed_winged_boot",
+   "brief": "A single soldier's boot with one small spread wing at the heel, with a short arrow trailing behind.",
+   "style": null
+  },
+  {
+   "asset": "reinforcement_helmets",
+   "brief": "Two stacked steel helmets with a small bold plus-shaped arrow pointing up toward them.",
+   "style": null
+  },
+  {
+   "asset": "manpower_helmet",
+   "brief": "A single round steel helmet seen from the side with a chin strap, drawn with thick simple shapes.",
+   "style": null
+  },
+  {
+   "asset": "production_cogwheel",
+   "brief": "A chunky cogwheel with eight teeth and a round centre hole, with a small curved arrow along its rim.",
+   "style": null
+  },
+  {
+   "asset": "fuel_jerrycan",
+   "brief": "A rectangular jerrycan with a diagonal ridge cross, a short spout and a side handle, bold and simple.",
+   "style": null
+  },
+  {
+   "asset": "research_flask",
+   "brief": "A round-bottomed laboratory flask half full of liquid with rising bubbles and a small upward arrow above it.",
+   "style": null
+  },
+  {
+   "asset": "naval_range_ship",
+   "brief": "A small warship in side view with a stubby funnel, with a long double-headed arrow running beneath its hull.",
+   "style": null
+  },
+  {
+   "asset": "air_superiority_fighter",
+   "brief": "A single-engined fighter plane seen from above with swept wings, and a bold arrow rising above it.",
+   "style": null
+  }
+ ],
+ "gui_texture": [
+  {
+   "asset": "aged_leather",
+   "brief": "Worn brown leather with a fine cracked grain, faint creases and darkened edges, framed by a thin stitched border line.",
+   "style": null
+  },
+  {
+   "asset": "brushed_steel",
+   "brief": "Cool grey brushed steel with fine horizontal grain and a soft sheen, bordered by a narrow bevelled edge in a darker tone.",
+   "style": null
+  },
+  {
+   "asset": "linen_paper",
+   "brief": "Off-white linen-textured paper with a faint woven cross-hatch fibre and a slim inked rule border near the edge.",
+   "style": null
+  },
+  {
+   "asset": "green_baize",
+   "brief": "Deep green felt like a card table with soft napped fibres and a dark piped border strip around the edges, gouache-like matte surface.",
+   "style": "gouache"
+  },
+  {
+   "asset": "oak_wood",
+   "brief": "Warm oak planks with bold carved grain lines running horizontally and a plain beaded frame at the edge, suited to a two-colour carved print.",
+   "style": "linocut"
+  },
+  {
+   "asset": "riveted_iron_plate",
+   "brief": "Dark iron plate with a rough surface, rust bloom at the corners and a row of round rivets along a raised border.",
+   "style": null
+  },
+  {
+   "asset": "blueprint_grid",
+   "brief": "Deep blue technical paper with a faint pale grid of fine lines and a thin white double border, no drawings.",
+   "style": null
+  },
+  {
+   "asset": "parchment_sheet",
+   "brief": "Yellowed parchment with mottled stains, uneven fibres and a thin brown line border, rendered in grainy sepia ink and sketch tones.",
+   "style": null
+  },
+  {
+   "asset": "white_marble",
+   "brief": "Polished white marble with delicate grey veins and a slim carved moulding border in a slightly darker stone tone.",
+   "style": null
+  },
+  {
+   "asset": "rough_canvas",
+   "brief": "Olive-tan army canvas with a visible coarse weave and a stitched hem line running around the border.",
+   "style": null
+  },
+  {
+   "asset": "polished_brass",
+   "brief": "Warm golden brass sheet with soft brushed highlights, small age tarnish and a thin engraved border line.",
+   "style": null
+  },
+  {
+   "asset": "poured_concrete",
+   "brief": "Pale grey poured concrete with fine pitting and hairline cracks, bordered by a slightly raised shuttered edge.",
+   "style": null
+  }
+ ]
+}
