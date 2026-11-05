@@ -24,8 +24,7 @@ import make_gallery_big as m  # noqa: E402
 HELD = {"agency_upgrade", "mio_trait", "operative_portrait", "scientist_portrait"}
 CACHE = os.path.join(m.WORK, "vanilla-check-cache.json")
 COMPARE = os.environ.get("GALLERY_COMPARE", "")
-TNO_MOD = os.environ.get("TNO_MOD", "")
-TNO_RES = os.environ.get("TNO_RES", "")
+STYLES = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "gallery_styles.json"), encoding="utf-8"))["styles"]
 
 
 def cli_at(mod, *args):
@@ -77,8 +76,10 @@ def build(repo):
     cache = json.load(open(CACHE, encoding="utf-8")) if os.path.exists(CACHE) else {}
     order = list(m.briefs())
     sections = [("vanilla", m.MOD, m.RES, [f for f in order if f not in HELD and not f.startswith("anim_")])]
-    if TNO_RES and os.path.isdir(TNO_RES):
-        sections.append(("tno", TNO_MOD, TNO_RES, sorted(os.listdir(TNO_RES))))
+    for style in STYLES:  # further mod styles (TNO now, others later) from scripts/gallery_styles.json
+        mod, res = os.environ.get(style["mod_env"], ""), os.environ.get(style["res_env"], "")
+        if res and os.path.isdir(res):
+            sections.append((style["key"], mod, res, [f for f in order if os.path.isdir(os.path.join(res, f))]))
     index, manifest = {}, []
     for section, mod, res, fams in sections:
         for fam, asset, rec in entries(mod, res, fams):
@@ -116,38 +117,46 @@ def build(repo):
     print(len(manifest), "images,", len(index), "family pages")
 
 
-NOTE = ("Every image here was made by `hoi4-imagegen` on the ChatGPT login, processed, validated and checked against the game's own art by the tool's"
-        " vanilla-match check. Nothing is retouched. Only images from version 0.3 or later that pass both checks are shown. The gallery grows as more"
-        " runs finish.")
+NOTE = ("Every image here was made by `hoi4-imagegen` on the ChatGPT login, then processed, validated and passed by the tool's own check"
+        " against the game's art. Nothing is retouched. Only images from version 0.3 or later that pass both checks are shown, and the gallery"
+        " grows as more runs finish. Click an image to open it enlarged.")
+
+
+def anchor(text):
+    return text.lower().replace(" ", "-").replace("_", "-")
 
 
 def write_pages(out, index, refs):
-    fams = {}
+    by_section = {}
     for (section, fam), items in index.items():
-        fams.setdefault(section, []).append((fam, len(items)))
-        lines = [f"# {fam}" + (" (TNO style)" if section == "tno" else ""), "", NOTE, ""]
-        if section == "vanilla" and refs.get(fam):
-            lines += ["## Vanilla references", "", "From *Hearts of Iron IV* by Paradox Interactive, shown at native size for comparison.", "",
-                      " ".join(f'<img src="{r}" alt="vanilla reference">' for r in refs[fam]), ""]
-        if section == "tno":
-            lines += ["Made with references from *The New Order: Last Days of Europe*'s own art for this family. That art is not reproduced here.", ""]
-        lines += ["## Generated", "", "| Image | Enlarged | Brief |", "|---|---|---|"]
-        for e in items:
-            big = f'<img src="{os.path.basename(e["enlarged"])}" alt="{e["asset"]} enlarged {e["scale"]}x">' if e["enlarged"] else ""
-            brief = e["brief"].replace("|", "/").replace("\n", " ")
-            sub = f" Sub-family: {e['subfamily']}." if e.get("subfamily") and e["subfamily"] != "all" else ""
-            check = "" if e["vanilla_check"] == "pass" else " The vanilla-match check does not measure this family."
-            lines.append(f'| <img src="{os.path.basename(e["native"])}" alt="{e["asset"]}"> | {big} | {brief}{sub} Build {e["build"]}, {e["size"][0]}x{e["size"][1]}.{check} |')
-        with open(os.path.join(out, section, fam, "README.md"), "w", encoding="utf-8", newline="\n") as f:
-            f.write("\n".join(lines) + "\n")
-    idx = ["# Gallery", "", NOTE, "", "Each family page shows vanilla references from the game beside the generated examples.", "", "## Vanilla-style families", ""]
-    idx += [f"* [{fam}](vanilla/{fam}/README.md): {n} images" for fam, n in sorted(fams.get("vanilla", []))]
-    if fams.get("tno"):
-        idx += ["", "## TNO style", "", "The same families made to match *The New Order: Last Days of Europe*'s house style, from references of that mod's own art.", ""]
-        idx += [f"* [{fam}](tno/{fam}/README.md): {n} images" for fam, n in sorted(fams["tno"])]
-    idx += ["", "Families still waiting for a later build are not shown yet. [`manifest.json`](manifest.json) lists every image with its brief, build and check result."]
+        by_section.setdefault(section, []).append((fam, items))
+    titles = {"vanilla": ("Vanilla style", "Each family in the game's own style, beside a few vanilla references from *Hearts of Iron IV* by Paradox Interactive.")}
+    titles.update({st["key"]: (st["title"], st["intro"]) for st in STYLES})
+    order = ["vanilla"] + [st["key"] for st in STYLES]
+    lines = ["# Gallery", "", NOTE, "", "## Contents", ""]
+    for sec in order:
+        if sec not in by_section:
+            continue
+        title = titles[sec][0]
+        lines.append(f"* [{title}](#{anchor(title)}): " + ", ".join(f"[{fam}](#{anchor(sec + ' ' + fam)})" for fam, _ in by_section[sec]))
+    for sec in order:
+        if sec not in by_section:
+            continue
+        title, intro = titles[sec]
+        lines += ["", f"## {title}", "", intro]
+        for fam, items in by_section[sec]:
+            lines += ["", f'<a id="{anchor(sec + " " + fam)}"></a>', "", f"### {fam}" + ("" if sec == "vanilla" else f" ({title})"), ""]
+            if sec == "vanilla" and refs.get(fam):
+                lines += ["Vanilla: " + " ".join(f'<img src="vanilla/{fam}/{r}" alt="vanilla {fam}" title="Hearts of Iron IV (Paradox Interactive)">' for r in refs[fam]), ""]
+            cells = []
+            for e in items:
+                tip = e["brief"].replace('"', "'").replace("\n", " ")[:300] + f" (build {e['build']}, {e['size'][0]}x{e['size'][1]})"
+                img = f'<img src="{e["native"]}" alt="{e["asset"]}" title="{tip}">'
+                cells.append(f'<a href="{e["enlarged"] or e["native"]}">{img}</a>')
+            lines += ["Generated: " + " ".join(cells), ""]
+    lines += ["", "Families still waiting for a later build are not shown yet. [`manifest.json`](manifest.json) lists every image with its brief, build and check result."]
     with open(os.path.join(out, "README.md"), "w", encoding="utf-8", newline="\n") as f:
-        f.write("\n".join(idx) + "\n")
+        f.write("\n".join(lines) + "\n")
 
 
 if __name__ == "__main__":

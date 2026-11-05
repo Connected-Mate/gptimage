@@ -5364,6 +5364,54 @@
   {
    "section": "vanilla",
    "family": "leader_portrait",
+   "asset": "american_new_deal_president",
+   "brief": "A cheerful American president in his fifties, pinstripe suit, wire-rimmed glasses, hopeful chin-up smile, limestone portico and a bright sky behind, festive optimistic mood. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/leader_portrait/american_new_deal_president.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "leader_portrait",
+   "asset": "argentine_colonel_president",
+   "brief": "A charismatic Argentine colonel-president in his forties, open-collared uniform tunic, slicked dark hair, confident grin, a cheering crowd on a plaza blurred behind him. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/leader_portrait/argentine_colonel_president.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "leader_portrait",
+   "asset": "australian_outback_premier",
+   "brief": "A rugged Australian prime minister in his sixties, square jaw, sunburnt face, brown suit, dry half-grin, red outback horizon and a corrugated-iron shed behind him. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/leader_portrait/australian_outback_premier.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "leader_portrait",
    "asset": "balkan_queen_regent",
    "brief": "A young Yugoslav queen regent in her twenties, black mourning dress, pearl choker and short veil, solemn composed expression, candlelit palace hall glowing behind her. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
    "build": "0.3.3",
@@ -5412,6 +5460,38 @@
   {
    "section": "vanilla",
    "family": "leader_portrait",
+   "asset": "central_european_chancellor",
+   "brief": "A Central European republican chancellor in his sixties, wing collar and pince-nez, gaunt worried face, tall arched city hall windows behind him, anxious interwar mood. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/leader_portrait/central_european_chancellor.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "leader_portrait",
+   "asset": "chilean_patrician_president",
+   "brief": "An elderly Chilean president in his seventies, black suit, white goatee, patrician sadness in his eyes, snowcapped Andean peaks seen through a window behind him. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/leader_portrait/chilean_patrician_president.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "leader_portrait",
    "asset": "chinese_revolutionary_chair",
    "brief": "A Chinese republican revolutionary leader in a high-collared grey tunic, cropped hair, intense fierce gaze, bare rust-coloured hills and a faded cloth backdrop behind, grim resolve. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
    "build": "0.3.3",
@@ -5422,6 +5502,22 @@
    "vanilla_check": "pass",
    "subfamily": "all",
    "native": "vanilla/leader_portrait/chinese_revolutionary_chair.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "leader_portrait",
+   "asset": "egyptian_boy_king",
+   "brief": "A young plump Egyptian king in a red tarboosh and white naval dress uniform, shy smile, palace garden with palms and a fountain softly lit behind him. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/leader_portrait/egyptian_boy_king.webp",
    "enlarged": null,
    "scale": 1
   },
@@ -5460,6 +5556,54 @@
   {
    "section": "vanilla",
    "family": "leader_portrait",
+   "asset": "french_woman_premier",
+   "brief": "A French woman premier in her fifties, tailored dark suit, hat with a small veil, sharp intelligent gaze, Parisian zinc rooftops behind her, tense mood before a crisis. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/leader_portrait/french_woman_premier.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "leader_portrait",
+   "asset": "indian_nationalist_woman",
+   "brief": "An Indian nationalist woman leader in her forties, white cotton sari with a shawl, spectacles, fierce calm gaze, a vast crowd with raised banners blurred behind her. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/leader_portrait/indian_nationalist_woman.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "leader_portrait",
+   "asset": "irish_scholar_premier",
+   "brief": "A tall bespectacled Irish prime minister in his fifties, long dark coat, austere scholarly expression, a row of grey Georgian doors behind him in drizzle. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/leader_portrait/irish_scholar_premier.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "leader_portrait",
    "asset": "japanese_cabinet_leader",
    "brief": "A Japanese prime minister in his fifties, round spectacles, formal black morning coat, rigid dignified expression, paper screens and cherry blossom branches behind him. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
    "build": "0.3.3",
@@ -5476,6 +5620,22 @@
   {
    "section": "vanilla",
    "family": "leader_portrait",
+   "asset": "mexican_reform_president",
+   "brief": "A Mexican reformist president in his fifties, dark suit, thick moustache, stern warm eyes, oil derricks and an adobe wall behind him. Bold carved two-colour linocut look. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/leader_portrait/mexican_reform_president.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "leader_portrait",
    "asset": "mongolian_steppe_regent",
    "brief": "An elderly Mongolian regent in an embroidered silk deel and fur-trimmed hat, wise lined face, calm gaze, windswept steppe and felt yurts behind, soft flat gouache colours. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
    "build": "0.3.3",
@@ -5486,6 +5646,22 @@
    "vanilla_check": "pass",
    "subfamily": "all",
    "native": "vanilla/leader_portrait/mongolian_steppe_regent.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "leader_portrait",
+   "asset": "persian_young_monarch",
+   "brief": "A slim young Persian monarch in a braided military uniform with a sash, dark moustache, wary yet hopeful expression, turquoise-tiled mosque dome rising behind him. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/leader_portrait/persian_young_monarch.webp",
    "enlarged": null,
    "scale": 1
   },
@@ -5524,6 +5700,38 @@
   {
    "section": "vanilla",
    "family": "leader_portrait",
+   "asset": "swedish_social_democrat",
+   "brief": "A calm Swedish prime minister in his fifties, round glasses, neat grey suit, gentle pragmatic smile, harbour windows with pale northern light behind him, quiet optimistic mood. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/leader_portrait/swedish_social_democrat.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "leader_portrait",
+   "asset": "thai_field_marshal_premier",
+   "brief": "A Thai field marshal premier in a white tropical uniform with a high collar, round face, calm sly smile, ornate gilded temple spire shimmering behind him. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/leader_portrait/thai_field_marshal_premier.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "leader_portrait",
    "asset": "turkish_republican_statesman",
    "brief": "A statesman of an Anatolian republic in his fifties, dark double-breasted suit, composed and proud, standing before a plain modern parliament wall in clear morning light. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
    "build": "0.3.3",
@@ -5534,6 +5742,54 @@
    "vanilla_check": "pass",
    "subfamily": "all",
    "native": "vanilla/leader_portrait/turkish_republican_statesman.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "commander_portrait",
+   "asset": "american_pacific_general",
+   "brief": "An American general in a khaki shirt and an officer's cap with a corncob pipe, squinting at the distance, palms and a landing-craft beach blurred behind him. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/commander_portrait/american_pacific_general.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "commander_portrait",
+   "asset": "australian_slouch_general",
+   "brief": "An Australian general in a slouch hat with one brim pinned up and open-collar bush shirt, sun-creased face, quiet confident stare, dry scrub and tents behind him. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/commander_portrait/australian_slouch_general.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "commander_portrait",
+   "asset": "chinese_nationalist_general",
+   "brief": "A Chinese nationalist general in a pressed grey-blue uniform and peaked cap with a leather Sam Browne belt, lean stern face, a smoky ruined city wall behind him. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/commander_portrait/chinese_nationalist_general.webp",
    "enlarged": null,
    "scale": 1
   },
@@ -5556,6 +5812,70 @@
   {
    "section": "vanilla",
    "family": "commander_portrait",
+   "asset": "french_navy_vice_admiral",
+   "brief": "A French vice admiral in a dark naval jacket with gold sleeve rings and a kepi, trimmed white beard, proud thoughtful expression, a stone harbour fort at golden hour behind him. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/commander_portrait/french_navy_vice_admiral.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "commander_portrait",
+   "asset": "italian_bersaglieri_colonel",
+   "brief": "An Italian colonel of light infantry in a tunic and a wide hat bristling with cock feathers, proud grin and twirled moustache, sunlit olive hills behind him. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/commander_portrait/italian_bersaglieri_colonel.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "commander_portrait",
+   "asset": "japanese_army_general",
+   "brief": "A Japanese army general in a khaki tunic with a sabre belt and peaked cap, round spectacles, impassive expression, soft mist over pine hills behind him. Soft flat matte gouache colours. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/commander_portrait/japanese_army_general.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "commander_portrait",
+   "asset": "polish_cavalry_colonel",
+   "brief": "A Polish cavalry colonel in a four-cornered rogatywka cap and long grey greatcoat, thick moustache, gloved hand on a sabre hilt, misty autumn fields and a horse beside him. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/commander_portrait/polish_cavalry_colonel.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "commander_portrait",
    "asset": "royal_navy_admiral",
    "brief": "A British admiral in a double-breasted navy greatcoat with gold-braided peaked cap, binoculars at his chest, weathered calm face, grey sea and a destroyer on the horizon.",
    "build": "0.3.1",
@@ -5568,6 +5888,70 @@
    "native": "vanilla/commander_portrait/royal_navy_admiral.webp",
    "enlarged": null,
    "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "commander_portrait",
+   "asset": "soviet_tank_commander",
+   "brief": "A young Soviet tank commander in a padded leather helmet and dark overalls, goggles pushed up, grease-smudged determined face, a steel turret hatch and dusty steppe behind. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/commander_portrait/soviet_tank_commander.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "commander_portrait",
+   "asset": "turkish_highland_colonel",
+   "brief": "A Turkish colonel in a woolly kalpak and olive tunic with a bandolier, hawk-nosed and watchful, rocky Anatolian ridgeline in cold dawn light behind him. Grainy ink and sepia sketch. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/commander_portrait/turkish_highland_colonel.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "commander_portrait",
+   "asset": "yugoslav_partisan_commander",
+   "brief": "A Yugoslav woman partisan commander in a patched side cap and wool jacket, rifle sling on her shoulder, tired fierce eyes, beech forest and rising campfire smoke behind her. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/commander_portrait/yugoslav_partisan_commander.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "advisor_card",
+   "asset": "bishop_in_vestments",
+   "brief": "An elderly bishop in embroidered vestments and a tall mitre, kindly yet shrewd expression, hands clasped over a staff, candlelit stone cathedral nave behind him. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    65,
+    67
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/advisor_card/bishop_in_vestments.webp",
+   "enlarged": "vanilla/advisor_card/bishop_in_vestments@3x.webp",
+   "scale": 3
   },
   {
    "section": "vanilla",
@@ -5588,6 +5972,22 @@
   {
    "section": "vanilla",
    "family": "advisor_card",
+   "asset": "economist_spectacles",
+   "brief": "A thin economist in thick spectacles and a rumpled tweed jacket, holding a sheaf of charts, mild distracted look, a cluttered university study with bookshelves behind him. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    65,
+    67
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/advisor_card/economist_spectacles.webp",
+   "enlarged": "vanilla/advisor_card/economist_spectacles@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "advisor_card",
    "asset": "finance_minister_ledger",
    "brief": "A portly finance minister in a three-piece suit and pince-nez, hand resting on a thick ledger, cautious frown, an oak-panelled treasury office behind him.",
    "build": "0.3.1",
@@ -5600,6 +6000,278 @@
    "native": "vanilla/advisor_card/finance_minister_ledger.webp",
    "enlarged": "vanilla/advisor_card/finance_minister_ledger@3x.webp",
    "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "advisor_card",
+   "asset": "foreign_minister_gloves",
+   "brief": "A suave foreign minister in a tailsuit with white gloves and a silk top hat under one arm, diplomatic smile, ornate embassy salon with a chandelier behind him. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    65,
+    67
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/advisor_card/foreign_minister_gloves.webp",
+   "enlarged": "vanilla/advisor_card/foreign_minister_gloves@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "advisor_card",
+   "asset": "industrialist_top_hat",
+   "brief": "A wealthy industrialist in a top hat and fur-collared coat, gold watch chain across his waistcoat, satisfied smirk, smoking factory chimneys glowing behind him. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    65,
+    67
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/advisor_card/industrialist_top_hat.webp",
+   "enlarged": "vanilla/advisor_card/industrialist_top_hat@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "advisor_card",
+   "asset": "labour_minister_woman",
+   "brief": "A confident woman labour minister in a plain wool suit and a brooch, sleeves ready for work, warm determined smile, a bustling factory floor of workers behind her. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    65,
+    67
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/advisor_card/labour_minister_woman.webp",
+   "enlarged": "vanilla/advisor_card/labour_minister_woman@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "advisor_card",
+   "asset": "naval_minister_sea_cap",
+   "brief": "A jovial naval minister in a white-topped officer's cap and dark double-breasted jacket, binoculars around his neck, a model battleship on the desk beside him, sea light through windows. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    65,
+    67
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "naval",
+   "native": "vanilla/advisor_card/naval_minister_sea_cap.webp",
+   "enlarged": "vanilla/advisor_card/naval_minister_sea_cap@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "advisor_card",
+   "asset": "police_chief_trenchcoat",
+   "brief": "A hard-faced police chief in a long leather coat and peaked cap, arms folded, cold watchful eyes, a rainy street with a parked black car behind him. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    65,
+    67
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/advisor_card/police_chief_trenchcoat.webp",
+   "enlarged": "vanilla/advisor_card/police_chief_trenchcoat@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "advisor_card",
+   "asset": "propaganda_chief_megaphone",
+   "brief": "A slick propaganda chief in a sharp suit, hair swept back, smiling confidently beside a large loudspeaker and rolls of poster paper in a busy print shop. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    65,
+    67
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "politics",
+   "native": "vanilla/advisor_card/propaganda_chief_megaphone.webp",
+   "enlarged": "vanilla/advisor_card/propaganda_chief_megaphone@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "advisor_card",
+   "asset": "spymaster_in_shadow",
+   "brief": "A pale intelligence chief in a dark overcoat and round glasses, fingertips pressed together, half his face in shadow, a wall of locked filing cabinets behind him. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    65,
+    67
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/advisor_card/spymaster_in_shadow.webp",
+   "enlarged": "vanilla/advisor_card/spymaster_in_shadow@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "advisor_card",
+   "asset": "war_minister_greatcoat",
+   "brief": "A stocky war minister in a greatcoat with broad lapels, bristling grey moustache, gesturing firmly with one fist, a wall of telephones and dispatches behind him. Grainy ink and sepia sketch. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    65,
+    67
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "war",
+   "native": "vanilla/advisor_card/war_minister_greatcoat.webp",
+   "enlarged": "vanilla/advisor_card/war_minister_greatcoat@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "flag",
+   "asset": "BAR_republican",
+   "brief": "A fictional flag with a red field crossed by a broad white diagonal stripe from the lower hoist to the upper fly, and a blue triangle at the hoist.",
+   "build": "0.3.3",
+   "size": [
+    82,
+    52
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/flag/BAR_republican.webp",
+   "enlarged": "vanilla/flag/BAR_republican@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "flag",
+   "asset": "BRO_republican",
+   "brief": "A fictional flag with two horizontal bands of green over white, and a yellow circle at the centre enclosing a small red liberty cap.",
+   "build": "0.3.3",
+   "size": [
+    82,
+    52
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/flag/BRO_republican.webp",
+   "enlarged": "vanilla/flag/BRO_republican@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "flag",
+   "asset": "CAS_neutral",
+   "brief": "A fictional flag split on the diagonal into pale grey in the upper hoist and sea green in the lower fly, with a small white circle at the centre.",
+   "build": "0.3.3",
+   "size": [
+    82,
+    52
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/flag/CAS_neutral.webp",
+   "enlarged": "vanilla/flag/CAS_neutral@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "flag",
+   "asset": "DAS_fascist",
+   "brief": "A fictional flag with a black field, a golden rising sun with straight rays on the centre line, and a broad red horizontal band across the lower third.",
+   "build": "0.3.3",
+   "size": [
+    82,
+    52
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/flag/DAS_fascist.webp",
+   "enlarged": "vanilla/flag/DAS_fascist@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "flag",
+   "asset": "ELD_monarchist",
+   "brief": "A fictional flag with a royal blue field, a golden crown above two crossed sceptres at the centre, and an ermine-white border with small black tails along the edge.",
+   "build": "0.3.3",
+   "size": [
+    82,
+    52
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/flag/ELD_monarchist.webp",
+   "enlarged": "vanilla/flag/ELD_monarchist@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "flag",
+   "asset": "HEL_monarchist",
+   "brief": "A fictional flag with a yellow field bearing a red rampant lion facing the hoist, and a blue canton at the upper hoist containing three small golden crowns.",
+   "build": "0.3.3",
+   "size": [
+    82,
+    52
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/flag/HEL_monarchist.webp",
+   "enlarged": "vanilla/flag/HEL_monarchist@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "flag",
+   "asset": "ISK_monarchist",
+   "brief": "A fictional flag of horizontal stripes alternating purple and white, with a white canton at the upper hoist holding a golden crowned eagle with spread wings.",
+   "build": "0.3.3",
+   "size": [
+    82,
+    52
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/flag/ISK_monarchist.webp",
+   "enlarged": "vanilla/flag/ISK_monarchist@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "flag",
+   "asset": "JOR_neutral",
+   "brief": "A fictional flag with a plain blue field, a white stylised mountain peak silhouette at the centre, and a thin white border around the edge.",
+   "build": "0.3.3",
+   "size": [
+    82,
+    52
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/flag/JOR_neutral.webp",
+   "enlarged": "vanilla/flag/JOR_neutral@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "flag",
+   "asset": "KHO_theocratic",
+   "brief": "A fictional flag with a deep purple field, a white cross with flared arms at the centre rimmed in gold, and a narrow golden border around the edge.",
+   "build": "0.3.3",
+   "size": [
+    82,
+    52
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/flag/KHO_theocratic.webp",
+   "enlarged": "vanilla/flag/KHO_theocratic@2x.webp",
+   "scale": 2
   },
   {
    "section": "vanilla",
@@ -5620,6 +6292,198 @@
   {
    "section": "vanilla",
    "family": "flag",
+   "asset": "MIR_theocratic",
+   "brief": "A fictional flag with a white field, a large golden domed temple with a slender spire under a rayed halo at the centre, and red bands along the top and bottom edges. Grainy ink and sepia sketch.",
+   "build": "0.3.3",
+   "size": [
+    82,
+    52
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/flag/MIR_theocratic.webp",
+   "enlarged": "vanilla/flag/MIR_theocratic@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "flag",
+   "asset": "MOS_fascist",
+   "brief": "A fictional flag with a black field, a bold upright red sword at the centre with a gold hilt, and a narrow white border running around all four edges. Bold carved two-colour linocut look.",
+   "build": "0.3.3",
+   "size": [
+    82,
+    52
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/flag/MOS_fascist.webp",
+   "enlarged": "vanilla/flag/MOS_fascist@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "flag",
+   "asset": "NAZ_theocratic",
+   "brief": "A fictional flag with a deep green field, a golden crescent cradling a large golden eight-pointed star at the centre, and a white border band at top and bottom.",
+   "build": "0.3.3",
+   "size": [
+    82,
+    52
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/flag/NAZ_theocratic.webp",
+   "enlarged": "vanilla/flag/NAZ_theocratic@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "flag",
+   "asset": "NEV_democratic",
+   "brief": "A fictional flag with a blue field bearing a ring of small white stars around a golden anchor at the centre. Bold carved two-colour linocut look.",
+   "build": "0.3.3",
+   "size": [
+    82,
+    52
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/flag/NEV_democratic.webp",
+   "enlarged": "vanilla/flag/NEV_democratic@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "flag",
+   "asset": "ORK_communist",
+   "brief": "A fictional flag with a red field, a large golden cogwheel with a white-outlined hollow centre, and a thick black diagonal stripe running from the upper hoist to the lower fly. Soft flat matte gouache colours.",
+   "build": "0.3.3",
+   "size": [
+    82,
+    52
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/flag/ORK_communist.webp",
+   "enlarged": "vanilla/flag/ORK_communist@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "flag",
+   "asset": "PAV_communist",
+   "brief": "A fictional flag with a red field, a white vertical stripe at the hoist, and a golden mountain peak topped by a small yellow star near the centre.",
+   "build": "0.3.3",
+   "size": [
+    82,
+    52
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/flag/PAV_communist.webp",
+   "enlarged": "vanilla/flag/PAV_communist@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "flag",
+   "asset": "QUA_republican",
+   "brief": "A fictional flag with two horizontal bands of ochre over teal, and a red disc at the centre bearing a white five-pointed star.",
+   "build": "0.3.3",
+   "size": [
+    82,
+    52
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/flag/QUA_republican.webp",
+   "enlarged": "vanilla/flag/QUA_republican@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "flag",
+   "asset": "SAV_republican",
+   "brief": "A fictional flag of diagonal bands of green and gold meeting at a white central disc that holds a small red mountain peak.",
+   "build": "0.3.3",
+   "size": [
+    82,
+    52
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/flag/SAV_republican.webp",
+   "enlarged": "vanilla/flag/SAV_republican@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "flag",
+   "asset": "SIL_democratic",
+   "brief": "A fictional flag with a forest green field and an off-centre white cross edged in thin red, the vertical arm of the cross set close to the hoist.",
+   "build": "0.3.3",
+   "size": [
+    82,
+    52
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/flag/SIL_democratic.webp",
+   "enlarged": "vanilla/flag/SIL_democratic@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "flag",
+   "asset": "TAV_neutral",
+   "brief": "A fictional flag with a plain white field, a single large green olive branch curving across the centre, and a thin horizontal green stripe along the bottom edge.",
+   "build": "0.3.3",
+   "size": [
+    82,
+    52
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/flag/TAV_neutral.webp",
+   "enlarged": "vanilla/flag/TAV_neutral@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "flag",
+   "asset": "TOL_democratic",
+   "brief": "A fictional flag with three vertical bands of red, white and navy, and a golden spreading oak tree standing at the centre of the white band.",
+   "build": "0.3.3",
+   "size": [
+    82,
+    52
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/flag/TOL_democratic.webp",
+   "enlarged": "vanilla/flag/TOL_democratic@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "flag",
+   "asset": "ULM_communist",
+   "brief": "A fictional flag with a plain red field and a thick blue vertical band at the hoist carrying one large white five-pointed star.",
+   "build": "0.3.3",
+   "size": [
+    82,
+    52
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/flag/ULM_communist.webp",
+   "enlarged": "vanilla/flag/ULM_communist@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "flag",
    "asset": "VOR_democratic",
    "brief": "A fictional flag of three horizontal bands of sky blue, white and navy, with a small golden sun with short straight rays at the centre of the white band.",
    "build": "0.3.1",
@@ -5631,6 +6495,22 @@
    "subfamily": null,
    "native": "vanilla/flag/VOR_democratic.webp",
    "enlarged": "vanilla/flag/VOR_democratic@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "flag",
+   "asset": "ZEL_fascist",
+   "brief": "A fictional flag with a black field, a bold red saltire edged in white, and a golden axe head at the centre where the diagonals cross.",
+   "build": "0.3.3",
+   "size": [
+    82,
+    52
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/flag/ZEL_fascist.webp",
+   "enlarged": "vanilla/flag/ZEL_fascist@2x.webp",
    "scale": 2
   },
   {
@@ -5716,6 +6596,38 @@
   {
    "section": "vanilla",
    "family": "faction_logo",
+   "asset": "anchor_rope_naval_league",
+   "brief": "A round emblem of a large anchor wrapped with rope on a navy blue disc, surrounded by a ring of white waves, calm maritime mood.",
+   "build": "0.3.3",
+   "size": [
+    200,
+    100
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/faction_logo/anchor_rope_naval_league.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "faction_logo",
+   "asset": "cogwheel_workers_front",
+   "brief": "A round red emblem with a large golden cogwheel at the centre, crossed by a wheat sheaf and a hammer-free wrench, with a thin black rim.",
+   "build": "0.3.3",
+   "size": [
+    200,
+    100
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/faction_logo/cogwheel_workers_front.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "faction_logo",
    "asset": "crossed_swords_laurel",
    "brief": "A round emblem of two crossed swords inside a laurel wreath, in steel grey and gold on a deep red disc, formal and martial.",
    "build": "0.3.1",
@@ -5732,6 +6644,22 @@
   {
    "section": "vanilla",
    "family": "faction_logo",
+   "asset": "eagle_shield_pact",
+   "brief": "A heraldic shield emblem bearing a spread-winged eagle in gold over a black field, with a red border and a small crown above it. Bold carved two-colour linocut look.",
+   "build": "0.3.3",
+   "size": [
+    200,
+    100
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/faction_logo/eagle_shield_pact.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "faction_logo",
    "asset": "five_star_alliance",
    "brief": "A round blue emblem with a ring of white stars circling a large central golden star, with a thin gold rim, democratic and hopeful.",
    "build": "0.3.1",
@@ -5742,6 +6670,54 @@
    "vanilla_check": "pass",
    "subfamily": null,
    "native": "vanilla/faction_logo/five_star_alliance.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "faction_logo",
+   "asset": "rising_sun_east_union",
+   "brief": "A round emblem of a half-risen golden sun with long alternating rays over a calm teal sea, ringed by a thin crimson band.",
+   "build": "0.3.3",
+   "size": [
+    200,
+    100
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/faction_logo/rising_sun_east_union.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "faction_logo",
+   "asset": "torch_of_liberty",
+   "brief": "A round emblem of a raised torch with a bright orange flame and rays of light on a deep green disc, with a gold rim, triumphant and hopeful.",
+   "build": "0.3.3",
+   "size": [
+    200,
+    100
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/faction_logo/torch_of_liberty.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "faction_logo",
+   "asset": "winged_wheel_railway_bloc",
+   "brief": "A shield emblem of a spoked locomotive wheel with outstretched wings, silver on a dark blue field with a gold border.",
+   "build": "0.3.3",
+   "size": [
+    200,
+    100
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/faction_logo/winged_wheel_railway_bloc.webp",
    "enlarged": null,
    "scale": 1
   },
@@ -6803,262 +7779,6 @@
   },
   {
    "section": "tno",
-   "family": "achievement",
-   "asset": "broken_rifle_plate",
-   "brief": "A broken rifle. In TNO's style: embossed greyscale relief of the subject on a riveted brushed steel plate.",
-   "build": "0.3.3",
-   "size": [
-    64,
-    64
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tno/achievement/broken_rifle_plate.webp",
-   "enlarged": "tno/achievement/broken_rifle_plate@3x.webp",
-   "scale": 3
-  },
-  {
-   "section": "tno",
-   "family": "achievement",
-   "asset": "crown_plate",
-   "brief": "A crown. In TNO's style: embossed greyscale relief of the subject on a riveted brushed steel plate.",
-   "build": "0.3.3",
-   "size": [
-    64,
-    64
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tno/achievement/crown_plate.webp",
-   "enlarged": "tno/achievement/crown_plate@3x.webp",
-   "scale": 3
-  },
-  {
-   "section": "tno",
-   "family": "achievement",
-   "asset": "globe_plate",
-   "brief": "A globe. In TNO's style: embossed greyscale relief of the subject on a riveted brushed steel plate.",
-   "build": "0.3.3",
-   "size": [
-    64,
-    64
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tno/achievement/globe_plate.webp",
-   "enlarged": "tno/achievement/globe_plate@3x.webp",
-   "scale": 3
-  },
-  {
-   "section": "tno",
-   "family": "achievement",
-   "asset": "handshake_plate",
-   "brief": "Two hands shaking. In TNO's style: embossed greyscale relief of the subject on a riveted brushed steel plate.",
-   "build": "0.3.3",
-   "size": [
-    64,
-    64
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tno/achievement/handshake_plate.webp",
-   "enlarged": "tno/achievement/handshake_plate@3x.webp",
-   "scale": 3
-  },
-  {
-   "section": "tno",
-   "family": "achievement",
-   "asset": "nuclear_symbol_plate",
-   "brief": "An atom symbol. In TNO's style: embossed greyscale relief of the subject on a riveted brushed steel plate.",
-   "build": "0.3.3",
-   "size": [
-    64,
-    64
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tno/achievement/nuclear_symbol_plate.webp",
-   "enlarged": "tno/achievement/nuclear_symbol_plate@3x.webp",
-   "scale": 3
-  },
-  {
-   "section": "tno",
-   "family": "achievement",
-   "asset": "rocket_plate",
-   "brief": "A rocket. In TNO's style: embossed greyscale relief of the subject on a riveted brushed steel plate.",
-   "build": "0.3.3",
-   "size": [
-    64,
-    64
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tno/achievement/rocket_plate.webp",
-   "enlarged": "tno/achievement/rocket_plate@3x.webp",
-   "scale": 3
-  },
-  {
-   "section": "tno",
-   "family": "commander_trait",
-   "asset": "artillery_trait",
-   "brief": "An artillery shell. In TNO's style: pixel-art medal with a salmon or teal ribbon and a small teal pictogram.",
-   "build": "0.3.3",
-   "size": [
-    23,
-    33
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tno/commander_trait/artillery_trait.webp",
-   "enlarged": "tno/commander_trait/artillery_trait@4x.webp",
-   "scale": 4
-  },
-  {
-   "section": "tno",
-   "family": "commander_trait",
-   "asset": "guerrilla_trait",
-   "brief": "A rifle in grass. In TNO's style: pixel-art medal with a salmon or teal ribbon and a small teal pictogram.",
-   "build": "0.3.3",
-   "size": [
-    23,
-    33
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tno/commander_trait/guerrilla_trait.webp",
-   "enlarged": "tno/commander_trait/guerrilla_trait@4x.webp",
-   "scale": 4
-  },
-  {
-   "section": "tno",
-   "family": "commander_trait",
-   "asset": "logistics_trait",
-   "brief": "A supply truck. In TNO's style: pixel-art medal with a salmon or teal ribbon and a small teal pictogram.",
-   "build": "0.3.3",
-   "size": [
-    23,
-    33
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tno/commander_trait/logistics_trait.webp",
-   "enlarged": "tno/commander_trait/logistics_trait@4x.webp",
-   "scale": 4
-  },
-  {
-   "section": "tno",
-   "family": "commander_trait",
-   "asset": "mountaineer_trait",
-   "brief": "A mountain peak. In TNO's style: pixel-art medal with a salmon or teal ribbon and a small teal pictogram.",
-   "build": "0.3.3",
-   "size": [
-    23,
-    33
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tno/commander_trait/mountaineer_trait.webp",
-   "enlarged": "tno/commander_trait/mountaineer_trait@4x.webp",
-   "scale": 4
-  },
-  {
-   "section": "tno",
-   "family": "commander_trait",
-   "asset": "paratrooper_trait",
-   "brief": "A parachute. In TNO's style: pixel-art medal with a salmon or teal ribbon and a small teal pictogram.",
-   "build": "0.3.3",
-   "size": [
-    23,
-    33
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tno/commander_trait/paratrooper_trait.webp",
-   "enlarged": "tno/commander_trait/paratrooper_trait@4x.webp",
-   "scale": 4
-  },
-  {
-   "section": "tno",
-   "family": "decision",
-   "asset": "factory_gear",
-   "brief": "A factory with a gear. In TNO's style: flat teal pictogram on transparent, crisp pixel edges, white and salmon red accents only, no frame and no shading.",
-   "build": "0.3.3",
-   "size": [
-    33,
-    32
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tno/decision/factory_gear.webp",
-   "enlarged": "tno/decision/factory_gear@4x.webp",
-   "scale": 4
-  },
-  {
-   "section": "tno",
-   "family": "decision",
-   "asset": "handshake_simple",
-   "brief": "Two hands shaking. In TNO's style: flat teal pictogram on transparent, crisp pixel edges, white and salmon red accents only, no frame and no shading.",
-   "build": "0.3.3",
-   "size": [
-    33,
-    32
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tno/decision/handshake_simple.webp",
-   "enlarged": "tno/decision/handshake_simple@4x.webp",
-   "scale": 4
-  },
-  {
-   "section": "tno",
-   "family": "decision",
-   "asset": "jet_plane_top",
-   "brief": "A jet plane seen from above. In TNO's style: flat teal pictogram on transparent, crisp pixel edges, white and salmon red accents only, no frame and no shading.",
-   "build": "0.3.3",
-   "size": [
-    33,
-    32
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tno/decision/jet_plane_top.webp",
-   "enlarged": "tno/decision/jet_plane_top@4x.webp",
-   "scale": 4
-  },
-  {
-   "section": "tno",
-   "family": "decision",
-   "asset": "rifle_upright",
-   "brief": "An upright rifle. In TNO's style: flat teal pictogram on transparent, crisp pixel edges, white and salmon red accents only, no frame and no shading.",
-   "build": "0.3.3",
-   "size": [
-    33,
-    32
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tno/decision/rifle_upright.webp",
-   "enlarged": "tno/decision/rifle_upright@4x.webp",
-   "scale": 4
-  },
-  {
-   "section": "tno",
-   "family": "decision",
-   "asset": "warning_triangle",
-   "brief": "A warning triangle with an exclamation mark. In TNO's style: flat teal pictogram on transparent, crisp pixel edges, white and salmon red accents only, no frame and no shading.",
-   "build": "0.3.3",
-   "size": [
-    33,
-    32
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tno/decision/warning_triangle.webp",
-   "enlarged": "tno/decision/warning_triangle@4x.webp",
-   "scale": 4
-  },
-  {
-   "section": "tno",
    "family": "focus",
    "asset": "ballot_and_fist",
    "brief": "A raised fist holding a folded ballot paper. In TNO's style: silver or grey monochrome subject with a hard dark outline, dark laurel wreath or dark metal frame, at most one accent colour, no warm gold plaque and no red or brown cloth.",
@@ -7248,134 +7968,6 @@
    "native": "tno/focus/tank_in_ruined_street.webp",
    "enlarged": "tno/focus/tank_in_ruined_street@2x.webp",
    "scale": 2
-  },
-  {
-   "section": "tno",
-   "family": "gui_texture",
-   "asset": "terminal_button_wide",
-   "brief": "A wide button. In TNO's style: near-black navy panel with 1 px teal and green lines, terminal look, no ornament.",
-   "build": "0.3.3",
-   "size": [
-    300,
-    200
-   ],
-   "vanilla_check": "unavailable",
-   "subfamily": null,
-   "native": "tno/gui_texture/terminal_button_wide.webp",
-   "enlarged": null,
-   "scale": 1
-  },
-  {
-   "section": "tno",
-   "family": "gui_texture",
-   "asset": "terminal_input_box",
-   "brief": "A text input box with a prompt. In TNO's style: near-black navy panel with 1 px teal and green lines, terminal look, no ornament.",
-   "build": "0.3.3",
-   "size": [
-    300,
-    200
-   ],
-   "vanilla_check": "unavailable",
-   "subfamily": null,
-   "native": "tno/gui_texture/terminal_input_box.webp",
-   "enlarged": null,
-   "scale": 1
-  },
-  {
-   "section": "tno",
-   "family": "gui_texture",
-   "asset": "terminal_main_panel",
-   "brief": "A main window panel with a header bar. In TNO's style: near-black navy panel with 1 px teal and green lines, terminal look, no ornament.",
-   "build": "0.3.3",
-   "size": [
-    300,
-    200
-   ],
-   "vanilla_check": "unavailable",
-   "subfamily": null,
-   "native": "tno/gui_texture/terminal_main_panel.webp",
-   "enlarged": null,
-   "scale": 1
-  },
-  {
-   "section": "tno",
-   "family": "gui_texture",
-   "asset": "terminal_map_frame",
-   "brief": "A frame for a small map with a grid. In TNO's style: near-black navy panel with 1 px teal and green lines, terminal look, no ornament.",
-   "build": "0.3.3",
-   "size": [
-    300,
-    200
-   ],
-   "vanilla_check": "unavailable",
-   "subfamily": null,
-   "native": "tno/gui_texture/terminal_map_frame.webp",
-   "enlarged": null,
-   "scale": 1
-  },
-  {
-   "section": "tno",
-   "family": "gui_texture",
-   "asset": "terminal_progress_bar",
-   "brief": "A progress bar frame. In TNO's style: near-black navy panel with 1 px teal and green lines, terminal look, no ornament.",
-   "build": "0.3.3",
-   "size": [
-    300,
-    200
-   ],
-   "vanilla_check": "unavailable",
-   "subfamily": null,
-   "native": "tno/gui_texture/terminal_progress_bar.webp",
-   "enlarged": null,
-   "scale": 1
-  },
-  {
-   "section": "tno",
-   "family": "gui_texture",
-   "asset": "terminal_side_panel",
-   "brief": "A tall side panel with two inset boxes. In TNO's style: near-black navy panel with 1 px teal and green lines, terminal look, no ornament.",
-   "build": "0.3.3",
-   "size": [
-    300,
-    200
-   ],
-   "vanilla_check": "unavailable",
-   "subfamily": null,
-   "native": "tno/gui_texture/terminal_side_panel.webp",
-   "enlarged": null,
-   "scale": 1
-  },
-  {
-   "section": "tno",
-   "family": "gui_texture",
-   "asset": "terminal_table_header",
-   "brief": "A table panel with column header cells. In TNO's style: near-black navy panel with 1 px teal and green lines, terminal look, no ornament.",
-   "build": "0.3.3",
-   "size": [
-    300,
-    200
-   ],
-   "vanilla_check": "unavailable",
-   "subfamily": null,
-   "native": "tno/gui_texture/terminal_table_header.webp",
-   "enlarged": null,
-   "scale": 1
-  },
-  {
-   "section": "tno",
-   "family": "gui_texture",
-   "asset": "terminal_tooltip",
-   "brief": "A tooltip background. In TNO's style: near-black navy panel with 1 px teal and green lines, terminal look, no ornament.",
-   "build": "0.3.3",
-   "size": [
-    300,
-    200
-   ],
-   "vanilla_check": "unavailable",
-   "subfamily": null,
-   "native": "tno/gui_texture/terminal_tooltip.webp",
-   "enlarged": null,
-   "scale": 1
   },
   {
    "section": "tno",
@@ -7571,131 +8163,83 @@
   },
   {
    "section": "tno",
-   "family": "leader_portrait",
-   "asset": "admiral_white_cap",
-   "brief": "An admiral in a white cap. In TNO's style: softly colourised photograph of an invented person, close head-and-shoulders crop, pale cream-grey vignette background. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "family": "decision",
+   "asset": "factory_gear",
+   "brief": "A factory with a gear. In TNO's style: flat teal pictogram on transparent, crisp pixel edges, white and salmon red accents only, no frame and no shading.",
    "build": "0.3.3",
    "size": [
-    156,
-    210
+    33,
+    32
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "tno/leader_portrait/admiral_white_cap.webp",
-   "enlarged": null,
-   "scale": 1
+   "native": "tno/decision/factory_gear.webp",
+   "enlarged": "tno/decision/factory_gear@4x.webp",
+   "scale": 4
   },
   {
    "section": "tno",
-   "family": "leader_portrait",
-   "asset": "bearded_warlord",
-   "brief": "A bearded regional warlord in a fur hat. In TNO's style: softly colourised photograph of an invented person, close head-and-shoulders crop, pale cream-grey vignette background. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "family": "decision",
+   "asset": "handshake_simple",
+   "brief": "Two hands shaking. In TNO's style: flat teal pictogram on transparent, crisp pixel edges, white and salmon red accents only, no frame and no shading.",
    "build": "0.3.3",
    "size": [
-    156,
-    210
+    33,
+    32
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "tno/leader_portrait/bearded_warlord.webp",
-   "enlarged": null,
-   "scale": 1
+   "native": "tno/decision/handshake_simple.webp",
+   "enlarged": "tno/decision/handshake_simple@4x.webp",
+   "scale": 4
   },
   {
    "section": "tno",
-   "family": "leader_portrait",
-   "asset": "bespectacled_technocrat",
-   "brief": "A bespectacled technocrat with slicked hair. In TNO's style: softly colourised photograph of an invented person, close head-and-shoulders crop, pale cream-grey vignette background. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "family": "decision",
+   "asset": "jet_plane_top",
+   "brief": "A jet plane seen from above. In TNO's style: flat teal pictogram on transparent, crisp pixel edges, white and salmon red accents only, no frame and no shading.",
    "build": "0.3.3",
    "size": [
-    156,
-    210
+    33,
+    32
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "tno/leader_portrait/bespectacled_technocrat.webp",
-   "enlarged": null,
-   "scale": 1
+   "native": "tno/decision/jet_plane_top.webp",
+   "enlarged": "tno/decision/jet_plane_top@4x.webp",
+   "scale": 4
   },
   {
    "section": "tno",
-   "family": "leader_portrait",
-   "asset": "general_peaked_cap",
-   "brief": "A stern general in a peaked cap. In TNO's style: softly colourised photograph of an invented person, close head-and-shoulders crop, pale cream-grey vignette background. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "family": "decision",
+   "asset": "rifle_upright",
+   "brief": "An upright rifle. In TNO's style: flat teal pictogram on transparent, crisp pixel edges, white and salmon red accents only, no frame and no shading.",
    "build": "0.3.3",
    "size": [
-    156,
-    210
+    33,
+    32
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "tno/leader_portrait/general_peaked_cap.webp",
-   "enlarged": null,
-   "scale": 1
+   "native": "tno/decision/rifle_upright.webp",
+   "enlarged": "tno/decision/rifle_upright@4x.webp",
+   "scale": 4
   },
   {
    "section": "tno",
-   "family": "leader_portrait",
-   "asset": "grey_haired_premier",
-   "brief": "A grey-haired premier in a dark suit, 1960s. In TNO's style: softly colourised photograph of an invented person, close head-and-shoulders crop, pale cream-grey vignette background. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "family": "decision",
+   "asset": "warning_triangle",
+   "brief": "A warning triangle with an exclamation mark. In TNO's style: flat teal pictogram on transparent, crisp pixel edges, white and salmon red accents only, no frame and no shading.",
    "build": "0.3.3",
    "size": [
-    156,
-    210
+    33,
+    32
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "tno/leader_portrait/grey_haired_premier.webp",
-   "enlarged": null,
-   "scale": 1
-  },
-  {
-   "section": "tno",
-   "family": "leader_portrait",
-   "asset": "union_leader_cap",
-   "brief": "A trade union leader in a flat cap. In TNO's style: softly colourised photograph of an invented person, close head-and-shoulders crop, pale cream-grey vignette background. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
-   "build": "0.3.3",
-   "size": [
-    156,
-    210
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tno/leader_portrait/union_leader_cap.webp",
-   "enlarged": null,
-   "scale": 1
-  },
-  {
-   "section": "tno",
-   "family": "leader_portrait",
-   "asset": "woman_minister",
-   "brief": "A woman minister with pinned-up hair and pearl earrings. In TNO's style: softly colourised photograph of an invented person, close head-and-shoulders crop, pale cream-grey vignette background. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
-   "build": "0.3.3",
-   "size": [
-    156,
-    210
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tno/leader_portrait/woman_minister.webp",
-   "enlarged": null,
-   "scale": 1
-  },
-  {
-   "section": "tno",
-   "family": "leader_portrait",
-   "asset": "young_revolutionary",
-   "brief": "A young revolutionary in an open-collar shirt. In TNO's style: softly colourised photograph of an invented person, close head-and-shoulders crop, pale cream-grey vignette background. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
-   "build": "0.3.3",
-   "size": [
-    156,
-    210
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tno/leader_portrait/young_revolutionary.webp",
-   "enlarged": null,
-   "scale": 1
+   "native": "tno/decision/warning_triangle.webp",
+   "enlarged": "tno/decision/warning_triangle@4x.webp",
+   "scale": 4
   },
   {
    "section": "tno",
@@ -7795,99 +8339,83 @@
   },
   {
    "section": "tno",
-   "family": "operation_picture",
-   "asset": "dead_drop_park_bench",
-   "brief": "A park bench with a newspaper left on it. In TNO's style: archival photograph toned teal, grime at the corners, thin teal border.",
+   "family": "commander_trait",
+   "asset": "artillery_trait",
+   "brief": "An artillery shell. In TNO's style: pixel-art medal with a salmon or teal ribbon and a small teal pictogram.",
    "build": "0.3.3",
    "size": [
-    210,
-    176
+    23,
+    33
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "tno/operation_picture/dead_drop_park_bench.webp",
-   "enlarged": null,
-   "scale": 1
+   "native": "tno/commander_trait/artillery_trait.webp",
+   "enlarged": "tno/commander_trait/artillery_trait@4x.webp",
+   "scale": 4
   },
   {
    "section": "tno",
-   "family": "operation_picture",
-   "asset": "forged_papers_desk",
-   "brief": "Forged passports on a desk under a lamp. In TNO's style: archival photograph toned teal, grime at the corners, thin teal border.",
+   "family": "commander_trait",
+   "asset": "guerrilla_trait",
+   "brief": "A rifle in grass. In TNO's style: pixel-art medal with a salmon or teal ribbon and a small teal pictogram.",
    "build": "0.3.3",
    "size": [
-    210,
-    176
+    23,
+    33
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "tno/operation_picture/forged_papers_desk.webp",
-   "enlarged": null,
-   "scale": 1
+   "native": "tno/commander_trait/guerrilla_trait.webp",
+   "enlarged": "tno/commander_trait/guerrilla_trait@4x.webp",
+   "scale": 4
   },
   {
    "section": "tno",
-   "family": "operation_picture",
-   "asset": "mountain_airdrop",
-   "brief": "Supply parachutes over a mountain valley. In TNO's style: archival photograph toned teal, grime at the corners, thin teal border.",
+   "family": "commander_trait",
+   "asset": "logistics_trait",
+   "brief": "A supply truck. In TNO's style: pixel-art medal with a salmon or teal ribbon and a small teal pictogram.",
    "build": "0.3.3",
    "size": [
-    210,
-    176
+    23,
+    33
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "tno/operation_picture/mountain_airdrop.webp",
-   "enlarged": null,
-   "scale": 1
+   "native": "tno/commander_trait/logistics_trait.webp",
+   "enlarged": "tno/commander_trait/logistics_trait@4x.webp",
+   "scale": 4
   },
   {
    "section": "tno",
-   "family": "operation_picture",
-   "asset": "night_harbour_infiltration",
-   "brief": "Frogmen slipping into a night harbour. In TNO's style: archival photograph toned teal, grime at the corners, thin teal border.",
+   "family": "commander_trait",
+   "asset": "mountaineer_trait",
+   "brief": "A mountain peak. In TNO's style: pixel-art medal with a salmon or teal ribbon and a small teal pictogram.",
    "build": "0.3.3",
    "size": [
-    210,
-    176
+    23,
+    33
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "tno/operation_picture/night_harbour_infiltration.webp",
-   "enlarged": null,
-   "scale": 1
+   "native": "tno/commander_trait/mountaineer_trait.webp",
+   "enlarged": "tno/commander_trait/mountaineer_trait@4x.webp",
+   "scale": 4
   },
   {
    "section": "tno",
-   "family": "operation_picture",
-   "asset": "radio_listening_post",
-   "brief": "Operators at a radio listening post. In TNO's style: archival photograph toned teal, grime at the corners, thin teal border.",
+   "family": "commander_trait",
+   "asset": "paratrooper_trait",
+   "brief": "A parachute. In TNO's style: pixel-art medal with a salmon or teal ribbon and a small teal pictogram.",
    "build": "0.3.3",
    "size": [
-    210,
-    176
+    23,
+    33
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "tno/operation_picture/radio_listening_post.webp",
-   "enlarged": null,
-   "scale": 1
-  },
-  {
-   "section": "tno",
-   "family": "operation_picture",
-   "asset": "rooftop_surveillance",
-   "brief": "A man watching a street from a rooftop with binoculars. In TNO's style: archival photograph toned teal, grime at the corners, thin teal border.",
-   "build": "0.3.3",
-   "size": [
-    210,
-    176
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tno/operation_picture/rooftop_surveillance.webp",
-   "enlarged": null,
-   "scale": 1
+   "native": "tno/commander_trait/paratrooper_trait.webp",
+   "enlarged": "tno/commander_trait/paratrooper_trait@4x.webp",
+   "scale": 4
   },
   {
    "section": "tno",
@@ -8083,6 +8611,230 @@
   },
   {
    "section": "tno",
+   "family": "operation_picture",
+   "asset": "dead_drop_park_bench",
+   "brief": "A park bench with a newspaper left on it. In TNO's style: archival photograph toned teal, grime at the corners, thin teal border.",
+   "build": "0.3.3",
+   "size": [
+    210,
+    176
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/operation_picture/dead_drop_park_bench.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "operation_picture",
+   "asset": "forged_papers_desk",
+   "brief": "Forged passports on a desk under a lamp. In TNO's style: archival photograph toned teal, grime at the corners, thin teal border.",
+   "build": "0.3.3",
+   "size": [
+    210,
+    176
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/operation_picture/forged_papers_desk.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "operation_picture",
+   "asset": "mountain_airdrop",
+   "brief": "Supply parachutes over a mountain valley. In TNO's style: archival photograph toned teal, grime at the corners, thin teal border.",
+   "build": "0.3.3",
+   "size": [
+    210,
+    176
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/operation_picture/mountain_airdrop.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "operation_picture",
+   "asset": "night_harbour_infiltration",
+   "brief": "Frogmen slipping into a night harbour. In TNO's style: archival photograph toned teal, grime at the corners, thin teal border.",
+   "build": "0.3.3",
+   "size": [
+    210,
+    176
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/operation_picture/night_harbour_infiltration.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "operation_picture",
+   "asset": "radio_listening_post",
+   "brief": "Operators at a radio listening post. In TNO's style: archival photograph toned teal, grime at the corners, thin teal border.",
+   "build": "0.3.3",
+   "size": [
+    210,
+    176
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/operation_picture/radio_listening_post.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "operation_picture",
+   "asset": "rooftop_surveillance",
+   "brief": "A man watching a street from a rooftop with binoculars. In TNO's style: archival photograph toned teal, grime at the corners, thin teal border.",
+   "build": "0.3.3",
+   "size": [
+    210,
+    176
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/operation_picture/rooftop_surveillance.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "technology",
+   "asset": "jet_interceptor",
+   "brief": "A swept-wing jet interceptor, label INTERCEPTOR 2. In TNO's style: teal line-art blueprint side view on a dark navy panel, name label top left in teal capitals, thin teal guide lines.",
+   "build": "0.3.3",
+   "size": [
+    146,
+    54
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/technology/jet_interceptor.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "technology",
+   "asset": "sam_launcher",
+   "brief": "A surface-to-air missile launcher on a truck, label SAM 2. In TNO's style: teal line-art blueprint side view on a dark navy panel, name label top left in teal capitals, thin teal guide lines.",
+   "build": "0.3.3",
+   "size": [
+    146,
+    54
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/technology/sam_launcher.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "achievement",
+   "asset": "broken_rifle_plate",
+   "brief": "A broken rifle. In TNO's style: embossed greyscale relief of the subject on a riveted brushed steel plate.",
+   "build": "0.3.3",
+   "size": [
+    64,
+    64
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/achievement/broken_rifle_plate.webp",
+   "enlarged": "tno/achievement/broken_rifle_plate@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "tno",
+   "family": "achievement",
+   "asset": "crown_plate",
+   "brief": "A crown. In TNO's style: embossed greyscale relief of the subject on a riveted brushed steel plate.",
+   "build": "0.3.3",
+   "size": [
+    64,
+    64
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/achievement/crown_plate.webp",
+   "enlarged": "tno/achievement/crown_plate@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "tno",
+   "family": "achievement",
+   "asset": "globe_plate",
+   "brief": "A globe. In TNO's style: embossed greyscale relief of the subject on a riveted brushed steel plate.",
+   "build": "0.3.3",
+   "size": [
+    64,
+    64
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/achievement/globe_plate.webp",
+   "enlarged": "tno/achievement/globe_plate@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "tno",
+   "family": "achievement",
+   "asset": "handshake_plate",
+   "brief": "Two hands shaking. In TNO's style: embossed greyscale relief of the subject on a riveted brushed steel plate.",
+   "build": "0.3.3",
+   "size": [
+    64,
+    64
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/achievement/handshake_plate.webp",
+   "enlarged": "tno/achievement/handshake_plate@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "tno",
+   "family": "achievement",
+   "asset": "nuclear_symbol_plate",
+   "brief": "An atom symbol. In TNO's style: embossed greyscale relief of the subject on a riveted brushed steel plate.",
+   "build": "0.3.3",
+   "size": [
+    64,
+    64
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/achievement/nuclear_symbol_plate.webp",
+   "enlarged": "tno/achievement/nuclear_symbol_plate@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "tno",
+   "family": "achievement",
+   "asset": "rocket_plate",
+   "brief": "A rocket. In TNO's style: embossed greyscale relief of the subject on a riveted brushed steel plate.",
+   "build": "0.3.3",
+   "size": [
+    64,
+    64
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/achievement/rocket_plate.webp",
+   "enlarged": "tno/achievement/rocket_plate@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "tno",
    "family": "super_event",
    "asset": "abandoned_capital",
    "brief": "An abandoned capital with empty avenues. In TNO's style: wide archival photograph toned teal and cyan, faint scanlines, muted.",
@@ -8211,33 +8963,257 @@
   },
   {
    "section": "tno",
-   "family": "technology",
-   "asset": "jet_interceptor",
-   "brief": "A swept-wing jet interceptor, label INTERCEPTOR 2. In TNO's style: teal line-art blueprint side view on a dark navy panel, name label top left in teal capitals, thin teal guide lines.",
+   "family": "leader_portrait",
+   "asset": "admiral_white_cap",
+   "brief": "An admiral in a white cap. In TNO's style: softly colourised photograph of an invented person, close head-and-shoulders crop, pale cream-grey vignette background. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
    "build": "0.3.3",
    "size": [
-    146,
-    54
+    156,
+    210
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "tno/technology/jet_interceptor.webp",
+   "native": "tno/leader_portrait/admiral_white_cap.webp",
    "enlarged": null,
    "scale": 1
   },
   {
    "section": "tno",
-   "family": "technology",
-   "asset": "sam_launcher",
-   "brief": "A surface-to-air missile launcher on a truck, label SAM 2. In TNO's style: teal line-art blueprint side view on a dark navy panel, name label top left in teal capitals, thin teal guide lines.",
+   "family": "leader_portrait",
+   "asset": "bearded_warlord",
+   "brief": "A bearded regional warlord in a fur hat. In TNO's style: softly colourised photograph of an invented person, close head-and-shoulders crop, pale cream-grey vignette background. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
    "build": "0.3.3",
    "size": [
-    146,
-    54
+    156,
+    210
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "tno/technology/sam_launcher.webp",
+   "native": "tno/leader_portrait/bearded_warlord.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "leader_portrait",
+   "asset": "bespectacled_technocrat",
+   "brief": "A bespectacled technocrat with slicked hair. In TNO's style: softly colourised photograph of an invented person, close head-and-shoulders crop, pale cream-grey vignette background. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/leader_portrait/bespectacled_technocrat.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "leader_portrait",
+   "asset": "general_peaked_cap",
+   "brief": "A stern general in a peaked cap. In TNO's style: softly colourised photograph of an invented person, close head-and-shoulders crop, pale cream-grey vignette background. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/leader_portrait/general_peaked_cap.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "leader_portrait",
+   "asset": "grey_haired_premier",
+   "brief": "A grey-haired premier in a dark suit, 1960s. In TNO's style: softly colourised photograph of an invented person, close head-and-shoulders crop, pale cream-grey vignette background. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/leader_portrait/grey_haired_premier.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "leader_portrait",
+   "asset": "union_leader_cap",
+   "brief": "A trade union leader in a flat cap. In TNO's style: softly colourised photograph of an invented person, close head-and-shoulders crop, pale cream-grey vignette background. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/leader_portrait/union_leader_cap.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "leader_portrait",
+   "asset": "woman_minister",
+   "brief": "A woman minister with pinned-up hair and pearl earrings. In TNO's style: softly colourised photograph of an invented person, close head-and-shoulders crop, pale cream-grey vignette background. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/leader_portrait/woman_minister.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "leader_portrait",
+   "asset": "young_revolutionary",
+   "brief": "A young revolutionary in an open-collar shirt. In TNO's style: softly colourised photograph of an invented person, close head-and-shoulders crop, pale cream-grey vignette background. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure.",
+   "build": "0.3.3",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/leader_portrait/young_revolutionary.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "gui_texture",
+   "asset": "terminal_button_wide",
+   "brief": "A wide button. In TNO's style: near-black navy panel with 1 px teal and green lines, terminal look, no ornament.",
+   "build": "0.3.3",
+   "size": [
+    300,
+    200
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "tno/gui_texture/terminal_button_wide.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "gui_texture",
+   "asset": "terminal_input_box",
+   "brief": "A text input box with a prompt. In TNO's style: near-black navy panel with 1 px teal and green lines, terminal look, no ornament.",
+   "build": "0.3.3",
+   "size": [
+    300,
+    200
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "tno/gui_texture/terminal_input_box.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "gui_texture",
+   "asset": "terminal_main_panel",
+   "brief": "A main window panel with a header bar. In TNO's style: near-black navy panel with 1 px teal and green lines, terminal look, no ornament.",
+   "build": "0.3.3",
+   "size": [
+    300,
+    200
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "tno/gui_texture/terminal_main_panel.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "gui_texture",
+   "asset": "terminal_map_frame",
+   "brief": "A frame for a small map with a grid. In TNO's style: near-black navy panel with 1 px teal and green lines, terminal look, no ornament.",
+   "build": "0.3.3",
+   "size": [
+    300,
+    200
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "tno/gui_texture/terminal_map_frame.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "gui_texture",
+   "asset": "terminal_progress_bar",
+   "brief": "A progress bar frame. In TNO's style: near-black navy panel with 1 px teal and green lines, terminal look, no ornament.",
+   "build": "0.3.3",
+   "size": [
+    300,
+    200
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "tno/gui_texture/terminal_progress_bar.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "gui_texture",
+   "asset": "terminal_side_panel",
+   "brief": "A tall side panel with two inset boxes. In TNO's style: near-black navy panel with 1 px teal and green lines, terminal look, no ornament.",
+   "build": "0.3.3",
+   "size": [
+    300,
+    200
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "tno/gui_texture/terminal_side_panel.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "gui_texture",
+   "asset": "terminal_table_header",
+   "brief": "A table panel with column header cells. In TNO's style: near-black navy panel with 1 px teal and green lines, terminal look, no ornament.",
+   "build": "0.3.3",
+   "size": [
+    300,
+    200
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "tno/gui_texture/terminal_table_header.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "gui_texture",
+   "asset": "terminal_tooltip",
+   "brief": "A tooltip background. In TNO's style: near-black navy panel with 1 px teal and green lines, terminal look, no ornament.",
+   "build": "0.3.3",
+   "size": [
+    300,
+    200
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "tno/gui_texture/terminal_tooltip.webp",
    "enlarged": null,
    "scale": 1
   }
