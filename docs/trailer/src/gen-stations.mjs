@@ -1,4 +1,4 @@
-// Writes the eleven pipeline stations (src/scenes/<id>.html) from one calm template:
+// Writes the pipeline stations (src/scenes/<id>.html) from one calm template:
 // a big two-part title, one large visual on its own colour wash, and at most one large line.
 // Content lands on beats 0 to 2 and then holds still, so the viewer reads it on the music.
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -8,16 +8,18 @@ import { fileURLToPath } from "node:url";
 const here = dirname(fileURLToPath(import.meta.url));
 const G = "assets/gallery";
 const PX = "";
-// the refine pair: a report_event picture and its edit (queue run, see SOURCES.md). Families on the config's hold
-// list (building among them) wait for their 0.3.2 regenerations.
-const RF1 = "assets/regen/winter_border/winter_border-v1.png", RF2 = "assets/regen/winter_border/winter_border-v2.png";
+// width and height from a PNG header
+const size = (p) => { const b = readFileSync(join(here, "..", p)); return [b.readUInt32BE(16), b.readUInt32BE(20)]; };
+// an image at its in-game size, enlarged k times, so finished art keeps the detail the game shows
+const game = (p, k) => { const [w, h] = size(p); return `<img src="${p}" style="width:${Math.round(w * k)}px;height:${Math.round(h * k)}px" />`; };
+const logo = (n, fill) => readFileSync(join(here, "..", "assets", "logos", `${n}.svg`), "utf8").replace("<svg ", `<svg fill="${fill}" width="120" height="120" `).replace(/<title>[^<]*<\/title>/, "");
 // the style step: The New Order's own icons (shown with the team's consent) and the icon made from them, from
 // assets/tno/ as written by src/pull-regen.mjs. There is no other mod to fall back on: the build stops until TNO is in,
 // unless TRAILER_PENDING=1 is set for a review build, which leaves the step empty.
 const tnoSrc = join(here, "..", "assets", "tno", "source.json");
 const tnoAsset = existsSync(tnoSrc) ? JSON.parse(readFileSync(tnoSrc, "utf8")).asset : null;
 if (!tnoAsset && process.env.TRAILER_PENDING !== "1") throw new Error("the TNO style run is not pulled into assets/tno yet");
-const style = { mod: "The New Order", out: tnoAsset ? `assets/regen/${tnoAsset}/${tnoAsset}-v1-fit.png` : "" };
+const style = { mod: "The New Order", out: tnoAsset ? `assets/regen/${tnoAsset}/${tnoAsset}-v1-p1.png` : "" };
 const refDir = join(here, "..", "assets", "tno", "refs");
 // four of the run's references whose art fills its canvas (refs 1 and 4 sit small in theirs)
 const refFiles = existsSync(refDir) ? readdirSync(refDir).filter((f) => f.endsWith(".png")).sort() : [];
@@ -46,14 +48,11 @@ const S = [
   { id: "style", t1: "It matches", t2: "your mod's style", wash: "#7a2c2c",
     vis: style.refs.length
       ? `<div class="refs">
-      ${style.refs.map((r) => `<div class="r"><img src="${r}" /></div>`).join("")}
+      ${style.refs.map((r) => `<div class="r">${game(r, 2.2)}</div>`).join("")}
       <div class="arrow hero brass">›</div>
-      <div class="out plate"><img src="${style.out}" /></div></div>`
-      : `<div class="solo"><img src="${style.out}" /></div>`,
+      <div class="out plate">${game(style.out, 2.2)}</div></div>`
+      : `<div class="solo">${style.out ? game(style.out, 4) : ""}</div>`,
     line: style.refs.length ? `${style.mod} icons in · a new one out` : `Made to match ${style.mod}` },
-  { id: "refine", t1: "Refine with", t2: "one instruction", wash: "#8a4a1c",
-    vis: `<div class="pair"><div class="pa"><img src="${RF1}" /></div><div class="arrow hero brass">›</div><div class="pa"><img src="${RF2}" /></div></div>`,
-    line: "“…now at night in a heavy snowstorm”" },
   { id: "process", t1: "The vanilla finish.", t2: "Automatic.", wash: "#8c6a1e",
     vis: `<div class="pair"><div class="pa"><img src="assets/regen/military_reforms/military_reforms-v1-fit.png" /></div><div class="arrow hero brass">›</div>
       <div class="clamp"><div class="slot"><img src="assets/regen/military_reforms/military_reforms-v1-p1.png" style="width:286px;height:220px" /></div><div class="bracket tl"></div><div class="bracket tr"></div><div class="bracket bl"></div><div class="bracket br"></div></div></div>`,
@@ -73,7 +72,7 @@ const S = [
       <div class="finding">1 missing sprite found</div>`,
     line: "" },
   { id: "clients", t1: "Claude Code", t2: "& Codex", wash: "#7a4a22",
-    vis: `<div class="cl"><div class="plate c1" style="box-shadow: inset 0 0 0 3px #d97757, 0 30px 60px rgba(0,0,0,.65)"><div class="hero" style="color:#f1b39a">Claude Code</div></div><div class="plate c1" style="box-shadow: inset 0 0 0 3px #e8e8e8, 0 30px 60px rgba(0,0,0,.65)"><div class="hero" style="color:#f2f2f2">Codex</div></div></div>`,
+    vis: `<div class="cl"><div class="plate c1" style="box-shadow: inset 0 0 0 3px #d97757, 0 30px 60px rgba(0,0,0,.65)">${logo("claude", "#d97757")}<div class="hero" style="color:#f1b39a">Claude Code</div></div><div class="plate c1" style="box-shadow: inset 0 0 0 3px #e8e8e8, 0 30px 60px rgba(0,0,0,.65)">${logo("openai", "#f2f2f2")}<div class="hero" style="color:#f2f2f2">Codex</div></div><div class="plate c1 any" style="box-shadow: inset 0 0 0 3px #e8b54f, 0 30px 60px rgba(0,0,0,.65)"><div class="plus hero brass">+</div><div class="hero brass">Any provider</div><div class="sub">any MCP client</div></div></div>`,
     line: "Same tools. Same mod." },
 ];
 
@@ -94,12 +93,12 @@ const css = `
     #root .chips { margin-top: 48px; display: flex; gap: 16px; }
     #root .chips span { padding: 12px 28px; font-size: 34px; letter-spacing: .04em; border-radius: 6px; box-shadow: 0 12px 24px rgba(0,0,0,.45); }
     #root .refs { display: flex; align-items: center; gap: 24px; }
-    #root .refs .r img { width: 200px; height: 176px; display: block; object-fit: contain; }
+    #root .refs .r img { display: block; }
     #root .arrow { font-size: 120px; margin: 0 20px; }
-    #root .refs .out { width: 360px; height: 330px; display: flex; align-items: center; justify-content: center; }
-    #root .refs .out img { width: 300px; height: 264px; object-fit: contain; }
+    #root .refs .out { padding: 40px 46px; display: flex; align-items: center; justify-content: center; }
+    #root .refs .out img { display: block; }
     #root .solo { filter: drop-shadow(0 26px 34px rgba(0,0,0,.65)); }
-    #root .solo img { width: 520px; height: 520px; object-fit: contain; display: block; }
+    #root .solo img { display: block; }
     #root .pair { display: flex; align-items: center; gap: 30px; }
     #root .pair .pa img { width: 520px; height: 520px; display: block; object-fit: contain; }
     #root .clamp { position: relative; width: 400px; height: 440px; }
@@ -127,9 +126,12 @@ const css = `
     #root .nums b { font-size: 150px; font-weight: 400; }
     #root .nums span { font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: #c9c2a3; }
     #root .finding { margin-top: 60px; font-size: 48px; letter-spacing: .04em; color: #fff; padding: 16px 40px; border-radius: 6px; background: #b8342c; box-shadow: 0 0 40px rgba(184,52,44,.5); }
-    #root .cl { display: flex; gap: 70px; }
-    #root .cl .c1 { width: 640px; height: 320px; display: flex; align-items: center; justify-content: center; }
-    #root .cl .c1 .hero { font-size: 70px; text-align: center; white-space: nowrap; }
+    #root .cl { display: flex; gap: 50px; }
+    #root .cl .c1 { width: 520px; height: 360px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; }
+    #root .cl .c1 svg { display: block; filter: drop-shadow(0 10px 18px rgba(0,0,0,.5)); }
+    #root .cl .c1 .hero { font-size: 58px; text-align: center; white-space: nowrap; }
+    #root .cl .any .plus { font-size: 120px; line-height: 120px; height: 120px; }
+    #root .cl .any .sub { margin-top: -18px; font-size: 32px; letter-spacing: .06em; color: #c9c2a3; }
 `;
 
 S.forEach((s) => {
@@ -165,8 +167,11 @@ function extra(id) {
     case "generate":
       return `    tl.fromTo(".g-dev", { filter: "brightness(2.6) contrast(.4) blur(12px)" }, { filter: "brightness(1) contrast(1) blur(0px)", duration: b(1.5), ease: "power2.out", stagger: b(0.5) }, b(0.5));
     tl.fromTo("#generate-vis .chips span", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: b(0.5), ease: "power3.out", stagger: b(0.25) }, b(2));`;
-    case "refine":
-      return `    tl.fromTo("#refine-vis .pa:last-child", { opacity: 0, x: -50 }, { opacity: 1, x: 0, duration: b(1), ease: "power3.out" }, b(2));`;
+    case "clients":
+      // Claude Code and Codex land with the visual, the third box on the second bar
+      // the first two start centred and make room as the third arrives (half a box and gap: (520 + 50) / 2)
+      return `    tl.fromTo("#clients-vis .cl", { x: 285 }, { x: 0, duration: b(1), ease: "power3.inOut" }, b(4));
+    tl.fromTo("#clients-vis .any", { opacity: 0, y: 40, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: b(1), ease: "power3.out" }, b(4.25));`;
     case "process":
       return `    tl.fromTo("#process-vis .bracket", { scale: 1.8, opacity: 0 }, { scale: 1, opacity: 1, duration: b(0.75), ease: "back.out(1.6)" }, b(2));
     tl.fromTo("#process-vis .slot img", { opacity: 0, scale: 1.3 }, { opacity: 1, scale: 1, duration: b(0.75), ease: "power3.out" }, b(2));`;

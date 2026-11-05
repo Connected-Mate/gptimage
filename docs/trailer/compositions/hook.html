@@ -50,8 +50,8 @@
     #root .ic { position: absolute; left: 50%; top: 44%; opacity: 0; filter: drop-shadow(0 24px 30px rgba(0,0,0,.6)); }
     #root .ic img { display: block; }
     #root .hero-ic { position: absolute; left: 50%; top: 42%; width: 440px; height: 440px; margin: -220px 0 0 -220px; opacity: 0; }
-    #root .hero-ic img { position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 30px 40px rgba(0,0,0,.7)); }
-    #root .shine { position: absolute; inset: 0; overflow: hidden; -webkit-mask: url(assets/gallery/source_png/iron_pact-v1.png) center/100% 100% no-repeat; mask: url(assets/gallery/source_png/iron_pact-v1.png) center/100% 100% no-repeat; }
+    #root .hero-ic .hf { position: absolute; inset: 0; background: url(assets/gallery/processed_png/iron_pact-v1-p1.png) 0 0/200% 100% no-repeat; filter: drop-shadow(0 30px 40px rgba(0,0,0,.7)); }
+    #root .shine { position: absolute; inset: 0; overflow: hidden; -webkit-mask: url(assets/gallery/processed_png/iron_pact-v1-p1.png) 0 0/200% 100% no-repeat; mask: url(assets/gallery/processed_png/iron_pact-v1-p1.png) 0 0/200% 100% no-repeat; }
     #root .shine i { position: absolute; top: -20%; left: 0; width: 35%; height: 140%; background: linear-gradient(100deg, transparent, rgba(255,236,190,.9), transparent); mix-blend-mode: screen; }
     #root .t1 { position: absolute; left: 0; right: 0; bottom: 90px; text-align: center; font-size: 92px; }
     #root .t1 span { display: inline-block; margin: 0 14px; }
@@ -63,13 +63,13 @@
     <div class="warm" data-layout-allow-overflow></div>
     <svg class="grain" width="1920" height="1080"><filter id="hook-n"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .9 0"/></filter><rect width="100%" height="100%" filter="url(#hook-n)"/></svg>
     <div class="stage">
-      <div class="ic hk-i" style="margin:-150px 0 0 -150px"><img src="assets/regen/military_reforms/military_reforms-v1-fit.png" style="width:300px;height:300px;object-fit:contain" alt="" /></div>
-      <div class="ic hk-i" style="margin:-170px 0 0 -113px"><img src="assets/gallery/fit/defenders_of_order-v1.png" style="width:227px;height:340px;object-fit:contain" alt="" /></div>
+      <div class="ic hk-i" style="margin:-150px 0 0 -150px"><img src="assets/regen/military_reforms/military_reforms-v1-p1.png" style="width:300px;height:231px;margin-top:35px" alt="" /></div>
+      <div class="ic hk-i" style="margin:-170px 0 0 -113px"><img src="assets/gallery/processed_png/defenders_of_order-v1-p1.png" style="width:227px;height:277px;margin-top:31px" alt="" /></div>
       <div class="ic hk-i" style="margin:-104px 0 0 -164px"><img src="assets/gallery/processed_png/IRP_fascism-v1-p1.png" style="width:328px;height:208px" alt="" /></div>
       <div class="ic hk-i" style="margin:-176px 0 0 -210px"><img src="assets/gallery/processed_png/winter_border-v1-p1.png" style="width:420px;height:352px;image-rendering:auto" alt="" /></div>
     </div>
     <div class="ring" id="hk-ring"></div>
-    <div class="hero-ic" id="hk-hero"><img src="assets/gallery/source_png/iron_pact-v1.png" alt="" /><div class="shine" data-layout-allow-overflow><i id="hk-sh"></i></div></div>
+    <div class="hero-ic" id="hk-hero"><div class="hf"></div><div class="shine" data-layout-allow-overflow><i id="hk-sh"></i></div></div>
     <div class="t1 hero"><span class="ice hook-w">Made by an agent.</span><br /><span class="brass hook-w">Ready for the game.</span></div>
     <div class="dip" id="hook-dip" style="position:absolute;inset:0;background:#0b1014;pointer-events:none;z-index:50"></div>
     <div class="vig"></div>

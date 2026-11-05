@@ -27,14 +27,17 @@ for (const base of process.argv.slice(2)) {
     const all = readdirSync(dir).filter((f) => f.endsWith(".png"));
     const refs = all.filter((f) => /^ref_\d+\.png$/.test(f)).sort();
     const pngs = all.filter((f) => !refs.includes(f));
-    // a raw candidate is <asset>-vN.png or <asset>-vN-raw.png; it is stored as <asset>-vN.png
-    const raw = pngs.find((f) => /-v1(-raw)?\.png$/.test(f));
+    // a raw candidate is <asset>-vN.png or <asset>-vN-raw.png. A hand-back with one attempt other than v1 (a rerun)
+    // is stored as v1, the name the trailer reads, and the index keeps the attempt it came from
+    const raw = pngs.find((f) => /-v1(-raw)?\.png$/.test(f)) || pngs.find((f) => /-v\d+(-raw)?\.png$/.test(f));
     if (!raw) continue;
-    const asset = raw.replace(/-v1(-raw)?\.png$/, "");
+    const [, attempt] = raw.match(/-(v\d+)(-raw)?\.png$/);
+    const asset = raw.replace(/-v\d+(-raw)?\.png$/, "");
     const to = join(out, asset);
     mkdirSync(to, { recursive: true });
-    for (const f of pngs) copyFileSync(join(dir, f), join(to, f.replace(/-raw\.png$/, ".png")));
-    index[asset] = { family: fam, tool_version: r.tool_version, model: r.model, plan_id: r.plan_id ?? r.v1?.plan_id, generated_at: r.generated_at, files: pngs.sort() };
+    const stored = (f) => f.replace(/-raw\.png$/, ".png").replace(`${asset}-${attempt}`, `${asset}-v1`);
+    for (const f of pngs) copyFileSync(join(dir, f), join(to, stored(f)));
+    index[asset] = { family: fam, tool_version: r.tool_version, model: r.model, plan_id: r.plan_id ?? r[attempt]?.plan_id ?? r.v1?.plan_id, generated_at: r.generated_at, ...(attempt !== "v1" ? { attempt } : {}), files: pngs.map(stored).sort() };
     // the TNO style run: its references (shown with the maintainer's consent) and the name of the icon made from them
     if (fam.startsWith("tno_style")) {
       const tno = join(root, "assets", "tno");

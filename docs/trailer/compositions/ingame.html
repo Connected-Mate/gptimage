@@ -58,10 +58,8 @@
     <svg class="grain" width="1920" height="1080"><filter id="ingame-n"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .9 0"/></filter><rect width="100%" height="100%" filter="url(#ingame-n)"/></svg>
     <div class="t hero"><span class="ice ig-w">Real files.</span> <span class="brass ig-w">Loaded by the game.</span></div>
     <div class="shot ig-s" data-layout-allow-overflow style="width:816px;height:732px;margin:-340px 0 0 -408px"><img src="assets/ingame/news_event_in_frame.png" style="width:2304px;left:-720px;top:-264px" alt="" /></div>
-    <div class="shot ig-s" data-layout-allow-overflow style="width:1024px;height:390px;margin:-195px 0 0 -512px"><img src="assets/ingame/decision_category_in_panel.png" style="width:1120px;left:-16px;top:-1590px" alt="" /></div>
     <div class="shot ig-s" data-layout-allow-overflow style="width:1400px;height:375px;margin:-188px 0 0 -700px"><img src="assets/ingame/W5_agency_logo_normal_hover_selected.png" style="width:1400px;left:0;top:0" alt="" /></div>
     <div class="lab label ig-l">the <b>World News</b> window</div>
-    <div class="lab label ig-l">the <b>decisions</b> panel</div>
     <div class="lab label ig-l">the agency logo · <b>selected</b></div>
     <div class="sw" id="ig-sw" data-layout-allow-overflow></div>
     <div class="dip" id="ingame-dip" style="position:absolute;inset:0;background:#0b1014;pointer-events:none;z-index:50"></div>
@@ -86,11 +84,12 @@ function wordsIn(sel, at, gap) {
 
     tl.fromTo(".ig-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out", stagger: b(1) }, 0);
     const shots = gsap.utils.toArray(".ig-s"), labs = gsap.utils.toArray(".ig-l");
-    const n = shots.length, len = b(4);
+    // two shots of six beats each
+    const n = shots.length, len = b(6);
     shots.forEach((s, i) => {
-      const t0 = b(i * 4);
+      const t0 = i * len;
       tl.fromTo(s, { opacity: 0, scale: 0.86, rotation: i % 2 ? 3 : -3, y: 60 }, { opacity: 1, scale: 1, rotation: i % 2 ? -1 : 1, y: 0, duration: b(0.5), ease: "expo.out" }, t0);
-      tl.fromTo(labs[i], { opacity: 0 }, { opacity: 1, duration: 0.2 }, t0 + b(0.25));
+      tl.fromTo(labs[i], { opacity: 0 }, { opacity: 1, duration: b(0.5) }, t0 + b(0.25));
       if (i < n - 1) {
         tl.to(s, { opacity: 0, scale: 1.05, filter: "blur(10px)", duration: b(0.25), ease: "power3.in" }, t0 + len - b(0.25));
         tl.to(labs[i], { opacity: 0, duration: 0.1 }, t0 + len - b(0.25));

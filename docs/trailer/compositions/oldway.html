@@ -54,16 +54,12 @@
     #root .miss { position: absolute; left: 1290px; top: 320px; }
     #root .miss div { font-family: "Archivo Black", sans-serif; font-size: 50px; text-transform: uppercase; color: #efe6cc; margin-bottom: 18px; white-space: nowrap; }
     #root .miss div s { text-decoration-color: #c0392b; text-decoration-thickness: 7px; }
-    #root .q { position: absolute; inset: 0; background: #0b0d0e; }
-    #root .q { background: radial-gradient(ellipse 50% 45% at 50% 42%, rgba(140,40,34,.45), transparent 75%), #0b0d0e; }
-    #root .qshot { position: absolute; left: 50%; top: 42%; width: 780px; height: 420px; margin: -210px 0 0 -390px; overflow: hidden; box-shadow: 0 0 0 3px #59646b, 0 0 0 10px #1a1f22, 0 40px 80px rgba(0,0,0,.7); }
-    #root .qshot img { display: block; width: 780px; height: 480px; }
-    #root .qcap { position: absolute; left: 0; right: 0; bottom: 110px; text-align: center; font-size: 78px; }
-    #root .qsub { position: absolute; left: 0; right: 0; bottom: 64px; text-align: center; }
+    #root .stage { position: absolute; inset: 0; }
   </style>
   <div id="root" data-composition-id="oldway" data-width="1920" data-height="1080">
     <div class="table"></div>
     <svg class="grain" width="1920" height="1080"><filter id="oldway-n"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .9 0"/></filter><rect width="100%" height="100%" filter="url(#oldway-n)"/></svg>
+    <div class="stage" id="ow-stage">
     <div class="rawlab" id="ow-rawlab">RAW MODEL OUTPUT · 2062 × 763</div>
     <div class="raw" id="ow-raw"><img src="assets/gallery/source_png/heavy_tank-v1.png" alt="" /></div>
     <div class="slot" id="ow-slot"></div><div class="slotlab" id="ow-slotlab">← the game's slot<br />146 × 54</div>
@@ -73,9 +69,6 @@
       <div class="ow-m"><s>.gfx sprite</s></div>
       <div class="ow-m"><s>Sprite name</s></div>
     </div>
-    <div class="q" id="ow-q">
-      <div id="ow-term" class="qshot" data-layout-allow-overflow><img src="assets/ingame/noshine.png" alt="" /></div>
-      <div class="qcap hero ice">Miss one step<br />and the game shows <span class="brass">this</span></div>
     </div>
     <div class="dip" id="oldway-dip" style="position:absolute;inset:0;background:#0b1014;pointer-events:none;z-index:50"></div>
     <div class="vig"></div>
@@ -98,12 +91,12 @@ function wordsIn(sel, at, gap) {
 }
 
     tl.fromTo("#ow-raw", { y: -1200, rotation: -6 }, { y: 0, rotation: 2, duration: b(1), ease: "back.out(1.2)" }, 0);
-    tl.fromTo("#ow-rawlab", { opacity: 0 }, { opacity: 1, duration: 0.2 }, b(1));
+    tl.fromTo("#ow-rawlab", { opacity: 0 }, { opacity: 1, duration: b(0.5) }, b(1));
     tl.fromTo("#ow-slot", { scale: 4, opacity: 0 }, { scale: 1, opacity: 1, duration: b(0.5), ease: "expo.out" }, b(1));
-    tl.fromTo("#ow-slotlab", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.25, ease: "power3.out" }, b(1.5));
-    tl.fromTo(".ow-m", { opacity: 0, x: 60, filter: "blur(8px)" }, { opacity: 1, x: 0, filter: "blur(0px)", duration: 0.2, ease: "power4.out", stagger: b(0.5) }, b(2));
-    tl.fromTo("#ow-q", { clipPath: "inset(0 0 100% 0)" }, { clipPath: "inset(0 0 0% 0)", duration: b(0.25), ease: "power3.inOut" }, b(4));
-    tl.fromTo("#ow-term", { scale: 1.15, opacity: 0 }, { scale: 1, opacity: 1, duration: b(0.5), ease: "expo.out" }, b(4));
+    tl.fromTo("#ow-slotlab", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: b(0.5), ease: "power3.out" }, b(1.5));
+    // one line of the checklist per beat, then the whole frame drifts in slowly through the second bar
+    tl.fromTo(".ow-m", { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: b(0.75), ease: "power3.out", stagger: b(1) }, b(2));
+    tl.fromTo("#ow-stage", { scale: 1 }, { scale: 1.04, duration: DUR - b(2), ease: "sine.inOut" }, b(2));
     tl.fromTo("#oldway-dip", { opacity: 1 }, { opacity: 0, duration: b(0.5), ease: "power2.out" }, 0);
     tl.fromTo("#oldway-dip", { opacity: 0 }, { opacity: 0.85, duration: b(0.5), ease: "power2.in", immediateRender: false }, DUR - b(0.5));
     window.__timelines["oldway"] = tl;

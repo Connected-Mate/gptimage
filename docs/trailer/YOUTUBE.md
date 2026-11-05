@@ -17,7 +17,7 @@ Alternatives:
 
 Ask your coding agent for a focus icon, an event picture or a flag, and HOI4 Imagegen hands back the finished file Hearts of Iron IV loads. It is sized to the game's own canvas, given the vanilla finish and written into your mod with its sprite entry.
 
-The trailer follows one asset from plan to install, matches a mod's own style, refines a picture with one instruction, then runs through every kind of HOI4 art it makes and shows the files loaded in the game. It is free and open source, and it runs on your ChatGPT login or your own image provider.
+The trailer follows one asset from plan to install, matches a mod's own style, then runs through every kind of HOI4 art it makes and shows the files loaded in the game. It works in Claude Code, Codex and any other MCP client. It is free and open source, and it runs on your ChatGPT login or your own image provider.
 
 HOI4 Imagegen: https://github.com/klimPaskov/hoi4-imagegen-mcp
 Latest release: https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/latest
@@ -27,9 +27,8 @@ Discord: https://discord.gg/rAXesGcT2t
 
 0:00 Describe it, get a file the game loads
 0:12 Measured from the game, planned and generated
-0:24 Your mod's style, refined in one line
-0:32 The vanilla finish, checked, reviewed and installed
-0:48 Audit the whole mod, in Claude Code and Codex
+0:24 Your mod's style and the vanilla finish
+0:36 Reviewed, installed and audited, in any MCP client
 0:56 Every kind of HOI4 art, raw to finished
 1:21 Portraits and animated sprites
 1:33 In the game, and the full workflow
@@ -45,4 +44,4 @@ hoi4 imagegen, hoi4 modding, hoi4 mod tools, hearts of iron 4 modding, hoi4 focu
 
 ## Chapter notes
 
-Times come from the final cut's scene starts (`src/config.json` on the 117.99 BPM grid): hook and reveal 0:00, pipeline stations from 0:12.2 at 4.07 s each, riser and drop 0:56.9, portraits 1:21.4, animated sprites 1:29.5, in-game 1:33.6, workflow 1:39.7, end card 1:43.7 to 1:51.9. Short scenes are merged so every chapter runs at least 10 s.
+Times come from the final cut's scene starts (`src/config.json` on the 117.99 BPM grid): hook and reveal 0:00, pipeline stations from 0:12.2 at 4.07 s each (style 0:24.4, process 0:28.5, validate 0:32.6, review 0:36.6, install 0:40.7, audit 0:44.7, clients 0:48.8 for 8.1 s), riser and drop 0:56.9, portraits 1:21.4, animated sprites 1:29.5, in-game 1:33.6, workflow 1:39.7, end card 1:43.7 to 1:51.9. Short scenes are merged so every chapter runs at least 10 s.

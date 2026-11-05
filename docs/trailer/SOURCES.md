@@ -1,6 +1,6 @@
 # Trailer sources
 
-Every image the trailer presents as output was made by hoi4-imagegen on the ChatGPT login (plan quota, no money). Each one went through plan, then generate, then process. Media files stay out of Git. `assets/` is ignored and rebuilt from the places below. Each asset is listed with the hoi4-imagegen build that made it.
+Every image the trailer presents as output was made by hoi4-imagegen on the ChatGPT login (plan quota, no money). Each one went through plan, then generate, then process. Wherever the trailer shows finished art, it shows the processed file the game loads, enlarged, so its detail matches vanilla art at the same size. Media files stay out of Git. `assets/` is ignored and rebuilt from the places below. Each asset is listed with the hoi4-imagegen build that made it.
 
 ## Vanilla-form regenerations (hoi4-imagegen 0.3.1, 2026-11-05)
 
@@ -9,17 +9,15 @@ The `imagegen-docs` session ran these through its queue on gpt-6-luna at the bac
 | Asset | Family | Plan |
 |---|---|---|
 | `military_reforms` | decision_category_icon | `plan-f59e32080d863fb8` |
-| `winter_border` v2 | report_event | no plan: `hoi4.image_edit` of the 2 Nov gallery candidate (re-imported as `trailer.winter_border-v2`, refined as `trailer.winter_border-v3`) with the instruction "The same border crossing from the same angle, now at night in a heavy snowstorm, lit by a single lantern" |
-
-The refine shot quotes the end of that instruction.
 
 ## Regenerations on hoi4-imagegen 0.3.3 (2026-11-05)
 
-The `imagegen-docs` queue made these on 0.3.3 for the families still missing from the cut. `src/pull-regen.mjs` reads their hand-backs in the same way. A building comes as a two-frame strip (intact, then ruined), and `src/fit-regen.py` trims its display copy to the intact frame.
+The `imagegen-docs` queue made these on 0.3.3 for the families still missing from the cut. `src/pull-regen.mjs` reads their hand-backs in the same way. A building comes as a strip of frames (intact, then damaged), and the trailer shows the first. The focus icons are a later set of twelve, each made with its own three vanilla anchors from different style groups (wreaths, discs, winged badges, diamonds, plain plates), so they do not all copy one plaque. Their hand-backs name each file by the attempt that passed (`-v2`, `-v3`), and `pull-regen.mjs` stores it as `-v1` with the attempt in the index.
 
 | Asset | Family | Plan |
 |---|---|---|
-| `assembly_ballot_vote` | focus | `plan-a398be6be4d477e5` |
+| `embassy_flags_handshake_v033` | focus (attempt v3) | `plan-01bf7ce6519b9c45` |
+| `signed_treaty_quill_v033` | focus (attempt v2, thumbnail only) | `plan-771dbfa7fc68b7be` |
 | `japanese_five_tier_pagoda` | building | `plan-92e0b02d697ab0c3` |
 | `laurel_wreath_v033` | medal | `plan-d2eaf370aec79ea0` |
 | `platform_suitcase_swap` | operation_picture | `plan-d6dee7394fe110ec` |
@@ -61,11 +59,11 @@ The four animated families come from PR klimPaskov/hoi4-imagegen-mcp#6. They pla
 
 ## In-game captures
 
-The W5 run made assets with hoi4-imagegen on 2026-11-01/02 (`docs/evidence/2026-11-02-e2e-all-families.json`, asset ids `w5e2e.*`). The in-game runner checked them in Hearts of Iron IV 1.19.4.1 on the night of 2026-11-02. The screenshots and the missing-icon placeholder come from `hoi4-factory/.work/in-game-checks/2026-11-02/` (W5, W5b and run28).
+The W5 run made assets with hoi4-imagegen on 2026-11-01/02 (`docs/evidence/2026-11-02-e2e-all-families.json`, asset ids `w5e2e.*`). The in-game runner checked them in Hearts of Iron IV 1.19.4.1 on the night of 2026-11-02. The trailer shows two of them: the World News window and the agency logo. The W5 decision category icon is left out, because it was made before the vanilla-form fixes and does not follow the category icon's form. The screenshots come from `hoi4-factory/.work/in-game-checks/2026-11-02/` (W5, W5b and run28).
 
 ## Logo and links
 
-`assets/logo_imagegen.png` is the painterly logo hoi4-imagegen made for the project (imagegen-docs, logo v2). The community links match the READMEs: Discord, YouTube @ChaosRedux and Ko-fi.
+`assets/logo_imagegen.png` is the painterly logo hoi4-imagegen made for the project (imagegen-docs, logo v2). The community links match the READMEs: Discord, YouTube @ChaosRedux and Ko-fi. `assets/logos/claude.svg` and `assets/logos/openai.svg` are the Claude and OpenAI marks from simple-icons 13.21.0 (`cdn.jsdelivr.net/npm/simple-icons@13.21.0/icons/`), shown to name the two clients.
 
 ## Sound effects
 

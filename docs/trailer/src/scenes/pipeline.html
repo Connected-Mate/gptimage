@@ -1,11 +1,11 @@
 <template>
   <style>
     {{BASE}}
-    #root .far { position: absolute; left: -400px; top: -400px; width: 13120px; height: 3200px; background:
+    #root .far { position: absolute; left: -400px; top: -400px; width: 12200px; height: 3200px; background:
       repeating-linear-gradient(0deg, rgba(201,194,163,.05) 0 2px, transparent 2px 360px),
       repeating-linear-gradient(90deg, rgba(201,194,163,.05) 0 2px, transparent 2px 360px),
       #0f171d; }
-    #root .world { position: absolute; left: 0; top: 0; width: 27220px; height: 3080px; }
+    #root .world { position: absolute; left: 0; top: 0; width: 24920px; height: 3080px; }
     #root .ground { position: absolute; inset: -600px; background:
       repeating-linear-gradient(0deg, rgba(201,194,163,.10) 0 1px, transparent 1px 120px),
       repeating-linear-gradient(90deg, rgba(201,194,163,.10) 0 1px, transparent 1px 120px),
@@ -32,12 +32,12 @@
     #root .S-measured .chips { margin-top: 48px; display: flex; gap: 16px; }
     #root .S-measured .chips span { padding: 12px 28px; font-size: 34px; letter-spacing: .04em; border-radius: 6px; box-shadow: 0 12px 24px rgba(0,0,0,.45); }
     #root .S-measured .refs { display: flex; align-items: center; gap: 24px; }
-    #root .S-measured .refs .r img { width: 200px; height: 176px; display: block; object-fit: contain; }
+    #root .S-measured .refs .r img { display: block; }
     #root .S-measured .arrow { font-size: 120px; margin: 0 20px; }
-    #root .S-measured .refs .out { width: 360px; height: 330px; display: flex; align-items: center; justify-content: center; }
-    #root .S-measured .refs .out img { width: 300px; height: 264px; object-fit: contain; }
+    #root .S-measured .refs .out { padding: 40px 46px; display: flex; align-items: center; justify-content: center; }
+    #root .S-measured .refs .out img { display: block; }
     #root .S-measured .solo { filter: drop-shadow(0 26px 34px rgba(0,0,0,.65)); }
-    #root .S-measured .solo img { width: 520px; height: 520px; object-fit: contain; display: block; }
+    #root .S-measured .solo img { display: block; }
     #root .S-measured .pair { display: flex; align-items: center; gap: 30px; }
     #root .S-measured .pair .pa img { width: 520px; height: 520px; display: block; object-fit: contain; }
     #root .S-measured .clamp { position: relative; width: 400px; height: 440px; }
@@ -65,9 +65,12 @@
     #root .S-measured .nums b { font-size: 150px; font-weight: 400; }
     #root .S-measured .nums span { font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: #c9c2a3; }
     #root .S-measured .finding { margin-top: 60px; font-size: 48px; letter-spacing: .04em; color: #fff; padding: 16px 40px; border-radius: 6px; background: #b8342c; box-shadow: 0 0 40px rgba(184,52,44,.5); }
-    #root .S-measured .cl { display: flex; gap: 70px; }
-    #root .S-measured .cl .c1 { width: 640px; height: 320px; display: flex; align-items: center; justify-content: center; }
-    #root .S-measured .cl .c1 .hero { font-size: 70px; text-align: center; white-space: nowrap; }
+    #root .S-measured .cl { display: flex; gap: 50px; }
+    #root .S-measured .cl .c1 { width: 520px; height: 360px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; }
+    #root .S-measured .cl .c1 svg { display: block; filter: drop-shadow(0 10px 18px rgba(0,0,0,.5)); }
+    #root .S-measured .cl .c1 .hero { font-size: 58px; text-align: center; white-space: nowrap; }
+    #root .S-measured .cl .any .plus { font-size: 120px; line-height: 120px; height: 120px; }
+    #root .S-measured .cl .any .sub { margin-top: -18px; font-size: 32px; letter-spacing: .06em; color: #c9c2a3; }
 
   
 
@@ -87,12 +90,12 @@
     #root .S-plan .chips { margin-top: 48px; display: flex; gap: 16px; }
     #root .S-plan .chips span { padding: 12px 28px; font-size: 34px; letter-spacing: .04em; border-radius: 6px; box-shadow: 0 12px 24px rgba(0,0,0,.45); }
     #root .S-plan .refs { display: flex; align-items: center; gap: 24px; }
-    #root .S-plan .refs .r img { width: 200px; height: 176px; display: block; object-fit: contain; }
+    #root .S-plan .refs .r img { display: block; }
     #root .S-plan .arrow { font-size: 120px; margin: 0 20px; }
-    #root .S-plan .refs .out { width: 360px; height: 330px; display: flex; align-items: center; justify-content: center; }
-    #root .S-plan .refs .out img { width: 300px; height: 264px; object-fit: contain; }
+    #root .S-plan .refs .out { padding: 40px 46px; display: flex; align-items: center; justify-content: center; }
+    #root .S-plan .refs .out img { display: block; }
     #root .S-plan .solo { filter: drop-shadow(0 26px 34px rgba(0,0,0,.65)); }
-    #root .S-plan .solo img { width: 520px; height: 520px; object-fit: contain; display: block; }
+    #root .S-plan .solo img { display: block; }
     #root .S-plan .pair { display: flex; align-items: center; gap: 30px; }
     #root .S-plan .pair .pa img { width: 520px; height: 520px; display: block; object-fit: contain; }
     #root .S-plan .clamp { position: relative; width: 400px; height: 440px; }
@@ -120,9 +123,12 @@
     #root .S-plan .nums b { font-size: 150px; font-weight: 400; }
     #root .S-plan .nums span { font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: #c9c2a3; }
     #root .S-plan .finding { margin-top: 60px; font-size: 48px; letter-spacing: .04em; color: #fff; padding: 16px 40px; border-radius: 6px; background: #b8342c; box-shadow: 0 0 40px rgba(184,52,44,.5); }
-    #root .S-plan .cl { display: flex; gap: 70px; }
-    #root .S-plan .cl .c1 { width: 640px; height: 320px; display: flex; align-items: center; justify-content: center; }
-    #root .S-plan .cl .c1 .hero { font-size: 70px; text-align: center; white-space: nowrap; }
+    #root .S-plan .cl { display: flex; gap: 50px; }
+    #root .S-plan .cl .c1 { width: 520px; height: 360px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; }
+    #root .S-plan .cl .c1 svg { display: block; filter: drop-shadow(0 10px 18px rgba(0,0,0,.5)); }
+    #root .S-plan .cl .c1 .hero { font-size: 58px; text-align: center; white-space: nowrap; }
+    #root .S-plan .cl .any .plus { font-size: 120px; line-height: 120px; height: 120px; }
+    #root .S-plan .cl .any .sub { margin-top: -18px; font-size: 32px; letter-spacing: .06em; color: #c9c2a3; }
 
   
 
@@ -142,12 +148,12 @@
     #root .S-generate .chips { margin-top: 48px; display: flex; gap: 16px; }
     #root .S-generate .chips span { padding: 12px 28px; font-size: 34px; letter-spacing: .04em; border-radius: 6px; box-shadow: 0 12px 24px rgba(0,0,0,.45); }
     #root .S-generate .refs { display: flex; align-items: center; gap: 24px; }
-    #root .S-generate .refs .r img { width: 200px; height: 176px; display: block; object-fit: contain; }
+    #root .S-generate .refs .r img { display: block; }
     #root .S-generate .arrow { font-size: 120px; margin: 0 20px; }
-    #root .S-generate .refs .out { width: 360px; height: 330px; display: flex; align-items: center; justify-content: center; }
-    #root .S-generate .refs .out img { width: 300px; height: 264px; object-fit: contain; }
+    #root .S-generate .refs .out { padding: 40px 46px; display: flex; align-items: center; justify-content: center; }
+    #root .S-generate .refs .out img { display: block; }
     #root .S-generate .solo { filter: drop-shadow(0 26px 34px rgba(0,0,0,.65)); }
-    #root .S-generate .solo img { width: 520px; height: 520px; object-fit: contain; display: block; }
+    #root .S-generate .solo img { display: block; }
     #root .S-generate .pair { display: flex; align-items: center; gap: 30px; }
     #root .S-generate .pair .pa img { width: 520px; height: 520px; display: block; object-fit: contain; }
     #root .S-generate .clamp { position: relative; width: 400px; height: 440px; }
@@ -175,9 +181,12 @@
     #root .S-generate .nums b { font-size: 150px; font-weight: 400; }
     #root .S-generate .nums span { font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: #c9c2a3; }
     #root .S-generate .finding { margin-top: 60px; font-size: 48px; letter-spacing: .04em; color: #fff; padding: 16px 40px; border-radius: 6px; background: #b8342c; box-shadow: 0 0 40px rgba(184,52,44,.5); }
-    #root .S-generate .cl { display: flex; gap: 70px; }
-    #root .S-generate .cl .c1 { width: 640px; height: 320px; display: flex; align-items: center; justify-content: center; }
-    #root .S-generate .cl .c1 .hero { font-size: 70px; text-align: center; white-space: nowrap; }
+    #root .S-generate .cl { display: flex; gap: 50px; }
+    #root .S-generate .cl .c1 { width: 520px; height: 360px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; }
+    #root .S-generate .cl .c1 svg { display: block; filter: drop-shadow(0 10px 18px rgba(0,0,0,.5)); }
+    #root .S-generate .cl .c1 .hero { font-size: 58px; text-align: center; white-space: nowrap; }
+    #root .S-generate .cl .any .plus { font-size: 120px; line-height: 120px; height: 120px; }
+    #root .S-generate .cl .any .sub { margin-top: -18px; font-size: 32px; letter-spacing: .06em; color: #c9c2a3; }
 
   
 
@@ -197,12 +206,12 @@
     #root .S-style .chips { margin-top: 48px; display: flex; gap: 16px; }
     #root .S-style .chips span { padding: 12px 28px; font-size: 34px; letter-spacing: .04em; border-radius: 6px; box-shadow: 0 12px 24px rgba(0,0,0,.45); }
     #root .S-style .refs { display: flex; align-items: center; gap: 24px; }
-    #root .S-style .refs .r img { width: 200px; height: 176px; display: block; object-fit: contain; }
+    #root .S-style .refs .r img { display: block; }
     #root .S-style .arrow { font-size: 120px; margin: 0 20px; }
-    #root .S-style .refs .out { width: 360px; height: 330px; display: flex; align-items: center; justify-content: center; }
-    #root .S-style .refs .out img { width: 300px; height: 264px; object-fit: contain; }
+    #root .S-style .refs .out { padding: 40px 46px; display: flex; align-items: center; justify-content: center; }
+    #root .S-style .refs .out img { display: block; }
     #root .S-style .solo { filter: drop-shadow(0 26px 34px rgba(0,0,0,.65)); }
-    #root .S-style .solo img { width: 520px; height: 520px; object-fit: contain; display: block; }
+    #root .S-style .solo img { display: block; }
     #root .S-style .pair { display: flex; align-items: center; gap: 30px; }
     #root .S-style .pair .pa img { width: 520px; height: 520px; display: block; object-fit: contain; }
     #root .S-style .clamp { position: relative; width: 400px; height: 440px; }
@@ -230,64 +239,12 @@
     #root .S-style .nums b { font-size: 150px; font-weight: 400; }
     #root .S-style .nums span { font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: #c9c2a3; }
     #root .S-style .finding { margin-top: 60px; font-size: 48px; letter-spacing: .04em; color: #fff; padding: 16px 40px; border-radius: 6px; background: #b8342c; box-shadow: 0 0 40px rgba(184,52,44,.5); }
-    #root .S-style .cl { display: flex; gap: 70px; }
-    #root .S-style .cl .c1 { width: 640px; height: 320px; display: flex; align-items: center; justify-content: center; }
-    #root .S-style .cl .c1 .hero { font-size: 70px; text-align: center; white-space: nowrap; }
-
-  
-
-    
-    /* the station template, inside the 90% action-safe box (x 96-1824, y 54-1026) */
-    #root .S-refine .wash { position: absolute; inset: 0; pointer-events: none; }
-    #root .S-refine .tt { position: absolute; left: 96px; right: 96px; top: 96px; text-align: center; font-size: 80px; white-space: nowrap; }
-    #root .S-refine .vis { position: absolute; left: 96px; right: 96px; top: 250px; height: 600px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    #root .S-refine .line { position: absolute; left: 96px; right: 96px; top: 880px; text-align: center; font-size: 46px; letter-spacing: .04em; color: #efe6cc; }
-    #root .S-refine .row3 { display: flex; gap: 60px; align-items: flex-end; }
-    #root .S-refine .row3 .m { display: flex; flex-direction: column; align-items: center; gap: 18px; }
-    #root .S-refine .row3 .pic { height: 270px; display: flex; align-items: flex-end; }
-    #root .S-refine .row3 .pic, #root .S-refine .dev .m, #root .S-refine .pair .pa, #root .S-refine .refs .r { filter: drop-shadow(0 22px 26px rgba(0,0,0,.6)); }
-    #root .S-refine .row3 .sz { font-size: 72px; }
-    #root .S-refine .price .big { font-size: 300px; line-height: .9; }
-    #root .S-refine .dev { align-items: center; }
-    #root .S-refine .chips { margin-top: 48px; display: flex; gap: 16px; }
-    #root .S-refine .chips span { padding: 12px 28px; font-size: 34px; letter-spacing: .04em; border-radius: 6px; box-shadow: 0 12px 24px rgba(0,0,0,.45); }
-    #root .S-refine .refs { display: flex; align-items: center; gap: 24px; }
-    #root .S-refine .refs .r img { width: 200px; height: 176px; display: block; object-fit: contain; }
-    #root .S-refine .arrow { font-size: 120px; margin: 0 20px; }
-    #root .S-refine .refs .out { width: 360px; height: 330px; display: flex; align-items: center; justify-content: center; }
-    #root .S-refine .refs .out img { width: 300px; height: 264px; object-fit: contain; }
-    #root .S-refine .solo { filter: drop-shadow(0 26px 34px rgba(0,0,0,.65)); }
-    #root .S-refine .solo img { width: 520px; height: 520px; object-fit: contain; display: block; }
-    #root .S-refine .pair { display: flex; align-items: center; gap: 30px; }
-    #root .S-refine .pair .pa img { width: 520px; height: 520px; display: block; object-fit: contain; }
-    #root .S-refine .clamp { position: relative; width: 400px; height: 440px; }
-    #root .S-refine .clamp .slot { position: absolute; left: 30px; top: 26px; width: 340px; height: 388px; display: flex; align-items: center; justify-content: center; background: linear-gradient(160deg, #262d31, #14181b); box-shadow: inset 0 0 0 3px #3b444a; }
-    #root .S-refine .clamp .slot img { width: 300px; height: 340px; }
-    #root .S-refine .sheet { padding: 16px; }
-    #root .S-refine .sheet img { width: 1600px; display: block; }
-    #root .S-refine .stamp { margin-top: 50px; font-size: 80px; }
-    #root .S-refine .stamp.ok { color: #7fd38a; border-color: #7fd38a; box-shadow: 0 0 30px rgba(127,211,138,.35), inset 0 0 20px rgba(127,211,138,.2); }
-    #root .S-refine .rev { display: flex; align-items: center; gap: 80px; }
-    #root .S-refine .rev .stamp { margin: 0; }
-    #root .S-refine .stamp.big { font-size: 96px; transform: rotate(-5deg); }
-    #root .S-refine .portrait { padding: 16px; }
-    #root .S-refine .portrait img { display: block; }
-    #root .S-refine .inst { display: flex; align-items: center; }
-    #root .S-refine .inst .tank { padding: 30px; }
-    #root .S-refine .inst .tank img { width: 730px; height: 270px; display: block; }
-    #root .S-refine .files { display: flex; gap: 30px; }
-    #root .S-refine .file { position: relative; width: 200px; height: 250px; border-radius: 8px; background: linear-gradient(170deg, #efe6cc, #c9bd98); box-shadow: 0 24px 40px rgba(0,0,0,.55); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; clip-path: polygon(0 0, 72% 0, 100% 22%, 100% 100%, 0 100%); }
-    #root .S-refine .file b { font-family: "Archivo Black", sans-serif; font-size: 58px; color: #24476e; font-weight: 400; }
-    #root .S-refine .file.gfx b { color: #8c4a12; }
-    #root .S-refine .file span { font-size: 30px; color: #3a3428; letter-spacing: .06em; text-transform: uppercase; }
-    #root .S-refine .nums { display: flex; gap: 140px; }
-    #root .S-refine .nums div { display: flex; flex-direction: column; align-items: center; }
-    #root .S-refine .nums b { font-size: 150px; font-weight: 400; }
-    #root .S-refine .nums span { font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: #c9c2a3; }
-    #root .S-refine .finding { margin-top: 60px; font-size: 48px; letter-spacing: .04em; color: #fff; padding: 16px 40px; border-radius: 6px; background: #b8342c; box-shadow: 0 0 40px rgba(184,52,44,.5); }
-    #root .S-refine .cl { display: flex; gap: 70px; }
-    #root .S-refine .cl .c1 { width: 640px; height: 320px; display: flex; align-items: center; justify-content: center; }
-    #root .S-refine .cl .c1 .hero { font-size: 70px; text-align: center; white-space: nowrap; }
+    #root .S-style .cl { display: flex; gap: 50px; }
+    #root .S-style .cl .c1 { width: 520px; height: 360px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; }
+    #root .S-style .cl .c1 svg { display: block; filter: drop-shadow(0 10px 18px rgba(0,0,0,.5)); }
+    #root .S-style .cl .c1 .hero { font-size: 58px; text-align: center; white-space: nowrap; }
+    #root .S-style .cl .any .plus { font-size: 120px; line-height: 120px; height: 120px; }
+    #root .S-style .cl .any .sub { margin-top: -18px; font-size: 32px; letter-spacing: .06em; color: #c9c2a3; }
 
   
 
@@ -307,12 +264,12 @@
     #root .S-process .chips { margin-top: 48px; display: flex; gap: 16px; }
     #root .S-process .chips span { padding: 12px 28px; font-size: 34px; letter-spacing: .04em; border-radius: 6px; box-shadow: 0 12px 24px rgba(0,0,0,.45); }
     #root .S-process .refs { display: flex; align-items: center; gap: 24px; }
-    #root .S-process .refs .r img { width: 200px; height: 176px; display: block; object-fit: contain; }
+    #root .S-process .refs .r img { display: block; }
     #root .S-process .arrow { font-size: 120px; margin: 0 20px; }
-    #root .S-process .refs .out { width: 360px; height: 330px; display: flex; align-items: center; justify-content: center; }
-    #root .S-process .refs .out img { width: 300px; height: 264px; object-fit: contain; }
+    #root .S-process .refs .out { padding: 40px 46px; display: flex; align-items: center; justify-content: center; }
+    #root .S-process .refs .out img { display: block; }
     #root .S-process .solo { filter: drop-shadow(0 26px 34px rgba(0,0,0,.65)); }
-    #root .S-process .solo img { width: 520px; height: 520px; object-fit: contain; display: block; }
+    #root .S-process .solo img { display: block; }
     #root .S-process .pair { display: flex; align-items: center; gap: 30px; }
     #root .S-process .pair .pa img { width: 520px; height: 520px; display: block; object-fit: contain; }
     #root .S-process .clamp { position: relative; width: 400px; height: 440px; }
@@ -340,9 +297,12 @@
     #root .S-process .nums b { font-size: 150px; font-weight: 400; }
     #root .S-process .nums span { font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: #c9c2a3; }
     #root .S-process .finding { margin-top: 60px; font-size: 48px; letter-spacing: .04em; color: #fff; padding: 16px 40px; border-radius: 6px; background: #b8342c; box-shadow: 0 0 40px rgba(184,52,44,.5); }
-    #root .S-process .cl { display: flex; gap: 70px; }
-    #root .S-process .cl .c1 { width: 640px; height: 320px; display: flex; align-items: center; justify-content: center; }
-    #root .S-process .cl .c1 .hero { font-size: 70px; text-align: center; white-space: nowrap; }
+    #root .S-process .cl { display: flex; gap: 50px; }
+    #root .S-process .cl .c1 { width: 520px; height: 360px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; }
+    #root .S-process .cl .c1 svg { display: block; filter: drop-shadow(0 10px 18px rgba(0,0,0,.5)); }
+    #root .S-process .cl .c1 .hero { font-size: 58px; text-align: center; white-space: nowrap; }
+    #root .S-process .cl .any .plus { font-size: 120px; line-height: 120px; height: 120px; }
+    #root .S-process .cl .any .sub { margin-top: -18px; font-size: 32px; letter-spacing: .06em; color: #c9c2a3; }
 
   
 
@@ -362,12 +322,12 @@
     #root .S-validate .chips { margin-top: 48px; display: flex; gap: 16px; }
     #root .S-validate .chips span { padding: 12px 28px; font-size: 34px; letter-spacing: .04em; border-radius: 6px; box-shadow: 0 12px 24px rgba(0,0,0,.45); }
     #root .S-validate .refs { display: flex; align-items: center; gap: 24px; }
-    #root .S-validate .refs .r img { width: 200px; height: 176px; display: block; object-fit: contain; }
+    #root .S-validate .refs .r img { display: block; }
     #root .S-validate .arrow { font-size: 120px; margin: 0 20px; }
-    #root .S-validate .refs .out { width: 360px; height: 330px; display: flex; align-items: center; justify-content: center; }
-    #root .S-validate .refs .out img { width: 300px; height: 264px; object-fit: contain; }
+    #root .S-validate .refs .out { padding: 40px 46px; display: flex; align-items: center; justify-content: center; }
+    #root .S-validate .refs .out img { display: block; }
     #root .S-validate .solo { filter: drop-shadow(0 26px 34px rgba(0,0,0,.65)); }
-    #root .S-validate .solo img { width: 520px; height: 520px; object-fit: contain; display: block; }
+    #root .S-validate .solo img { display: block; }
     #root .S-validate .pair { display: flex; align-items: center; gap: 30px; }
     #root .S-validate .pair .pa img { width: 520px; height: 520px; display: block; object-fit: contain; }
     #root .S-validate .clamp { position: relative; width: 400px; height: 440px; }
@@ -395,9 +355,12 @@
     #root .S-validate .nums b { font-size: 150px; font-weight: 400; }
     #root .S-validate .nums span { font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: #c9c2a3; }
     #root .S-validate .finding { margin-top: 60px; font-size: 48px; letter-spacing: .04em; color: #fff; padding: 16px 40px; border-radius: 6px; background: #b8342c; box-shadow: 0 0 40px rgba(184,52,44,.5); }
-    #root .S-validate .cl { display: flex; gap: 70px; }
-    #root .S-validate .cl .c1 { width: 640px; height: 320px; display: flex; align-items: center; justify-content: center; }
-    #root .S-validate .cl .c1 .hero { font-size: 70px; text-align: center; white-space: nowrap; }
+    #root .S-validate .cl { display: flex; gap: 50px; }
+    #root .S-validate .cl .c1 { width: 520px; height: 360px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; }
+    #root .S-validate .cl .c1 svg { display: block; filter: drop-shadow(0 10px 18px rgba(0,0,0,.5)); }
+    #root .S-validate .cl .c1 .hero { font-size: 58px; text-align: center; white-space: nowrap; }
+    #root .S-validate .cl .any .plus { font-size: 120px; line-height: 120px; height: 120px; }
+    #root .S-validate .cl .any .sub { margin-top: -18px; font-size: 32px; letter-spacing: .06em; color: #c9c2a3; }
 
   
 
@@ -417,12 +380,12 @@
     #root .S-review .chips { margin-top: 48px; display: flex; gap: 16px; }
     #root .S-review .chips span { padding: 12px 28px; font-size: 34px; letter-spacing: .04em; border-radius: 6px; box-shadow: 0 12px 24px rgba(0,0,0,.45); }
     #root .S-review .refs { display: flex; align-items: center; gap: 24px; }
-    #root .S-review .refs .r img { width: 200px; height: 176px; display: block; object-fit: contain; }
+    #root .S-review .refs .r img { display: block; }
     #root .S-review .arrow { font-size: 120px; margin: 0 20px; }
-    #root .S-review .refs .out { width: 360px; height: 330px; display: flex; align-items: center; justify-content: center; }
-    #root .S-review .refs .out img { width: 300px; height: 264px; object-fit: contain; }
+    #root .S-review .refs .out { padding: 40px 46px; display: flex; align-items: center; justify-content: center; }
+    #root .S-review .refs .out img { display: block; }
     #root .S-review .solo { filter: drop-shadow(0 26px 34px rgba(0,0,0,.65)); }
-    #root .S-review .solo img { width: 520px; height: 520px; object-fit: contain; display: block; }
+    #root .S-review .solo img { display: block; }
     #root .S-review .pair { display: flex; align-items: center; gap: 30px; }
     #root .S-review .pair .pa img { width: 520px; height: 520px; display: block; object-fit: contain; }
     #root .S-review .clamp { position: relative; width: 400px; height: 440px; }
@@ -450,9 +413,12 @@
     #root .S-review .nums b { font-size: 150px; font-weight: 400; }
     #root .S-review .nums span { font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: #c9c2a3; }
     #root .S-review .finding { margin-top: 60px; font-size: 48px; letter-spacing: .04em; color: #fff; padding: 16px 40px; border-radius: 6px; background: #b8342c; box-shadow: 0 0 40px rgba(184,52,44,.5); }
-    #root .S-review .cl { display: flex; gap: 70px; }
-    #root .S-review .cl .c1 { width: 640px; height: 320px; display: flex; align-items: center; justify-content: center; }
-    #root .S-review .cl .c1 .hero { font-size: 70px; text-align: center; white-space: nowrap; }
+    #root .S-review .cl { display: flex; gap: 50px; }
+    #root .S-review .cl .c1 { width: 520px; height: 360px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; }
+    #root .S-review .cl .c1 svg { display: block; filter: drop-shadow(0 10px 18px rgba(0,0,0,.5)); }
+    #root .S-review .cl .c1 .hero { font-size: 58px; text-align: center; white-space: nowrap; }
+    #root .S-review .cl .any .plus { font-size: 120px; line-height: 120px; height: 120px; }
+    #root .S-review .cl .any .sub { margin-top: -18px; font-size: 32px; letter-spacing: .06em; color: #c9c2a3; }
 
   
 
@@ -472,12 +438,12 @@
     #root .S-install .chips { margin-top: 48px; display: flex; gap: 16px; }
     #root .S-install .chips span { padding: 12px 28px; font-size: 34px; letter-spacing: .04em; border-radius: 6px; box-shadow: 0 12px 24px rgba(0,0,0,.45); }
     #root .S-install .refs { display: flex; align-items: center; gap: 24px; }
-    #root .S-install .refs .r img { width: 200px; height: 176px; display: block; object-fit: contain; }
+    #root .S-install .refs .r img { display: block; }
     #root .S-install .arrow { font-size: 120px; margin: 0 20px; }
-    #root .S-install .refs .out { width: 360px; height: 330px; display: flex; align-items: center; justify-content: center; }
-    #root .S-install .refs .out img { width: 300px; height: 264px; object-fit: contain; }
+    #root .S-install .refs .out { padding: 40px 46px; display: flex; align-items: center; justify-content: center; }
+    #root .S-install .refs .out img { display: block; }
     #root .S-install .solo { filter: drop-shadow(0 26px 34px rgba(0,0,0,.65)); }
-    #root .S-install .solo img { width: 520px; height: 520px; object-fit: contain; display: block; }
+    #root .S-install .solo img { display: block; }
     #root .S-install .pair { display: flex; align-items: center; gap: 30px; }
     #root .S-install .pair .pa img { width: 520px; height: 520px; display: block; object-fit: contain; }
     #root .S-install .clamp { position: relative; width: 400px; height: 440px; }
@@ -505,9 +471,12 @@
     #root .S-install .nums b { font-size: 150px; font-weight: 400; }
     #root .S-install .nums span { font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: #c9c2a3; }
     #root .S-install .finding { margin-top: 60px; font-size: 48px; letter-spacing: .04em; color: #fff; padding: 16px 40px; border-radius: 6px; background: #b8342c; box-shadow: 0 0 40px rgba(184,52,44,.5); }
-    #root .S-install .cl { display: flex; gap: 70px; }
-    #root .S-install .cl .c1 { width: 640px; height: 320px; display: flex; align-items: center; justify-content: center; }
-    #root .S-install .cl .c1 .hero { font-size: 70px; text-align: center; white-space: nowrap; }
+    #root .S-install .cl { display: flex; gap: 50px; }
+    #root .S-install .cl .c1 { width: 520px; height: 360px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; }
+    #root .S-install .cl .c1 svg { display: block; filter: drop-shadow(0 10px 18px rgba(0,0,0,.5)); }
+    #root .S-install .cl .c1 .hero { font-size: 58px; text-align: center; white-space: nowrap; }
+    #root .S-install .cl .any .plus { font-size: 120px; line-height: 120px; height: 120px; }
+    #root .S-install .cl .any .sub { margin-top: -18px; font-size: 32px; letter-spacing: .06em; color: #c9c2a3; }
 
   
 
@@ -527,12 +496,12 @@
     #root .S-audit .chips { margin-top: 48px; display: flex; gap: 16px; }
     #root .S-audit .chips span { padding: 12px 28px; font-size: 34px; letter-spacing: .04em; border-radius: 6px; box-shadow: 0 12px 24px rgba(0,0,0,.45); }
     #root .S-audit .refs { display: flex; align-items: center; gap: 24px; }
-    #root .S-audit .refs .r img { width: 200px; height: 176px; display: block; object-fit: contain; }
+    #root .S-audit .refs .r img { display: block; }
     #root .S-audit .arrow { font-size: 120px; margin: 0 20px; }
-    #root .S-audit .refs .out { width: 360px; height: 330px; display: flex; align-items: center; justify-content: center; }
-    #root .S-audit .refs .out img { width: 300px; height: 264px; object-fit: contain; }
+    #root .S-audit .refs .out { padding: 40px 46px; display: flex; align-items: center; justify-content: center; }
+    #root .S-audit .refs .out img { display: block; }
     #root .S-audit .solo { filter: drop-shadow(0 26px 34px rgba(0,0,0,.65)); }
-    #root .S-audit .solo img { width: 520px; height: 520px; object-fit: contain; display: block; }
+    #root .S-audit .solo img { display: block; }
     #root .S-audit .pair { display: flex; align-items: center; gap: 30px; }
     #root .S-audit .pair .pa img { width: 520px; height: 520px; display: block; object-fit: contain; }
     #root .S-audit .clamp { position: relative; width: 400px; height: 440px; }
@@ -560,9 +529,12 @@
     #root .S-audit .nums b { font-size: 150px; font-weight: 400; }
     #root .S-audit .nums span { font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: #c9c2a3; }
     #root .S-audit .finding { margin-top: 60px; font-size: 48px; letter-spacing: .04em; color: #fff; padding: 16px 40px; border-radius: 6px; background: #b8342c; box-shadow: 0 0 40px rgba(184,52,44,.5); }
-    #root .S-audit .cl { display: flex; gap: 70px; }
-    #root .S-audit .cl .c1 { width: 640px; height: 320px; display: flex; align-items: center; justify-content: center; }
-    #root .S-audit .cl .c1 .hero { font-size: 70px; text-align: center; white-space: nowrap; }
+    #root .S-audit .cl { display: flex; gap: 50px; }
+    #root .S-audit .cl .c1 { width: 520px; height: 360px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; }
+    #root .S-audit .cl .c1 svg { display: block; filter: drop-shadow(0 10px 18px rgba(0,0,0,.5)); }
+    #root .S-audit .cl .c1 .hero { font-size: 58px; text-align: center; white-space: nowrap; }
+    #root .S-audit .cl .any .plus { font-size: 120px; line-height: 120px; height: 120px; }
+    #root .S-audit .cl .any .sub { margin-top: -18px; font-size: 32px; letter-spacing: .06em; color: #c9c2a3; }
 
   
 
@@ -582,12 +554,12 @@
     #root .S-clients .chips { margin-top: 48px; display: flex; gap: 16px; }
     #root .S-clients .chips span { padding: 12px 28px; font-size: 34px; letter-spacing: .04em; border-radius: 6px; box-shadow: 0 12px 24px rgba(0,0,0,.45); }
     #root .S-clients .refs { display: flex; align-items: center; gap: 24px; }
-    #root .S-clients .refs .r img { width: 200px; height: 176px; display: block; object-fit: contain; }
+    #root .S-clients .refs .r img { display: block; }
     #root .S-clients .arrow { font-size: 120px; margin: 0 20px; }
-    #root .S-clients .refs .out { width: 360px; height: 330px; display: flex; align-items: center; justify-content: center; }
-    #root .S-clients .refs .out img { width: 300px; height: 264px; object-fit: contain; }
+    #root .S-clients .refs .out { padding: 40px 46px; display: flex; align-items: center; justify-content: center; }
+    #root .S-clients .refs .out img { display: block; }
     #root .S-clients .solo { filter: drop-shadow(0 26px 34px rgba(0,0,0,.65)); }
-    #root .S-clients .solo img { width: 520px; height: 520px; object-fit: contain; display: block; }
+    #root .S-clients .solo img { display: block; }
     #root .S-clients .pair { display: flex; align-items: center; gap: 30px; }
     #root .S-clients .pair .pa img { width: 520px; height: 520px; display: block; object-fit: contain; }
     #root .S-clients .clamp { position: relative; width: 400px; height: 440px; }
@@ -615,9 +587,12 @@
     #root .S-clients .nums b { font-size: 150px; font-weight: 400; }
     #root .S-clients .nums span { font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: #c9c2a3; }
     #root .S-clients .finding { margin-top: 60px; font-size: 48px; letter-spacing: .04em; color: #fff; padding: 16px 40px; border-radius: 6px; background: #b8342c; box-shadow: 0 0 40px rgba(184,52,44,.5); }
-    #root .S-clients .cl { display: flex; gap: 70px; }
-    #root .S-clients .cl .c1 { width: 640px; height: 320px; display: flex; align-items: center; justify-content: center; }
-    #root .S-clients .cl .c1 .hero { font-size: 70px; text-align: center; white-space: nowrap; }
+    #root .S-clients .cl { display: flex; gap: 50px; }
+    #root .S-clients .cl .c1 { width: 520px; height: 360px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; }
+    #root .S-clients .cl .c1 svg { display: block; filter: drop-shadow(0 10px 18px rgba(0,0,0,.5)); }
+    #root .S-clients .cl .c1 .hero { font-size: 58px; text-align: center; white-space: nowrap; }
+    #root .S-clients .cl .any .plus { font-size: 120px; line-height: 120px; height: 120px; }
+    #root .S-clients .cl .any .sub { margin-top: -18px; font-size: 32px; letter-spacing: .06em; color: #c9c2a3; }
 
   
 
@@ -655,54 +630,48 @@
     <div class="wash" data-layout-allow-overflow id="style-wash" style="background: radial-gradient(ellipse 60% 55% at 50% 52%, #7a2c2ccc 0%, #7a2c2c55 45%, transparent 75%)"></div>
     <div class="tt hero"><span class="ice style-w">It matches</span> <span class="brass style-w">your mod's style</span></div>
     <div class="vis" id="style-vis"><div class="refs">
-      <div class="r"><img src="assets/tno/refs/ref_2.png" /></div><div class="r"><img src="assets/tno/refs/ref_3.png" /></div><div class="r"><img src="assets/tno/refs/ref_6.png" /></div><div class="r"><img src="assets/tno/refs/ref_7.png" /></div>
+      <div class="r"><img src="assets/tno/refs/ref_2.png" style="width:233px;height:255px" /></div><div class="r"><img src="assets/tno/refs/ref_3.png" style="width:233px;height:255px" /></div><div class="r"><img src="assets/tno/refs/ref_6.png" style="width:233px;height:233px" /></div><div class="r"><img src="assets/tno/refs/ref_7.png" style="width:246px;height:213px" /></div>
       <div class="arrow hero brass">›</div>
-      <div class="out plate"><img src="assets/regen/geiger_counter/geiger_counter-v1-fit.png" /></div></div></div>
+      <div class="out plate"><img src="assets/regen/geiger_counter/geiger_counter-v1-p1.png" style="width:220px;height:194px" /></div></div></div>
     <div class="line" id="style-line">The New Order icons in · a new one out</div>
     </div>
-      <div class="station S-refine" style="left:9200px;top:0px">
-    <div class="wash" data-layout-allow-overflow id="refine-wash" style="background: radial-gradient(ellipse 60% 55% at 50% 52%, #8a4a1ccc 0%, #8a4a1c55 45%, transparent 75%)"></div>
-    <div class="tt hero"><span class="ice refine-w">Refine with</span> <span class="brass refine-w">one instruction</span></div>
-    <div class="vis" id="refine-vis"><div class="pair"><div class="pa"><img src="assets/regen/winter_border/winter_border-v1.png" /></div><div class="arrow hero brass">›</div><div class="pa"><img src="assets/regen/winter_border/winter_border-v2.png" /></div></div></div>
-    <div class="line" id="refine-line">“…now at night in a heavy snowstorm”</div>
-    </div>
-      <div class="station S-process" style="left:11500px;top:1000px">
+      <div class="station S-process" style="left:9200px;top:0px">
     <div class="wash" data-layout-allow-overflow id="process-wash" style="background: radial-gradient(ellipse 60% 55% at 50% 52%, #8c6a1ecc 0%, #8c6a1e55 45%, transparent 75%)"></div>
     <div class="tt hero"><span class="ice process-w">The vanilla finish.</span> <span class="brass process-w">Automatic.</span></div>
     <div class="vis" id="process-vis"><div class="pair"><div class="pa"><img src="assets/regen/military_reforms/military_reforms-v1-fit.png" /></div><div class="arrow hero brass">›</div>
       <div class="clamp"><div class="slot"><img src="assets/regen/military_reforms/military_reforms-v1-p1.png" style="width:286px;height:220px" /></div><div class="bracket tl"></div><div class="bracket tr"></div><div class="bracket bl"></div><div class="bracket br"></div></div></div></div>
     <div class="line" id="process-line">52 × 40 · ready for the game</div>
     </div>
-      <div class="station S-validate" style="left:13800px;top:0px">
+      <div class="station S-validate" style="left:11500px;top:1000px">
     <div class="wash" data-layout-allow-overflow id="validate-wash" style="background: radial-gradient(ellipse 60% 55% at 50% 52%, #2d6a3acc 0%, #2d6a3a55 45%, transparent 75%)"></div>
     <div class="tt hero"><span class="ice validate-w">Checked before</span> <span class="brass validate-w">anyone looks</span></div>
     <div class="vis" id="validate-vis"><div class="sheet plate"><img src="assets/gallery/preview_heavy_tank.png" /></div><div class="stamp ok">✓ Pass</div></div>
     
     </div>
-      <div class="station S-review" style="left:16100px;top:400px">
+      <div class="station S-review" style="left:13800px;top:0px">
     <div class="wash" data-layout-allow-overflow id="review-wash" style="background: radial-gradient(ellipse 60% 55% at 50% 52%, #6e2330cc 0%, #6e233055 45%, transparent 75%)"></div>
     <div class="tt hero"><span class="ice review-w">No approval,</span> <span class="brass review-w">no install</span></div>
     <div class="vis" id="review-vis"><div class="rev"><div class="portrait plate"><img src="assets/gallery/processed_png/iron_pact-v1-p1.png" style="width:400px;height:200px" /></div><div class="stamp big">Approved</div></div></div>
     
     </div>
-      <div class="station S-install" style="left:18400px;top:0px">
+      <div class="station S-install" style="left:16100px;top:400px">
     <div class="wash" data-layout-allow-overflow id="install-wash" style="background: radial-gradient(ellipse 60% 55% at 50% 52%, #24476ecc 0%, #24476e55 45%, transparent 75%)"></div>
     <div class="tt hero"><span class="ice install-w">Installed.</span> <span class="brass install-w">Registered.</span></div>
     <div class="vis" id="install-vis"><div class="inst"><div class="tank plate"><img src="assets/gallery/processed_png/heavy_tank-v1-p1.png" style="" /></div><div class="arrow hero brass">›</div>
       <div class="files"><div class="file"><b>DDS</b><span>texture</span></div><div class="file gfx"><b>.gfx</b><span>sprite</span></div></div></div></div>
     
     </div>
-      <div class="station S-audit" style="left:20700px;top:1000px">
+      <div class="station S-audit" style="left:18400px;top:0px">
     <div class="wash" data-layout-allow-overflow id="audit-wash" style="background: radial-gradient(ellipse 60% 55% at 50% 52%, #4a2f6bcc 0%, #4a2f6b55 45%, transparent 75%)"></div>
     <div class="tt hero"><span class="ice audit-w">Audit</span> <span class="brass audit-w">the whole mod</span></div>
     <div class="vis" id="audit-vis"><div class="nums"><div><b class="hero ice">29,566</b><span>sprites read</span></div><div><b class="hero ice">22,239</b><span>textures</span></div></div>
       <div class="finding">1 missing sprite found</div></div>
     
     </div>
-      <div class="station S-clients" style="left:23000px;top:0px">
+      <div class="station S-clients" style="left:20700px;top:1000px">
     <div class="wash" data-layout-allow-overflow id="clients-wash" style="background: radial-gradient(ellipse 60% 55% at 50% 52%, #7a4a22cc 0%, #7a4a2255 45%, transparent 75%)"></div>
     <div class="tt hero"><span class="ice clients-w">Claude Code</span> <span class="brass clients-w">& Codex</span></div>
-    <div class="vis" id="clients-vis"><div class="cl"><div class="plate c1" style="box-shadow: inset 0 0 0 3px #d97757, 0 30px 60px rgba(0,0,0,.65)"><div class="hero" style="color:#f1b39a">Claude Code</div></div><div class="plate c1" style="box-shadow: inset 0 0 0 3px #e8e8e8, 0 30px 60px rgba(0,0,0,.65)"><div class="hero" style="color:#f2f2f2">Codex</div></div></div></div>
+    <div class="vis" id="clients-vis"><div class="cl"><div class="plate c1" style="box-shadow: inset 0 0 0 3px #d97757, 0 30px 60px rgba(0,0,0,.65)"><svg fill="#d97757" width="120" height="120" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m4.7144 15.9555 4.7174-2.6471.079-.2307-.079-.1275h-.2307l-.7893-.0486-2.6956-.0729-2.3375-.0971-2.2646-.1214-.5707-.1215-.5343-.7042.0546-.3522.4797-.3218.686.0608 1.5179.1032 2.2767.1578 1.6514.0972 2.4468.255h.3886l.0546-.1579-.1336-.0971-.1032-.0972L6.973 9.8356l-2.55-1.6879-1.3356-.9714-.7225-.4918-.3643-.4614-.1578-1.0078.6557-.7225.8803.0607.2246.0607.8925.686 1.9064 1.4754 2.4893 1.8336.3643.3035.1457-.1032.0182-.0728-.164-.2733-1.3539-2.4467-1.445-2.4893-.6435-1.032-.17-.6194c-.0607-.255-.1032-.4674-.1032-.7285L6.287.1335 6.6997 0l.9957.1336.419.3642.6192 1.4147 1.0018 2.2282 1.5543 3.0296.4553.8985.2429.8318.091.255h.1579v-.1457l.1275-1.706.2368-2.0947.2307-2.6957.0789-.7589.3764-.9107.7468-.4918.5828.2793.4797.686-.0668.4433-.2853 1.8517-.5586 2.9021-.3643 1.9429h.2125l.2429-.2429.9835-1.3053 1.6514-2.0643.7286-.8196.85-.9046.5464-.4311h1.0321l.759 1.1293-.34 1.1657-1.0625 1.3478-.8804 1.1414-1.2628 1.7-.7893 1.36.0729.1093.1882-.0183 2.8535-.607 1.5421-.2794 1.8396-.3157.8318.3886.091.3946-.3278.8075-1.967.4857-2.3072.4614-3.4364.8136-.0425.0304.0486.0607 1.5482.1457.6618.0364h1.621l3.0175.2247.7892.522.4736.6376-.079.4857-1.2142.6193-1.6393-.3886-3.825-.9107-1.3113-.3279h-.1822v.1093l1.0929 1.0686 2.0035 1.8092 2.5075 2.3314.1275.5768-.3218.4554-.34-.0486-2.2039-1.6575-.85-.7468-1.9246-1.621h-.1275v.17l.4432.6496 2.3436 3.5214.1214 1.0807-.17.3521-.6071.2125-.6679-.1214-1.3721-1.9246L14.38 17.959l-1.1414-1.9428-.1397.079-.674 7.2552-.3156.3703-.7286.2793-.6071-.4614-.3218-.7468.3218-1.4753.3886-1.9246.3157-1.53.2853-1.9004.17-.6314-.0121-.0425-.1397.0182-1.4328 1.9672-2.1796 2.9446-1.7243 1.8456-.4128.164-.7164-.3704.0667-.6618.4008-.5889 2.386-3.0357 1.4389-1.882.929-1.0868-.0062-.1579h-.0546l-6.3385 4.1164-1.1293.1457-.4857-.4554.0608-.7467.2307-.2429 1.9064-1.3114Z"/></svg><div class="hero" style="color:#f1b39a">Claude Code</div></div><div class="plate c1" style="box-shadow: inset 0 0 0 3px #e8e8e8, 0 30px 60px rgba(0,0,0,.65)"><svg fill="#f2f2f2" width="120" height="120" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z"/></svg><div class="hero" style="color:#f2f2f2">Codex</div></div><div class="plate c1 any" style="box-shadow: inset 0 0 0 3px #e8b54f, 0 30px 60px rgba(0,0,0,.65)"><div class="plus hero brass">+</div><div class="hero brass">Any provider</div><div class="sub">any MCP client</div></div></div></div>
     <div class="line" id="clients-line">Same tools. Same mod.</div>
     </div>
 
@@ -751,10 +720,6 @@
     master.fromTo("#pp-cam", { scale: 1 }, { scale: 0.9, duration: b(1), ease: "sine.inOut", yoyo: true, repeat: 1, immediateRender: false }, b(70));
     master.to("#pp-far", { x: -7244.999999999999, y: -350, duration: b(2), ease: "power2.inOut" }, b(70));
     master.fromTo("#pp-streak", { xPercent: -100, opacity: 0.9 }, { xPercent: 100, opacity: 0, duration: b(2), ease: "power2.inOut", immediateRender: false }, b(70));
-    master.to("#pp-world", { x: -23000, y: 0, duration: b(2), ease: "power2.inOut" }, b(78));
-    master.fromTo("#pp-cam", { scale: 1 }, { scale: 0.9, duration: b(1), ease: "sine.inOut", yoyo: true, repeat: 1, immediateRender: false }, b(78));
-    master.to("#pp-far", { x: -8049.999999999999, y: 0, duration: b(2), ease: "power2.inOut" }, b(78));
-    master.fromTo("#pp-streak", { xPercent: -100, opacity: 0.9 }, { xPercent: 100, opacity: 0, duration: b(2), ease: "power2.inOut", immediateRender: false }, b(78));
     { const DUR = b(8); const tl = gsap.timeline();
       tl.set({}, {}, Math.max(0, DUR - 1 / 30));
 
@@ -803,17 +768,6 @@
       tl.set({}, {}, Math.max(0, DUR - 1 / 30));
 
     // beat 0: title; beat 0.5: the visual; beat 2: the line; then everything holds still
-    tl.fromTo("#refine-wash", { opacity: 0 }, { opacity: 1, duration: b(1), ease: "sine.out" }, 0);
-    tl.fromTo(".refine-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: b(0.5), ease: "power3.out", stagger: b(0.5) }, 0);
-    tl.fromTo("#refine-vis", { opacity: 0, y: 40, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: b(1), ease: "power3.out" }, b(0.5));
-    tl.fromTo("#refine-line", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: b(0.75), ease: "power3.out" }, b(2));
-    tl.fromTo("#refine-vis .pa:last-child", { opacity: 0, x: -50 }, { opacity: 1, x: 0, duration: b(1), ease: "power3.out" }, b(2));
-    
-      master.add(tl, b(32)); }
-    { const DUR = b(8); const tl = gsap.timeline();
-      tl.set({}, {}, Math.max(0, DUR - 1 / 30));
-
-    // beat 0: title; beat 0.5: the visual; beat 2: the line; then everything holds still
     tl.fromTo("#process-wash", { opacity: 0 }, { opacity: 1, duration: b(1), ease: "sine.out" }, 0);
     tl.fromTo(".process-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: b(0.5), ease: "power3.out", stagger: b(0.5) }, 0);
     tl.fromTo("#process-vis", { opacity: 0, y: 40, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: b(1), ease: "power3.out" }, b(0.5));
@@ -821,7 +775,7 @@
     tl.fromTo("#process-vis .bracket", { scale: 1.8, opacity: 0 }, { scale: 1, opacity: 1, duration: b(0.75), ease: "back.out(1.6)" }, b(2));
     tl.fromTo("#process-vis .slot img", { opacity: 0, scale: 1.3 }, { opacity: 1, scale: 1, duration: b(0.75), ease: "power3.out" }, b(2));
     
-      master.add(tl, b(40)); }
+      master.add(tl, b(32)); }
     { const DUR = b(8); const tl = gsap.timeline();
       tl.set({}, {}, Math.max(0, DUR - 1 / 30));
 
@@ -831,7 +785,7 @@
     tl.fromTo("#validate-vis", { opacity: 0, y: 40, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: b(1), ease: "power3.out" }, b(0.5));
     tl.fromTo("#validate-vis .stamp", { opacity: 0, scale: 1.6 }, { opacity: 1, scale: 1, duration: b(0.5), ease: "back.out(1.8)" }, b(2));
     
-      master.add(tl, b(48)); }
+      master.add(tl, b(40)); }
     { const DUR = b(8); const tl = gsap.timeline();
       tl.set({}, {}, Math.max(0, DUR - 1 / 30));
 
@@ -841,7 +795,7 @@
     tl.fromTo("#review-vis", { opacity: 0, y: 40, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: b(1), ease: "power3.out" }, b(0.5));
     tl.fromTo("#review-vis .stamp", { opacity: 0, scale: 1.6 }, { opacity: 1, scale: 1, duration: b(0.5), ease: "back.out(1.8)" }, b(2));
     
-      master.add(tl, b(56)); }
+      master.add(tl, b(48)); }
     { const DUR = b(8); const tl = gsap.timeline();
       tl.set({}, {}, Math.max(0, DUR - 1 / 30));
 
@@ -851,7 +805,7 @@
     tl.fromTo("#install-vis", { opacity: 0, y: 40, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: b(1), ease: "power3.out" }, b(0.5));
     tl.fromTo("#install-vis .file", { opacity: 0, y: -60 }, { opacity: 1, y: 0, duration: b(0.75), ease: "back.out(1.4)", stagger: b(0.5) }, b(2));
     
-      master.add(tl, b(64)); }
+      master.add(tl, b(56)); }
     { const DUR = b(8); const tl = gsap.timeline();
       tl.set({}, {}, Math.max(0, DUR - 1 / 30));
 
@@ -861,8 +815,8 @@
     tl.fromTo("#audit-vis", { opacity: 0, y: 40, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: b(1), ease: "power3.out" }, b(0.5));
     tl.fromTo("#audit-vis .finding", { opacity: 0, scale: 1.15 }, { opacity: 1, scale: 1, duration: b(0.5), ease: "back.out(1.8)" }, b(2));
     
-      master.add(tl, b(72)); }
-    { const DUR = b(8); const tl = gsap.timeline();
+      master.add(tl, b(64)); }
+    { const DUR = b(16); const tl = gsap.timeline();
       tl.set({}, {}, Math.max(0, DUR - 1 / 30));
 
     // beat 0: title; beat 0.5: the visual; beat 2: the line; then everything holds still
@@ -870,9 +824,10 @@
     tl.fromTo(".clients-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: b(0.5), ease: "power3.out", stagger: b(0.5) }, 0);
     tl.fromTo("#clients-vis", { opacity: 0, y: 40, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: b(1), ease: "power3.out" }, b(0.5));
     tl.fromTo("#clients-line", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: b(0.75), ease: "power3.out" }, b(2));
-
+    tl.fromTo("#clients-vis .cl", { x: 285 }, { x: 0, duration: b(1), ease: "power3.inOut" }, b(4));
+    tl.fromTo("#clients-vis .any", { opacity: 0, y: 40, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: b(1), ease: "power3.out" }, b(4.25));
     
-      master.add(tl, b(80)); }
+      master.add(tl, b(72)); }
 
     window.__timelines["pipeline"] = master;
   </script>
