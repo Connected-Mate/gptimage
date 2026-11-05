@@ -52,7 +52,7 @@ pub fn register(
     mode: RunMode,
     transport: Arc<dyn HttpTransport>,
 ) -> PluginReport {
-    let model = format!("{} at {} reasoning effort", provider_chatgpt_login::MODEL, provider_chatgpt_login::REASONING_EFFORT);
+    let model = format!("{} at {}", provider_chatgpt_login::MODEL, provider_chatgpt_login::EFFORT_POLICY);
     if let Err(why) = evaluate_gates(plugin_mode(mode)) {
         registry.problem("chatgpt_login", why.clone());
         return PluginReport {

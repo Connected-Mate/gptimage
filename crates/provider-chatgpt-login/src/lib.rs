@@ -12,8 +12,9 @@
 //!   change or be blocked without notice. Heavy use can hit plan limits or, in the worst case, restrict the account.
 //! * It is for one person's own account on their own machine. Never share tokens, never run it on a server.
 //!
-//! The maintainer fixed the model: every image request runs on [`MODEL`] at [`REASONING_EFFORT`] reasoning effort.
-//! There is no override and no fallback. A response that does not echo both is refused.
+//! The maintainer fixed the model: every image request runs on [`MODEL`]. The reasoning effort is the highest one
+//! the backend accepts, tried in the order of [`EFFORT_LADDER`] (decision W5-6, 2026-11-05, after the backend began
+//! refusing `high`). A response that does not echo the model and the effort it was asked for is refused.
 //!
 //! It keeps its own credentials only (it never reads or writes `~/.codex/auth.json`), has no token environment
 //! variable, reports usage as unknown and never charges any operator allowance.
@@ -50,8 +51,13 @@ pub const TOKEN_URL: &str = "https://auth.openai.com/oauth/token";
 pub const BACKEND_URL: &str = "https://chatgpt.com/backend-api/codex/responses";
 /// The only model this route uses (maintainer decision, 2026-11-01). No override, no fallback.
 pub const MODEL: &str = "gpt-6-luna";
-/// The only reasoning effort this route uses (maintainer decision, 2026-11-01).
-pub const REASONING_EFFORT: &str = "high";
+/// Reasoning efforts tried in order, once each per request; the first one the backend accepts is used (W5-6: high,
+/// then medium; low only if the maintainer asks for it).
+pub const EFFORT_LADDER: [&str; 2] = ["high", "medium"];
+/// The effort policy in words, for status lines and messages.
+pub const EFFORT_POLICY: &str = "the highest reasoning effort the backend accepts (high, then medium)";
+/// How long a refused effort is skipped on this machine before it is tried again, so each image is one request.
+pub const EFFORT_REFUSAL_MEMORY_SECS: i64 = 24 * 3600;
 /// Scopes requested at sign-in.
 pub const SCOPE: &str = "openid profile email offline_access";
 /// Loopback port the sign-in redirect uses.
@@ -98,6 +104,6 @@ mod tests {
     fn the_identifying_constants_are_in_one_place() {
         assert!(BACKEND_URL.starts_with("https://") && TOKEN_URL.starts_with("https://") && AUTHORIZE_URL.starts_with("https://"));
         assert_eq!(HOSTS, ["chatgpt.com", "auth.openai.com"]);
-        assert_eq!((MODEL, REASONING_EFFORT), ("gpt-6-luna", "high"));
+        assert_eq!((MODEL, EFFORT_LADDER), ("gpt-6-luna", ["high", "medium"]));
     }
 }

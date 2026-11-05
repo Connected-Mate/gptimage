@@ -142,9 +142,9 @@ impl Engine {
 
         if provider_id == "chatgpt_login" && model_id != provider_chatgpt_login::MODEL {
             return Err(EngineError::invalid(format!(
-                "the ChatGPT-login route runs only {} at {} reasoning effort (maintainer decision); '{model_id}' cannot be used with it",
+                "the ChatGPT-login route runs only {} at {} (maintainer decision); '{model_id}' cannot be used with it",
                 provider_chatgpt_login::MODEL,
-                provider_chatgpt_login::REASONING_EFFORT
+                provider_chatgpt_login::EFFORT_POLICY
             )));
         }
         let quality = req.quality.clone().or_else(|| self.config.provider(&provider_id).quality);

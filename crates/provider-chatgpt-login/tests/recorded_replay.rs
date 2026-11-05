@@ -74,7 +74,8 @@ fn the_recorded_response_yields_its_real_image_and_proves_luna_at_high_effort() 
     assert!(out.notes.iter().any(|n| n.starts_with("revised prompt:")));
     assert_eq!(out.provider_request_id.as_deref(), Some("resp_recorded"));
     let usage = out.usage.expect("the backend reported usage");
-    assert_eq!(usage["total_tokens"], 2690);
+    assert_eq!(usage["reasoning_effort"], "high", "the effort the image ran at is data on the candidate");
+    assert_eq!(usage["backend_usage"]["total_tokens"], 2690);
     assert!(out.usage_unknown, "plan quota has no price, so spend stays unknown");
 }
 
@@ -89,7 +90,7 @@ fn the_fixture_carries_no_account_identifiers() {
 fn another_model_injected_into_the_recording_is_refused() {
     for (from, to, needle) in [
         ("\"model\":\"gpt-6-luna\"", "\"model\":\"gpt-6-astra\"", "instead of gpt-6-luna"),
-        ("\"effort\":\"high\"", "\"effort\":\"medium\"", "instead of high"),
+        ("\"effort\":\"high\"", "\"effort\":\"medium\"", "instead of the asked high"),
         ("\"model\":\"gpt-6-luna\",", "", "did not report which model"),
         ("\"effort\":\"high\",", "", "did not report the reasoning effort"),
     ] {
