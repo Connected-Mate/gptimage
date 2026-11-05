@@ -21,6 +21,7 @@ Every family below was made by the tool itself, on the [ChatGPT login](chatgpt-l
 * [Flags](#flags) (`hoi4.image_flag`): [`flag`](#flag)
 * [Units, logos and buildings](#units-logos-and-buildings) (`hoi4.image_unit`): [`agency_logo`](#agency_logo), [`building`](#building), [`counter_large`](#counter_large), [`counter_small`](#counter_small), [`division_emblem`](#division_emblem), [`faction_logo`](#faction_logo)
 * [Interface](#interface) (`hoi4.image_interface`): [`gui_texture`](#gui_texture), [`modifier_stat_icon`](#modifier_stat_icon), [`super_event`](#super_event)
+* [Animated sprites](#animated-sprites) (`hoi4.image_animation`): [`anim_blend_glow`](#anim_blend_glow), [`anim_blend_keyframes`](#anim_blend_keyframes), [`anim_scroll`](#anim_scroll), [`anim_spin`](#anim_spin)
 
 ## Icons
 
@@ -1110,6 +1111,69 @@ no vanilla super events; a mod's .gui names the sprite in full
 
 </details>
 
+## Animated sprites
+
+Planned with `hoi4.image_animation`. These four families make `frameAnimatedSpriteType` strips, measured from the 160 that vanilla 1.19.4.1 registers (`scripts/measure_animated.py`). Only one base frame is generated. The other frames are derived from it, so shape, palette and position cannot drift between frames. The examples below are the tool's own preview GIFs, made by `hoi4.image_preview`. They are installed files, not in-game captures, and the strips have not been checked in game.
+
+The examples were made on 2026-11-02 on the ChatGPT login (plan quota, no money): 4 generations and 2 edits, one at a time, with `scripts/make_animations.py`. A blend strip's GIF shows the engine's cross-fade as linear blends at 20 pictures a second, an approximation because the shader was not traced.
+
+### anim_blend_glow
+
+<img src="gallery/anim_blend_glow.gif" alt="Example anim_blend_glow made by hoi4-imagegen: a golden focus outline pulsing" width="282">
+
+| | |
+|---|---|
+| Group and tool | animation, `hoi4.image_animation` |
+| Frames | 2, `animation_rate_fps = 1`, `effectFile = "gfx/FX/buttonstate_blendframes.lua"`, `alwaystransparent = yes`, like 70 vanilla glows. The default frame is 37x49, and a plan passes `canvas` for the element the glow sits on (vanilla has 47 sizes over 66 textures). The example is 141x115 |
+| Processing | recipe `anim_glow` v1: the model draws the bright glow on black. `flatten_on` → `black_to_alpha` (alpha is the brightest channel) → `fit_subject` → `glow_frames` (frame 1 is the glow at 0.17 of its alpha, the vanilla median) |
+| Installed (example) | `GFX_glow_focus_ready`, `gfx/interface/animated/animated/glows/glow_focus_ready.dds` (282x115) |
+
+### anim_blend_keyframes
+
+<img src="gallery/anim_blend_keyframes.gif" alt="Example anim_blend_keyframes made by hoi4-imagegen: a brass signal lantern lighting up" width="282">
+
+| | |
+|---|---|
+| Group and tool | animation, `hoi4.image_animation` |
+| Frames | 3 key frames at 1 fps with the blend effect, like the ongoing-focus and spirit glows. 141x115 per frame |
+| Processing | recipe `anim_keyframes` v1: frame 1 is generated. Frames 2 and 3 are `hoi4.image_edit` candidates of it ("the same lantern from the same angle, framing, size and style, its lens now glowing"), passed to `hoi4.image_process` as `frame_candidates`. `key_frames` fits all three with one shared crop and scale, so an edit that kept the framing lands where the base does |
+| Installed (example) | `GFX_anim_signal_beacon`, `gfx/interface/animated/animated/keyframes/anim_signal_beacon.dds` (423x115) |
+
+### anim_scroll
+
+<img src="gallery/anim_scroll.gif" alt="Example anim_scroll made by hoi4-imagegen: olive and khaki chevrons scrolling right" width="216">
+
+| | |
+|---|---|
+| Group and tool | animation, `hoi4.image_animation` |
+| Frames | 9 at 15 fps with `loadType = "INGAME"` and `transparencecheck = yes`, the currently-researching highlight of 38 vanilla sprites. 72x72 per frame |
+| Processing | recipe `anim_scroll` v1: `flatten_on` → `cover_resize` → `scroll_frames`. A repeating pattern is fitted to a whole number of its periods and its edges are blended with an in-phase copy, so the picture is seamless. Each frame moves it right by a ninth of the width |
+| Installed (example) | `GFX_scroll_research_progress`, `gfx/interface/animated/animated/scroll/scroll_research_progress.dds` (648x72) |
+
+### anim_spin
+
+<img src="gallery/anim_spin.gif" alt="Example anim_spin made by hoi4-imagegen: a steel cog with a red star hub turning" width="256">
+
+| | |
+|---|---|
+| Group and tool | animation, `hoi4.image_animation` |
+| Frames | 20 at 7 fps with `loadType = "INGAME"` and `transparencecheck = yes`, like the turning cogs of the leader-group and navy views. The default frame is 26x26. The example is 64x64 |
+| Processing | recipe `anim_spin` v1: `defringe` → `trim_to_subject` → `spin_frames`. The subject is fitted by its radius, so it stays inside the frame at every angle, and turned clockwise a full circle per loop. Each frame is turned at the source resolution and only then reduced |
+| Installed (example) | `GFX_spin_industry_cog`, `gfx/interface/animated/animated/spin/spin_industry_cog.dds` (1280x64) |
+
+### The animation check
+
+| Code | What it means |
+|---|---|
+| `GFX-ANIM-STATIC` | an error: the frames are the same picture, so nothing moves |
+| `GFX-ANIM-ALIGN` | a frame's centroid drifts from frame 1's by more than the motion allows (an error at twice the limit) |
+| `GFX-ANIM-SILHOUETTE` | a frame's silhouette overlaps frame 1's less than the motion allows |
+| `GFX-ANIM-PALETTE` | a frame's mean colour moves away from frame 1's |
+| `GFX-ANIM-SEAM` | the step from the last frame back to the first is much larger than the others, so the loop visibly restarts |
+| `GFX-ANIM-JUMP` | a warning: one step inside the loop is much larger than the others |
+
+The limits come from the vanilla strips of each kind, and a test checks that those strips pass. All four examples pass. The warnings they carry are the motion itself: the lantern's colour changes as it lights up (`GFX-ANIM-PALETTE`), and the eight cog teeth overlap less half-way between two teeth (`GFX-ANIM-SILHOUETTE`). The audit adds `GFX-ANIM-FRAMES` for a mod `frameAnimatedSpriteType` that does not divide into its frames or lacks its family's frame count and effect file.
+
 ## Usage
 
 The gallery used ChatGPT plan quota and no money (decision W5-1). It was made on 2026-11-02 with a ChatGPT Plus plan.
@@ -1136,6 +1200,7 @@ The gallery used ChatGPT plan quota and no money (decision W5-1). It was made on
 | `near_opaque` | the picture is opaque to within the template's own alpha (`GFX-ALPHA-IN-OPAQUE`) |
 | `card_corners` | transparent card corners (`GFX-CARD-CORNERS`) |
 | `frames` | the width divides into the frames (`GFX-FRAME-WIDTH`) |
+| `animation` | an animated strip moves, and only as intended (`GFX-ANIM-STATIC`, `GFX-ANIM-ALIGN`, `GFX-ANIM-SILHOUETTE`, `GFX-ANIM-PALETTE`, `GFX-ANIM-SEAM`, `GFX-ANIM-JUMP`) |
 | `style` | distance from the family's style references, a warning only (`GFX-STYLE-DRIFT`, `GFX-STYLE-MATCH`) |
 | `dds` | DDS header and layout (`GFX-DDS-HEADER`, `GFX-TRUNCATED`, `GFX-LFS-POINTER`) |
 | `tga` | TGA format and bottom-left origin (`GFX-TGA-FORMAT`, `GFX-FLAG-ORIGIN`) |

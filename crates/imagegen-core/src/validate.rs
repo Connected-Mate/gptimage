@@ -136,6 +136,7 @@ pub const ALL_CHECKS: &[&str] = &[
     "checker",
     "ghost",
     "frames",
+    "animation",
     "style",
     "dds",
     "tga",
@@ -401,6 +402,15 @@ pub fn validate_image(img: &Rgba, profile: &Profile, checks: &[String], opts: &O
         }
     }
 
+    if wants("animation") {
+        if let Some(anim) = &profile.imagegen.animation {
+            run.push("animation".into());
+            if frame_imgs.len() > 1 {
+                findings.extend(animation_findings(&frame_imgs, anim));
+            }
+        }
+    }
+
     if wants("checker") {
         run.push("checker".into());
         if let Some(c) = detect_fake_checkerboard(img) {
@@ -420,6 +430,118 @@ pub fn validate_image(img: &Rgba, profile: &Profile, checks: &[String], opts: &O
 
     let status = if findings.iter().any(|f| f.level == Level::Error) { Status::Fail } else { Status::Pass };
     Report { status, findings, frames: stats, size: [img.width, img.height], pixels_sha256: img.pixels_sha256(), checks_run: run }
+}
+
+/// The `animation` check: what changes between the frames of an animated strip beyond its intended motion
+/// (see [`crate::animation`] for the vanilla measurements behind the limits).
+///
+/// * `GFX-ANIM-STATIC` (error): the frames do not move at all.
+/// * `GFX-ANIM-ALIGN`: a frame's alpha-weighted centroid drifts from frame 1's by more than the motion allows
+///   (warning), or by more than twice that (error).
+/// * `GFX-ANIM-SILHOUETTE`: a frame's silhouette overlaps frame 1's less than the motion allows.
+/// * `GFX-ANIM-PALETTE`: a frame's mean colour moves away from frame 1's.
+/// * `GFX-ANIM-SEAM`: the step from the last frame back to the first is much larger than the other steps, so the loop
+///   visibly restarts (looping strips of three or more frames).
+/// * `GFX-ANIM-JUMP` (warning): one step inside the loop is much larger than the others.
+pub fn animation_findings(frames: &[Rgba], anim: &crate::animation::AnimationSpec) -> Vec<Finding> {
+    use crate::animation::{frame_metrics, limits, STATIC_STEP};
+    let m = frame_metrics(frames);
+    let lim = limits(anim.motion);
+    let mut out = Vec::new();
+    let graded = |v: f64, warn: f64, err: f64, above: bool| -> Option<Level> {
+        let (w, e) = if above { (v > warn, v > err) } else { (v < warn, v < err) };
+        if e {
+            Some(Level::Error)
+        } else if w {
+            Some(Level::Warning)
+        } else {
+            None
+        }
+    };
+    if m.steps.iter().all(|s| *s < STATIC_STEP) {
+        out.push(Finding::new(
+            "GFX-ANIM-STATIC",
+            Level::Error,
+            format!("the {} frames are the same picture, so nothing moves; an animated sprite needs its motion", frames.len()),
+            None,
+            json!({"steps": m.steps, "static_below": STATIC_STEP}),
+        ));
+        return out;
+    }
+    let (w, h) = (f64::from(frames[0].width), f64::from(frames[0].height));
+    for (i, _) in frames.iter().enumerate().skip(1) {
+        let n = Some(i as u32 + 1);
+        if let Some(share) = lim.drift_share {
+            let allowed = (share * (w * w + h * h).sqrt()).max(1.5);
+            let d = m.centroid_drift_px[i];
+            if let Some(level) = graded(d, allowed, 2.0 * allowed, true) {
+                out.push(Finding::new(
+                    "GFX-ANIM-ALIGN",
+                    level,
+                    format!(
+                        "frame {} sits {d:.1} px away from frame 1 (allowed {allowed:.1} px for {}): the subject jumps instead of animating in place",
+                        i + 1,
+                        anim.motion.as_str()
+                    ),
+                    n,
+                    json!({"centroid_drift_px": d, "allowed_px": allowed}),
+                ));
+            }
+        }
+        if let Some((warn, err)) = lim.iou {
+            let v = m.silhouette_iou[i];
+            if let Some(level) = graded(v, warn, err, false) {
+                out.push(Finding::new(
+                    "GFX-ANIM-SILHOUETTE",
+                    level,
+                    format!("frame {} shares {:.0} percent of its silhouette with frame 1 (at least {:.0} percent expected): its shape changed beyond the motion", i + 1, v * 100.0, warn * 100.0),
+                    n,
+                    json!({"silhouette_iou": v, "warn_below": warn, "error_below": err}),
+                ));
+            }
+        }
+        if let Some((warn, err)) = lim.palette {
+            let v = m.palette_drift[i];
+            if let Some(level) = graded(v, warn, err, true) {
+                out.push(Finding::new(
+                    "GFX-ANIM-PALETTE",
+                    level,
+                    format!(
+                        "frame {}'s mean colour is {v:.1} levels from frame 1's (at most {warn:.0} expected): the palette drifts between frames",
+                        i + 1
+                    ),
+                    n,
+                    json!({"palette_drift": v, "warn_above": warn, "error_above": err}),
+                ));
+            }
+        }
+    }
+    if anim.looping {
+        if let Some(r) = m.seam_ratio {
+            if let Some(level) = graded(r, lim.seam.0, lim.seam.1, true) {
+                out.push(Finding::new(
+                    "GFX-ANIM-SEAM",
+                    level,
+                    format!("the step from the last frame back to frame 1 is {r:.1} times the median step: the loop visibly restarts"),
+                    Some(frames.len() as u32),
+                    json!({"seam_ratio": r, "steps": m.steps, "warn_above": lim.seam.0, "error_above": lim.seam.1}),
+                ));
+            }
+        }
+    }
+    if let Some(r) = m.jump_ratio {
+        if r > lim.seam.0 {
+            let at = m.steps[..m.steps.len() - 1].iter().enumerate().max_by(|a, b| a.1.total_cmp(b.1)).map(|(i, _)| i as u32 + 1).unwrap_or(1);
+            out.push(Finding::new(
+                "GFX-ANIM-JUMP",
+                Level::Warning,
+                format!("the step from frame {at} to frame {} is {r:.1} times the median step: the motion jerks there", at + 1),
+                Some(at + 1),
+                json!({"jump_ratio": r, "steps": m.steps}),
+            ));
+        }
+    }
+    out
 }
 
 /// The style distribution the `style` check compares an image with. It is built from the family's chosen style

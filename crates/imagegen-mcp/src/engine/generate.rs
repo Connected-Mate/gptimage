@@ -229,7 +229,7 @@ impl Engine {
         }
         text.push_str("\nProduce exactly one image.\n");
 
-        let transparent = profile.imagegen.background == imagegen_core::profile::Background::Transparent;
+        let transparent = profile.source_transparent();
         let request = ImageRequest {
             model: model.clone(),
             prompt: text.clone(),

@@ -7,7 +7,7 @@ use crate::naming::{expand, validate_flag_name, validate_snake};
 use crate::pixels::Rgba;
 use crate::profile::{Container, Profile};
 use crate::resize::resize_lanczos3;
-use crate::sprite::{framed_sprite, plain_sprite, shine_sprite, SpriteEntry};
+use crate::sprite::{animated_sprite, framed_sprite, plain_sprite, shine_sprite, SpriteEntry};
 use crate::{dds, tga};
 
 /// One file an install writes.
@@ -139,7 +139,11 @@ pub fn sprite_entries(
     let prefix = resolved_prefix(profile, feature_slug, asset)?;
     let name = main_sprite_name(profile, canvas, feature_slug, asset, number)?.unwrap_or_default();
     let gfx_file = expand(&spec.gfx_file, feature_slug, asset, &prefix)?;
-    let mut entries = vec![if profile.frames > 1 { framed_sprite(&name, &main.rel, profile.frames) } else { plain_sprite(&name, &main.rel) }];
+    let mut entries = vec![match &profile.imagegen.animation {
+        Some(anim) => animated_sprite(&name, &main.rel, frames, anim)?,
+        None if profile.frames > 1 => framed_sprite(&name, &main.rel, profile.frames),
+        None => plain_sprite(&name, &main.rel),
+    }];
     for companion in &spec.companions {
         match companion.as_str() {
             "shine" => entries.push(shine_sprite(&name, &main.rel)?),
@@ -274,6 +278,37 @@ mod tests {
         let prof = p(Family::Focus);
         let files = final_files(&prof, prof.canvas, "iron_pact", "x").unwrap();
         assert!(!sprite_entries(&prof, "iron_pact", "x", &files, None).unwrap().unwrap().1[0].text.contains("noOfFrames"));
+    }
+
+    #[test]
+    fn animated_families_register_a_frame_animated_sprite_type() {
+        let prof = p(Family::AnimBlendGlow);
+        let files = final_files(&prof, [120, 60], "iron_pact", "alert").unwrap();
+        assert_eq!(files[0].canvas, [240, 60], "a plan's own canvas is one frame");
+        let (gfx, entries) = sprite_entries(&prof, "iron_pact", "alert", &files, None).unwrap().unwrap();
+        assert_eq!(gfx, "interface/iron_pact_animated.gfx");
+        let t = &entries[0].text;
+        assert!(t.starts_with("\tframeAnimatedSpriteType = {"), "{t}");
+        for line in [
+            "noOfFrames = 2",
+            "animation_rate_fps = 1",
+            "looping = yes",
+            "play_on_show = yes",
+            "alwaystransparent = yes",
+            "effectFile = \"gfx/FX/buttonstate_blendframes.lua\"",
+        ] {
+            assert!(t.contains(line), "{line} missing in {t}");
+        }
+        let prof = p(Family::AnimSpin);
+        let files = final_files(&prof, prof.canvas, "iron_pact", "cog").unwrap();
+        let t = sprite_entries(&prof, "iron_pact", "cog", &files, None).unwrap().unwrap().1[0].text.clone();
+        assert!(
+            t.contains("noOfFrames = 20") && t.contains("animation_rate_fps = 7") && t.contains("loadType = \"INGAME\"") && !t.contains("effectFile"),
+            "{t}"
+        );
+        // the block parses and registers like any sprite
+        let bytes = crate::sprite::register_bytes(None, &[entries[0].clone()]).unwrap();
+        assert!(String::from_utf8(bytes).unwrap().contains("GFX_glow_alert"));
     }
 
     /// One row per family: asset name, the division template number, then every sprite the install registers as
@@ -412,6 +447,10 @@ mod tests {
             ModifierStatIcon => ("army_speed", None, one("GFX_MODIFIER_ARMY_SPEED", "gfx/interface/modifiers/iron_pact/modifier_army_speed.dds")),
             GuiTexture => ("panel", None, one("GFX_gui_panel", "gfx/interface/iron_pact/gui_panel.dds")),
             SuperEvent => ("victory", None, one("GFX_super_event_victory", "gfx/super_events/iron_pact/super_event_victory.dds")),
+            AnimBlendGlow => ("alert", None, vec![("GFX_glow_alert", "gfx/interface/animated/iron_pact/glows/glow_alert.dds", 2)]),
+            AnimBlendKeyframes => ("beacon", None, vec![("GFX_anim_beacon", "gfx/interface/animated/iron_pact/keyframes/anim_beacon.dds", 3)]),
+            AnimScroll => ("research", None, vec![("GFX_scroll_research", "gfx/interface/animated/iron_pact/scroll/scroll_research.dds", 9)]),
+            AnimSpin => ("cog", None, vec![("GFX_spin_cog", "gfx/interface/animated/iron_pact/spin/spin_cog.dds", 20)]),
         }
     }
 

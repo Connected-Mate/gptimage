@@ -136,16 +136,47 @@ impl Engine {
     }
 
     /// Run one finishing stage on the image the chain has produced so far.
+    #[allow(clippy::too_many_arguments)]
     pub(crate) fn run_finisher(
         &self,
         finisher: Finisher,
         img: &Rgba,
         portrait_crop: Option<[i64; 4]>,
         second: Option<(&str, &Rgba)>,
+        keyframes: &[(String, Rgba)],
         profile: &Profile,
         canvas: [u32; 2],
     ) -> EResult<FinishOutput> {
         match finisher {
+            Finisher::KeyFrames => {
+                let frames = profile.frames.max(1) as usize;
+                if keyframes.len() + 1 != frames {
+                    return Err(EngineError::refused(
+                        "key_frames_needed",
+                        format!(
+                            "{} is a strip of {frames} key frames and {} were given (this candidate plus {} frame_candidates). Make each further frame with hoi4.image_edit on this candidate, keeping its framing (for example \"the same beacon, its light now at full strength\"), then process again with frame_candidates in order",
+                            profile.family,
+                            keyframes.len() + 1,
+                            keyframes.len()
+                        ),
+                        RetryClass::RefreshPreconditions,
+                    ));
+                }
+                let mut all: Vec<Rgba> = vec![img.clone()];
+                all.extend(keyframes.iter().map(|(_, k)| k.clone()));
+                let fitted = imagegen_core::animation::fit_together(&all, canvas[0], canvas[1], profile.margin, 16)?;
+                let strip = build_strip(&fitted, (canvas[0], canvas[1]))
+                    .map_err(|e| EngineError::invalid(format!("the key frames do not fit together: {e}")))?;
+                Ok(FinishOutput {
+                    main: strip,
+                    companions: Vec::new(),
+                    detail: json!({
+                        "frame_candidates": keyframes.iter().map(|(id, _)| id).collect::<Vec<_>>(),
+                        "frame_sha256": all.iter().map(|f| f.pixels_sha256()).collect::<Vec<_>>(),
+                        "fit": "one crop and scale for every frame (the union of their visible bounds)",
+                    }),
+                })
+            }
             Finisher::DerivedCompanions => {
                 let mut companions = Vec::new();
                 let mut made = Vec::new();

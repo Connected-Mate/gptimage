@@ -120,6 +120,34 @@ pub enum Op {
         /// The NATO symbol: marks joined by `+`, as `recipes::unit_art::symbol_text` writes them.
         symbol: String,
     },
+    /// Light on black to alpha: alpha is the brightest channel, colour is divided by it (blend glows).
+    BlackToAlpha,
+    /// Two-frame blend glow from its bright frame: frame 1 is the glow at `dim` of its alpha, frame 2 the glow.
+    GlowFrames {
+        /// Frames in the strip; two.
+        frames: u32,
+        /// Alpha of the dim frame relative to the bright one.
+        dim: f64,
+    },
+    /// The picture made seamless across its width, then moved right by `width / frames` per frame.
+    ScrollFrames {
+        /// Frames in the strip.
+        frames: u32,
+    },
+    /// The subject fitted by its radius into `width` x `height` frames and turned clockwise by `degrees` over the
+    /// loop, each frame turned at the source resolution before it is reduced.
+    SpinFrames {
+        /// Frame width.
+        width: u32,
+        /// Frame height.
+        height: u32,
+        /// Transparent margin at every angle.
+        margin: u32,
+        /// Frames in the strip.
+        frames: u32,
+        /// Degrees turned over one loop.
+        degrees: f64,
+    },
 }
 
 impl Op {
@@ -141,6 +169,10 @@ impl Op {
             Op::DisabledFrame { .. } => "disabled_frame",
             Op::UnitGlyph { .. } => "unit_glyph",
             Op::NatoFrame { .. } => "nato_frame",
+            Op::BlackToAlpha => "black_to_alpha",
+            Op::GlowFrames { .. } => "glow_frames",
+            Op::ScrollFrames { .. } => "scroll_frames",
+            Op::SpinFrames { .. } => "spin_frames",
         }
     }
 }
@@ -209,6 +241,12 @@ pub fn apply(img: &Rgba, op: &Op) -> Result<Rgba> {
         Op::NatoFrame { kind, symbol } => {
             let marks = crate::recipes::unit_art::parse_symbol(symbol)?;
             crate::recipes::unit_art::counter_strip(img, *kind, &marks)
+        }
+        Op::BlackToAlpha => Ok(crate::animation::black_to_alpha(img)),
+        Op::GlowFrames { frames, dim } => crate::animation::glow_strip(img, *frames, *dim),
+        Op::ScrollFrames { frames } => crate::animation::scroll_strip(img, *frames),
+        Op::SpinFrames { width, height, margin, frames, degrees } => {
+            crate::animation::spin_strip(img, *width, *height, *margin, *frames, *degrees, default_min_alpha())
         }
     }
 }

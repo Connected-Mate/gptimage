@@ -66,6 +66,9 @@ mod family_schemas {
     pub fn interface(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
         schema(Group::Interface)
     }
+    pub fn animation(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schema(Group::Animation)
+    }
 }
 
 macro_rules! group_request {
@@ -98,7 +101,7 @@ macro_rules! group_request {
             /// Quality tier where the model has tiers.
             #[serde(default)]
             pub quality: Option<String>,
-            /// Canvas `[width, height]` for families that have none (the mod defines it). Refused for the others.
+            /// Canvas `[width, height]` of one frame, for families whose size the mod defines (GUI textures, super events, and animated strips, which take the size of the element they sit on). Refused for the others.
             #[serde(default)]
             pub canvas: Option<[u32; 2]>,
             /// Candidates to produce in one go (1 to 4); each is a separate provider call.
@@ -173,6 +176,10 @@ group_request!(
 group_request!(
     /// `hoi4.image_interface`: interface art whose canvas the mod defines.
     InterfaceRequest, Group::Interface, "family_schemas::interface"
+);
+group_request!(
+    /// `hoi4.image_animation`: animated multi-frame sprites (`frameAnimatedSpriteType`).
+    AnimationRequest, Group::Animation, "family_schemas::animation"
 );
 
 /// What `hoi4.image_references` does.
@@ -318,6 +325,11 @@ pub struct ProcessParams {
     /// sub-unit key); an infantry cross when nothing matches.
     #[serde(default)]
     pub counter_symbol: Option<String>,
+    /// `anim_blend_keyframes` only: the candidates of frames 2 onward, in order. Make each with `hoi4.image_edit` on the
+    /// base candidate (the one being processed), so it keeps the base's framing; all frames are then fitted with one
+    /// shared crop and scale.
+    #[serde(default)]
+    pub frame_candidates: Option<Vec<String>>,
 }
 
 /// `hoi4.image_validate`

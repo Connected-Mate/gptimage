@@ -22,12 +22,12 @@ status -> families -> icon | picture | portrait | flag | unit | interface   (fre
 | `hoi4.image_status` | Providers (key present or not, never the value), model tables with their date, game folder, profile source, ledger chain, ChatGPT-login state |
 | `hoi4.image_families` | The catalogue: every family (or one) with its group and tool, the vanilla-measured canvas and frames, accepted sizes, the mod's override, naming, checks, review rubric, final paths and the style sources that exist for it. `calibrate: true` compares the table with the installed game's file headers |
 | `hoi4.image_references` | Reference images with role and rights note, and project style profiles pinned by SHA-256 |
-| `hoi4.image_icon`, `hoi4.image_picture`, `hoi4.image_portrait`, `hoi4.image_flag`, `hoi4.image_unit`, `hoi4.image_interface` | One tool per group of families. Each has a **required `family`** whose schema enum lists only that group's families. Without `approve`: a free plan (prompt, references, provider, model, size, cost estimate with its basis, output paths) and a `plan_id`. With `approve: true` and an `idempotency_key`: plan and generate in one call |
+| `hoi4.image_icon`, `hoi4.image_picture`, `hoi4.image_portrait`, `hoi4.image_flag`, `hoi4.image_unit`, `hoi4.image_interface`, `hoi4.image_animation` | One tool per group of families. Each has a **required `family`** whose schema enum lists only that group's families. Without `approve`: a free plan (prompt, references, provider, model, size, cost estimate with its basis, output paths) and a `plan_id`. With `approve: true` and an `idempotency_key`: plan and generate in one call |
 | `hoi4.image_generate` | Runs a stored plan. One provider call per variant. The same `idempotency_key` replays instead of paying again |
-| `hoi4.image_edit` | Refines a candidate with an instruction, an optional mask and extra references. Also makes the ruined second frame of a building |
-| `hoi4.image_process` | Runs the family's processing chain. Also imports art made elsewhere |
+| `hoi4.image_edit` | Refines a candidate with an instruction, an optional mask and extra references. Also makes the ruined second frame of a building and the further key frames of an `anim_blend_keyframes` strip |
+| `hoi4.image_process` | Runs the family's processing chain. Also imports art made elsewhere. `frame_candidates` names the edits that become frames 2 onward of a key-frame strip |
 | `hoi4.image_validate` | The family's full check set, with stable finding codes |
-| `hoi4.image_preview` | A contact sheet: native size and enlarged, on dark, light and checker backgrounds, beside the references |
+| `hoi4.image_preview` | A contact sheet: native size and enlarged, on dark, light and checker backgrounds, beside the references. An animated strip also gets a frame sheet and a looping GIF |
 | `hoi4.image_review` | The visual review against the family's rubric. An approval returns the `approval_id` that install needs |
 | `hoi4.image_install` | Writes the DDS or TGA files and the sprite. Refuses unless the gate is open |
 | `hoi4.image_ledger` | Which references, settings and outputs belong together, lineage, and the chain check |
@@ -35,11 +35,11 @@ status -> families -> icon | picture | portrait | flag | unit | interface   (fre
 
 | `hoi4.image_audit` | Audits the whole mod on the shared engine (hoi4-agent-tools): which families use each sprite and texture, cross-family reuse (`GFX-FAMILY-REUSE`, a warning, with a per-mod allowlist), missing textures, undefined sprites, missing focus shine (an error: the game then draws a `?`), wrong canvas sizes and report cards without transparent corners. Read only |
 
-That is 19 tools.
+That is 20 tools.
 
 ## Families
 
-There are 40 families in six groups. The group names the tool that plans them.
+There are 44 families in seven groups. The group names the tool that plans them.
 
 | Tool | Families |
 |---|---|
@@ -49,12 +49,26 @@ There are 40 families in six groups. The group names the tool that plans them.
 | `hoi4.image_flag` | flag |
 | `hoi4.image_unit` | counter_large, counter_small, division_emblem, building, faction_logo, agency_logo |
 | `hoi4.image_interface` | modifier_stat_icon, gui_texture, super_event |
+| `hoi4.image_animation` | anim_blend_glow, anim_blend_keyframes, anim_scroll, anim_spin |
 
 ### Measured from the game
 
 The built-in canvas, frames, accepted sizes and pixel class of every family come from the installed game, version 1.19.4.1. The data is in `crates/imagegen-core/data/vanilla-measurement.json`, made by `scripts/measure_families.py`. A unit test fails when a family stops matching it. Examples: focus 100x88, idea_spirit 60x68, advisor_card 65x67, decision 33x32, report_event 210x176, news_event 397x153, flags 82x52, 41x26 and 10x7.
 
 A mod can override the canvas and naming in its own `.tools/gfx/profiles.json` (the kit's file) or in `.hoi4-imagegen/config.toml`. Without an override the vanilla size is used. `hoi4.image_families` shows the override next to the vanilla value, and `hoi4-imagegen calibrate` shows where a built-in value is not the dominant vanilla size. `gui_texture` and `super_event` have no vanilla texture to measure, so the mod defines their canvas.
+
+### Animated sprites
+
+The four animated families are measured from the 160 `frameAnimatedSpriteType` sprites of 1.19.4.1 (`scripts/measure_animated.py` writes the `animated_sprites` section and the four `anim_*` entries of the measurement file). Each family copies the frame count, `animation_rate_fps`, `looping`, `play_on_show`, `pause_on_loop` and effect file of the vanilla sprites it is measured from, and a unit test keeps them equal.
+
+| Family | Frames and rate | Vanilla model | How the frames are made |
+|---|---|---|---|
+| `anim_blend_glow` | 2 at 1 fps, `buttonstate_blendframes.lua` | 70 two-frame glows (alerts, buttons, highlights) | The model draws the bright glow on black. The tool turns the light into alpha and makes frame 1 the same glow at 0.17 of its alpha, the vanilla median |
+| `anim_blend_keyframes` | 3 at 1 fps, `buttonstate_blendframes.lua` | the ongoing-focus and spirit glows | Frame 1 is generated. Frames 2 and 3 are `hoi4.image_edit` candidates of it, passed as `frame_candidates`, and all three get one shared crop and scale |
+| `anim_scroll` | 9 at 15 fps | 38 currently-researching highlights | The picture is made seamless across its width and moves right by a ninth of it per frame |
+| `anim_spin` | 20 at 7 fps | the turning cogs of the leader-group and navy views | The subject is fitted by its radius and turned a full circle, each frame at the source resolution |
+
+Vanilla sizes these strips to the element they sit on (66 glow textures come in 47 sizes), so a plan may pass `canvas`, the size of one frame. The `animation` check measures what is left to drift. `GFX-ANIM-STATIC` (an error) means nothing moves. `GFX-ANIM-ALIGN`, `GFX-ANIM-SILHOUETTE` and `GFX-ANIM-PALETTE` compare each frame's centroid, silhouette and mean colour with frame 1. `GFX-ANIM-SEAM` means the loop visibly restarts, and `GFX-ANIM-JUMP` means one step is much larger than the rest. The limits are set from the vanilla strips of the same kind, and a test checks that those strips pass. The audit adds `GFX-ANIM-FRAMES` for a mod `frameAnimatedSpriteType` whose strip does not divide into its frames or does not have its family's frame count and effect file.
 
 ### The family lock
 

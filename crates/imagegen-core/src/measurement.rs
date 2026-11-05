@@ -91,6 +91,18 @@ impl Measurement {
             .unwrap_or_default()
     }
 
+    /// The most common value of a registration count map of the entry (`animation_rate_fps_values`,
+    /// `effect_file_values`, ...), with its count.
+    pub fn registration_mode(&self, id: &str, key: &str) -> Option<(String, u64)> {
+        let map = self.entry(id)?.get("registration")?.get(key)?.as_object()?;
+        map.iter().filter_map(|(k, n)| Some((k.clone(), n.as_u64()?))).max_by(|a, b| a.1.cmp(&b.1).then(b.0.cmp(&a.0)))
+    }
+
+    /// A number of an animated entry's `animation` object (`median_dim_to_bright_alpha_ratio`, ...).
+    pub fn animation_number(&self, id: &str, key: &str) -> Option<f64> {
+        self.entry(id)?.get("animation")?.get(key)?.as_f64()
+    }
+
     /// Texture folders the entry measured.
     pub fn folders(&self, id: &str) -> Vec<String> {
         self.entry(id)
@@ -167,6 +179,10 @@ pub fn entries_of(family: Family) -> &'static [&'static str] {
         AgencyLogo => &["intel_agency_logo"],
         ModifierStatIcon => &["stat_modifier_tooltip_icon"],
         GuiTexture | SuperEvent => &[],
+        AnimBlendGlow => &["anim_blend_glow"],
+        AnimBlendKeyframes => &["anim_blend_keyframes"],
+        AnimScroll => &["anim_scroll"],
+        AnimSpin => &["anim_spin"],
     }
 }
 
@@ -178,7 +194,7 @@ mod tests {
     fn the_embedded_measurement_is_the_1_19_4_1_run() {
         let m = data();
         assert!(m.game_version().starts_with("1.19.4.1"), "{}", m.game_version());
-        assert_eq!(m.entry_ids().len(), 41);
+        assert_eq!(m.entry_ids().len(), 45);
         assert_eq!(m.dominant("focus_icon").unwrap().0, [100, 88]);
         assert_eq!(parse_size("146x54"), Some([146, 54]));
         assert!(m.summary("decision_icon").unwrap().contains("33x32 is 223 files"));

@@ -9,6 +9,7 @@ repository.workspace = true
 authors.workspace = true
 
 [dependencies]
+gif.workspace = true
 image.workspace = true
 hoi4-engine.workspace = true
 hoi4-syntax.workspace = true

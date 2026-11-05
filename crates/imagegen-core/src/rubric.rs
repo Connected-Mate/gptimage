@@ -75,8 +75,17 @@ const INTERFACE: &[Question] = &[
     ("no_text_or_watermark", "Is the art free of text and watermarks?"),
 ];
 
+const ANIMATION: &[Question] = &[
+    ("readable_at_native_size", "Is the subject recognizable at the native game size in every frame (look at the 1x contact sheet)?"),
+    ("motion_reads_as_intended", "Watching the looping preview, does the motion read as intended (a pulse, a scroll, a turn, the change between key frames) without a jump or a flash?"),
+    ("frames_consistent", "Do the frames keep one subject, one position and one palette, so nothing but the intended motion changes?"),
+    ("loop_is_seamless", "Does the last frame run into the first without a visible seam?"),
+    ("style_matches_references", "Does the style match the approved references or the surrounding interface?"),
+    ("no_text_or_watermark", "Is the art free of text, letters, numbers, signatures and watermarks?"),
+];
+
 /// Questions for a rubric id. Rubrics are per group (`icon_v1`, `picture_v1`, `portrait_v1`, `flag_v1`,
-/// `unit_v1`, `interface_v1`), so every family of a group, officer corps spirits included, gets its group's
+/// `unit_v1`, `interface_v1`, `animation_v1`), so every family of a group, officer corps spirits included, gets its group's
 /// questions. Anything else falls back to the generic questions.
 pub fn questions(rubric: &str) -> &'static [Question] {
     if rubric == "icon_v1" {
@@ -89,6 +98,7 @@ pub fn questions(rubric: &str) -> &'static [Question] {
         "flag" => FLAG,
         "unit" => UNIT,
         "interface" => INTERFACE,
+        "animation" => ANIMATION,
         _ => GENERIC,
     }
 }
@@ -139,6 +149,7 @@ mod tests {
         assert!(questions("portrait_v1").iter().any(|q| q.0 == "face_natural"));
         assert!(questions("unit_v1").iter().any(|q| q.0 == "frames_consistent"));
         assert!(questions("interface_v1").iter().any(|q| q.0 == "fits_the_surface"));
+        assert!(questions("animation_v1").iter().any(|q| q.0 == "loop_is_seamless"));
         assert!(questions("anything_else").iter().any(|q| q.0 == "looks_correct"));
         // the 0.1 gap: officer spirits fell through to the generic rubric
         for f in crate::family::Family::ALL.iter().copied() {
