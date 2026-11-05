@@ -86,9 +86,9 @@ tl.set({}, {}, Math.max(0, DUR - 1 / 30));
 function exitWipe(sel) {
   tl.fromTo(sel, { xPercent: -120 }, { xPercent: 120, duration: b(0.5), ease: "power3.in" }, DUR - b(0.5));
 }
-// Land a block of words one by one on beats, blur to sharp, then hold still.
+// Words rise into place one by one on beats, blur to sharp, then hold still.
 function wordsIn(sel, at, gap) {
-  tl.fromTo(sel, { opacity: 0, filter: "blur(10px)", scale: 1.08 }, { opacity: 1, filter: "blur(0px)", scale: 1, duration: 0.16, ease: "power4.out", stagger: gap }, at);
+  tl.fromTo(sel, { opacity: 0, y: 34, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: b(1), ease: "expo.out", stagger: gap }, at);
 }
 
     // one real asset per half beat over the first bar, each punching in on its beat, then gone
@@ -104,7 +104,7 @@ function wordsIn(sel, at, gap) {
     tl.fromTo("#hk-hero", { opacity: 0, scale: 1.8 }, { opacity: 1, scale: 1, duration: b(0.5), ease: "back.out(1.6)" }, b(4));
     tl.fromTo("#hk-ring", { opacity: 0.9, scale: 0.6 }, { opacity: 0, scale: 1.4, duration: b(1), ease: "power2.out", immediateRender: false }, b(4));
     tl.fromTo("#hk-sh", { xPercent: -150 }, { xPercent: 350, duration: b(1), ease: "power2.inOut" }, b(5));
-    tl.fromTo(".hook-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.15, ease: "power4.out", stagger: b(2) }, b(4));
+    tl.fromTo(".hook-w", { opacity: 0, y: 34, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: b(1), ease: "expo.out", stagger: b(2) }, b(4));
     tl.fromTo("#hook-dip", { opacity: 1 }, { opacity: 0, duration: b(0.5), ease: "power2.out" }, 0);
     tl.fromTo("#hook-dip", { opacity: 0 }, { opacity: 0.85, duration: b(0.5), ease: "power2.in", immediateRender: false }, DUR - b(0.5));
     window.__timelines["hook"] = tl;

@@ -22,7 +22,7 @@
     <div class="pl r" id="rv-r" data-layout-allow-overflow><div class="riv" style="right:48px;top:48px"></div><div class="riv" style="right:48px;bottom:48px"></div></div>
     <div class="seam" id="rv-seam"></div>
     {{GRAIN}}
-    <div class="name hero" id="rv-name"><span class="brass">h</span><span class="brass">o</span><span class="brass">i</span><span class="brass">4</span><span class="brass">-</span><span class="brass">i</span><span class="brass">m</span><span class="brass">a</span><span class="brass">g</span><span class="brass">e</span><span class="brass">g</span><span class="brass">e</span><span class="brass">n</span><span class="brass">-</span><span class="brass">m</span><span class="brass">c</span><span class="brass">p</span></div>
+    <div class="name hero" id="rv-name" data-layout-allow-overflow><span class="brass">h</span><span class="brass">o</span><span class="brass">i</span><span class="brass">4</span><span class="brass">-</span><span class="brass">i</span><span class="brass">m</span><span class="brass">a</span><span class="brass">g</span><span class="brass">e</span><span class="brass">g</span><span class="brass">e</span><span class="brass">n</span><span class="brass">-</span><span class="brass">m</span><span class="brass">c</span><span class="brass">p</span></div>
     <div class="sub"><span class="rv-s">Rust MCP server + CLI</span><i class="rv-s"></i><span class="rv-s"><b>19</b> tools</span><i class="rv-s"></i><span class="rv-s"><b>40</b> asset families</span></div>
     <div class="streak" id="rv-streak" style="left:0;top:560px;width:1920px"></div>
     <div class="vig"></div>
@@ -35,7 +35,7 @@
     tl.to("#rv-seam", { opacity: 0, duration: b(1), ease: "power2.out", immediateRender: false }, b(1.5));
     tl.fromTo("#rv-name span", { opacity: 0, y: 80, scaleY: 1.6, filter: "blur(8px)" }, { opacity: 1, y: 0, scaleY: 1, filter: "blur(0px)", duration: 0.28, ease: "back.out(1.6)", stagger: 0.035 }, b(1));
     tl.fromTo("#rv-streak", { scaleX: 0, opacity: 1 }, { scaleX: 1, opacity: 0, duration: b(1.5), ease: "power2.out" }, b(1));
-    tl.fromTo(".rv-s", { opacity: 0, filter: "blur(10px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.16, ease: "power4.out", stagger: b(0.5) }, b(4));
+    tl.fromTo(".rv-s", { opacity: 0, y: 34, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: b(1), ease: "expo.out", stagger: b(0.5) }, b(4));
     tl.to("#rv-name", { scale: 1.6, opacity: 0, filter: "blur(14px)", duration: b(0.5), ease: "power3.in" }, DUR - b(0.5));
     window.__timelines["reveal"] = tl;
   </script>

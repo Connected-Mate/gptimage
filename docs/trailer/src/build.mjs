@@ -26,6 +26,7 @@ for (const s of cfg.scenes) {
     .replaceAll("{{GRAIN}}", grain(s.id))
     .replaceAll("{{BEAT}}", String(beat))
     .replaceAll("{{DUR}}", String(dur));
+  // every scene renders without motion blur: blur draws boxes around shadowed art while it moves
   // a soft steel dip at every scene change: the scene rises out of it and settles back into it
   const dip = `<div class="dip" id="${s.id}-dip" style="position:absolute;inset:0;background:#0b1014;pointer-events:none;z-index:50"></div>`;
   const dipJs = `    tl.fromTo("#${s.id}-dip", { opacity: 1 }, { opacity: 0, duration: b(0.5), ease: "power2.out" }, 0);
@@ -37,7 +38,7 @@ for (const s of cfg.scenes) {
   const out = src.slice(0, vi) + dip + "\n    " + src.slice(vi, ti) + dipJs + src.slice(ti);
   writeFileSync(join(root, "compositions", `${s.id}.html`), out);
   hosts.push(
-    `      <div id="${s.id}" data-composition-id="${s.id}" data-composition-src="compositions/${s.id}.html" data-start="${r3(t)}" data-duration="${r3(dur)}" data-track-index="1" data-track-kind="graphics"${s.id === "pipeline" ? "" : ' data-motion-blur="off"'} data-width="1920" data-height="1080"></div>`,
+    `      <div id="${s.id}" data-composition-id="${s.id}" data-composition-src="compositions/${s.id}.html" data-start="${r3(t)}" data-duration="${r3(dur)}" data-track-index="1" data-track-kind="graphics" data-motion-blur="off" data-width="1920" data-height="1080"></div>`,
   );
   t += dur;
 }

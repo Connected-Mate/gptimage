@@ -43,7 +43,7 @@
     tl.fromTo("#hk-hero", { opacity: 0, scale: 1.8 }, { opacity: 1, scale: 1, duration: b(0.5), ease: "back.out(1.6)" }, b(4));
     tl.fromTo("#hk-ring", { opacity: 0.9, scale: 0.6 }, { opacity: 0, scale: 1.4, duration: b(1), ease: "power2.out", immediateRender: false }, b(4));
     tl.fromTo("#hk-sh", { xPercent: -150 }, { xPercent: 350, duration: b(1), ease: "power2.inOut" }, b(5));
-    tl.fromTo(".hook-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.15, ease: "power4.out", stagger: b(2) }, b(4));
+    tl.fromTo(".hook-w", { opacity: 0, y: 34, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: b(1), ease: "expo.out", stagger: b(2) }, b(4));
     window.__timelines["hook"] = tl;
   </script>
 </template>

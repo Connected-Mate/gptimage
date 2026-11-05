@@ -67,7 +67,7 @@
     <div class="pl r" id="rv-r" data-layout-allow-overflow><div class="riv" style="right:48px;top:48px"></div><div class="riv" style="right:48px;bottom:48px"></div></div>
     <div class="seam" id="rv-seam"></div>
     <svg class="grain" width="1920" height="1080"><filter id="reveal-n"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .9 0"/></filter><rect width="100%" height="100%" filter="url(#reveal-n)"/></svg>
-    <div class="name hero" id="rv-name"><span class="brass">h</span><span class="brass">o</span><span class="brass">i</span><span class="brass">4</span><span class="brass">-</span><span class="brass">i</span><span class="brass">m</span><span class="brass">a</span><span class="brass">g</span><span class="brass">e</span><span class="brass">g</span><span class="brass">e</span><span class="brass">n</span><span class="brass">-</span><span class="brass">m</span><span class="brass">c</span><span class="brass">p</span></div>
+    <div class="name hero" id="rv-name" data-layout-allow-overflow><span class="brass">h</span><span class="brass">o</span><span class="brass">i</span><span class="brass">4</span><span class="brass">-</span><span class="brass">i</span><span class="brass">m</span><span class="brass">a</span><span class="brass">g</span><span class="brass">e</span><span class="brass">g</span><span class="brass">e</span><span class="brass">n</span><span class="brass">-</span><span class="brass">m</span><span class="brass">c</span><span class="brass">p</span></div>
     <div class="sub"><span class="rv-s">Rust MCP server + CLI</span><i class="rv-s"></i><span class="rv-s"><b>19</b> tools</span><i class="rv-s"></i><span class="rv-s"><b>40</b> asset families</span></div>
     <div class="streak" id="rv-streak" style="left:0;top:560px;width:1920px"></div>
     <div class="dip" id="reveal-dip" style="position:absolute;inset:0;background:#0b1014;pointer-events:none;z-index:50"></div>
@@ -85,9 +85,9 @@ tl.set({}, {}, Math.max(0, DUR - 1 / 30));
 function exitWipe(sel) {
   tl.fromTo(sel, { xPercent: -120 }, { xPercent: 120, duration: b(0.5), ease: "power3.in" }, DUR - b(0.5));
 }
-// Land a block of words one by one on beats, blur to sharp, then hold still.
+// Words rise into place one by one on beats, blur to sharp, then hold still.
 function wordsIn(sel, at, gap) {
-  tl.fromTo(sel, { opacity: 0, filter: "blur(10px)", scale: 1.08 }, { opacity: 1, filter: "blur(0px)", scale: 1, duration: 0.16, ease: "power4.out", stagger: gap }, at);
+  tl.fromTo(sel, { opacity: 0, y: 34, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: b(1), ease: "expo.out", stagger: gap }, at);
 }
 
     tl.fromTo("#rv-l", { x: -1000 }, { x: 0, duration: b(1), ease: "expo.in" }, 0);
@@ -96,7 +96,7 @@ function wordsIn(sel, at, gap) {
     tl.to("#rv-seam", { opacity: 0, duration: b(1), ease: "power2.out", immediateRender: false }, b(1.5));
     tl.fromTo("#rv-name span", { opacity: 0, y: 80, scaleY: 1.6, filter: "blur(8px)" }, { opacity: 1, y: 0, scaleY: 1, filter: "blur(0px)", duration: 0.28, ease: "back.out(1.6)", stagger: 0.035 }, b(1));
     tl.fromTo("#rv-streak", { scaleX: 0, opacity: 1 }, { scaleX: 1, opacity: 0, duration: b(1.5), ease: "power2.out" }, b(1));
-    tl.fromTo(".rv-s", { opacity: 0, filter: "blur(10px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.16, ease: "power4.out", stagger: b(0.5) }, b(4));
+    tl.fromTo(".rv-s", { opacity: 0, y: 34, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: b(1), ease: "expo.out", stagger: b(0.5) }, b(4));
     tl.to("#rv-name", { scale: 1.6, opacity: 0, filter: "blur(14px)", duration: b(0.5), ease: "power3.in" }, DUR - b(0.5));
     tl.fromTo("#reveal-dip", { opacity: 1 }, { opacity: 0, duration: b(0.5), ease: "power2.out" }, 0);
     tl.fromTo("#reveal-dip", { opacity: 0 }, { opacity: 0.85, duration: b(0.5), ease: "power2.in", immediateRender: false }, DUR - b(0.5));

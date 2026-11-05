@@ -21,16 +21,40 @@ const logo = A("assets/logo_imagegen.png");
 const plate = (src, w, h, extra = "") => `<div class="pl plate" style="width:${w}px;height:${h}px;${extra}"><img src="${A(src)}" alt="" /></div>`;
 const brand = `<div class="brand"><img src="${logo}" alt="" /><span class="hero ice">HOI4 Imagegen</span></div>`;
 
+// the varied set for the main thumbnail: one of each kind of HOI4 art, as the processed file the game loads, and one
+// portrait from the ComfyUI HOI4 portrait workflow (the trailer's comparison)
+const V = {
+  portrait: "assets/cmp/mulcahy_comfyui.png",
+  focus: "assets/regen/embassy_flags_handshake_v033/embassy_flags_handshake_v033-v1-p1.png",
+  report: "assets/gallery/processed_png/winter_border-v1-p1.png",
+  flag: "assets/gallery/processed_png/IRP_fascism-v1-p1.png",
+  tech: "assets/gallery/processed_png/heavy_tank-v1-p1.png",
+  medal: "assets/regen/laurel_wreath_v033/laurel_wreath_v033-v1-p1.png",
+  emblem: "assets/picked/division_emblem/bear_standing-v1-p1.png",
+};
+// a plate that frames only the visible part of a file with wide transparent margins: box is [x0, y0, x1, y1] in its pixels
+const size = (p) => { const b = readFileSync(join(root, p)); return [b.readUInt32BE(16), b.readUInt32BE(20)]; };
+const framed = (src, box, w, h, extra = "") => {
+  const [iw, ih] = size(src), bw = box[2] - box[0], bh = box[3] - box[1], k = Math.min((w * 0.82) / bw, (h * 0.82) / bh);
+  const left = Math.round(w / 2 - (box[0] + bw / 2) * k), top = Math.round(h / 2 - (box[1] + bh / 2) * k);
+  return `<div class="pl plate" style="width:${w}px;height:${h}px;overflow:hidden;${extra}"><img src="${A(src)}" style="position:absolute;left:${left}px;top:${top}px;width:${Math.round(iw * k)}px;height:${Math.round(ih * k)}px" alt="" /></div>`;
+};
+const MEDAL_BOX = [11, 14, 44, 70], EMBLEM_BOX = [26, 4, 50, 39];
+const card = (src, w, h, extra = "") => `<div class="pl plate card" style="width:${w}px;height:${h}px;${extra}"><img src="${A(src)}" alt="" /></div>`;
+const title1 = `<div class="t1 hero"><div class="ice">AI art</div><div class="brass">ready for</div><div class="brass">HOI4</div></div>`;
+
 const options = [
-  // 1: the promise, with a fan of finished art
+  // 1: the promise, with a fan of varied finished art and a ComfyUI portrait
   `<div class="table"></div>
-    <div class="t1 hero"><div class="ice">AI art</div><div class="brass">ready for</div><div class="brass">HOI4</div></div>
+    ${title1}
     <div class="fan">
-      ${plate("assets/regen/embassy_flags_handshake_v033/embassy_flags_handshake_v033-v1-p1.png", 330, 330, "left:0;top:150px;transform:rotate(-8deg)")}
-      ${plate("assets/picked/idea_spirit/women_welders-v1-p1.png", 330, 330, "left:250px;top:40px;transform:rotate(3deg);z-index:2")}
-      ${plate("assets/regen/military_reforms/military_reforms-v1-p1.png", 330, 330, "left:520px;top:190px;transform:rotate(9deg);z-index:3")}
-      ${plate(`assets/regen/${tno}/${tno}-v1-p1.png`, 300, 300, "left:120px;top:470px;transform:rotate(-4deg);z-index:4")}
-      ${plate("assets/picked/raid/paratrooper_canopy-v1-p1.png", 300, 300, "left:430px;top:520px;transform:rotate(5deg);z-index:5")}
+      ${plate(V.focus, 300, 300, "left:0;top:20px;transform:rotate(-7deg);z-index:3")}
+      ${framed(V.medal, MEDAL_BOX, 210, 290, "left:590px;top:0;transform:rotate(6deg);z-index:4")}
+      ${plate(V.report, 330, 290, "left:-20px;top:380px;transform:rotate(-5deg);z-index:5")}
+      ${plate(V.flag, 260, 190, "left:580px;top:330px;transform:rotate(7deg);z-index:6")}
+      ${plate(V.tech, 420, 190, "left:60px;top:690px;transform:rotate(-3deg);z-index:7")}
+      ${framed(V.emblem, EMBLEM_BOX, 280, 200, "left:500px;top:620px;transform:rotate(5deg);z-index:8")}
+      ${card(V.portrait, 300, 400, "left:255px;top:200px;transform:rotate(2deg);z-index:10")}
     </div>
     ${brand}`,
   // 2: raw model output to the game's file
@@ -69,6 +93,32 @@ const options = [
     <img class="biglogo" src="${logo}" alt="" />
     <div class="t6 hero"><div class="ice">HOI4</div><div class="brass">Imagegen</div></div>
     <div class="t6b">Free · open source MCP server for HOI4 modding</div>`,
+  // 7: option 1's title with the varied set in a tidy grid, the portrait as its own column
+  `<div class="table"></div>
+    ${title1}
+    <div class="grid7">
+      ${card(V.portrait, 300, 420, "left:560px;top:0")}
+      ${plate(V.focus, 260, 200, "left:0;top:0")}
+      ${framed(V.medal, MEDAL_BOX, 260, 200, "left:280px;top:0")}
+      ${plate(V.report, 260, 200, "left:0;top:220px")}
+      ${plate(V.flag, 260, 200, "left:280px;top:220px")}
+      ${plate(V.tech, 540, 200, "left:0;top:440px")}
+      ${framed(V.emblem, EMBLEM_BOX, 300, 200, "left:560px;top:440px")}
+    </div>
+    ${brand}`,
+  // 8: option 1's title with the portrait as the hero and the other kinds around it
+  `<div class="table"></div>
+    ${title1}
+    <div class="orbit">
+      ${card(V.portrait, 400, 530, "left:220px;top:150px;transform:rotate(-2deg);z-index:10")}
+      ${plate(V.focus, 250, 250, "left:0;top:40px;transform:rotate(-8deg);z-index:4")}
+      ${framed(V.medal, MEDAL_BOX, 190, 260, "left:640px;top:60px;transform:rotate(7deg);z-index:4")}
+      ${plate(V.flag, 230, 170, "left:20px;top:370px;transform:rotate(-6deg);z-index:5")}
+      ${plate(V.report, 290, 250, "left:610px;top:390px;transform:rotate(5deg);z-index:5")}
+      ${plate(V.tech, 380, 170, "left:40px;top:720px;transform:rotate(-3deg);z-index:6")}
+      ${framed(V.emblem, EMBLEM_BOX, 250, 180, "left:560px;top:720px;transform:rotate(4deg);z-index:6")}
+    </div>
+    ${brand}`,
 ];
 
 const css = `
@@ -79,6 +129,9 @@ const css = `
     #root .pl { position: absolute; display: flex; align-items: center; justify-content: center; }
     #root .pl img { width: 86%; height: 86%; object-fit: contain; filter: drop-shadow(0 16px 20px rgba(0,0,0,.6)); }
     #root .t1 { position: absolute; left: 80px; top: 250px; font-size: 150px; z-index: 6; }
+    #root .card img { width: 92%; height: 92%; object-fit: cover; object-position: 50% 20%; filter: none; }
+    #root .grid7 { position: absolute; left: 1060px; top: 150px; width: 860px; height: 640px; transform: scale(.9); transform-origin: 0 0; }
+    #root .orbit { position: absolute; left: 1010px; top: 40px; width: 860px; height: 940px; transform: scale(.94); transform-origin: 100% 0; }
     #root .fan { position: absolute; left: 1080px; top: 50px; width: 820px; height: 900px; transform: scale(.92); transform-origin: 100% 0; }
     #root .t2 { position: absolute; left: 0; right: 0; top: 70px; text-align: center; font-size: 104px; white-space: nowrap; }
     #root .t2 .arrow { font-size: 120px; }

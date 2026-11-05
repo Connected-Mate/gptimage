@@ -43,7 +43,7 @@
   </div>
   <script>
     {{LIB}}
-    tl.fromTo(".an-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.15, ease: "power4.out", stagger: b(1) }, 0);
+    tl.fromTo(".an-w", { opacity: 0, y: 34, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: b(1), ease: "expo.out", stagger: b(1) }, 0);
     tl.fromTo(".sub", { opacity: 0 }, { opacity: 1, duration: 0.3 }, b(1));
     tl.fromTo(".an-c", { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: b(0.5), ease: "expo.out", stagger: b(0.25) }, b(0.5));
     { const fr = gsap.utils.toArray(".an-0"); const n = fr.length; const step = 1;

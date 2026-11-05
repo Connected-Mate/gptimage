@@ -28,8 +28,8 @@
   </div>
   <script>
     {{LIB}}
-    tl.fromTo(".wf-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.15, ease: "power4.out", stagger: b(0.5) }, 0);
-    tl.fromTo(".wf-c", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: b(0.25), ease: "back.out(2)", stagger: b(0.25) }, b(1.5));
+    tl.fromTo(".wf-w", { opacity: 0, y: 34, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: b(1), ease: "expo.out", stagger: b(0.5) }, 0);
+    tl.fromTo(".wf-c", { opacity: 0, y: 40, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: b(1.25), ease: "expo.out", stagger: b(0.25) }, b(1.5));
     tl.fromTo("#wf-app", { opacity: 0, x: 200, rotationY: -25 }, { opacity: 1, x: 0, rotationY: 0, duration: b(1), ease: "power3.out" }, b(2.5));
     tl.fromTo("#wf-ico", { opacity: 0, scale: 0.4, rotation: -90 }, { opacity: 1, scale: 1, rotation: 0, duration: b(0.5), ease: "back.out(1.8)" }, b(2.5));
     tl.fromTo(["#wf-n", "#wf-d"], { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: b(0.5), ease: "power3.out", stagger: b(0.5) }, b(3));

@@ -21,7 +21,7 @@
   </div>
   <script>
     {{LIB}}
-    tl.fromTo(".ig-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out", stagger: b(1) }, 0);
+    tl.fromTo(".ig-w", { opacity: 0, y: 34, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: b(1), ease: "expo.out", stagger: b(1) }, 0);
     const shots = gsap.utils.toArray(".ig-s"), labs = gsap.utils.toArray(".ig-l");
     // two shots of six beats each
     const n = shots.length, len = b(6);

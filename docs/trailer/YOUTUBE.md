@@ -2,7 +2,7 @@
 
 **Status:** final cut. 1:52, 1920x1080, 30 fps.
 
-The maintainer uploads the video. The thumbnail options are rendered from `src/gen-thumbs.mjs` (option_01 is the recommended pick).
+It is published on YouTube at https://youtu.be/4ko6f-icwDc. The thumbnail options are rendered from `src/gen-thumbs.mjs` (option_01 is the recommended pick).
 
 ## Title
 

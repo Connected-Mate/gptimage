@@ -79,7 +79,8 @@ ${tiles.join("\n")}
   <script>
     {{LIB}}
     tl.fromTo("#mo-n", { opacity: 0, scale: 2.2 }, { opacity: 1, scale: 1, duration: b(0.5), ease: "back.out(1.6)" }, 0);
-    tl.fromTo(".mo-c", { opacity: 0, y: 30, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: b(0.75), ease: "expo.out", stagger: { each: b(0.0625), from: "start" } }, b(0.5));
+    // the tiles fall into place like dominoes: a wave from the top left across the grid, over two beats
+    tl.fromTo(".mo-c", { opacity: 0, y: 60, scale: 0.85, rotation: -3 }, { opacity: 1, y: 0, scale: 1, rotation: 0, duration: b(1.25), ease: "expo.out", stagger: { amount: b(2), grid: "auto", from: "start" } }, b(0.5));
     window.__timelines["more"] = tl;
   </script>
 </template>

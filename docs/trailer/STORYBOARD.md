@@ -40,7 +40,7 @@ revision: 4 (the cut as built, after the 5 Nov review)
 2. **Plan first. See the cost.** The real `plan` output, "$0.00 on your ChatGPT plan".
 3. **Generate.** "ChatGPT login. Or an API key." The provider list: ChatGPT login, OpenAI, Gemini, fal and ComfyUI. Real candidates develop.
 4. **Style.** "It matches your mod's style." The New Order's focus icons go in as references and a new icon in their style comes out (shown with the TNO team's permission).
-5. **Process.** "The vanilla finish. Automatic." A raw candidate becomes the 52×40 file the game uses.
+5. **Process.** "The vanilla finish. Automatic." The first look at finished art: fourteen kinds land one per sixteenth note, each labelled with its family (focus, idea, flag, report and news events, technology, leader portrait, medal, decision category, raid, doctrine, operation, building, achievement), then hold through the second bar.
 6. **Validate.** "Checked before anyone looks." The real contact sheet and a pass.
 7. **Review.** "No approval, no install." The approval stamp lands.
 8. **Install.** "Installed. Registered." The DDS texture and the `.gfx` sprite are written into the mod.
@@ -58,4 +58,5 @@ Report card (sepia, tilt, shadow), news photo (cropped, grayscale), flag ladder 
 - **Type:** Archivo Black for heavy caps with a brass or ice-steel fill. Oswald for labels. IBM Plex Mono for terminal text.
 - **Layout:** everything sits inside the 90% action-safe box and is checked with `npx hyperframes check --at-transitions --frame-check` for overlaps and clipping.
 - **Finished art at game size:** wherever finished art appears (the hook, the style step, the drop, the grid), it is the processed file the game loads, enlarged smoothly, so its detail matches vanilla and mod art at the same size.
+- **Motion:** elements glide in on long ease-outs, and groups fall into place one after another like dominoes, on sixteenth notes: a station's parts, the finished-art burst, the grid of families, the workflow chips. Once in place they hold still. The frame itself never moves. Nothing renders with motion blur, which would draw boxes around shadowed art while it moves.
 - **Sound:** the music carries the edit. Its beat drives every cut, and five quiet Pixabay accents sit on downbeats where the picture lands a hit: the name slam, the riser into the drop, the drop, the portraits and the end card (`assets/sfx/CREDITS.md`).

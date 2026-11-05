@@ -49,6 +49,10 @@
     #root .nums b { font-size: 150px; font-weight: 400; }
     #root .nums span { font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: #c9c2a3; }
     #root .finding { margin-top: 60px; font-size: 48px; letter-spacing: .04em; color: #fff; padding: 16px 40px; border-radius: 6px; background: #b8342c; box-shadow: 0 0 40px rgba(184,52,44,.5); }
+    #root .burst { display: grid; grid-template-columns: repeat(7, 220px); gap: 26px 20px; }
+    #root .burst .bt { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    #root .burst .ba { width: 220px; height: 190px; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 14px 18px rgba(0,0,0,.55)); }
+    #root .burst .bl { font-family: "IBM Plex Mono", monospace; font-size: 19px; letter-spacing: .04em; color: #c9c2a3; white-space: nowrap; }
     #root .cl { display: flex; gap: 50px; }
     #root .cl .c1 { width: 520px; height: 360px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; }
     #root .cl .c1 svg { display: block; filter: drop-shadow(0 10px 18px rgba(0,0,0,.5)); }
@@ -71,11 +75,13 @@
   </div>
   <script>
     {{LIB}}
-    // beat 0: title; beat 0.5: the visual; beat 2: the line; then everything holds still
+    // beat 0: the title rises in word by word; from beat 0.5 the visual's parts follow one after another on sixteenth
+    // notes, each easing smoothly into place; beat 2: the line. Then everything holds still.
     tl.fromTo("#style-wash", { opacity: 0 }, { opacity: 1, duration: b(1), ease: "sine.out" }, 0);
-    tl.fromTo(".style-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: b(0.5), ease: "power3.out", stagger: b(0.5) }, 0);
-    tl.fromTo("#style-vis", { opacity: 0, y: 40, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: b(1), ease: "power3.out" }, b(0.5));
-    tl.fromTo("#style-line", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: b(0.75), ease: "power3.out" }, b(2));
+    tl.fromTo(".style-w", { opacity: 0, y: 34, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: b(1), ease: "expo.out", stagger: b(0.5) }, 0);
+    tl.fromTo("#style-vis", { opacity: 0 }, { opacity: 1, duration: b(0.25) }, b(0.5));
+    tl.fromTo("#style-vis .refs > *", { opacity: 0, y: 60, scale: 0.92, rotation: -2 }, { opacity: 1, y: 0, scale: 1, rotation: 0, duration: b(1.25), ease: "expo.out", stagger: b(0.25) }, b(0.5));
+    tl.fromTo("#style-line", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: b(1), ease: "expo.out" }, b(2));
 
     window.__timelines["style"] = tl;
   </script>

@@ -26,6 +26,33 @@ const refFiles = existsSync(refDir) ? readdirSync(refDir).filter((f) => f.endsWi
 const shown = ["ref_2.png", "ref_3.png", "ref_6.png", "ref_7.png"].filter((f) => refFiles.includes(f));
 style.refs = (shown.length === 4 ? shown : refFiles.slice(0, 4)).map((f) => `assets/tno/refs/${f}`);
 
+// the process step's burst: one finished file of each kind, at its in-game size enlarged to fit a tile. [file, family
+// label, frames in the strip]
+const BURST = [
+  ["assets/regen/embassy_flags_handshake_v033/embassy_flags_handshake_v033-v1-p1.png", "focus"],
+  ["assets/picked/idea_spirit/women_welders-v1-p1.png", "idea"],
+  ["assets/gallery/processed_png/IRP_fascism-v1-p1.png", "flag"],
+  ["assets/gallery/processed_png/winter_border-v1-p1.png", "report event"],
+  ["assets/gallery/processed_png/peace_conference-v1-p1.png", "news event"],
+  ["assets/gallery/processed_png/heavy_tank-v1-p1.png", "technology"],
+  ["assets/cmp/mulcahy_mcp.png", "leader portrait"],
+  ["assets/regen/laurel_wreath_v033/laurel_wreath_v033-v1-p1.png", "medal"],
+  ["assets/regen/military_reforms/military_reforms-v1-p1.png", "decision category"],
+  ["assets/picked/raid/paratrooper_canopy-v1-p1.png", "raid"],
+  ["assets/picked/doctrine/howitzer_battery_night-v1-p1.png", "doctrine"],
+  ["assets/regen/platform_suitcase_swap/platform_suitcase_swap-v1-p1.png", "operation"],
+  ["assets/regen/japanese_five_tier_pagoda/japanese_five_tier_pagoda-v1-p1.png", "building", 4],
+  ["assets/gallery/processed_png/hold_the_line-v1-p1.png", "achievement"],
+];
+const TILE_W = 190, TILE_H = 170;
+const burst = BURST.map(([p, label, n = 1]) => {
+  const [sw, h] = size(p), w = sw / n, k = Math.min(5, TILE_W / w, TILE_H / h);
+  const art = n > 1
+    ? `<div style="width:${Math.round(w * k)}px;height:${Math.round(h * k)}px;background:url(${p}) 0 0/${n * 100}% 100% no-repeat"></div>`
+    : `<img src="${p}" style="width:${Math.round(w * k)}px;height:${Math.round(h * k)}px" />`;
+  return `<div class="bt"><div class="ba">${art}</div><div class="bl">${label}</div></div>`;
+}).join("");
+
 // Every value shown comes from a real hoi4-imagegen run (see SOURCES.md).
 // wash: the colour behind the visual, taken from the step's asset or meaning
 const S = [
@@ -54,9 +81,8 @@ const S = [
       : `<div class="solo">${style.out ? game(style.out, 4) : ""}</div>`,
     line: style.refs.length ? `${style.mod} icons in · a new one out` : `Made to match ${style.mod}` },
   { id: "process", t1: "The vanilla finish.", t2: "Automatic.", wash: "#8c6a1e",
-    vis: `<div class="pair"><div class="pa"><img src="assets/regen/military_reforms/military_reforms-v1-fit.png" /></div><div class="arrow hero brass">›</div>
-      <div class="clamp"><div class="slot"><img src="assets/regen/military_reforms/military_reforms-v1-p1.png" style="width:286px;height:220px" /></div><div class="bracket tl"></div><div class="bracket tr"></div><div class="bracket bl"></div><div class="bracket br"></div></div></div>`,
-    line: "52 × 40 · ready for the game" },
+    vis: `<div class="burst">${burst}</div>`,
+    line: "Every family gets its own finish, at the game's size" },
   { id: "validate", t1: "Checked before", t2: "anyone looks", wash: "#2d6a3a",
     vis: `<div class="sheet plate"><img src="${G}/preview_heavy_tank.png" /></div><div class="stamp ok">✓ Pass</div>`,
     line: "" },
@@ -126,6 +152,10 @@ const css = `
     #root .nums b { font-size: 150px; font-weight: 400; }
     #root .nums span { font-size: 36px; letter-spacing: .1em; text-transform: uppercase; color: #c9c2a3; }
     #root .finding { margin-top: 60px; font-size: 48px; letter-spacing: .04em; color: #fff; padding: 16px 40px; border-radius: 6px; background: #b8342c; box-shadow: 0 0 40px rgba(184,52,44,.5); }
+    #root .burst { display: grid; grid-template-columns: repeat(7, 220px); gap: 26px 20px; }
+    #root .burst .bt { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    #root .burst .ba { width: 220px; height: 190px; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 14px 18px rgba(0,0,0,.55)); }
+    #root .burst .bl { font-family: "IBM Plex Mono", monospace; font-size: 19px; letter-spacing: .04em; color: #c9c2a3; white-space: nowrap; }
     #root .cl { display: flex; gap: 50px; }
     #root .cl .c1 { width: 520px; height: 360px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; }
     #root .cl .c1 svg { display: block; filter: drop-shadow(0 10px 18px rgba(0,0,0,.5)); }
@@ -149,17 +179,26 @@ S.forEach((s) => {
   </div>
   <script>
     {{LIB}}
-    // beat 0: title; beat 0.5: the visual; beat 2: the line; then everything holds still
+    // beat 0: the title rises in word by word; from beat 0.5 the visual's parts follow one after another on sixteenth
+    // notes, each easing smoothly into place; beat 2: the line. Then everything holds still.
     tl.fromTo("#${s.id}-wash", { opacity: 0 }, { opacity: 1, duration: b(1), ease: "sine.out" }, 0);
-    tl.fromTo(".${s.id}-w", { opacity: 0, filter: "blur(12px)" }, { opacity: 1, filter: "blur(0px)", duration: b(0.5), ease: "power3.out", stagger: b(0.5) }, 0);
-    tl.fromTo("#${s.id}-vis", { opacity: 0, y: 40, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: b(1), ease: "power3.out" }, b(0.5));
-${s.line ? `    tl.fromTo("#${s.id}-line", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: b(0.75), ease: "power3.out" }, b(2));\n` : ""}${extra(s.id)}
+    tl.fromTo(".${s.id}-w", { opacity: 0, y: 34, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: b(1), ease: "expo.out", stagger: b(0.5) }, 0);
+${entrance(s)}${s.line ? `    tl.fromTo("#${s.id}-line", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: b(1), ease: "expo.out" }, b(2));\n` : ""}${extra(s.id)}
     window.__timelines["${s.id}"] = tl;
   </script>
 </template>
 `;
   writeFileSync(join(here, "scenes", `${s.id}.html`), html);
 });
+
+// the parts of each station's visual that enter one after another, like dominoes (the rest enter as one block)
+function entrance(s) {
+  const items = { measured: ".row3 .m", generate: ".row3 .m", style: ".refs > *", validate: ".sheet", review: ".rev > .portrait", install: ".inst > .tank, .inst > .arrow", audit: ".nums > div", clients: ".cl .c1:not(.any)" }[s.id];
+  if (!items) return `    tl.fromTo("#${s.id}-vis", { opacity: 0, y: 50, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: b(1.25), ease: "expo.out" }, b(0.5));\n`;
+  const sel = items.split(",").map((x) => `#${s.id}-vis ${x.trim()}`).join(", ");
+  return `    tl.fromTo("#${s.id}-vis", { opacity: 0 }, { opacity: 1, duration: b(0.25) }, b(0.5));
+    tl.fromTo("${sel}", { opacity: 0, y: 60, scale: 0.92, rotation: -2 }, { opacity: 1, y: 0, scale: 1, rotation: 0, duration: b(1.25), ease: "expo.out", stagger: b(0.25) }, b(0.5));\n`;
+}
 
 // one accent per station, on a beat
 function extra(id) {
@@ -170,11 +209,11 @@ function extra(id) {
     case "clients":
       // Claude Code and Codex land with the visual, the third box on the second bar
       // the first two start centred and make room as the third arrives (half a box and gap: (520 + 50) / 2)
-      return `    tl.fromTo("#clients-vis .cl", { x: 285 }, { x: 0, duration: b(1), ease: "power3.inOut" }, b(4));
-    tl.fromTo("#clients-vis .any", { opacity: 0, y: 40, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: b(1), ease: "power3.out" }, b(4.25));`;
+      return `    tl.fromTo("#clients-vis .cl", { x: 285 }, { x: 0, duration: b(0.75), ease: "power3.inOut" }, b(4));
+    tl.fromTo("#clients-vis .any", { opacity: 0, y: 40, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: b(1), ease: "power3.out" }, b(4.5));`;
     case "process":
-      return `    tl.fromTo("#process-vis .bracket", { scale: 1.8, opacity: 0 }, { scale: 1, opacity: 1, duration: b(0.75), ease: "back.out(1.6)" }, b(2));
-    tl.fromTo("#process-vis .slot img", { opacity: 0, scale: 1.3 }, { opacity: 1, scale: 1, duration: b(0.75), ease: "power3.out" }, b(2));`;
+      // one kind of art lands on every sixteenth note, then the whole set holds through the second bar
+      return `    tl.fromTo("#process-vis .bt", { opacity: 0, y: 50, scale: 0.85, rotation: -3 }, { opacity: 1, y: 0, scale: 1, rotation: 0, duration: b(1.25), ease: "expo.out", stagger: b(0.25) }, b(0.5));`;
     case "validate":
     case "review":
       return `    tl.fromTo("#${id}-vis .stamp", { opacity: 0, scale: 1.6 }, { opacity: 1, scale: 1, duration: b(0.5), ease: "back.out(1.8)" }, b(2));`;
