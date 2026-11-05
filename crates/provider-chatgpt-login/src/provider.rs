@@ -778,14 +778,14 @@ data: {{\"type\":\"error\",\"error\":{{\"message\":\"Complexity '{effort}' is no
     fn every_effort_refused_is_one_clear_terminal_error() {
         let d = dir();
         let fixture = Arc::new(FixtureTransport::new());
-        for e in ["high", "medium"] {
+        for e in ["high", "medium", "low"] {
             fixture.respond(Method::Post, "/backend-api/codex/responses", 200, &[], refusal(e));
         }
         let p = provider(&d, fixture.clone(), Some(creds(None)), 0);
         let e = p.generate(&request(), &no_sleep()).unwrap_err();
         assert_eq!((e.kind, e.retry), (ErrorKind::BadRequest, RetryClass::Terminal));
-        assert!(e.message.contains("every reasoning effort") && e.message.contains("medium: Complexity 'medium'"), "{}", e.message);
-        assert_eq!(fixture.requests().len(), 2, "each effort is tried once, and low is not on the ladder");
+        assert!(e.message.contains("every reasoning effort") && e.message.contains("low: Complexity 'low'"), "{}", e.message);
+        assert_eq!(fixture.requests().len(), 3, "each effort is tried once, and nothing is sent without an effort");
     }
 
     #[test]

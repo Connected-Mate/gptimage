@@ -29,8 +29,8 @@ ChatGPT login: read this once before signing in.
   hoi4-imagegen records it, stops calling, and tells you to run `hoi4-imagegen login` again.
 * It is for your own account on your own computer only. Never share the sign-in or run it on a server.
   HOI4 Factory's hosted service never uses it.
-* Images use the gpt-6-luna model at the highest reasoning effort the backend accepts (high, then medium);
-  each image records the effort it ran at. Your password is typed only into OpenAI's page;
+* Images use the gpt-6-luna model at the highest reasoning effort the backend accepts (high, then medium,
+  then low); each image records the effort it ran at. Your password is typed only into OpenAI's page;
   this tool keeps the resulting tokens in your operating system's credential store.
 * Documented API providers (OpenAI API key, Gemini, fal, ComfyUI) remain available as alternatives.
 ";

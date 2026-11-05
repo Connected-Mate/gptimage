@@ -189,13 +189,40 @@ fn the_recorded_effort_refusals_are_read_as_effort_refusals() {
     }
 }
 
+/// The two recorded refusals, then an accepted low-effort answer. The low answer is the 2026-11-01 recording with its
+/// effort changed to low (recorded-real replay with an injected value): no real low-effort response exists yet.
 #[test]
-fn the_recorded_refusal_of_high_moves_on_and_a_refusal_of_every_rung_is_one_terminal_error() {
+fn after_the_recorded_refusals_of_high_and_medium_low_is_used_and_recorded() {
     let (_d, f, p) = replay(200, HIGH_REFUSED.to_string(), None);
     f.respond(Method::Post, BACKEND_PATH, 200, &[("content-type", "text/event-stream")], MEDIUM_REFUSED.to_string());
+    f.respond(
+        Method::Post,
+        BACKEND_PATH,
+        200,
+        &[("content-type", "text/event-stream")],
+        RECORDED.replace("\"effort\":\"high\"", "\"effort\":\"low\""),
+    );
+    let out = p.generate(&request(), &no_sleep()).unwrap();
+    assert_eq!(out.usage.clone().unwrap()["reasoning_effort"], "low");
+    assert_eq!(out.usage.unwrap()["refused_efforts"], serde_json::json!(["high", "medium"]));
+    assert!(out.notes[0].contains("gpt-6-luna at low reasoning effort"), "{:?}", out.notes);
+    let sent: Vec<serde_json::Value> = f.requests().iter().map(|r| serde_json::from_slice(&r.body).unwrap()).collect();
+    assert_eq!(sent.iter().map(|b| b["reasoning"]["effort"].as_str().unwrap().to_string()).collect::<Vec<_>>(), ["high", "medium", "low"]);
+}
+
+#[test]
+fn a_refusal_of_every_rung_is_one_terminal_error_and_nothing_goes_without_an_effort() {
+    let (_d, f, p) = replay(200, HIGH_REFUSED.to_string(), None);
+    f.respond(Method::Post, BACKEND_PATH, 200, &[("content-type", "text/event-stream")], MEDIUM_REFUSED.to_string());
+    f.respond(
+        Method::Post,
+        BACKEND_PATH,
+        200,
+        &[("content-type", "text/event-stream")],
+        MEDIUM_REFUSED.replace("'medium'", "'low'").replace("\"effort\":\"medium\"", "\"effort\":\"low\""),
+    );
     let e = p.generate(&request(), &no_sleep()).unwrap_err();
     assert_eq!((e.kind, e.retry), (ErrorKind::BadRequest, RetryClass::Terminal));
-    assert!(e.message.contains("high: Complexity 'high'") && e.message.contains("medium: Complexity 'medium'"), "{}", e.message);
-    let sent: Vec<serde_json::Value> = f.requests().iter().map(|r| serde_json::from_slice(&r.body).unwrap()).collect();
-    assert_eq!(sent.iter().map(|b| b["reasoning"]["effort"].as_str().unwrap().to_string()).collect::<Vec<_>>(), ["high", "medium"]);
+    assert!(e.message.contains("high: Complexity 'high'") && e.message.contains("low: Complexity 'low'"), "{}", e.message);
+    assert_eq!(f.requests().len(), 3);
 }

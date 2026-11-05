@@ -52,10 +52,11 @@ pub const BACKEND_URL: &str = "https://chatgpt.com/backend-api/codex/responses";
 /// The only model this route uses (maintainer decision, 2026-11-01). No override, no fallback.
 pub const MODEL: &str = "gpt-6-luna";
 /// Reasoning efforts tried in order, once each per request; the first one the backend accepts is used (W5-6: high,
-/// then medium; low only if the maintainer asks for it).
-pub const EFFORT_LADDER: [&str; 2] = ["high", "medium"];
+/// then medium, then low, after the backend refused high and medium on 2026-11-05). No request is sent without an
+/// effort.
+pub const EFFORT_LADDER: [&str; 3] = ["high", "medium", "low"];
 /// The effort policy in words, for status lines and messages.
-pub const EFFORT_POLICY: &str = "the highest reasoning effort the backend accepts (high, then medium)";
+pub const EFFORT_POLICY: &str = "the highest reasoning effort the backend accepts (high, then medium, then low)";
 /// How long a refused effort is skipped on this machine before it is tried again, so each image is one request.
 pub const EFFORT_REFUSAL_MEMORY_SECS: i64 = 24 * 3600;
 /// Scopes requested at sign-in.
@@ -104,6 +105,6 @@ mod tests {
     fn the_identifying_constants_are_in_one_place() {
         assert!(BACKEND_URL.starts_with("https://") && TOKEN_URL.starts_with("https://") && AUTHORIZE_URL.starts_with("https://"));
         assert_eq!(HOSTS, ["chatgpt.com", "auth.openai.com"]);
-        assert_eq!((MODEL, EFFORT_LADDER), ("gpt-6-luna", ["high", "medium"]));
+        assert_eq!((MODEL, EFFORT_LADDER), ("gpt-6-luna", ["high", "medium", "low"]));
     }
 }
