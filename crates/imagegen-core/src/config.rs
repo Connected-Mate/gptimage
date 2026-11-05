@@ -93,6 +93,9 @@ pub struct ProviderConfig {
     pub workflow: Option<String>,
     /// Environment variable holding the key, when it is not the provider's usual one.
     pub api_key_env: Option<String>,
+    /// `chatgpt_login` only: requests at once on the machine, clamped to 1..=6 (default 3). The environment
+    /// variable `HOI4_IMAGEGEN_CHATGPT_CONCURRENCY` wins over it.
+    pub concurrency: Option<i64>,
 }
 
 /// Defaults.

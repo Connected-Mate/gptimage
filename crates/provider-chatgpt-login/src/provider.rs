@@ -59,11 +59,30 @@ pub enum CheckOutcome {
 }
 
 impl ChatGptLoginProvider {
-    /// Build from the environment: the operating system credential store (see [`CredentialStore::for_environment`]).
+    /// Build from the environment: the operating system credential store (see [`CredentialStore::for_environment`]),
+    /// and the number of requests at once from [`route::CONCURRENCY_ENV`] or the default.
     pub fn from_environment(env: &dyn EnvSource, transport: Arc<dyn HttpTransport>) -> Result<Self, String> {
-        let mut p = Self::new(CredentialStore::for_environment(env)?, transport, Arc::new(SystemClock));
+        Self::from_environment_with(env, transport, None)
+    }
+
+    /// [`ChatGptLoginProvider::from_environment`] with `[providers.chatgpt_login] concurrency` from the project config.
+    /// The environment variable wins over it.
+    pub fn from_environment_with(env: &dyn EnvSource, transport: Arc<dyn HttpTransport>, concurrency: Option<i64>) -> Result<Self, String> {
+        let mut p = Self::new(CredentialStore::for_environment(env)?, transport, Arc::new(SystemClock))
+            .with_concurrency(route::configured_concurrency(env, concurrency));
         p.record_dir = env.get(RECORD_ENV).map(PathBuf::from);
         Ok(p)
+    }
+
+    /// The same provider with `n` requests at once on the machine (clamped to 1..=6).
+    pub fn with_concurrency(mut self, n: usize) -> Self {
+        self.route = self.route.with_concurrency(n);
+        self
+    }
+
+    /// The configured number of requests at once.
+    pub fn concurrency(&self) -> usize {
+        self.route.concurrency()
     }
 
     /// Build with explicit parts (tests).
@@ -94,7 +113,7 @@ impl ChatGptLoginProvider {
             // recorded real responses: docs/evidence/2026-11-01-luna-probe.json and the 40-family run of 2026-11-02
             live_verified: true,
         };
-        let route = Route::new(store.state_dir());
+        let route = Route::new(store.state_dir()).with_clock(clock.clone());
         ChatGptLoginProvider { desc, store, transport, policy: HostPolicy::api(&HOSTS), clock, model, record_dir: None, route }
     }
 
@@ -106,6 +125,27 @@ impl ChatGptLoginProvider {
     /// The route's recorded state (revocation, last request, backoff). Holds no secret.
     pub fn route_state(&self) -> RouteState {
         self.route.state()
+    }
+
+    /// The warning that the route dropped to one request at a time, while that holds.
+    pub fn fallback_notice(&self) -> Option<String> {
+        self.route.state().active_fallback(self.now_secs()).map(route::Fallback::message)
+    }
+
+    /// Add the fall-back warning to a generation's notes or to its error.
+    fn with_fallback_notice(&self, result: Result<ProviderOutput, ProviderError>) -> Result<ProviderOutput, ProviderError> {
+        let Some(warning) = self.fallback_notice() else { return result };
+        match result {
+            Ok(mut out) => {
+                out.notes.push(format!("warning: {warning}"));
+                Ok(out)
+            }
+            Err(mut e) if e.kind != ErrorKind::Cancelled => {
+                e.message = format!("{}; warning: {warning}", e.message);
+                Err(e)
+            }
+            Err(e) => Err(e),
+        }
     }
 
     fn refuse_if_revoked(&self, state: &RouteState) -> Result<(), ProviderError> {
@@ -215,6 +255,11 @@ impl ChatGptLoginProvider {
     }
 
     fn call(&self, req: &ImageRequest, ctx: &CallContext) -> Result<ProviderOutput, ProviderError> {
+        let result = self.call_inner(req, ctx);
+        self.with_fallback_notice(result)
+    }
+
+    fn call_inner(&self, req: &ImageRequest, ctx: &CallContext) -> Result<ProviderOutput, ProviderError> {
         if req.model != self.model {
             return Err(ProviderError::unsupported(format!(
                 "the ChatGPT-login route runs only {} at {} (maintainer decision); '{}' was requested",
@@ -224,9 +269,9 @@ impl ChatGptLoginProvider {
         let size = self.prepare(req).ok();
         // A recorded revocation ends the call before anything is sent or waited for.
         self.refuse_if_revoked(&self.route.state())?;
-        // One request at a time on this machine, across processes. Held until this function returns, so the effort
-        // ladder below also runs one request at a time and keeps the pacing.
-        let guard = self.route.acquire(&ctx.cancel, &*ctx.sleeper)?;
+        // One slot of the route's N on this machine, across processes (W5-8). Held until this function returns, so the
+        // effort ladder below runs its requests one after another in this slot and keeps the slot's pacing.
+        let mut guard = self.route.acquire(&ctx.cancel, &*ctx.sleeper)?;
         // W5-6: the highest effort the backend accepts. Each effort is tried once; a refusal of the effort itself
         // moves on to the next one, and every other error ends the call as before.
         // An effort refused within the last day is skipped, so each image is one request; the last rung is always
@@ -241,7 +286,7 @@ impl ChatGptLoginProvider {
                 skipped.push(effort);
                 continue;
             }
-            match self.attempt(req, size, effort, &guard, ctx)? {
+            match self.attempt(req, size, effort, &mut guard, ctx)? {
                 Attempt::Done(reported_effort, out) => {
                     let mut out = *out;
                     if !skipped.is_empty() {
@@ -282,19 +327,21 @@ impl ChatGptLoginProvider {
         ))
     }
 
-    /// One request at one reasoning effort, under the route lock.
+    /// One request at one reasoning effort, in the caller's slot.
     fn attempt(
         &self,
         req: &ImageRequest,
         size: Option<(u32, u32)>,
         effort: &str,
-        guard: &RouteGuard,
+        guard: &mut RouteGuard,
         ctx: &CallContext,
     ) -> Result<Attempt, ProviderError> {
         let mut retries = 0u32;
         let (resp, creds) = loop {
-            // the state may have changed while this call waited for the lock
+            // the state may have changed while this call waited for a slot
             self.refuse_if_revoked(&guard.state())?;
+            // after a sign-out or a rate limit anywhere on the machine, only slot 0 may send
+            guard.narrow(&ctx.cancel, &*ctx.sleeper)?;
             let wait_until = guard.next_allowed(self.now_secs());
             guard.wait_until(self.now_secs(), wait_until, &ctx.cancel, &*ctx.sleeper)?;
             let creds = self.credentials(guard, "token refresh")?;
@@ -307,15 +354,13 @@ impl ChatGptLoginProvider {
                 http = http.header("chatgpt-account-id", id);
             }
             // Stamp before sending, so a request that dies mid-flight still spaces out the next one.
-            let now = self.now_secs();
-            guard.update(|s| s.last_request_epoch = Some(now))?;
+            guard.stamp_request(self.now_secs())?;
             let resp = send(&*self.transport, &self.policy, &http)?;
             if resp.status == 429 {
-                let failures = guard.state().rate_limit.map(|r| r.failures).unwrap_or(0) + 1;
-                let retry_after_epoch = self.now_secs() + route::backoff_secs(failures);
-                guard.update(|s| s.rate_limit = Some(route::RateLimit { failures, retry_after_epoch }))?;
+                // the backoff is shared by every slot, and the route drops to one request at a time
+                let failures = guard.record_rate_limited(self.now_secs())?.failures;
                 if retries < RATE_LIMIT_MAX_RETRIES {
-                    // Back off (the next loop waits for retry_after_epoch while still holding the lock), then try again.
+                    // Back off (the next loop waits for retry_after_epoch while still holding a slot), then try again.
                     retries += 1;
                     continue;
                 }
@@ -345,6 +390,10 @@ impl ChatGptLoginProvider {
             s if is_effort_refusal(&String::from_utf8_lossy(&resp.body)) => {
                 return Ok(Attempt::EffortRefused(format!("HTTP {s}: {}", short(&String::from_utf8_lossy(&resp.body)))));
             }
+            s if route::is_usage_limit(&String::from_utf8_lossy(&resp.body)) => {
+                guard.record_usage_limit(self.now_secs());
+                return Err(usage_limit_error(&format!("HTTP {s}")));
+            }
             s => return Err(status_error(s, &resp.body, &secrets)),
         }
         let text = String::from_utf8_lossy(&resp.body);
@@ -352,6 +401,10 @@ impl ChatGptLoginProvider {
         if let Err(e) = parse_sse(&text) {
             if let Some(msg) = e.strip_prefix(BACKEND_ERROR_PREFIX).filter(|m| is_effort_refusal(m)) {
                 return Ok(Attempt::EffortRefused(msg.to_string()));
+            }
+            if let Some(msg) = e.strip_prefix(BACKEND_ERROR_PREFIX).filter(|m| route::is_usage_limit(m)) {
+                guard.record_usage_limit(self.now_secs());
+                return Err(usage_limit_error(&short(msg)));
             }
         }
         let outcome = parse_sse(&text).map_err(|e| {
@@ -519,6 +572,15 @@ enum Attempt {
     Done(Option<String>, Box<ProviderOutput>),
     /// The backend refused this reasoning effort; the next one may be tried.
     EffortRefused(String),
+}
+
+/// The backend said the plan's usage limit is reached. Nothing was made; retrying soon would only hit it again.
+fn usage_limit_error(detail: &str) -> ProviderError {
+    ProviderError::new(
+        ErrorKind::RateLimited,
+        RetryClass::RequiresAuthorization,
+        format!("the ChatGPT plan's usage limit is reached, so no image was made; wait for the plan to reset or use an API provider ({detail})"),
+    )
 }
 
 /// Prefix of a backend error event, as [`parse_sse`] reports it.

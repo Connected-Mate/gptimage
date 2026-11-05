@@ -235,21 +235,23 @@ What to know before you use it:
 * Every image runs on `gpt-6-luna` at high reasoning effort. The tool sends both and checks that the backend's response reports both. A response that reports something else, or nothing, is refused and the image is not used. There is no fallback and no override.
 * **The route cannot force image quality.** The pixels come from the backend's own image tool, reported as `gpt-image-2-codex`. The backend replaces the tool settings we send with `quality = auto` and `size = auto`, and chooses quality and size itself. One recorded probe returned a medium-quality 1337x1176 image. The ledger records what the backend reported for each image, so check the pixels in the preview.
 * A refusal by the provider's safety system is reported as a moderation block, with advice to change the brief or the references.
+* **Up to three requests at once.** The route sends at most three requests at a time on your machine, across every process (maintainer decision W5-8 of 2026-11-05, a trial). Set `HOI4_IMAGEGEN_CHATGPT_CONCURRENCY` from 1 to 6 to change it, or `concurrency` under `[providers.chatgpt_login]` in the project config. The variable wins, and 1 means one at a time. Each slot waits at least 20 seconds between its own requests.
+* After a sign-out by the server, a 429 or the backend's usage-limit message, the route drops to one request at a time on the whole machine for six hours. Generations, `doctor`, `login-status` and `hoi4.image_status` show a warning with the reason and the time while it holds.
 * Spend is recorded as unknown, because there is no per-image price and no usage report.
 
 Details, the sign-in steps and the recorded evidence are in [docs/chatgpt-login.md](chatgpt-login.md).
 
 ## Install
 
-The releases are on GitHub: <https://github.com/klimPaskov/hoi4-imagegen-mcp/releases>. Version 0.3.2 has one archive per platform:
+The releases are on GitHub: <https://github.com/klimPaskov/hoi4-imagegen-mcp/releases>. Version 0.3.3 has one archive per platform:
 
 | Platform | Archive |
 |---|---|
-| Windows x64 | `hoi4-imagegen-v0.3.2-x86_64-pc-windows-msvc.zip` |
-| macOS arm64 | `hoi4-imagegen-v0.3.2-aarch64-apple-darwin.tar.gz` |
-| macOS x64 | `hoi4-imagegen-v0.3.2-x86_64-apple-darwin.tar.gz` |
-| Linux x64 | `hoi4-imagegen-v0.3.2-x86_64-unknown-linux-gnu.tar.gz` |
-| Linux arm64 | `hoi4-imagegen-v0.3.2-aarch64-unknown-linux-gnu.tar.gz` |
+| Windows x64 | `hoi4-imagegen-v0.3.3-x86_64-pc-windows-msvc.zip` |
+| macOS arm64 | `hoi4-imagegen-v0.3.3-aarch64-apple-darwin.tar.gz` |
+| macOS x64 | `hoi4-imagegen-v0.3.3-x86_64-apple-darwin.tar.gz` |
+| Linux x64 | `hoi4-imagegen-v0.3.3-x86_64-unknown-linux-gnu.tar.gz` |
+| Linux arm64 | `hoi4-imagegen-v0.3.3-aarch64-unknown-linux-gnu.tar.gz` |
 
 Each archive holds both programs, `LICENSE`, `NOTICE`, `README.md` and `UPSTREAM.md`. The release also has a `SHA256SUMS` file. The binaries are **unsigned**, so Windows SmartScreen and macOS Gatekeeper may warn. The archives and `SHA256SUMS` carry GitHub build attestations. To check a download:
 
@@ -307,6 +309,9 @@ max_usd_per_call = 1.0
 
 [providers.openai]
 quality = "low"                      # the cheapest tier; raise it when review says so
+
+[providers.chatgpt_login]
+concurrency = 3                      # requests at once on the machine, 1 to 6 (HOI4_IMAGEGEN_CHATGPT_CONCURRENCY wins)
 
 [providers.comfyui]
 endpoint = "http://127.0.0.1:8188"

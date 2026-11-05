@@ -115,16 +115,38 @@ fn a_backend_failure_injected_mid_stream_is_surfaced() {
     let at = RECORDED.find("data: {\"type\":\"response.image_generation_call.generating\"").expect("recorded generating event");
     let failed = "data: {\"type\":\"response.failed\",\"response\":{\"error\":{\"message\":\"You've hit your usage limit\"}}}\n\n";
     let body = format!("{}{}{}", &RECORDED[..at], failed, &RECORDED[at..]);
-    let (_d, _f, p) = replay(200, body, None);
+    let (d, f, p) = replay(200, body, None);
     let e = p.generate(&request(), &CallContext::new()).unwrap_err();
     assert!(e.message.contains("usage limit"), "{}", e.message);
+    // the usage limit is a rate limit: nothing is made, and the route drops to one request at a time
+    assert_eq!((e.kind, e.retry), (ErrorKind::RateLimited, RetryClass::RequiresAuthorization));
+    assert!(
+        e.message.ends_with("; warning: the ChatGPT-login route dropped to one request at a time on this machine after a rate limit (usage_limit) at 2026-11-01T19:32:14Z; it goes back to several at a time after 2026-11-02T01:32:14Z if no new sign-out or rate limit arrives"),
+        "{}",
+        e.message
+    );
+    let fallback = provider_chatgpt_login::route::Route::new(Some(d.path().to_path_buf())).state().fallback.unwrap();
+    assert_eq!((fallback.reason.as_str(), fallback.code.as_str()), ("rate_limit", "usage_limit"));
+
+    // the next image, the unchanged recording, is made in one slot and says so
+    f.clear_route(Method::Post, BACKEND_PATH).respond(Method::Post, BACKEND_PATH, 200, &[("content-type", "text/event-stream")], RECORDED);
+    let out = p.generate(&request(), &no_sleep()).unwrap();
+    assert!(out.notes.iter().any(|n| n.starts_with("warning: the ChatGPT-login route dropped to one request at a time")), "{:?}", out.notes);
 }
 
 #[test]
 fn rejected_tokens_and_rate_limits_are_reported_plainly() {
-    let (_d, _f, p) = replay(401, "{\"detail\":\"Unauthorized\"}".into(), None);
+    let (d, _f, p) = replay(401, "{\"detail\":\"Unauthorized\"}".into(), None);
     let e = p.generate(&request(), &CallContext::new()).unwrap_err();
     assert_eq!((e.kind, e.retry), (ErrorKind::Auth, RetryClass::RequiresAuthorization));
+    assert!(
+        e.message
+            .contains("warning: the ChatGPT-login route dropped to one request at a time on this machine after a sign-out by the server (http_401)"),
+        "{}",
+        e.message
+    );
+    let state = provider_chatgpt_login::route::Route::new(Some(d.path().to_path_buf())).state();
+    assert_eq!(state.fallback.map(|f| f.reason), Some("sign_out".to_string()));
     let (_d, _f, p) = replay(429, "{\"detail\":\"rate limited\"}".into(), None);
     // the route backs off between tries; this sleeper only records, so the test does not really wait
     struct NoSleep;
@@ -132,7 +154,31 @@ fn rejected_tokens_and_rate_limits_are_reported_plainly() {
         fn sleep(&self, _d: std::time::Duration) {}
     }
     let ctx = CallContext { sleeper: Arc::new(NoSleep), ..CallContext::new() };
-    assert_eq!(p.generate(&request(), &ctx).unwrap_err().kind, ErrorKind::RateLimited);
+    let e = p.generate(&request(), &ctx).unwrap_err();
+    assert_eq!(e.kind, ErrorKind::RateLimited);
+    assert!(
+        e.message.contains("warning: the ChatGPT-login route dropped to one request at a time on this machine after a rate limit (http_429)"),
+        "{}",
+        e.message
+    );
+}
+
+/// RECORDED-REAL REPLAY with an injected 429 first: two providers (two processes in real life) share the route. After
+/// the 429 the route runs one request at a time for every caller, and the recorded image says so.
+#[test]
+fn after_an_injected_429_the_recorded_answer_comes_back_in_one_slot_with_the_warning() {
+    let (d, f, p) = replay(429, "{\"detail\":\"rate limited\"}".into(), None);
+    f.respond(Method::Post, BACKEND_PATH, 200, &[("content-type", "text/event-stream")], RECORDED);
+    let out = p.generate(&request(), &no_sleep()).expect("the recorded answer after one 429");
+    assert_eq!(&out.image[..8], b"\x89PNG\r\n\x1a\n");
+    assert!(
+        out.notes.iter().any(|n| n.starts_with("warning: the ChatGPT-login route dropped to one request at a time") && n.contains("(http_429)")),
+        "{:?}",
+        out.notes
+    );
+    let route = provider_chatgpt_login::route::Route::new(Some(d.path().to_path_buf())).with_clock(Arc::new(FixedClock(1_793_561_534)));
+    assert_eq!(route.effective_concurrency(), 1, "every new caller on the machine gets one slot");
+    assert_eq!(route.concurrency(), 3, "the configured number is unchanged");
 }
 
 #[test]

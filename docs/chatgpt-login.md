@@ -37,13 +37,37 @@ The reasoning effort is **the highest one the backend accepts**. On 2026-11-05 t
 - Each request asks for `reasoning.effort = high` first. If the backend refuses that effort, the same request is sent once at `medium`, then once at `low`, and finally once with no `reasoning` field at all, so the backend uses its own default effort. The first rung the backend accepts is used.
 - On 2026-11-05 the backend refused high, medium and low (it passes the effort to the image tool as its `complexity`). The maintainer added `low`, and then the request without an effort. An image made that way records `reasoning_effort: "backend default"` and the effort the backend reported. Whether such images are good enough is checked image by image.
 - A refused effort is remembered on the machine for a day (`refused_efforts` in `route-state.json`), so later images skip it and send one request. The last effort on the ladder is always tried, so a backend that changes again is noticed. After the day, `high` is tried again.
-- The attempts run one at a time under the route lock and keep the pacing between requests.
+- The attempts of one image run one after another in that image's slot and keep the slot's pacing (see "Requests at once" below).
 - If the backend refuses all four, the call ends with one clear error that lists each refusal, and the route is down until the backend changes. Nothing is retried after that.
 - Any other backend error ends the call at once. It is not retried at a lower effort.
 - The backend's response events must report the same model (or a dated snapshot of it, `gpt-6-luna-*`) and the effort that attempt asked for. Anything else, or a response that does not say, is refused with a clear error, and the image is never used.
 - The effort each image ran at is data on its candidate record in the ledger: `usage.reasoning_effort` (a named effort or `backend default`), `usage.reported_effort` (what the backend said it ran at), `usage.refused_efforts` and the backend's own `usage.backend_usage`. The candidate notes say the same in words ("ran on gpt-6-luna at medium reasoning effort").
 - A plan that names another model for this provider is refused at plan time.
 - The model and effort the backend reported are recorded with every candidate in the ledger.
+
+## Requests at once
+
+On 2026-11-02 the server revoked every Codex sign-in on the maintainer's account while several sessions generated at once. From then until 0.3.2 the route sent one request at a time. Since 0.3.3 it may send up to three at once on the machine (maintainer decision W5-8 of 2026-11-05, a trial).
+
+- **Slots.** Every request the route makes takes one slot: a generation, a token refresh and the sign-in code exchange. A slot is an operating system lock on a file in the per-user data folder, next to `route-state.json`. Slot 0 is `route.lock`, the same file older versions lock, and slots 1 to 5 are `route.lock.1` to `route.lock.5`. A caller takes the first free slot. When all are busy it waits, and after 10 minutes it gives up with an error that says every slot is in use. Every process on the machine shares the same slots, and a slot is freed when its process ends, even after a crash.
+- **How many.** Three by default. Set `HOI4_IMAGEGEN_CHATGPT_CONCURRENCY` to a number from 1 to 6 to change it. A value outside that range is clamped, and 1 gives the old one-at-a-time behaviour. A project can also set it in `.hoi4-imagegen/config.toml`, and the environment variable wins:
+
+  ```toml
+  [providers.chatgpt_login]
+  concurrency = 2
+  ```
+
+  Each process uses its own setting, so keep it the same for every tool on the machine.
+- **Pacing.** Each slot waits at least 20 seconds after its own last request. While the route runs one at a time, the gap counts from the last request of any slot, as before.
+- **Backoff.** A 429 starts a backoff of 30 seconds that doubles with every further 429, up to 5 minutes. It holds every slot.
+- **Fall back to one at a time.** A sign-out by the server (a 401, or an answer that says `token_revoked`), a 429, or the backend's usage-limit message drops the route to one request at a time on the whole machine. The reason and the time are recorded in `route-state.json` (`fallback`), so every process sees it. A caller that already holds a higher slot gives it up before its next request and waits for slot 0.
+- **When it ends.** Six hours after the last sign-out or rate limit. Every new one restarts the six hours. A new sign-in does not end it early.
+- **The warning.** While it holds, every generation from this route says so, in the image's notes or in the error. `hoi4-imagegen doctor`, `hoi4-imagegen login-status` and `hoi4.image_status` (`chatgpt_login.route.fallback` and `chatgpt_login.route.concurrency`) show it too. It reads like this:
+
+  ```
+  warning: the ChatGPT-login route dropped to one request at a time on this machine after a rate limit (http_429) at 2026-11-05T10:00:00Z; it goes back to several at a time after 2026-11-05T16:00:00Z if no new sign-out or rate limit arrives
+  ```
+- **The state file.** Several slot holders write `route-state.json` at once, so every read and every change of it happens under a short lock on `route-state.lock`. The file keeps the last request of each slot (`slot_last_request`). A file written by 0.3.2 or older still reads: its single `last_request_epoch` paces every slot until the slots have their own times.
 
 ## What to know before using it
 

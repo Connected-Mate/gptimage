@@ -1,4 +1,5 @@
-//! The login route's guards: revocation is recorded and reported, one request at a time, pacing and 429 backoff.
+//! The login route's guards: revocation is recorded and reported, N slots shared across processes, pacing per slot,
+//! 429 backoff and the fall back to one request at a time.
 //!
 //! EVIDENCE LABELS. No test here contacts any server (the route is paused after the 2026-11-02 incident).
 //! * The 200 stream is the recorded-real response `tests/fixtures/recorded-real/focus-luna-high-2026-11-01.sse`.
@@ -136,8 +137,14 @@ fn a_401_is_recorded_reported_everywhere_and_no_call_is_made_afterwards() {
     let e = rig.generate().unwrap_err();
     assert_eq!((e.kind, e.retry), (ErrorKind::Auth, RetryClass::RequiresAuthorization), "never retried automatically");
     assert!(e.message.starts_with("signed out by the server (token revoked at 2026-11-01T19:32:14Z"), "{}", e.message);
-    assert!(e.message.contains("code token_revoked") && e.message.ends_with("run `hoi4-imagegen login` to sign in again"), "{}", e.message);
+    assert!(e.message.contains("code token_revoked): run `hoi4-imagegen login` to sign in again; warning: "), "{}", e.message);
+    assert!(
+        e.message.ends_with("warning: the ChatGPT-login route dropped to one request at a time on this machine after a sign-out by the server (token_revoked) at 2026-11-01T19:32:14Z; it goes back to several at a time after 2026-11-02T01:32:14Z if no new sign-out or rate limit arrives"),
+        "{}",
+        e.message
+    );
     assert_eq!(rig.backend_calls(), 1);
+    assert_eq!(rig.route().with_clock(rig.clock.clone()).effective_concurrency(), 1, "every new caller gets one slot");
 
     // the record holds a time and a code, never a secret, a header or the body text
     let raw = std::fs::read_to_string(rig.dir.path().join("route-state.json")).unwrap();
@@ -161,17 +168,27 @@ fn a_401_is_recorded_reported_everywhere_and_no_call_is_made_afterwards() {
     assert!(status.starts_with("signed out by the server (token revoked at "), "{status}");
     assert!(status.contains("no request is made until you sign in again"));
     assert!(rig.provider.revocation_notice().unwrap().contains("hoi4-imagegen login"));
+    let status = provider_chatgpt_login::cli::status_text_at(&rig.store(), NOW).unwrap();
+    assert!(status.contains("\nwarning: the ChatGPT-login route dropped to one request at a time on this machine after a sign-out"), "{status}");
 
     // `login-status --check` makes no call either
     let e = rig.provider.check(&ctx(&rig.sleeper)).unwrap_err();
     assert!(e.message.contains("signed out by the server"));
     assert_eq!(rig.fixture.requests().len(), 1);
 
-    // a fresh login (or logout) clears it, and the route works again
+    // a fresh login (or logout) clears the revocation, and the route works again, still one request at a time
     rig.route().clear().unwrap();
     assert!(rig.provider.revocation_notice().is_none());
-    assert!(rig.generate().is_ok());
+    let out = rig.generate().unwrap();
+    assert!(out.notes.iter().any(|n| n.starts_with("warning: the ChatGPT-login route dropped to one request at a time")), "{:?}", out.notes);
     assert_eq!(rig.backend_calls(), 2);
+
+    // six hours after the sign-out the route goes back to the configured number, and the warning is gone
+    rig.clock.0.store(NOW + route::FALLBACK_HOLD_SECS, Ordering::SeqCst);
+    let out = rig.generate().unwrap();
+    assert!(!out.notes.iter().any(|n| n.starts_with("warning:")), "{:?}", out.notes);
+    assert_eq!(rig.route().with_clock(rig.clock.clone()).effective_concurrency(), 3);
+    assert!(!provider_chatgpt_login::cli::status_text_at(&rig.store(), NOW + route::FALLBACK_HOLD_SECS).unwrap().contains("warning"));
 }
 
 #[test]
@@ -292,6 +309,24 @@ fn a_429_backs_off_exponentially_in_one_line_and_then_succeeds() {
     let waits: Vec<u64> = rig.sleeper.0.lock().unwrap().iter().map(Duration::as_secs).collect();
     assert_eq!(waits.iter().sum::<u64>(), 30 + 60, "30 s, then 60 s: {waits:?}");
     assert!(rig.route().state().rate_limit.is_none(), "a success ends the backoff");
+    // every new caller on the machine now gets one slot
+    let fallback = rig.route().state().fallback.expect("the 429 dropped the route to one at a time");
+    assert_eq!((fallback.reason.as_str(), fallback.code.as_str()), ("rate_limit", "http_429"));
+    assert_eq!(rig.route().with_clock(rig.clock.clone()).effective_concurrency(), 1);
+}
+
+#[test]
+fn after_a_429_the_success_says_the_route_dropped_to_one_at_a_time() {
+    let rig = Rig::new(None);
+    rig.fixture.respond(Method::Post, BACKEND_PATH, 429, &[], "slow down");
+    rig.fixture.respond(Method::Post, BACKEND_PATH, 200, &[], RECORDED);
+    let out = rig.generate().unwrap();
+    let warning = out.notes.iter().find(|n| n.starts_with("warning:")).expect("a warning note");
+    assert_eq!(
+        warning,
+        "warning: the ChatGPT-login route dropped to one request at a time on this machine after a rate limit (http_429) at 2026-11-01T19:32:14Z; it goes back to several at a time after 2026-11-02T01:32:14Z if no new sign-out or rate limit arrives"
+    );
+    assert_eq!(rig.provider.fallback_notice().as_deref(), warning.strip_prefix("warning: "));
 }
 
 #[test]
@@ -301,6 +336,11 @@ fn a_429_that_never_ends_stops_after_the_limit_and_holds_the_next_call_back() {
 
     let e = rig.generate().unwrap_err();
     assert_eq!((e.kind, e.status), (ErrorKind::RateLimited, Some(429)));
+    assert!(
+        e.message.contains("; warning: the ChatGPT-login route dropped to one request at a time on this machine after a rate limit (http_429)"),
+        "{}",
+        e.message
+    );
     assert_eq!(rig.backend_calls() as u32, 1 + route::RATE_LIMIT_MAX_RETRIES);
     assert_eq!(rig.sleeper.total(), Duration::from_secs(30 + 60 + 120));
     let rl = rig.route().state().rate_limit.unwrap();
@@ -319,13 +359,22 @@ struct Overlap {
     inside: AtomicUsize,
     max: AtomicUsize,
     total: AtomicUsize,
+    /// A request waits (up to 3 s) until this many are in flight, so reaching the limit does not depend on timing.
+    expect: usize,
 }
 
 impl HttpTransport for Overlap {
     fn execute(&self, _req: &HttpRequest, _max: usize, _timeout: Duration) -> Result<HttpResponse, TransportError> {
         let now = self.inside.fetch_add(1, Ordering::SeqCst) + 1;
         self.max.fetch_max(now, Ordering::SeqCst);
-        std::thread::sleep(Duration::from_millis(60));
+        for _ in 0..600 {
+            if self.inside.load(Ordering::SeqCst) >= self.expect {
+                break;
+            }
+            std::thread::sleep(Duration::from_millis(5));
+        }
+        self.max.fetch_max(self.inside.load(Ordering::SeqCst), Ordering::SeqCst);
+        std::thread::sleep(Duration::from_millis(20));
         self.inside.fetch_sub(1, Ordering::SeqCst);
         self.total.fetch_add(1, Ordering::SeqCst);
         Ok(HttpResponse { status: 200, headers: vec![], body: RECORDED.as_bytes().to_vec() })
@@ -342,38 +391,119 @@ impl Sleeper for LockOnlySleeper {
     }
 }
 
-#[test]
-fn concurrent_generations_from_separate_providers_never_overlap() {
+/// `threads` providers, each with its own lock handles as separate processes have, generate at once with `n` slots.
+/// Returns the most requests the backend saw in flight together. With `rate_limited`, a 429 is on record first.
+fn overlap(n: usize, threads: usize, rate_limited: bool) -> usize {
     let dir = work_dir();
     let store = CredentialStore::at(dir.path().join("auth.json"));
     store.save(&synthetic(None)).unwrap();
-    let backend = Arc::new(Overlap { inside: AtomicUsize::new(0), max: AtomicUsize::new(0), total: AtomicUsize::new(0) });
+    let expect = if rate_limited { 1 } else { n.min(threads) };
+    let backend = Arc::new(Overlap { inside: AtomicUsize::new(0), max: AtomicUsize::new(0), total: AtomicUsize::new(0), expect });
     let clock = Arc::new(TestClock(AtomicI64::new(NOW)));
+    if rate_limited {
+        // an hour ago: the backoff itself is long over, only the fall back to one at a time still holds
+        let guard = Route::new(store.state_dir()).acquire(&CancelToken::new(), &LockOnlySleeper).unwrap();
+        guard.record_rate_limited(NOW - 3600).unwrap();
+    }
+    let start = Arc::new(std::sync::Barrier::new(threads));
     let mut handles = Vec::new();
-    for _ in 0..4 {
-        // each thread has its own provider and lock handle, as separate processes would
-        let p = ChatGptLoginProvider::new(CredentialStore::at(dir.path().join("auth.json")), backend.clone(), clock.clone());
+    for _ in 0..threads {
+        let p = ChatGptLoginProvider::new(CredentialStore::at(dir.path().join("auth.json")), backend.clone(), clock.clone()).with_concurrency(n);
+        let start = start.clone();
         handles.push(std::thread::spawn(move || {
             let c = CallContext { cancel: CancelToken::new(), sleeper: Arc::new(LockOnlySleeper), jobs: None };
-            p.generate(&request(), &c).map(|_| ())
+            start.wait();
+            p.generate(&request(), &c)
         }));
     }
     for h in handles {
-        h.join().unwrap().expect("every caller gets its turn");
+        let out = h.join().unwrap().expect("every caller gets its turn");
+        assert_eq!(out.notes.iter().any(|n| n.starts_with("warning: the ChatGPT-login route dropped")), rate_limited, "{:?}", out.notes);
     }
-    assert_eq!(backend.total.load(Ordering::SeqCst), 4);
-    assert_eq!(backend.max.load(Ordering::SeqCst), 1, "never two requests in flight");
+    assert_eq!(backend.total.load(Ordering::SeqCst), threads);
+    backend.max.load(Ordering::SeqCst)
+}
+
+#[test]
+fn concurrent_generations_reach_three_and_never_exceed_three() {
+    assert_eq!(overlap(3, 7, false), 3);
+}
+
+#[test]
+fn with_one_slot_concurrent_generations_never_overlap() {
+    assert_eq!(overlap(1, 4, false), 1, "N = 1: never two requests in flight");
+}
+
+#[test]
+fn after_a_recorded_429_concurrent_generations_run_one_at_a_time() {
+    assert_eq!(overlap(3, 4, true), 1, "the fall back holds every new caller to one slot");
 }
 
 #[test]
 fn a_caller_that_waits_too_long_gets_the_clear_error() {
     let rig = Rig::new(None);
     rig.fixture.respond(Method::Post, BACKEND_PATH, 200, &[], RECORDED);
-    // another "process" holds the route; the sleeper does not sleep, so the bounded wait runs out at once
-    let held = rig.route().acquire(&CancelToken::new(), &*rig.sleeper).unwrap();
+    // other "processes" hold every slot; the sleeper does not sleep, so the bounded wait runs out at once
+    let held: Vec<_> = (0..3).map(|_| rig.route().acquire(&CancelToken::new(), &*rig.sleeper).unwrap()).collect();
     let e = rig.generate().unwrap_err();
-    assert!(e.message.contains("another hoi4-imagegen process is using the ChatGPT login; try again shortly"), "{}", e.message);
+    assert!(e.message.contains("every ChatGPT-login slot on this machine is in use (3 request(s) at a time); try again shortly"), "{}", e.message);
     assert_eq!(rig.backend_calls(), 0);
     drop(held);
-    assert!(rig.generate().is_ok(), "the lock was released by the drop");
+    assert!(rig.generate().is_ok(), "the slots were released by the drop");
+}
+
+// ------------------------------------------------------------------ slots shared by separate processes
+
+const CHILD_DIR_ENV: &str = "IG_TEST_SLOT_CHILD_DIR";
+
+/// Run as a child process by `three_processes_hold_the_three_slots_and_a_fourth_caller_waits`: take a slot, report it
+/// with a file, and hold it until the parent writes `release`. In a normal test run the variable is unset and this
+/// does nothing.
+#[test]
+fn slot_child_process() {
+    let Some(dir) = std::env::var_os(CHILD_DIR_ENV).map(std::path::PathBuf::from) else { return };
+    let route = Route::new(Some(dir.clone())).with_concurrency(3);
+    let guard = route.acquire_within(&CancelToken::new(), &imagegen_providers::types::RealSleeper, Duration::from_secs(60)).unwrap();
+    std::fs::write(dir.join(format!("held-{}", guard.slot())), std::process::id().to_string()).unwrap();
+    for _ in 0..1200 {
+        if dir.join("release").exists() {
+            return;
+        }
+        std::thread::sleep(Duration::from_millis(50));
+    }
+    panic!("the parent never released the child");
+}
+
+#[test]
+fn three_processes_hold_the_three_slots_and_a_fourth_caller_waits() {
+    let dir = work_dir();
+    let exe = std::env::current_exe().unwrap();
+    let children: Vec<std::process::Child> = (0..3)
+        .map(|_| {
+            std::process::Command::new(&exe)
+                .args(["slot_child_process", "--exact", "--test-threads=1", "--quiet"])
+                .env(CHILD_DIR_ENV, dir.path())
+                .stdout(std::process::Stdio::null())
+                .spawn()
+                .unwrap()
+        })
+        .collect();
+    let held = |dir: &Path| (0..6).filter(|s| dir.join(format!("held-{s}")).exists()).collect::<Vec<usize>>();
+    for _ in 0..1200 {
+        if held(dir.path()).len() == 3 {
+            break;
+        }
+        std::thread::sleep(Duration::from_millis(50));
+    }
+    let slots = held(dir.path());
+    // this process is the fourth caller: every slot is taken by another process
+    let route = Route::new(Some(dir.path().to_path_buf())).with_concurrency(3);
+    let busy = route.acquire_within(&CancelToken::new(), &imagegen_providers::types::RealSleeper, Duration::from_millis(600));
+    std::fs::write(dir.path().join("release"), b"").unwrap();
+    for mut c in children {
+        assert!(c.wait().unwrap().success(), "a child failed");
+    }
+    assert_eq!(slots, [0, 1, 2], "three processes hold the three slots at once");
+    assert!(busy.unwrap_err().message.contains("every ChatGPT-login slot on this machine is in use"));
+    assert_eq!(route.acquire(&CancelToken::new(), &imagegen_providers::types::RealSleeper).unwrap().slot(), 0, "released when the processes ended");
 }

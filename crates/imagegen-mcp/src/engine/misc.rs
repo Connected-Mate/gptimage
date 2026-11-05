@@ -58,7 +58,7 @@ impl Engine {
         let game = self.game_dir();
         let ledger = self.ledger.verify().ok();
         let kit_path = self.config.kit_profiles_file(self.fs.root());
-        json!({
+        let mut status = json!({
             "server": {"name": "hoi4-imagegen-mcp", "version": env!("CARGO_PKG_VERSION"), "mode": format!("{:?}", self.mode)},
             "project_root": display_path(self.fs.root()),
             "config_file_present": self.fs.exists(imagegen_core::config::CONFIG_PATH),
@@ -85,7 +85,24 @@ impl Engine {
             },
             "chatgpt_login": self.plugin,
             "jobs_running": self.jobs.len(),
-        })
+        });
+        if let Some(route) = self.chatgpt_route_report() {
+            status["chatgpt_login"]["route"] = route;
+        }
+        status
+    }
+
+    /// The ChatGPT-login route's recorded state from `route-state.json` alone: requests at once (configured and
+    /// effective), the fall back to one at a time, revocation, refused efforts, the last request and any backoff.
+    /// `None` when the provider is not registered (hosted mode) or there is no per-user data folder. No request is made.
+    pub fn chatgpt_route_report(&self) -> Option<Value> {
+        use provider_chatgpt_login::route::{configured_concurrency, report, Route};
+        if !self.plugin.enabled {
+            return None;
+        }
+        let store = provider_chatgpt_login::store::CredentialStore::for_environment(&*self.env).ok()?;
+        let configured = configured_concurrency(&*self.env, self.config.provider("chatgpt_login").concurrency);
+        Some(report(&Route::new(store.state_dir()).state(), configured, self.clock.now_secs()))
     }
 
     /// The style sources of a family: the tiers found with their counts, the references the plan would send with

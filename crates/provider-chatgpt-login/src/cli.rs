@@ -10,7 +10,7 @@ use std::net::TcpListener;
 use std::sync::Arc;
 use std::time::Duration;
 
-use imagegen_core::config::EnvSource;
+use imagegen_core::config::{EnvSource, ProcessEnv};
 use imagegen_core::hashing::{Clock, SystemClock};
 use imagegen_providers::transport::{send, HostPolicy, HttpTransport, UreqTransport};
 use imagegen_providers::types::{CallContext, CancelToken, RealSleeper};
@@ -20,7 +20,7 @@ use crate::oauth::{
     account_id, authorize_url, bind_listener, exchange_request, expiry_ms, make_pkce, make_state, parse_tokens, wait_for_callback, Pkce,
 };
 use crate::provider::{describe, ChatGptLoginProvider, CheckOutcome};
-use crate::route::Route;
+use crate::route::{self, Route};
 use crate::store::{CredentialStore, Credentials};
 use crate::{evaluate_gates, PluginMode, CALLBACK_PORT, HOSTS};
 
@@ -137,9 +137,9 @@ pub fn finish(
     timeout: Duration,
 ) -> Result<String, String> {
     let code = wait_for_callback(&p.listener, &p.state, timeout)?;
-    // The code exchange is a request to OpenAI like any other: one at a time on this machine. A successful sign-in
-    // also clears a recorded server revocation, so the route works again.
-    let route = Route::new(store.state_dir());
+    // The code exchange is a request to OpenAI like any other: it takes one of the route's slots. A successful
+    // sign-in also clears a recorded server revocation, so the route works again.
+    let route = Route::new(store.state_dir()).with_concurrency(route::configured_concurrency(&ProcessEnv, None));
     let _guard = route.acquire(&CancelToken::new(), &RealSleeper).map_err(|e| e.message)?;
     let resp = send(transport, &HostPolicy::api(&HOSTS), &exchange_request(&code, &p.pkce.verifier, p.port)).map_err(|e| e.message)?;
     if resp.status != 200 {
@@ -161,17 +161,24 @@ pub fn finish(
 
 /// `login-status`: what is stored, and whether the server is known to have revoked it. Makes no network call.
 pub fn status_text(store: &CredentialStore) -> Result<String, String> {
+    status_text_at(store, SystemClock.now_secs())
+}
+
+/// [`status_text`] at a given time, which decides whether a fall back to one request at a time still holds.
+pub fn status_text_at(store: &CredentialStore, now: i64) -> Result<String, String> {
     let route = Route::new(store.state_dir()).state();
     let stored = store.load()?;
+    let warning = route.active_fallback(now).map(|f| format!("\nwarning: {}", f.message())).unwrap_or_default();
     if let Some(msg) = route.revoked_message() {
-        return Ok(format!("{msg}\nno request is made until you sign in again\nstored in: {}", store.location()));
+        return Ok(format!("{msg}\nno request is made until you sign in again{warning}\nstored in: {}", store.location()));
     }
-    Ok(match stored {
+    let text = match stored {
         Some(c) => {
             format!("{}\n(local view only: this does not ask the server; `login-status --check` can)\nstored in: {}", describe(&c), store.location())
         }
         None => format!("not signed in (run `hoi4-imagegen login`; tokens would go to the {})", store.location()),
-    })
+    };
+    Ok(format!("{text}{warning}"))
 }
 
 /// `login-status --check`: ask the server once, when a call that is cheap and sends no image exists.
@@ -318,7 +325,8 @@ mod tests {
     #[test]
     fn the_risk_note_warns_about_concurrent_use_and_says_what_the_tool_now_does() {
         assert!(RISK_NOTE.contains("revoke") && RISK_NOTE.contains("every Codex sign-in") && RISK_NOTE.contains("signs you out of Codex"));
-        assert!(RISK_NOTE.contains("one request at a time"));
+        assert!(RISK_NOTE.contains("up to three requests at a time") && RISK_NOTE.contains("HOI4_IMAGEGEN_CHATGPT_CONCURRENCY"));
+        assert!(RISK_NOTE.contains("falls back to one request at a time"));
         assert!(RISK_NOTE.contains(&format!("{} seconds", crate::route::MIN_GAP_SECS)));
         let text = run_with("risk-note", &MapEnv::from_pairs(&[(crate::store::PATH_ENV, "x.json")]), &FixedClock(0)).unwrap();
         assert_eq!(text, RISK_NOTE, "`login-risk-note` prints the same note `login` shows");

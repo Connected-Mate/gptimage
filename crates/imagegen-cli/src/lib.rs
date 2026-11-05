@@ -268,8 +268,8 @@ pub fn execute(engine: &Engine, cli: &Cli, out: &mut dyn Write) -> i32 {
     let result: Result<(Value, i32, Option<String>), EngineError> = (|| match &cli.command {
         Command::Doctor => {
             let mut s = engine.status();
+            // the engine's status already carries the route's recorded state (`chatgpt_login.route`)
             note_login_revocation(&mut s, &*engine.env);
-            note_route_state(&mut s, &*engine.env, engine.clock.now_secs());
             let text = doctor_text(&s);
             let broken = s["ledger"]["chain_ok"] == json!(false);
             Ok((s, i32::from(broken), Some(text)))
@@ -376,38 +376,13 @@ fn note_login_revocation(s: &mut Value, env: &dyn imagegen_core::config::EnvSour
     }
 }
 
-/// The ChatGPT route's recorded state, from `route-state.json` alone: revoked or not, the reasoning efforts the backend
-/// refused that are still remembered (with when they expire), when the last request went out and any 429 backoff.
-///
-/// This makes no network call and no request to the backend. A live probe was not added on purpose: the backend's
-/// responses endpoint is documented in this repository only for image generations (see `ChatGptLoginProvider::check`),
-/// and a request without the image tool would be a guess at behaviour nobody has recorded. The recorded state answers
-/// "has the route been refusing me, and since when" without spending plan quota.
+/// The ChatGPT route's recorded state, as `doctor` gets it from the engine's status (tests build it from the
+/// environment alone). The shape is `provider_chatgpt_login::route::report`. No request is made.
+#[cfg(test)]
 fn note_route_state(s: &mut Value, env: &dyn imagegen_core::config::EnvSource, now: i64) {
-    use imagegen_core::hashing::rfc3339_utc;
+    use provider_chatgpt_login::route::{configured_concurrency, report, Route};
     let Some(store) = provider_chatgpt_login::store::CredentialStore::for_environment(env).ok() else { return };
-    let state = provider_chatgpt_login::route::Route::new(store.state_dir()).state();
-    let refused: Vec<Value> = state
-        .refused_efforts
-        .iter()
-        .filter(|r| r.until_epoch > now)
-        .map(|r| json!({"effort": r.effort, "skipped_until": rfc3339_utc(r.until_epoch), "remaining_secs": r.until_epoch - now}))
-        .collect();
-    let expired = state.refused_efforts.iter().filter(|r| r.until_epoch <= now).count();
-    let backoff = state
-        .rate_limit
-        .as_ref()
-        .filter(|r| r.retry_after_epoch > now)
-        .map(|r| json!({"failures": r.failures, "retry_after": rfc3339_utc(r.retry_after_epoch), "wait_secs": r.retry_after_epoch - now}));
-    s["chatgpt_login"]["route"] = json!({
-        "source": "route-state.json (recorded state only; no request was made)",
-        "revoked": state.revoked.is_some(),
-        "last_request_at": state.last_request_epoch.map(rfc3339_utc),
-        "last_request_ago_secs": state.last_request_epoch.map(|t| (now - t).max(0)),
-        "refused_efforts": refused,
-        "expired_refusals": expired,
-        "rate_limit": backoff,
-    });
+    s["chatgpt_login"]["route"] = report(&Route::new(store.state_dir()).state(), configured_concurrency(env, None), now);
 }
 
 fn route_text(r: &Value) -> Option<String> {
@@ -416,6 +391,15 @@ fn route_text(r: &Value) -> Option<String> {
     }
     let mut t = String::from("ChatGPT route (recorded state, no request made):\n");
     t.push_str(&format!("  sign-in revoked by the server: {}\n", if r["revoked"] == json!(true) { "YES" } else { "no" }));
+    let (configured, effective) = (r["concurrency"]["configured"].as_u64().unwrap_or(1), r["concurrency"]["effective"].as_u64().unwrap_or(1));
+    if effective < configured {
+        t.push_str(&format!("  requests at once: {effective} (configured {configured})\n"));
+    } else {
+        t.push_str(&format!("  requests at once: up to {configured} on this machine, each slot at least 20 s apart\n"));
+    }
+    if let Some(m) = r["fallback"]["message"].as_str() {
+        t.push_str(&format!("  warning: {m}\n"));
+    }
     match r["last_request_at"].as_str() {
         Some(at) => t.push_str(&format!("  last request: {at} ({} ago)\n", ago(r["last_request_ago_secs"].as_i64().unwrap_or(0)))),
         None => t.push_str("  last request: none recorded on this machine\n"),
@@ -750,7 +734,22 @@ mod tests {
         drop(guard);
         let mut s = json!({"chatgpt_login": {"state": "signed in"}});
         note_route_state(&mut s, &env, now);
-        assert!(doctor_text(&s).contains("sign-in revoked by the server: YES"));
+        let text = doctor_text(&s);
+        assert!(text.contains("sign-in revoked by the server: YES"));
+        // the revocation dropped the route to one request at a time, and the doctor says so
+        assert!(text.contains("requests at once: 1 (configured 3)"), "{text}");
+        assert!(
+            text.contains(
+                "warning: the ChatGPT-login route dropped to one request at a time on this machine after a sign-out by the server (token_revoked)"
+            ),
+            "{text}"
+        );
+        assert_eq!(s["chatgpt_login"]["route"]["fallback"]["reason"], json!("sign_out"));
+        // six hours later it is back to three
+        let mut s = json!({"chatgpt_login": {"state": "signed in"}});
+        note_route_state(&mut s, &env, now - 10 + provider_chatgpt_login::route::FALLBACK_HOLD_SECS);
+        let text = doctor_text(&s);
+        assert!(text.contains("requests at once: up to 3 on this machine") && !text.contains("warning:"), "{text}");
     }
 
     #[test]

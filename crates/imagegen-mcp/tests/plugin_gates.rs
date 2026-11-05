@@ -123,3 +123,33 @@ fn the_login_tool_reports_an_existing_sign_in_and_is_refused_hosted() {
     let (_d, e) = open("", RunMode::LocalStdio, false, &[]);
     assert!(e.status()["chatgpt_login"]["state"].as_str().unwrap().contains("hoi4.image_login"));
 }
+
+/// W5-8: `[providers.chatgpt_login] concurrency` reaches the provider and `hoi4.image_status`, the environment variable
+/// wins over it, and the route block shows a fall back to one at a time. No request is made.
+#[test]
+fn the_configured_concurrency_and_a_fall_back_show_in_the_status_route_block() {
+    let (_d, e) = open("", RunMode::LocalStdio, false, &[]);
+    let r = &e.status()["chatgpt_login"]["route"];
+    assert_eq!((r["concurrency"]["configured"].as_u64(), r["concurrency"]["effective"].as_u64()), (Some(3), Some(3)), "{r}");
+    assert!(r["fallback"].is_null());
+
+    let (d, e) = open("[providers.chatgpt_login]\nconcurrency = 2\n", RunMode::LocalStdio, false, &[]);
+    assert_eq!(e.status()["chatgpt_login"]["route"]["concurrency"]["configured"], 2);
+    let (_d2, e2) = open("[providers.chatgpt_login]\nconcurrency = 2\n", RunMode::LocalStdio, false, &[("HOI4_IMAGEGEN_CHATGPT_CONCURRENCY", "9")]);
+    assert_eq!(e2.status()["chatgpt_login"]["route"]["concurrency"]["configured"], 6, "the variable wins and is clamped");
+
+    // SYNTHETIC state: a 429 recorded on this machine a minute ago
+    let route = provider_chatgpt_login::route::Route::new(CredentialStore::at(d.path().join("chatgpt-auth.json")).state_dir());
+    route.update(|s| s.record_fallback(1_793_404_800 - 60, "rate_limit", "http_429")).unwrap();
+    let r = &e.status()["chatgpt_login"]["route"];
+    assert_eq!(r["concurrency"]["effective"], 1);
+    assert_eq!(r["fallback"]["code"], "http_429");
+    assert!(r["fallback"]["message"]
+        .as_str()
+        .unwrap()
+        .starts_with("the ChatGPT-login route dropped to one request at a time on this machine after a rate limit"));
+
+    // hosted mode has no route block
+    let (_d, e) = open("", RunMode::Hosted, false, &[]);
+    assert!(e.status()["chatgpt_login"].get("route").is_none());
+}
