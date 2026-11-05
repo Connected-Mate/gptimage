@@ -22,7 +22,7 @@ use serde_json::{json, Value};
 use crate::oauth::{self, account_id, expiry_ms, parse_tokens, refresh_request};
 use crate::route::{self, Route, RouteGuard, RouteState, RATE_LIMIT_MAX_RETRIES};
 use crate::store::{CredentialStore, Credentials};
-use crate::{BACKEND_URL, EFFORT_LADDER, EFFORT_POLICY, EFFORT_REFUSAL_MEMORY_SECS, HOSTS, MODEL, ORIGINATOR};
+use crate::{BACKEND_URL, EFFORT_BACKEND_DEFAULT, EFFORT_LADDER, EFFORT_POLICY, EFFORT_REFUSAL_MEMORY_SECS, HOSTS, MODEL, ORIGINATOR};
 
 /// Environment variable naming a folder where raw backend responses are saved, to build recorded-real fixtures.
 pub const RECORD_ENV: &str = "HOI4_IMAGEGEN_RECORD_RESPONSES";
@@ -197,7 +197,7 @@ impl ChatGptLoginProvider {
         if let Some((w, h)) = size {
             tool["size"] = json!(format!("{w}x{h}"));
         }
-        json!({
+        let mut body = json!({
             "model": self.model,
             "reasoning": {"effort": effort},
             "instructions": INSTRUCTIONS,
@@ -206,7 +206,12 @@ impl ChatGptLoginProvider {
             "tool_choice": {"type": "image_generation"},
             "stream": true,
             "store": false,
-        })
+        });
+        if effort == EFFORT_BACKEND_DEFAULT {
+            // no reasoning field: the backend chooses the effort, and the response reports which one
+            body.as_object_mut().expect("an object").remove("reasoning");
+        }
+        body
     }
 
     fn call(&self, req: &ImageRequest, ctx: &CallContext) -> Result<ProviderOutput, ProviderError> {
@@ -536,6 +541,12 @@ pub fn verify_model(o: &SseOutcome, asked: &str) -> Result<(String, String), Pro
     if model != MODEL && !model.starts_with(&format!("{MODEL}-")) {
         return Err(refuse(format!("the backend ran '{model}' instead of {MODEL}; the image was not used (no fallback is allowed)")));
     }
+    if asked == EFFORT_BACKEND_DEFAULT {
+        // no effort was asked for: whatever effort the backend reports is recorded with the image
+        let effort =
+            o.effort.clone().map(|e| format!("{EFFORT_BACKEND_DEFAULT} (reported {e})")).unwrap_or_else(|| EFFORT_BACKEND_DEFAULT.to_string());
+        return Ok((model, effort));
+    }
     let effort = o.effort.clone().ok_or_else(|| {
         refuse(format!("the backend did not report the reasoning effort, so the asked {asked} effort cannot be shown; the image was not used"))
     })?;
@@ -721,6 +732,22 @@ mod tests {
 
     fn no_sleep() -> CallContext {
         CallContext { sleeper: Arc::new(crate::route::CountingSleeper::default()), ..CallContext::new() }
+    }
+
+    /// The rung that sends no reasoning field: the body has none, the model is still checked, and the effort the
+    /// backend reports is recorded.
+    #[test]
+    fn the_backend_default_rung_omits_the_effort_and_still_checks_the_model() {
+        let d = dir();
+        let p = provider(&d, Arc::new(FixtureTransport::new()), None, 0);
+        let body = p.build_body(&request(), None, crate::EFFORT_BACKEND_DEFAULT);
+        assert!(body.get("reasoning").is_none(), "{body}");
+        let ok = parse_sse(&sse("QUJD")).unwrap();
+        assert_eq!(verify_model(&ok, crate::EFFORT_BACKEND_DEFAULT).unwrap().1, "default (reported high)");
+        let silent = SseOutcome { effort: None, ..ok.clone() };
+        assert_eq!(verify_model(&silent, crate::EFFORT_BACKEND_DEFAULT).unwrap().1, "default");
+        let other = SseOutcome { model: Some("gpt-6-astra".into()), ..ok };
+        assert!(verify_model(&other, crate::EFFORT_BACKEND_DEFAULT).is_err(), "the model check never relaxes");
     }
 
     fn refusal(effort: &str) -> String {

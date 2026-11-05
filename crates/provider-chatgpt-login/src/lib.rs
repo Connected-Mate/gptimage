@@ -55,6 +55,9 @@ pub const MODEL: &str = "gpt-6-luna";
 /// then medium, then low, after the backend refused high and medium on 2026-11-05). No request is sent without an
 /// effort.
 pub const EFFORT_LADDER: [&str; 3] = ["high", "medium", "low"];
+/// A rung that sends no `reasoning` field, so the backend uses its own default effort. Not on the ladder unless the
+/// maintainer adds it; the model check still applies, and the effort the backend reports is recorded.
+pub const EFFORT_BACKEND_DEFAULT: &str = "default";
 /// The effort policy in words, for status lines and messages.
 pub const EFFORT_POLICY: &str = "the highest reasoning effort the backend accepts (high, then medium, then low)";
 /// How long a refused effort is skipped on this machine before it is tried again, so each image is one request.
