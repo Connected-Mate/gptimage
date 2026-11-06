@@ -10387,6 +10387,134 @@
   },
   {
    "section": "tno",
+   "family": "counter_large",
+   "asset": "air_assault_helicopter",
+   "brief": "A transport helicopter in side view with a long tail boom and a two-blade rotor.",
+   "build": "0.3.4",
+   "size": [
+    152,
+    42
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/counter_large/air_assault_helicopter.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "counter_large",
+   "asset": "anti_air_halftrack",
+   "brief": "A half-track in side view carrying twin anti-aircraft guns pointed upward.",
+   "build": "0.3.4",
+   "size": [
+    152,
+    42
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/counter_large/anti_air_halftrack.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "counter_large",
+   "asset": "assault_rifle_infantry",
+   "brief": "A standing infantryman in side view with a helmet and an assault rifle held at the ready.",
+   "build": "0.3.6",
+   "size": [
+    152,
+    42
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/counter_large/assault_rifle_infantry.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "counter_large",
+   "asset": "cold_war_mbt",
+   "brief": "A post-war main battle tank in side view, long gun, low turret and six road wheels.",
+   "build": "0.3.4",
+   "size": [
+    152,
+    42
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/counter_large/cold_war_mbt.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "counter_large",
+   "asset": "mechanised_apc",
+   "brief": "A tracked armoured personnel carrier in side view, boxy hull and a small roof machine gun.",
+   "build": "0.3.4",
+   "size": [
+    152,
+    42
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/counter_large/mechanised_apc.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "counter_large",
+   "asset": "motorised_truck",
+   "brief": "A six-wheeled military truck in side view with a canvas-covered cargo bed.",
+   "build": "0.3.4",
+   "size": [
+    152,
+    42
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/counter_large/motorised_truck.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "counter_large",
+   "asset": "naval_destroyer",
+   "brief": "A destroyer warship in side view with two gun turrets, a mast and a single funnel.",
+   "build": "0.3.4",
+   "size": [
+    152,
+    42
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/counter_large/naval_destroyer.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
+   "family": "counter_large",
+   "asset": "self_propelled_artillery",
+   "brief": "A self-propelled howitzer in side view, tracked hull and a long barrel raised at an angle.",
+   "build": "0.3.4",
+   "size": [
+    152,
+    42
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tno/counter_large/self_propelled_artillery.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tno",
    "family": "gui_texture",
    "asset": "terminal_button_wide",
    "brief": "A wide button. In TNO's style: near-black navy panel with 1 px teal and green lines, terminal look, no ornament.",
