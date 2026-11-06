@@ -39,10 +39,15 @@ impl Engine {
             return Err(EngineError::invalid("override_reason is only used with override_vanilla_check: true"));
         }
         let artifact = self.artifact(&p.target)?;
-        let profile = self.profile_of(&artifact)?;
+        let profile = &self.profile_of(&artifact)?;
         let (bytes, sha) = self.read_artifact(&artifact)?;
         let (img, _) = decode(&bytes, Some(&artifact.path), DecodeLimits::default())?;
-        let vanilla_check = self.vanilla_check(artifact.family, &img);
+        let vanilla_check = self.reference_check(&artifact, &img);
+        // a style pack's art is measured against the pack's references, any other against vanilla's
+        let against = match vanilla_check.get("reference_set").and_then(|s| s.get("pack")).and_then(Value::as_str) {
+            Some(name) => format!("the style pack '{name}' references of its family"),
+            None => "the family's vanilla art".to_string(),
+        };
         let vanilla_status = vanilla_check.get("status").and_then(Value::as_str).unwrap_or("unavailable").to_string();
         let vanilla_override = override_on.then(|| json!({"reason": override_reason, "status_overridden": vanilla_status}));
         let rubric_id = profile.imagegen.rubric.clone();
@@ -61,7 +66,7 @@ impl Engine {
                 .filter_map(|e| serde_json::from_value::<ValidatedRecord>(e.data.clone()).ok())
                 .next_back();
             match latest_validation {
-                Some(v) if v.family != artifact.family || v.check_set_hash != self.gate_expect(artifact.family)?.check_set_hash => {
+                Some(v) if v.family != artifact.family || v.check_set_hash != self.gate_expect(profile).check_set_hash => {
                     return Err(EngineError::refused(
                         "review_needs_validation",
                         "the last validation did not run the full check set of this artifact's family; validate it again before approving",
@@ -117,7 +122,7 @@ impl Engine {
                     return Err(EngineError::refused(
                         "review_needs_vanilla_preview",
                         format!(
-                            "no preview of this exact file showed it beside the family's vanilla references{why}. Run hoi4.image_preview again and compare it with the vanilla side-by-side sheet before approving, or approve a deliberate mod style with override_vanilla_check and an override_reason"
+                            "no preview of this exact file showed it beside {against}{why}. Run hoi4.image_preview again and compare it with the vanilla side-by-side sheet before approving, or approve a deliberate mod style with override_vanilla_check and an override_reason"
                         ),
                         RetryClass::RefreshPreconditions,
                     )
@@ -136,7 +141,7 @@ impl Engine {
                         return Err(EngineError::refused(
                             "review_vanilla_mismatch",
                             format!(
-                                "the file does not measure like the family's vanilla art, so it cannot be approved: {what}. Fix the art or its processing (see the vanilla side-by-side sheet), or approve a deliberate mod style with override_vanilla_check and an override_reason. Use verdict changes_requested if the art needs another round"
+                                "the file does not measure like {against}, so it cannot be approved: {what}. Fix the art or its processing (see the vanilla side-by-side sheet), or approve a deliberate mod style with override_vanilla_check and an override_reason. Use verdict changes_requested if the art needs another round"
                             ),
                             RetryClass::RefreshPreconditions,
                         )

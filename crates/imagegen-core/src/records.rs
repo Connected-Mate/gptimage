@@ -38,6 +38,8 @@ pub mod kind {
     pub const REFERENCE: &str = "reference";
     /// A style profile was saved.
     pub const STYLE: &str = "style_saved";
+    /// A style pack was saved or imported.
+    pub const PACK: &str = "pack_saved";
 }
 
 /// Which profile and file a record was made against.
@@ -49,6 +51,10 @@ pub struct ProfileRef {
     pub hash: String,
     /// SHA-256 of the kit `profiles.json` that fed it, when one did.
     pub kit_sha256: Option<String>,
+    /// The style pack applied to the profile, when one was. Later steps apply the same pack again, so the effective
+    /// profile (canvas, processing switches, checks) is the one the plan used. Not written when unset.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub style_pack: Option<String>,
 }
 
 /// A reference as recorded.
@@ -136,6 +142,9 @@ pub struct CandidateRecord {
     pub usage: Option<Value>,
     /// Note the provider attached (for example a safety message).
     pub note: Option<String>,
+    /// The sub-family the plan drew references and its form note from (absent before 0.3.4 and for imports).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub subfamily: Option<String>,
 }
 
 /// An engine-level finishing stage that ran (a template composite, a face crop, the flag sizes).

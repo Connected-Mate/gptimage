@@ -20,6 +20,11 @@
 //! were measured on HOI4 1.19.4.1 against the hand-labelled cases in `tests/fixtures/vanilla_match/`; the test
 //! in `tests/vanilla_match.rs` records each family's vanilla pass rate.
 //!
+//! A family whose vanilla art is one consistent palette can add palette features of its own, with a narrower range
+//! ([`family_checks`]): agency upgrades check their saturation, value and gold tones, so a saturated, warm painted
+//! medallion that the general features passed is refused, and the four portrait families check the backdrop in the top
+//! corners against their own vanilla files. The version is `vanilla_match_v2` since that change.
+//!
 //! Everything is a pure function of pixels and the vanilla files, so a check repeats exactly. The vanilla files
 //! are read from the installed game and are never copied anywhere.
 
@@ -33,7 +38,7 @@ use crate::pixels::Rgba;
 use crate::resize::resize_lanczos3;
 
 /// Version of the features and the calibration rule. Recorded with every check, so a later change is visible.
-pub const VERSION: &str = "vanilla_match_v1";
+pub const VERSION: &str = "vanilla_match_v2";
 
 /// Lower and upper percentile of the accepted range.
 pub const RANGE_PERCENTILES: (f64, f64) = (0.01, 0.99);
@@ -51,7 +56,7 @@ pub const MAX_FILES: usize = 400;
 pub const MAX_SIDE: u32 = 160;
 
 /// Number of features.
-pub const N: usize = 26;
+pub const N: usize = 29;
 
 /// Feature names, in vector order.
 pub const NAMES: [&str; N] = [
@@ -81,6 +86,9 @@ pub const NAMES: [&str; N] = [
     "ellipse_fill",
     "warm_metal_share",
     "rim_warm_metal_share",
+    "backdrop_lightness",
+    "backdrop_yellow",
+    "backdrop_glow",
 ];
 
 /// The features that can fail a candidate: form (coverage, background fill, size, position, aspect, the fills of the
@@ -101,6 +109,44 @@ pub const CHECKED: [&str; 13] = [
     "mid_tone_share",
     "saturation_mean",
 ];
+
+/// A palette feature checked for one family only: its name, the share of the percentile range added on each side (in
+/// place of [`RANGE_WIDENING`]) and the percentiles of that range (in place of [`RANGE_PERCENTILES`]).
+pub type FamilyCheck = (&'static str, f64, (f64, f64));
+
+/// Palette features checked for one family only. The general palette features are left unchecked because the art
+/// labelled good differs from vanilla in them, but where a family's vanilla art is one consistent palette or backdrop,
+/// a candidate far from it is the wrong medium. Measured on HOI4 1.19.4.1:
+///
+/// * `agency_upgrade`: vanilla's 15 upgrades are muted vignettes, mean saturation 0.115 to 0.402 (median 0.249), mean
+///   value 0.239 to 0.518 (median 0.423), gold and bronze tones on 0 to 0.399 of the disc (median 0.106). With the
+///   general widening the saturation range ran from -0.017 to 0.541, so a saturated, warm painted medallion passed.
+///   A quarter of the percentile range on each side keeps every vanilla file inside and refuses it: saturation 0.053
+///   to 0.471, value 0.179 to 0.586, gold tones up to 0.476.
+/// * Portraits, the backdrop in the top corners. Leaders and commanders (one pale cream-grey template, yellow 8.5 in
+///   the median, about one file in twenty a special dark or patterned backdrop): the yellow-blue tone with 0.65 of the
+///   percentile range, -10.7 to 27.1, which keeps every vanilla file and refuses the scientists' blue-grey (-14.4).
+///   Their lightness spreads over the special portraits and is checked with the general rule. Scientists (217 files of
+///   one pale blue-grey template, lightness 66.0 and yellow -14.4 in the median, but three special ones down to
+///   lightness 19.5): their whole range widened by a tenth, so every vanilla file passes (lightness 14.5 to 74.6, yellow
+///   -16.5 to 8.7) and the leaders' cream (lightness 89.8) does not. Operatives (La Resistance's 163 files, corners 11.9 lightness, 5.3 yellow): their whole
+///   range widened by a quarter, which refuses the leaders' cream and the scientists' blue-grey, and the light
+///   behind the figure (`backdrop_glow`, 17.1 to 29.2, checked 14.2 to 32.2), which refuses a dark but evenly lit backdrop.
+pub fn family_checks(family: Family) -> &'static [FamilyCheck] {
+    match family {
+        Family::AgencyUpgrade => {
+            &[("saturation_mean", 0.25, RANGE_PERCENTILES), ("value_mean", 0.25, RANGE_PERCENTILES), ("warm_metal_share", 0.25, RANGE_PERCENTILES)]
+        }
+        Family::LeaderPortrait | Family::CommanderPortrait => {
+            &[("backdrop_lightness", RANGE_WIDENING, RANGE_PERCENTILES), ("backdrop_yellow", 0.65, RANGE_PERCENTILES)]
+        }
+        Family::ScientistPortrait => &[("backdrop_lightness", 0.1, (0.0, 1.0)), ("backdrop_yellow", 0.1, (0.0, 1.0))],
+        Family::OperativePortrait => {
+            &[("backdrop_lightness", 0.25, (0.0, 1.0)), ("backdrop_yellow", 0.25, (0.0, 1.0)), ("backdrop_glow", 0.25, (0.0, 1.0))]
+        }
+        _ => &[],
+    }
+}
 
 /// What each feature means, for messages and the docs.
 pub const MEANINGS: [&str; N] = [
@@ -130,13 +176,16 @@ pub const MEANINGS: [&str; N] = [
     "share of the ellipse inscribed in the subject's box that is opaque (a plaque, disc or badge is near 1)",
     "share of visible pixels in gold or bronze tones (hue 20 to 60 degrees, saturation 0.25 to 0.9, value 0.35 or more)",
     "share of the subject's outer ring (opaque pixels within two pixels of a clear one) in gold or bronze tones (a metal rim)",
+    "mean CIE L* lightness of the two top corners (a tenth of the width, 7.5 percent of the height each): a portrait's backdrop",
+    "mean CIE b* of the two top corners, yellow above 0 and blue below: a portrait's backdrop, cream for leaders, blue-grey for scientists",
+    "CIE L* of the side edges at two thirds of the height (a tenth of the width each, 62 to 72 percent of the height) minus that of the top corners: the light behind a portrait's figure, high for an operative's spotlight",
 ];
 
 /// Smallest half-width of an accepted range, per feature. Keeps a family whose vanilla art is nearly uniform in a
 /// feature from refusing a rounding difference.
 const FLOOR: [f64; N] = [
     4.0, 3.0, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 2.0, 0.03, 0.05, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.08, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04,
-    0.04, 0.04,
+    0.04, 0.04, 4.0, 3.0, 4.0,
 ];
 
 /// The measured features of one image.
@@ -155,6 +204,64 @@ fn lightness(r: u8, g: u8, b: u8, lut: &[f64; 256]) -> f64 {
     let y = 0.212_672_9 * lut[usize::from(r)] + 0.715_152_2 * lut[usize::from(g)] + 0.072_175_0 * lut[usize::from(b)];
     let f = if y > 0.008_856 { y.cbrt() } else { 7.787 * y + 16.0 / 116.0 };
     116.0 * f - 16.0
+}
+
+/// The two top corners of an image, each a tenth of the width and 7.5 percent of the height (16 by 16 px on a 156x210
+/// portrait): where a portrait shows its backdrop beside the head.
+pub const BACKDROP_CORNER: (f64, f64) = (0.10, 0.075);
+
+/// Mean CIE L*a*b* of the opaque pixels (alpha 128 and up) in the two top corners, see [`BACKDROP_CORNER`]. `None`
+/// when no corner pixel is opaque.
+pub fn backdrop_lab(img: &Rgba) -> Option<[f64; 3]> {
+    let cw = ((f64::from(img.width) * BACKDROP_CORNER.0).round() as u32).max(1);
+    let ch = ((f64::from(img.height) * BACKDROP_CORNER.1).round() as u32).max(1);
+    let xs: Vec<u32> = (0..cw.min(img.width)).chain(img.width.saturating_sub(cw)..img.width).collect();
+    mean_lab(img, 0..ch.min(img.height), &xs)
+}
+
+/// The side edges at two thirds of a portrait's height: a tenth of the width at each side, 62 to 72 percent of the
+/// height, beside the shoulders, where the light behind the figure shows.
+pub const BACKDROP_GLOW_BAND: (f64, f64, f64) = (0.10, 0.62, 0.72);
+
+/// Mean CIE L*a*b* of the opaque pixels in the side band [`BACKDROP_GLOW_BAND`]. `None` when none is opaque.
+pub fn glow_band_lab(img: &Rgba) -> Option<[f64; 3]> {
+    let cw = ((f64::from(img.width) * BACKDROP_GLOW_BAND.0).round() as u32).max(1);
+    let y0 = (f64::from(img.height) * BACKDROP_GLOW_BAND.1).round() as u32;
+    let y1 = ((f64::from(img.height) * BACKDROP_GLOW_BAND.2).round() as u32).max(y0 + 1).min(img.height);
+    let xs: Vec<u32> = (0..cw.min(img.width)).chain(img.width.saturating_sub(cw)..img.width).collect();
+    mean_lab(img, y0..y1, &xs)
+}
+
+/// How much lighter the side band at two thirds of the height is than the top corners, in CIE L*
+/// ([`glow_band_lab`] minus [`backdrop_lab`]). Vanilla's operative portraits sit in a soft light behind the figure,
+/// so it is high for them, and it is below zero for the evenly lit or top-lit leader and scientist backdrops.
+pub fn backdrop_glow(img: &Rgba) -> Option<f64> {
+    Some(glow_band_lab(img)?[0] - backdrop_lab(img)?[0])
+}
+
+fn mean_lab(img: &Rgba, ys: std::ops::Range<u32>, xs: &[u32]) -> Option<[f64; 3]> {
+    let lut = srgb_lut();
+    let (mut s, mut n) = ([0f64; 3], 0f64);
+    for y in ys {
+        for &x in xs {
+            let p = img.px(x, y);
+            if p[3] < 128 {
+                continue;
+            }
+            let lin = |c: u8| lut[usize::from(c)];
+            let (r, g, b) = (lin(p[0]), lin(p[1]), lin(p[2]));
+            let xx = (0.412_456_4 * r + 0.357_576_1 * g + 0.180_437_5 * b) / 0.950_47;
+            let yy = 0.212_672_9 * r + 0.715_152_2 * g + 0.072_175_0 * b;
+            let zz = (0.019_333_9 * r + 0.119_192_0 * g + 0.950_304_1 * b) / 1.088_83;
+            let f = |t: f64| if t > 0.008_856 { t.cbrt() } else { 7.787 * t + 16.0 / 116.0 };
+            let (fx, fy, fz) = (f(xx), f(yy), f(zz));
+            s[0] += 116.0 * fy - 16.0;
+            s[1] += 500.0 * (fx - fy);
+            s[2] += 200.0 * (fy - fz);
+            n += 1.0;
+        }
+    }
+    (n > 0.0).then(|| s.map(|v| v / n))
 }
 
 /// Twice the signed area of the triangle o, a, b.
@@ -421,6 +528,8 @@ pub fn measure(src: &Rgba) -> Option<Features> {
             }
         }
     }
+    let backdrop = backdrop_lab(img).map_or([0.0, 0.0], |c| [c[0], c[2]]);
+    let glow = backdrop_glow(img).unwrap_or(0.0);
     let band_end = y0 + ((y1 - y0) / 5).max(1);
     let (mut band_sat, mut band_n) = (0f64, 0u64);
     for y in y0..band_end {
@@ -459,6 +568,9 @@ pub fn measure(src: &Rgba) -> Option<Features> {
         if in_ellipse == 0 { 1.0 } else { in_ellipse_solid as f64 / in_ellipse as f64 },
         warm_n as f64 / c,
         if ring == 0 { 0.0 } else { ring_warm as f64 / ring as f64 },
+        backdrop[0],
+        backdrop[1],
+        glow,
     ])
 }
 
@@ -540,8 +652,10 @@ pub fn calibrate(family: Family, rows: &[Features]) -> Option<Calibration> {
     for d in 0..N {
         let mut col: Vec<f64> = rows.iter().map(|r| r[d]).collect();
         col.sort_by(f64::total_cmp);
-        let (plo, p50, phi) = (quantile(&col, RANGE_PERCENTILES.0), quantile(&col, 0.5), quantile(&col, RANGE_PERCENTILES.1));
-        let pad = RANGE_WIDENING * (phi - plo);
+        let extra = family_checks(family).iter().find(|(n, _, _)| *n == NAMES[d]);
+        let (widening, (qlo, qhi)) = extra.map_or((RANGE_WIDENING, RANGE_PERCENTILES), |(_, w, q)| (*w, *q));
+        let (plo, p50, phi) = (quantile(&col, qlo), quantile(&col, 0.5), quantile(&col, qhi));
+        let pad = widening * (phi - plo);
         let (mut lo, mut hi) = (plo - pad, phi + pad);
         let mid = (lo + hi) / 2.0;
         if hi - lo < 2.0 * FLOOR[d] {
@@ -553,10 +667,41 @@ pub fn calibrate(family: Family, rows: &[Features]) -> Option<Calibration> {
             min: round(lo),
             max: round(hi),
             median: round(p50),
-            checked: CHECKED.contains(&NAMES[d]),
+            checked: CHECKED.contains(&NAMES[d]) || extra.is_some(),
         });
     }
     Some(Calibration { family, version: VERSION.to_string(), files: rows.len(), ranges })
+}
+
+/// Fit ranges from a small set (a style pack's references): each feature's minimum to maximum, widened on each side
+/// by `widening` times that width, and never narrower than `floor_factor` times the feature's floor. `version` names
+/// the rule in the result. `None` with fewer than [`MIN_FILES`] rows. The median is reported as for [`calibrate`].
+pub fn calibrate_min_max(family: Family, rows: &[Features], widening: f64, floor_factor: f64, version: &str) -> Option<Calibration> {
+    if rows.len() < MIN_FILES {
+        return None;
+    }
+    let mut ranges = Vec::with_capacity(N);
+    for d in 0..N {
+        let mut col: Vec<f64> = rows.iter().map(|r| r[d]).collect();
+        col.sort_by(f64::total_cmp);
+        let (min, max) = (col[0], col[col.len() - 1]);
+        let pad = widening * (max - min);
+        let (mut lo, mut hi) = (min - pad, max + pad);
+        let mid = (lo + hi) / 2.0;
+        let floor = floor_factor * FLOOR[d];
+        if hi - lo < 2.0 * floor {
+            lo = mid - floor;
+            hi = mid + floor;
+        }
+        ranges.push(FeatureRange {
+            feature: NAMES[d].to_string(),
+            min: round(lo),
+            max: round(hi),
+            median: round(quantile(&col, 0.5)),
+            checked: CHECKED.contains(&NAMES[d]),
+        });
+    }
+    Some(Calibration { family, version: version.to_string(), files: rows.len(), ranges })
 }
 
 impl Calibration {

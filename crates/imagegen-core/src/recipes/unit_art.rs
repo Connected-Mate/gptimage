@@ -1137,6 +1137,65 @@ pub fn counter_strip(frame1: &Rgba, kind: UnitArtKind, marks: &[Mark]) -> Result
     Rgba::join_frames(&[first, nato_box(size, marks)])
 }
 
+/// The colour of a glyph kept in its own colours: the per-channel median of its opaque pixels (alpha 250 and up).
+/// White when the frame has none.
+pub fn glyph_colour(frame: &Rgba) -> [u8; 3] {
+    let mut ch: [Vec<u8>; 3] = [Vec::new(), Vec::new(), Vec::new()];
+    for p in frame.data.chunks_exact(4).filter(|p| p[3] >= 250) {
+        for c in 0..3 {
+            ch[c].push(p[c]);
+        }
+    }
+    if ch[0].is_empty() {
+        return [255, 255, 255];
+    }
+    let mut out = [0u8; 3];
+    for c in 0..3 {
+        ch[c].sort_unstable();
+        out[c] = ch[c][ch[c].len() / 2];
+    }
+    out
+}
+
+/// The counter strip of a style pack that keeps the art's own colours (`keep_colours`): frame 1 as it is, then
+/// vanilla's NATO box redrawn as an outline in the glyph's colour ([`glyph_colour`]): the box border and the symbol's
+/// marks in that colour, nothing filled and no shadow. The box sits where vanilla's does.
+pub fn outline_strip(frame1: &Rgba, kind: UnitArtKind, marks: &[Mark]) -> Result<Rgba> {
+    let size = match kind {
+        UnitArtKind::CounterLarge => BoxSize::Large,
+        UnitArtKind::CounterSmall => BoxSize::Small,
+        UnitArtKind::DivisionEmblem => return Err(Error::Invalid("a division symbol has one frame and no NATO box".into())),
+    };
+    let g = geometry(size);
+    if [frame1.width, frame1.height] != g.frame {
+        return Err(Error::Invalid(format!(
+            "frame 1 is {}x{}, the {} frame is {}x{}",
+            frame1.width,
+            frame1.height,
+            kind.as_str(),
+            g.frame[0],
+            g.frame[1]
+        )));
+    }
+    let colour = glyph_colour(frame1);
+    let plain = nato_box(size, &[]);
+    let marked = nato_box(size, marks);
+    let mut second = Rgba::new(g.frame[0], g.frame[1]);
+    for y in 0..g.frame[1] {
+        for x in 0..g.frame[0] {
+            let (p, m) = (plain.px(x, y), marked.px(x, y));
+            if p[3] != 255 {
+                continue;
+            }
+            let a = if p[0] == 0 { 1.0 } else { (1.0 - f64::from(m[0]) / f64::from(p[0])).clamp(0.0, 1.0) };
+            if a > 0.0 {
+                second.set_px(x, y, [colour[0], colour[1], colour[2], (a * 255.0).round() as u8]);
+            }
+        }
+    }
+    Rgba::join_frames(&[frame1.clone(), second])
+}
+
 // ------------------------------------------------------------------ material check
 
 /// Share of the glyph pixels of frame 1 that must lie on the kind's material for finished art to count as vanilla's.

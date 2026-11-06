@@ -62,10 +62,20 @@ On 2026-11-02 the server revoked every Codex sign-in on the maintainer's account
 - **Backoff.** A 429 starts a backoff of 30 seconds that doubles with every further 429, up to 5 minutes. It holds every slot.
 - **Fall back to one at a time.** A sign-out by the server (a 401, or an answer that says `token_revoked`), a 429, or the backend's usage-limit message drops the route to one request at a time on the whole machine. The reason and the time are recorded in `route-state.json` (`fallback`), so every process sees it. A caller that already holds a higher slot gives it up before its next request and waits for slot 0.
 - **When it ends.** Six hours after the last sign-out or rate limit. Every new one restarts the six hours. A new sign-in does not end it early.
+- **"Unable to verify model access".** Between 19:44 and 19:47 UTC on 2026-11-05 the backend answered "Unable to verify model access right now" three times across parallel slots, with successful requests in between. It comes as an error event in the stream or in an HTTP error body, and the match ignores case. It is a temporary condition, not a terminal bad request:
+  - The first answer fails that request with a retryable error. Its slot waits 60 seconds before its next request (`slot_pause` in `route-state.json`). The other slots keep running.
+  - A second answer within 15 minutes of the last one, from any slot or process, drops the route to one request at a time with the reason `model_access_unverified`, through the same mechanism and warning as above. It lasts one hour after that answer, not six, because the message looked like a passing hiccup and not a sign-out or a plan limit. Every further answer within 15 minutes of the last restarts the hour. It never cuts a longer fall back short.
+  - The count and the time of the last answer are recorded in `route-state.json` (`model_access`) and shown by `doctor`, `login-status` and `hoi4.image_status` (`chatgpt_login.route.model_access_unverified`, with the slots still paused).
 - **The warning.** While it holds, every generation from this route says so, in the image's notes or in the error. `hoi4-imagegen doctor`, `hoi4-imagegen login-status` and `hoi4.image_status` (`chatgpt_login.route.fallback` and `chatgpt_login.route.concurrency`) show it too. It reads like this:
 
   ```
   warning: the ChatGPT-login route dropped to one request at a time on this machine after a rate limit (http_429) at 2026-11-05T10:00:00Z; it goes back to several at a time after 2026-11-05T16:00:00Z if no new sign-out or rate limit arrives
+  ```
+
+  After two "Unable to verify model access" answers it reads:
+
+  ```
+  warning: the ChatGPT-login route dropped to one request at a time on this machine after the backend failing twice within 15 minutes to verify model access (model_access_unverified) at 2026-11-05T19:46:00Z; it goes back to several at a time after 2026-11-05T20:46:00Z if no new model-access error arrives
   ```
 - **The state file.** Several slot holders write `route-state.json` at once, so every read and every change of it happens under a short lock on `route-state.lock`. The file keeps the last request of each slot (`slot_last_request`). A file written by 0.3.2 or older still reads: its single `last_request_epoch` paces every slot until the slots have their own times.
 

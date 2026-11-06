@@ -50,6 +50,8 @@ The example is one focus icon. An AI client calls the tools below. Each is also 
 
    The reply is a plan: the prompt, the style references with their tier and reason, the provider and model, the cost estimate with its basis, the output paths and a `plan_id`. Read it. Nothing has been spent yet.
 
+   The style references depend on the brief. They come from the family's sub-family the brief points to (here none matches, so the whole focus family), leave out nation-specific art such as `focus_JAP_*` unless the brief names that country, and mix files whose names match the brief's theme with style-typical ones. The same brief always gets the same set. To pick the kind yourself, add `"subfamily": "army"` (`hoi4.image_families` lists each family's sub-families). To use only your own style images, pass them as `references` with the role `style_anchor`: they replace every automatic reference. Add `"style_mode": "add"` to keep the automatic ones beside them.
+
 3. **Approve.** Send the same request again with approval, or run the stored plan.
 
    ```json
@@ -84,6 +86,16 @@ The example is one focus icon. An AI client calls the tools below. Each is also 
 
 Install says "installed", not "verified in game". Start the game yourself to check how the icon looks.
 
+### Writing the brief
+
+The family's rules already describe vanilla's form, so the brief only names the subject. A few families need the subject chosen with their form in mind:
+
+* **Landmark buildings** (`building`). Keep the building compact and centred, at most about four times as wide as it is tall. Vanilla's widest landmark frame is 4.0 to 1, and the vanilla-match review refuses a wider strip. For a long subject such as a dam, a wall, a grain elevator or a palace, ask for it foreshortened, seen from an angle, or as its central part, for example "the central spillway section of the dam, seen at an angle". The tool already centres the building's box in the frame, but it cannot make a wide subject narrower without cutting its walls off, so the brief has to.
+* **Small icons** (a side of 40 px or less: decision, decision category icon, state modifier, raid, commander and personal traits). Name one bold object, not a scene: "a stick of dynamite", not "commandos in a dinghy". Avoid subjects that are thin lines (rails, wires, a bridge's arches) or groups of small figures. `GFX-SMALL-DETAIL` warns when the result is mostly thin lines.
+* **Agency upgrades** (`agency_upgrade`). Name one close-up, such as hands at a cipher machine, not a room full of objects. The tool cuts the round vignette and mutes the colours itself.
+* **MIO traits** (`mio_trait`). Name one plain object or symbol, such as a wrench or a shield. A detailed machine comes out as a dark painting, not vanilla's light, flat glyph.
+* **Portraits.** Leave the background out of the brief: each portrait family's rule already names its own vanilla backdrop, pale cream-grey for leaders and commanders, pale blue-grey for scientists and dark warm charcoal with a soft spotlight behind the figure for operatives. Describe a background only for a council or otherwise unusual portrait. `GFX-PORTRAIT-BACKDROP` warns when the backdrop is another family's.
+
 ## 4. Fix problems
 
 ### Sign-in and provider
@@ -116,10 +128,15 @@ Install says "installed", not "verified in game". Start the game yourself to che
 | The canvas is not what you expected | Run `hoi4.image_families { "family": "..." }`. The size is the vanilla default unless the mod's `.tools/gfx/profiles.json` or `[profiles.<family>]` overrides it. Fix the override or the file. `hoi4-imagegen calibrate` compares the table with the game |
 | `chain_steps_empty` or `chain_step_not_allowed` | Only four pre-steps are accepted, and an empty list is refused. Leave `pre_steps` out for none |
 | `GFX-STYLE-DRIFT` | A warning only. The art is far from the family's style. Look at the preview next to the references |
+| `GFX-NEAR-DUPLICATE` | A warning only. The frame and composition nearly repeat an earlier output of the family, which the message names. Plan again with a different brief or `subfamily`, or edit the frame |
 | Install refuses | The gate names the reason: validation missing or stale, no approving review of this exact file, or a hash that changed. Validate and review again |
 | `review_vanilla_mismatch` | The file does not measure like the family's vanilla art. The message lists each feature outside vanilla's range. Compare it with the vanilla side-by-side sheet and fix the art or its processing. Override only for a deliberate mod style |
+| `pack_reference_changed` or `pack_reference_missing` | A style pack's reference file changed or is gone since the pack was saved. Restore it, or save the pack again (`pack_save`, or `pack import --replace`) to pin the new file |
 | `review_needs_vanilla_preview` or `review_needs_vanilla_check` | The preview did not show the vanilla references, or the check cannot run. Usually the installed game was not found: set `HOI4_GAME_DIR`, preview again and review. Families without vanilla art (`gui_texture`, `super_event`, the animations) need an override |
 | A building has one frame | Frame 2 is the ruined state. Make it with `hoi4.image_edit` on the first candidate and pass it as `second_frame_candidate` to `hoi4.image_process` |
+| `review_vanilla_mismatch` on a building with `subject_aspect` above vanilla's range | The landmark is wider than any vanilla one. Plan again with a brief that shows it foreshortened, from an angle or as its central part (see [Writing the brief](#writing-the-brief)) |
+| `GFX-SMALL-DETAIL` | A warning only. The small icon is mostly thin lines or small parts and may not read at native size. Look at the native-size preview, and if it does not read, plan again with one bold object |
+| `GFX-PORTRAIT-BACKDROP` | A warning only. The portrait's backdrop is far from its family's vanilla backdrop, often another portrait family's. Unless the portrait is meant to be unusual, plan again without a background in the brief |
 
 ### Windows and keychain
 
@@ -132,14 +149,86 @@ Install says "installed", not "verified in game". Start the game yourself to che
 
 ### Where things are
 
-* Project state is in `.hoi4-imagegen/`: `config.toml`, `styles/`, plans, `ledger.jsonl` and records. The ledger is an append-only list of every reference, setting, hash, reviewer and output. `hoi4.image_ledger` reads it.
+* Project state is in `.hoi4-imagegen/`: `config.toml`, `styles/`, style packs in `packs/`, plans, `ledger.jsonl` and records. The ledger is an append-only list of every reference, setting, hash, reviewer and output. `hoi4.image_ledger` reads it.
 * Working files are in `docs/assets/<feature>/`: source, processed images, prompts, contact sheets and `gfx_handoff.md`.
 * The server writes no log file. Its standard error carries messages for a person, and your AI client shows them in its MCP log.
 * `HOI4_IMAGEGEN_CHATGPT_CONCURRENCY` sets how many ChatGPT-login requests run at once on the machine, 1 to 6 (default 3). The slot locks and `route-state.json` are in your user data folder, next to the sign-in.
 * `HOI4_IMAGEGEN_RECORD_RESPONSES=<folder>` saves each raw ChatGPT-backend response. Use it only to make a fixture, and read the files before sharing them.
 * Your sign-in and risk-note record are in your user data folder, never in the project.
 
-## 5. Before you publish a mod
+## 5. Make a style pack for a mod with its own look
+
+A style pack gives every family the mod restyles its own references, look line, form, canvas and processing (see [style packs](reference.md#style-packs)). The example is a mod like The New Order (TNO), whose interface is a teal terminal and whose events are upright prints and tall press strips.
+
+1. **Pick the references.** Gather about 8 images per family from the mod's own files, the ones that show its look best and are not near-copies of vanilla. Put them in a folder with one sub-folder per family id:
+
+   ```
+   my-refs/
+     gallery-plan.json          optional: {"families": {"decision": {"look": "..."}, ...}}
+     decision/
+       references.json          optional: {"references": [{"ref": "a.png", "tno_path": "gfx/..."}]}
+       look.txt                 optional: one line, the look
+       a.png  b.png  ...
+     gui_texture/
+       references.json          {"references": [{"ref": "p1.png", "texture_kind": "panel"}, ...]}
+       p1.png ...
+   ```
+
+   Without `references.json` every image in the folder is used (a `contact-sheet.png` is skipped). The look comes from `look.txt`, else `references.json`, else `gallery-plan.json`. `--top-family focus` takes the images a top-level `manifest.json` lists as focus references.
+
+2. **Import it into the mod.** The images are copied into the mod under `.hoi4-imagegen/packs/<name>/` and pinned by SHA-256. The folder itself is only read.
+
+   ```
+   hoi4-imagegen --project-root path/to/mod pack import tno --from path/to/my-refs --top-family focus
+   ```
+
+   The reply lists each family, the warnings and a first validation. Its `suggested_canvas` lines name families whose references are another size than the family's canvas, for example `report_event: 6 of 8 references are 175x204`.
+
+3. **Set what differs from vanilla.** Edit `.hoi4-imagegen/packs/tno/pack.toml` (or save the pack with `hoi4.image_references` `pack_save`). Add a `canvas` where the mod's art has its own size, `form` lines where the mod's form differs, and the processing switches the mod needs. For TNO:
+
+   ```toml
+   [families.report_event]
+   canvas = [175, 204]
+   form = ["A black and white photograph on a white paper print, slightly tilted, on a transparent background, filling a {w}x{h} upright frame."]
+   processing = { upright_print = true }
+
+   [families.news_event]
+   canvas = [161, 420]
+
+   [families.counter_large]
+   form = ["One flat teal unit glyph seen from the side, filled, on a transparent background, with no box and no shading. Naval units in salmon red."]
+   processing = { keep_colours = true, crisp = true }
+
+   [families.technology]
+   canvas = [239, 117]
+   form = ["A blueprint panel that fills the whole {w}x{h} canvas: the equipment drawn in thin teal lines on dark navy, with its name in small teal capitals at the top left and thin guide lines."]
+   processing = { fill_canvas = true, crisp = true }
+
+   [families.decision]
+   processing = { crisp = true }
+
+   [families.commander_trait]
+   processing = { crisp = true }
+   ```
+
+   Keep the keys that are already in each family's table (`look` and the `references` list) and add these to it.
+
+4. **Check it.** `hoi4-imagegen pack validate tno` checks the hashes and the switches, warns about a switch without a form, and shows each family's checks, recipe and self-check (how many references pass ranges fitted on the others).
+
+5. **Use it.** Name it in a plan (`"style_pack": "tno"`, or `--style-pack tno` with `hoi4-imagegen plan`), or make it the project default in `.hoi4-imagegen/config.toml`:
+
+   ```toml
+   [defaults]
+   style_pack = "tno"
+   ```
+
+   Read `style_pack` in the plan: the entry that applied, the references sent and the switches. Families the pack does not cover keep the vanilla look. `"style_pack": "none"` plans one asset without the default.
+
+6. **Review against the pack.** The preview shows the pack's references beside the candidate, and the review measures the file against them (`reference_set` in the reply). A TNO-style image no longer needs an override for differing from vanilla.
+
+If you change a reference file, save the pack again to pin it: a plan refuses a changed file. Pack references are the mod's own art: keep them in the mod and do not share them beyond what the mod's own terms allow.
+
+## 6. Before you publish a mod
 
 * Disclose that AI-generated art was used. The ledger has provider, model, date and prompt for every asset.
 * Do not make likenesses of real people without thinking about personal rights. Prefer stylised or fictional portraits. Portrait and advisor prompts ask for an invented person who resembles no real historical figure, because the ChatGPT backend refuses a brief it reads as a likeness, such as a nation's president in the 1930s.

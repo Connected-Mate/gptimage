@@ -394,6 +394,9 @@ impl ChatGptLoginProvider {
                 guard.record_usage_limit(self.now_secs());
                 return Err(usage_limit_error(&format!("HTTP {s}")));
             }
+            _ if route::is_model_access_unverified(&String::from_utf8_lossy(&resp.body)) => {
+                return Err(self.model_access_error(guard));
+            }
             s => return Err(status_error(s, &resp.body, &secrets)),
         }
         let text = String::from_utf8_lossy(&resp.body);
@@ -405,6 +408,10 @@ impl ChatGptLoginProvider {
             if let Some(msg) = e.strip_prefix(BACKEND_ERROR_PREFIX).filter(|m| route::is_usage_limit(m)) {
                 guard.record_usage_limit(self.now_secs());
                 return Err(usage_limit_error(&short(msg)));
+            }
+            // the same message as an error event, or as the detail of a failed image call
+            if [BACKEND_ERROR_PREFIX, FAILED_PREFIX].iter().any(|p| e.strip_prefix(p).is_some_and(route::is_model_access_unverified)) {
+                return Err(self.model_access_error(guard));
             }
         }
         let outcome = parse_sse(&text).map_err(|e| {
@@ -457,6 +464,29 @@ impl ChatGptLoginProvider {
                 job: None,
             }),
         ))
+    }
+
+    /// The backend said "Unable to verify model access" (a transient answer, 2026-11-05). Nothing was made. This slot
+    /// pauses before its next request, and a second one within 15 minutes drops the route to one request at a time.
+    fn model_access_error(&self, guard: &RouteGuard) -> ProviderError {
+        let hit = guard.record_model_access(self.now_secs());
+        let again = if hit.fallback {
+            format!(
+                "; it happened again within {} minutes, so the route drops to one request at a time for {} minutes",
+                route::MODEL_ACCESS_WINDOW_SECS / 60,
+                route::MODEL_ACCESS_HOLD_SECS / 60
+            )
+        } else {
+            String::new()
+        };
+        ProviderError::new(
+            ErrorKind::ServerError,
+            RetryClass::SafeSameInputs,
+            format!(
+                "the ChatGPT backend could not verify model access right now (\"Unable to verify model access\"), so no image was made; this is temporary and the same request can be retried. This slot waits {} seconds before its next request{again}",
+                route::MODEL_ACCESS_PAUSE_SECS
+            ),
+        )
     }
 
     /// Save the raw response for fixtures when [`RECORD_ENV`] names a folder. Never fails the call.

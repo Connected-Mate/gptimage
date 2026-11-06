@@ -127,7 +127,7 @@ impl Engine {
             })
             .collect();
         let pinned = self.pinned_style_for(prof.family, None);
-        let resolved = self.resolve_style(prof, pinned.as_ref(), imagegen_core::stylesrc::DEFAULT_SEND, true, None);
+        let resolved = self.resolve_style(prof, pinned.as_ref(), imagegen_core::stylesrc::DEFAULT_SEND, true, None, None);
         json!({
             "style_profiles": styles,
             "reference_dirs": dirs,
@@ -158,6 +158,14 @@ impl Engine {
                 "mod_override": {"origin": prof.origin, "overridden": prof.overridden, "differs_from_vanilla": prof.differs_from_vanilla(), "vanilla_canvas": prof.vanilla.as_ref().map(|x| x.canvas)},
                 "evidence": prof.source,
             });
+            // the kinds the family's vanilla art splits into (data/subfamilies.json), for the subfamily parameter
+            if let Some(f) = imagegen_core::subfamily::for_family(prof.family) {
+                v["subfamilies"] = json!(f
+                    .subfamilies
+                    .iter()
+                    .map(|s| json!({"id": s.id, "files": s.files, "examples": s.examples, "style_groups": s.style_groups.len(), "form_note": s.form_note}))
+                    .collect::<Vec<_>>());
+            }
             if full {
                 v["measured"] = json!({
                     "game_version": measured.game_version(),
@@ -229,7 +237,7 @@ impl Engine {
                 self.collect_reference_files("references", 0, &mut files)?;
                 let recorded: Vec<Value> = self.ledger.entries()?.into_iter().filter(|e| e.kind == kind::REFERENCE).map(|e| e.data).collect();
                 Ok(
-                    json!({"files": files, "recorded": recorded, "styles": style::list(&self.fs)?, "note": "Put approved reference images under references/. References are also chosen automatically from the mod first, then vanilla (see hoi4.image_families for a family). Paradox art may be sent to a provider and its origin is recorded."}),
+                    json!({"files": files, "recorded": recorded, "styles": style::list(&self.fs)?, "packs": imagegen_core::pack::list(&self.fs)?, "note": "Put approved reference images under references/. References are also chosen automatically from the mod first, then vanilla (see hoi4.image_families for a family). Paradox art may be sent to a provider and its origin is recorded."}),
                 )
             }
             ReferencesAction::Add | ReferencesAction::Approve => {
@@ -281,6 +289,13 @@ impl Engine {
                 )?;
                 Ok(json!({"saved": rel, "style": s}))
             }
+            ReferencesAction::PackList => self.pack_list(),
+            ReferencesAction::PackGet => self.pack_get(&need(&p.name, "name")?),
+            ReferencesAction::PackSave => {
+                let pack = p.pack.clone().ok_or_else(|| EngineError::invalid("pack is required for pack_save"))?;
+                self.save_pack(pack, p.replace.unwrap_or(false))
+            }
+            ReferencesAction::PackValidate => self.pack_validate(&need(&p.name, "name")?),
         }
     }
 

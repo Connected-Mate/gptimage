@@ -49,7 +49,7 @@ You ask your agent for an asset. HOI4 Imagegen plans the job, shows the cost, ca
 * **Measured from the game.** Sizes come from the installed HOI4 1.19.4.1, not from guesses. A focus icon is 100x88, a news picture 397x153, a flag 82x52.
 * **Processing cannot be skipped.** Each family has a fixed chain that the tool appends itself.
 * **Install is gated.** Validation passed, a review approved this exact file, and nothing changed since. Nothing is overwritten and nothing leaves the mod project.
-* **Style from your mod first.** A plan picks style references from your own pinned styles and assets, then the kit's shelf, then vanilla art.
+* **Style from your mod first.** A plan picks style references from your own pinned styles and assets, then the kit's shelf, then vanilla art. A [style pack](docs/reference.md#style-packs) carries a mod's own house style across every family it restyles.
 
 ## Examples
 
@@ -112,7 +112,7 @@ There are 21 tools. Seven plan families by group, and each takes a required `fam
 | `hoi4.image_unit` | Counters, division emblems, buildings, faction and agency logos |
 | `hoi4.image_interface` | Modifier icons, GUI textures, super events |
 | `hoi4.image_animation` | 4 animated sprite families (`frameAnimatedSpriteType`): a pulsing blend glow, blended key frames, a scrolling strip and a turning icon. One base frame is generated and the other frames are derived from it, so they stay consistent |
-| `hoi4.image_status`, `hoi4.image_families`, `hoi4.image_references` | Providers and setup, the family catalogue, reference images and style profiles |
+| `hoi4.image_status`, `hoi4.image_families`, `hoi4.image_references` | Providers and setup, the family catalogue, reference images, style profiles and style packs |
 | `hoi4.image_generate`, `hoi4.image_edit` | Run a stored plan, refine a candidate |
 | `hoi4.image_process`, `hoi4.image_validate`, `hoi4.image_preview`, `hoi4.image_review` | Processing chain, checks, contact sheet, visual review |
 | `hoi4.image_install`, `hoi4.image_ledger`, `hoi4.image_cancel` | The gated install, provenance, cancel and recover |

@@ -21,6 +21,7 @@
 //! | Raid icon gold gradient and outline | Rust only, fitted to vanilla | [`raid`] |
 //! | Doctrine black units, pale outline and glow | Rust only, fitted to vanilla | [`doctrine`] |
 //! | Technology tier numeral and gem | Rust only, fitted to vanilla | [`tech_overlay`] |
+//! | Agency upgrade round vignette (disc, muted palette, darkened edge) | Rust only, fitted to vanilla | [`vignette`] |
 //!
 //! `convert_to_dds.py` is already [`crate::dds::write_a8r8g8b8`].
 
@@ -42,3 +43,4 @@ pub mod report_card;
 pub mod strip;
 pub mod tech_overlay;
 pub mod unit_art;
+pub mod vignette;

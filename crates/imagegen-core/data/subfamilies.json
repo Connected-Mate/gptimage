@@ -1,0 +1,2701 @@
+{
+  "game_version": "1.19.4.1",
+  "method": "files: the family's vanilla texture folders and name rules; group: the theme of the file name and folder tokens (refselect::THEMES, subfamily::GROUPS), groups under 8 files count as other; measured: the vanilla-match sample of up to 400 files; style groups: deterministic k-medoids of the style descriptors, one group per 10 measured files, at most 8",
+  "families": [
+    {
+      "family": "focus",
+      "files": 2761,
+      "subfamilies": [
+        {
+          "id": "naval",
+          "files": 101,
+          "examples": [
+            "focus_ARG_navy.dds",
+            "focus_JAP_isolate_oceania.dds",
+            "focus_SIA_use_ships_as_generators.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "focus_PHI_philippine_naval_patrol.dds",
+              "size": 15
+            }
+          ],
+          "measured": {
+            "images": 15,
+            "framed_share": 0.533,
+            "loose_share": 0.467,
+            "saturation_mean": 0.372,
+            "warm_metal_share": 0.23
+          },
+          "form_note": "Vanilla national focus icon naval files: about 5 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 5 in 10 an open, loose subject, in strong colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "air",
+          "files": 55,
+          "examples": [
+            "focus_ARG_air_force.dds",
+            "focus_NORDIC_dem_capstone_airforce.dds",
+            "focus_PRC_establish_pla_air_force.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "focus_SWE_marauder_bombers.dds",
+              "size": 4
+            }
+          ],
+          "measured": {
+            "images": 4,
+            "framed_share": 0.0,
+            "loose_share": 1.0,
+            "saturation_mean": 0.286,
+            "warm_metal_share": 0.18
+          },
+          "form_note": "Vanilla national focus icon air files: nearly all are an open, loose subject with no frame, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "industry",
+          "files": 85,
+          "examples": [
+            "focus_AFG_sugar_factory.dds",
+            "focus_IRQ_construct_the_kut_barrage.dds",
+            "focus_SOV_the_road_of_life.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "focus_POL_romania_bridgehead_strategy.dds",
+              "size": 13
+            }
+          ],
+          "measured": {
+            "images": 13,
+            "framed_share": 0.923,
+            "loose_share": 0.077,
+            "saturation_mean": 0.247,
+            "warm_metal_share": 0.153
+          },
+          "form_note": "Vanilla national focus icon industry files: about 9 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 1 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "economy",
+          "files": 111,
+          "examples": [
+            "focus_AFG_a_modern_economy.dds",
+            "focus_GER_the_swiss_gold.dds",
+            "focus_PRC_establish_shorter_market_plans.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "focus_JAP_further_urban_investments.dds",
+              "size": 17
+            }
+          ],
+          "measured": {
+            "images": 17,
+            "framed_share": 0.824,
+            "loose_share": 0.176,
+            "saturation_mean": 0.328,
+            "warm_metal_share": 0.183
+          },
+          "form_note": "Vanilla national focus icon economy files: about 8 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 2 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "research",
+          "files": 44,
+          "examples": [
+            "focus_AFG_education_reform.dds",
+            "focus_JAP_f_go_nuclear_project.dds",
+            "focus_POL_nationalist_education.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "focus_PER_imperial_funded_universities.dds",
+              "size": 8
+            }
+          ],
+          "measured": {
+            "images": 8,
+            "framed_share": 0.625,
+            "loose_share": 0.375,
+            "saturation_mean": 0.324,
+            "warm_metal_share": 0.163
+          },
+          "form_note": "Vanilla national focus icon research files: about 6 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 4 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "intelligence",
+          "files": 11,
+          "examples": [
+            "focus_DEN_sovaernets_operative_kommando.dds",
+            "focus_POL_expand_polish_intelligence.dds",
+            "focus_generic_secret_service_agency.dds"
+          ],
+          "style_groups": [],
+          "measured": null,
+          "form_note": null
+        },
+        {
+          "id": "politics",
+          "files": 257,
+          "examples": [
+            "focus_AFG_declare_a_republic.dds",
+            "focus_GER_propaganda_master.dds",
+            "focus_PRC_revolutionary_war_of_the_masses.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "focus_JAP_integrate_the_government_general.dds",
+              "size": 14
+            },
+            {
+              "medoid": "focus_FIN_the_finnish_throne.dds",
+              "size": 12
+            },
+            {
+              "medoid": "focus_CZE_army_reform.dds",
+              "size": 9
+            }
+          ],
+          "measured": {
+            "images": 35,
+            "framed_share": 0.571,
+            "loose_share": 0.429,
+            "saturation_mean": 0.385,
+            "warm_metal_share": 0.222
+          },
+          "form_note": "Vanilla national focus icon politics files: about 6 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 4 in 10 an open, loose subject, in strong colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "diplomacy",
+          "files": 104,
+          "examples": [
+            "focus_ARG_help_the_allies.dds",
+            "focus_INS_pledge_to_allies.dds",
+            "focus_generic_befriend_czechoslovakia.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "focus_generic_befriend_austria.dds",
+              "size": 14
+            }
+          ],
+          "measured": {
+            "images": 14,
+            "framed_share": 0.714,
+            "loose_share": 0.286,
+            "saturation_mean": 0.367,
+            "warm_metal_share": 0.14
+          },
+          "form_note": "Vanilla national focus icon diplomacy files: about 7 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 3 in 10 an open, loose subject, in strong colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "society",
+          "files": 46,
+          "examples": [
+            "focus_AFG_savior_of_the_holy_lands.dds",
+            "focus_GER_optimize_reich_labour_service.dds",
+            "focus_RAJ_union_busting.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "focus_COG_recognize_the_kimbanguist_church.dds",
+              "size": 2
+            }
+          ],
+          "measured": {
+            "images": 2,
+            "framed_share": 1.0,
+            "loose_share": 0.0,
+            "saturation_mean": 0.351,
+            "warm_metal_share": 0.206
+          },
+          "form_note": "Vanilla national focus icon society files: nearly all are a compact framed shape (a plaque, disc, shield or badge), in strong colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "army",
+          "files": 329,
+          "examples": [
+            "focus_AFG_border_guards.dds",
+            "focus_JAP_prepare_for_peninsular_war.dds",
+            "focus_attack_soviet.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "focus_spr_class_war.dds",
+              "size": 16
+            },
+            {
+              "medoid": "focus_generic_attack_bhutan.dds",
+              "size": 14
+            },
+            {
+              "medoid": "focus_BRA_defense_of_the_fatherland.dds",
+              "size": 11
+            },
+            {
+              "medoid": "focus_HABSBURG_offensive_hussars.dds",
+              "size": 9
+            },
+            {
+              "medoid": "focus_generic_attack_greece.dds",
+              "size": 6
+            }
+          ],
+          "measured": {
+            "images": 56,
+            "framed_share": 0.607,
+            "loose_share": 0.393,
+            "saturation_mean": 0.33,
+            "warm_metal_share": 0.177
+          },
+          "form_note": "Vanilla national focus icon army files: about 6 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 4 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "other",
+          "files": 1618,
+          "examples": [
+            "focus_AFG_adopt_nufus.dds",
+            "focus_FIN_finnish_supremacy_in_the_north.dds",
+            "focus_PER_special_forces_program.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "focus_FIN_motti_tactics.dds",
+              "size": 38
+            },
+            {
+              "medoid": "focus_PHI_anti_intervention_strategies.dds",
+              "size": 37
+            },
+            {
+              "medoid": "focus_PRC_stoke_the_flames.dds",
+              "size": 33
+            },
+            {
+              "medoid": "focus_PER_push_to_mountains.dds",
+              "size": 29
+            },
+            {
+              "medoid": "focus_CHI_a_second_empire_of_china.dds",
+              "size": 27
+            },
+            {
+              "medoid": "focus_GER_schutztruppe.dds",
+              "size": 24
+            },
+            {
+              "medoid": "focus_PER_special_forces_program.dds",
+              "size": 24
+            },
+            {
+              "medoid": "focus_PRC_appoint_xiao_jianguang.dds",
+              "size": 24
+            }
+          ],
+          "measured": {
+            "images": 236,
+            "framed_share": 0.61,
+            "loose_share": 0.39,
+            "saturation_mean": 0.342,
+            "warm_metal_share": 0.191
+          },
+          "form_note": "Vanilla national focus icon files that match no theme: about 6 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 4 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        }
+      ]
+    },
+    {
+      "family": "idea_spirit",
+      "files": 1036,
+      "subfamilies": [
+        {
+          "id": "naval",
+          "files": 39,
+          "examples": [
+            "idea_ARG_arsenal_naval_buenos_aires.dds",
+            "idea_GER_navy.dds",
+            "idea_bul_bulgarian_shipping_chamber.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "idea_SOV_shipyard_staff_purged.dds",
+              "size": 18
+            }
+          ],
+          "measured": {
+            "images": 18,
+            "framed_share": 0.389,
+            "loose_share": 0.611,
+            "saturation_mean": 0.307,
+            "warm_metal_share": 0.134
+          },
+          "form_note": "Vanilla idea and national spirit picture naval files: about 4 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 6 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "air",
+          "files": 34,
+          "examples": [
+            "idea_ARG_air_force.dds",
+            "idea_JAP_air_services.dds",
+            "idea_SWE_marauder_bombers.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "idea_generic_air_fighter.dds",
+              "size": 12
+            }
+          ],
+          "measured": {
+            "images": 12,
+            "framed_share": 0.417,
+            "loose_share": 0.583,
+            "saturation_mean": 0.366,
+            "warm_metal_share": 0.168
+          },
+          "form_note": "Vanilla idea and national spirit picture air files: about 4 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 6 in 10 an open, loose subject, in strong colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "industry",
+          "files": 33,
+          "examples": [
+            "idea_ARG_civilian_economy_boost.dds",
+            "idea_MAN_manchurian_industry.dds",
+            "idea_bul_nationalized_industry.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "idea_bul_national_industry.dds",
+              "size": 9
+            }
+          ],
+          "measured": {
+            "images": 9,
+            "framed_share": 0.556,
+            "loose_share": 0.444,
+            "saturation_mean": 0.307,
+            "warm_metal_share": 0.128
+          },
+          "form_note": "Vanilla idea and national spirit picture industry files: about 6 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 4 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "economy",
+          "files": 54,
+          "examples": [
+            "idea_AFG_economic_regionalism.dds",
+            "idea_FIN_finnish_federation_of_trade_unions_light.dds",
+            "idea_RAJ_external_investments.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "idea_POL_looming_peasants_strike.dds",
+              "size": 16
+            },
+            {
+              "medoid": "idea_INS_western_trade_idea.dds",
+              "size": 7
+            }
+          ],
+          "measured": {
+            "images": 23,
+            "framed_share": 0.522,
+            "loose_share": 0.478,
+            "saturation_mean": 0.296,
+            "warm_metal_share": 0.135
+          },
+          "form_note": "Vanilla idea and national spirit picture economy files: about 5 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 5 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "research",
+          "files": 8,
+          "examples": [
+            "idea_AUS_women_in_academia.dds",
+            "idea_PER_feat_of_engineering_idea.dds",
+            "idea_generic_radar.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "idea_generic_radar.dds",
+              "size": 4
+            }
+          ],
+          "measured": {
+            "images": 4,
+            "framed_share": 0.75,
+            "loose_share": 0.25,
+            "saturation_mean": 0.199,
+            "warm_metal_share": 0.106
+          },
+          "form_note": "Vanilla idea and national spirit picture research files: about 8 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 2 in 10 an open, loose subject, in muted, nearly grey colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "politics",
+          "files": 114,
+          "examples": [
+            "idea_AFG_communist_graduates.dds",
+            "idea_FIN_socialist_welfare.dds",
+            "idea_can_defence_of_canada_regulations_communism.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "idea_hun_hungarian_monarchy_democratic.dds",
+              "size": 16
+            },
+            {
+              "medoid": "idea_JAP_collapsing_government.dds",
+              "size": 12
+            },
+            {
+              "medoid": "idea_ARG_socialist_unification.dds",
+              "size": 10
+            },
+            {
+              "medoid": "idea_AUS_habsburg_monarchy_restored.dds",
+              "size": 8
+            }
+          ],
+          "measured": {
+            "images": 46,
+            "framed_share": 0.435,
+            "loose_share": 0.565,
+            "saturation_mean": 0.327,
+            "warm_metal_share": 0.156
+          },
+          "form_note": "Vanilla idea and national spirit picture politics files: about 4 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 6 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "diplomacy",
+          "files": 27,
+          "examples": [
+            "idea_AFG_helmand_adopted_treaty.dds",
+            "idea_CHL_popular_freedom_alliance_in_power.dds",
+            "idea_SIA_civillian_neutral.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "idea_tur_kemalist_neutrality.dds",
+              "size": 11
+            }
+          ],
+          "measured": {
+            "images": 11,
+            "framed_share": 0.455,
+            "loose_share": 0.545,
+            "saturation_mean": 0.258,
+            "warm_metal_share": 0.082
+          },
+          "form_note": "Vanilla idea and national spirit picture diplomacy files: about 5 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 5 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "society",
+          "files": 22,
+          "examples": [
+            "idea_ARG_social_welfare_fund_ns.dds",
+            "idea_INS_the_peoples_security_army.dds",
+            "idea_SOV_new_old_church.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "idea_yug_orthodox_church_support.dds",
+              "size": 10
+            }
+          ],
+          "measured": {
+            "images": 10,
+            "framed_share": 0.5,
+            "loose_share": 0.5,
+            "saturation_mean": 0.329,
+            "warm_metal_share": 0.168
+          },
+          "form_note": "Vanilla idea and national spirit picture society files: about 5 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 5 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "army",
+          "files": 131,
+          "examples": [
+            "idea_AFG_raj_attack_bonus.dds",
+            "idea_KOR_korean_volunteer_army_idea.dds",
+            "idea_generic_attack_denmark.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "idea_tur_kemalist_army_officers_powerful_disloyal.dds",
+              "size": 19
+            },
+            {
+              "medoid": "idea_PER_special_units_division_idea.dds",
+              "size": 16
+            },
+            {
+              "medoid": "idea_generic_coastal_defense_ships2.dds",
+              "size": 7
+            },
+            {
+              "medoid": "idea_ETH_army_2.dds",
+              "size": 3
+            }
+          ],
+          "measured": {
+            "images": 45,
+            "framed_share": 0.556,
+            "loose_share": 0.444,
+            "saturation_mean": 0.272,
+            "warm_metal_share": 0.134
+          },
+          "form_note": "Vanilla idea and national spirit picture army files: about 6 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 4 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "other",
+          "files": 574,
+          "examples": [
+            "idea_AFG_adopt_nufus.dds",
+            "idea_HUN_hungarian_gendarmerie.dds",
+            "idea_SWE_let_fly_all_guns.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "idea_generic_immigration.dds",
+              "size": 58
+            },
+            {
+              "medoid": "idea_DEN_flyvevabnet_1.dds",
+              "size": 39
+            },
+            {
+              "medoid": "idea_gre_venerate_the_ancient_hellenes_hoplite_plato.dds",
+              "size": 29
+            },
+            {
+              "medoid": "idea_JAP_senbu_organizations.dds",
+              "size": 28
+            },
+            {
+              "medoid": "idea_PRC_pla_ground_force.dds",
+              "size": 23
+            },
+            {
+              "medoid": "idea_HUN_promoted_hungarianism.dds",
+              "size": 15
+            },
+            {
+              "medoid": "idea_SWE_let_fly_all_guns.dds",
+              "size": 15
+            },
+            {
+              "medoid": "idea_FIN_lotta_svard.dds",
+              "size": 13
+            }
+          ],
+          "measured": {
+            "images": 220,
+            "framed_share": 0.486,
+            "loose_share": 0.514,
+            "saturation_mean": 0.287,
+            "warm_metal_share": 0.126
+          },
+          "form_note": "Vanilla idea and national spirit picture files that match no theme: about 5 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 5 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        }
+      ]
+    },
+    {
+      "family": "idea_concern",
+      "files": 543,
+      "subfamilies": [
+        {
+          "id": "naval",
+          "files": 35,
+          "examples": [
+            "idea_BEL_cockerill_shipyards_organization.dds",
+            "idea_PRC_shipbuilding_industry_bureau.dds",
+            "idea_kure_naval_arsenal.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "idea_yarrow_shipbuilders.dds",
+              "size": 21
+            },
+            {
+              "medoid": "idea_brooklyn_naval_yard.dds",
+              "size": 7
+            }
+          ],
+          "measured": {
+            "images": 28,
+            "framed_share": 0.5,
+            "loose_share": 0.5,
+            "saturation_mean": 0.264,
+            "warm_metal_share": 0.112
+          },
+          "form_note": "Vanilla industrial concern or manufacturer idea picture naval files: about 5 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 5 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "air",
+          "files": 22,
+          "examples": [
+            "idea_AST_gloster_aircraft.dds",
+            "idea_JAP_tachikawa_aircraft_company.dds",
+            "idea_cze_zlin_aircraft.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "idea_generic_air_manufacturer_3.dds",
+              "size": 17
+            }
+          ],
+          "measured": {
+            "images": 17,
+            "framed_share": 0.118,
+            "loose_share": 0.882,
+            "saturation_mean": 0.205,
+            "warm_metal_share": 0.103
+          },
+          "form_note": "Vanilla industrial concern or manufacturer idea picture air files: about 1 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 9 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "industry",
+          "files": 68,
+          "examples": [
+            "idea_AST_american_car_and_foundry.dds",
+            "idea_PRC_china_state_construction_engineering_corporation.dds",
+            "idea_generic_motorized_equipment_manufacturer_1.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "idea_generic_industrial_concern_2.dds",
+              "size": 17
+            },
+            {
+              "medoid": "idea_generic_industrial_concern_3.dds",
+              "size": 17
+            },
+            {
+              "medoid": "idea_electric_boat_company.dds",
+              "size": 9
+            },
+            {
+              "medoid": "idea_civilian_economy.dds",
+              "size": 8
+            },
+            {
+              "medoid": "idea_generic_artillery_manufacturer_2.dds",
+              "size": 4
+            }
+          ],
+          "measured": {
+            "images": 55,
+            "framed_share": 0.545,
+            "loose_share": 0.455,
+            "saturation_mean": 0.303,
+            "warm_metal_share": 0.124
+          },
+          "form_note": "Vanilla industrial concern or manufacturer idea picture industry files: about 5 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 5 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "economy",
+          "files": 21,
+          "examples": [
+            "idea_AST_mount_isa_mines_ic.dds",
+            "idea_PRC_peoples_bank_of_china.dds",
+            "idea_new_economic_policy.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "idea_tot_economic_mobilisation.dds",
+              "size": 16
+            }
+          ],
+          "measured": {
+            "images": 16,
+            "framed_share": 0.75,
+            "loose_share": 0.25,
+            "saturation_mean": 0.361,
+            "warm_metal_share": 0.131
+          },
+          "form_note": "Vanilla industrial concern or manufacturer idea picture economy files: about 8 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 2 in 10 an open, loose subject, in strong colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "army",
+          "files": 16,
+          "examples": [
+            "idea_AST_nuffield_mechanizations_and_aero.dds",
+            "idea_INS_artillerie_inrichtingen.dds",
+            "idea_army_ordnance_department.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "idea_SIA_army_ordnance_department.dds",
+              "size": 12
+            }
+          ],
+          "measured": {
+            "images": 12,
+            "framed_share": 0.5,
+            "loose_share": 0.5,
+            "saturation_mean": 0.285,
+            "warm_metal_share": 0.093
+          },
+          "form_note": "Vanilla industrial concern or manufacturer idea picture army files: about 5 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 5 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "other",
+          "files": 381,
+          "examples": [
+            "fra_acf.dds",
+            "idea_ITA_fiat_aviazione.dds",
+            "idea_cze_walter.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "fra_atelier_puteaux.dds",
+              "size": 71
+            },
+            {
+              "medoid": "idea_FB.dds",
+              "size": 42
+            },
+            {
+              "medoid": "idea_BEL_ateliers_metallurgiques_tubize.dds",
+              "size": 39
+            },
+            {
+              "medoid": "idea_SIA_thai_rung.dds",
+              "size": 38
+            },
+            {
+              "medoid": "idea_GER_arado_flugzeugwerke.dds",
+              "size": 23
+            },
+            {
+              "medoid": "idea_PRC_publicity_department_of_central_committee.dds",
+              "size": 22
+            },
+            {
+              "medoid": "idea_SWE_gotaverken.dds",
+              "size": 21
+            },
+            {
+              "medoid": "idea_macchi.dds",
+              "size": 16
+            }
+          ],
+          "measured": {
+            "images": 272,
+            "framed_share": 0.43,
+            "loose_share": 0.57,
+            "saturation_mean": 0.271,
+            "warm_metal_share": 0.094
+          },
+          "form_note": "Vanilla industrial concern or manufacturer idea picture files that match no theme: about 4 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 6 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        }
+      ]
+    },
+    {
+      "family": "officer_corps_spirit",
+      "files": 149,
+      "subfamilies": [
+        {
+          "id": "naval",
+          "files": 19,
+          "examples": [
+            "spirit_idea_convoy_warfare.dds",
+            "spirit_idea_merchant_mariners.dds",
+            "spirit_idea_navy_academy_scholarships.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "spirit_idea_overbearing_admiralty.dds",
+              "size": 19
+            }
+          ],
+          "measured": {
+            "images": 19,
+            "framed_share": 0.053,
+            "loose_share": 0.947,
+            "saturation_mean": 0.155,
+            "warm_metal_share": 0.119
+          },
+          "form_note": "Vanilla officer corps spirit icon naval files: about 1 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 9 in 10 an open, loose subject, in muted, nearly grey colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "air",
+          "files": 9,
+          "examples": [
+            "spirit_idea_air_massed_strike.dds",
+            "spirit_idea_air_xp_reduction.dds",
+            "spirit_idea_elite_fighter_pilots.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "spirit_idea_air_theory.dds",
+              "size": 9
+            }
+          ],
+          "measured": {
+            "images": 9,
+            "framed_share": 0.111,
+            "loose_share": 0.889,
+            "saturation_mean": 0.202,
+            "warm_metal_share": 0.114
+          },
+          "form_note": "Vanilla officer corps spirit icon air files: about 1 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 9 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "army",
+          "files": 18,
+          "examples": [
+            "spirit_idea_all_arms_at_defense.dds",
+            "spirit_idea_home_defence.dds",
+            "spirit_idea_proxy_wars.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "spirit_idea_home_defence.dds",
+              "size": 18
+            }
+          ],
+          "measured": {
+            "images": 18,
+            "framed_share": 0.222,
+            "loose_share": 0.778,
+            "saturation_mean": 0.189,
+            "warm_metal_share": 0.141
+          },
+          "form_note": "Vanilla officer corps spirit icon army files: about 2 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 8 in 10 an open, loose subject, in muted, nearly grey colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "other",
+          "files": 103,
+          "examples": [
+            "spirit_idea_NOR_flexible_officers_academy.dds",
+            "spirit_idea_flexible_contracts.dds",
+            "spirit_idea_penny_pinching.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "spirit_idea_operational_reserves.dds",
+              "size": 21
+            },
+            {
+              "medoid": "spirit_idea_stay_at_your_posts.dds",
+              "size": 17
+            },
+            {
+              "medoid": "spirit_idea_mobile_force.dds",
+              "size": 16
+            },
+            {
+              "medoid": "spirit_idea_modernism.dds",
+              "size": 15
+            },
+            {
+              "medoid": "spirit_idea_spirit_of_defiance.dds",
+              "size": 13
+            },
+            {
+              "medoid": "spirit_idea_cag_night_fighting.dds",
+              "size": 12
+            },
+            {
+              "medoid": "spirit_idea_quick_improvisation.dds",
+              "size": 7
+            },
+            {
+              "medoid": "spirit_idea_littoral_waters.dds",
+              "size": 2
+            }
+          ],
+          "measured": {
+            "images": 103,
+            "framed_share": 0.184,
+            "loose_share": 0.816,
+            "saturation_mean": 0.218,
+            "warm_metal_share": 0.137
+          },
+          "form_note": "Vanilla officer corps spirit icon files that match no theme: about 2 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 8 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        }
+      ]
+    },
+    {
+      "family": "decision",
+      "files": 328,
+      "subfamilies": [
+        {
+          "id": "politics",
+          "files": 27,
+          "examples": [
+            "decision_CHL_araucania_establish_a_hispaniolan_kingdom.dds",
+            "decision_JAP_establish_kingdom_of_luang_prabang.dds",
+            "decision_eng_propaganda_campaigns.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "decision_CHL_mapuche_reorganize_the_canadian_government.dds",
+              "size": 23
+            },
+            {
+              "medoid": "decision_SOV_the_stalin_constitution.dds",
+              "size": 4
+            }
+          ],
+          "measured": {
+            "images": 27,
+            "framed_share": 0.407,
+            "loose_share": 0.593,
+            "saturation_mean": 0.237,
+            "warm_metal_share": 0.204
+          },
+          "form_note": "Vanilla decision or mission icon politics files: about 4 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 6 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "diplomacy",
+          "files": 70,
+          "examples": [
+            "decision_JAP_army_faction.dds",
+            "decision_bul_discredit_zveno.dds",
+            "decision_bul_privileges_nsm.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "decision_bul_privileges_zveno.dds",
+              "size": 24
+            },
+            {
+              "medoid": "decision_bul_repress_nsm.dds",
+              "size": 18
+            },
+            {
+              "medoid": "decision_bul_privileges_bzns.dds",
+              "size": 12
+            },
+            {
+              "medoid": "decision_bul_fund_zveno.dds",
+              "size": 9
+            },
+            {
+              "medoid": "decision_bul_against_bs.dds",
+              "size": 5
+            },
+            {
+              "medoid": "decision_faction_bul_bzns.dds",
+              "size": 1
+            },
+            {
+              "medoid": "decision_faction_tur_kemalist.dds",
+              "size": 1
+            }
+          ],
+          "measured": {
+            "images": 70,
+            "framed_share": 0.143,
+            "loose_share": 0.857,
+            "saturation_mean": 0.257,
+            "warm_metal_share": 0.224
+          },
+          "form_note": "Vanilla decision or mission icon diplomacy files: about 1 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 9 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "army",
+          "files": 58,
+          "examples": [
+            "decision_EST_claim_state_1.dds",
+            "decision_border_war.dds",
+            "decision_ita_claim_yugo_1.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "decision_ita_claim_yugo_1.dds",
+              "size": 20
+            },
+            {
+              "medoid": "decision_generic_motorized.dds",
+              "size": 14
+            },
+            {
+              "medoid": "decision_LIT_claim_state_2.dds",
+              "size": 12
+            },
+            {
+              "medoid": "decision_spa_garrison_control_strong.dds",
+              "size": 6
+            },
+            {
+              "medoid": "decision_spr_garrison_control_weak2.dds",
+              "size": 6
+            }
+          ],
+          "measured": {
+            "images": 58,
+            "framed_share": 0.034,
+            "loose_share": 0.966,
+            "saturation_mean": 0.473,
+            "warm_metal_share": 0.061
+          },
+          "form_note": "Vanilla decision or mission icon army files: nearly all are an open, loose subject with no frame, in strong colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "other",
+          "files": 173,
+          "examples": [
+            "decision_BOL_establish_arica_department.dds",
+            "decision_NOR_prepare_state_fasc_1.dds",
+            "decision_generic_PLACEHOLDER.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "decision_gre_investment_decisions.dds",
+              "size": 44
+            },
+            {
+              "medoid": "decision_eng_trade_unions_demand.dds",
+              "size": 28
+            },
+            {
+              "medoid": "decision_SWI_support_humanitarian_efforts.dds",
+              "size": 23
+            },
+            {
+              "medoid": "decision_CHL_mapuche_liberate_inuit.dds",
+              "size": 21
+            },
+            {
+              "medoid": "decision_POL_sanation_left_opposition_2.dds",
+              "size": 19
+            },
+            {
+              "medoid": "decision_NOR_deploy_prep_mon_2.dds",
+              "size": 17
+            },
+            {
+              "medoid": "decision_NOR_prepare_state_trot_2.dds",
+              "size": 14
+            },
+            {
+              "medoid": "decision_NOR_deploy_prep_dem_2.dds",
+              "size": 7
+            }
+          ],
+          "measured": {
+            "images": 173,
+            "framed_share": 0.127,
+            "loose_share": 0.873,
+            "saturation_mean": 0.271,
+            "warm_metal_share": 0.178
+          },
+          "form_note": "Vanilla decision or mission icon files that match no theme: about 1 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 9 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        }
+      ]
+    },
+    {
+      "family": "decision_category_icon",
+      "files": 91,
+      "subfamilies": [
+        {
+          "id": "politics",
+          "files": 17,
+          "examples": [
+            "decision_category_CHL_mapuche_nationalism_decisions.dds",
+            "decision_category_NOR_fascist_preparation.dds",
+            "decision_category_generic_democracy.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "decision_category_generic_communist_revolution.dds",
+              "size": 17
+            }
+          ],
+          "measured": {
+            "images": 17,
+            "framed_share": 0.765,
+            "loose_share": 0.235,
+            "saturation_mean": 0.249,
+            "warm_metal_share": 0.041
+          },
+          "form_note": "Vanilla decision category icon politics files: about 8 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 2 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "army",
+          "files": 12,
+          "examples": [
+            "decision_category_ETH_italo_ethiopian_war.dds",
+            "decision_category_SWI_military_readiness_decisions.dds",
+            "decision_category_generic_mountain_fortification.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "decision_category_GER_war_planning.dds",
+              "size": 12
+            }
+          ],
+          "measured": {
+            "images": 12,
+            "framed_share": 0.667,
+            "loose_share": 0.333,
+            "saturation_mean": 0.203,
+            "warm_metal_share": 0.026
+          },
+          "form_note": "Vanilla decision category icon army files: about 7 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 3 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "other",
+          "files": 62,
+          "examples": [
+            "decision_category_AST_australia_first.dds",
+            "decision_category_JAP_imperial_glory_blue.dds",
+            "decision_category_generic_naval.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "decision_category_spr_carlism.dds",
+              "size": 19
+            },
+            {
+              "medoid": "decision_category_generic_foreign_policy.dds",
+              "size": 15
+            },
+            {
+              "medoid": "decision_category_gre_hellenic_academy.dds",
+              "size": 9
+            },
+            {
+              "medoid": "decision_category_gre_investment_decisions.dds",
+              "size": 9
+            },
+            {
+              "medoid": "decision_category_SOV_support_the_poum.dds",
+              "size": 5
+            },
+            {
+              "medoid": "decision_category_saf_anti_colonialist_crusade.dds",
+              "size": 5
+            }
+          ],
+          "measured": {
+            "images": 62,
+            "framed_share": 0.919,
+            "loose_share": 0.081,
+            "saturation_mean": 0.226,
+            "warm_metal_share": 0.036
+          },
+          "form_note": "Vanilla decision category icon files that match no theme: about 9 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 1 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        }
+      ]
+    },
+    {
+      "family": "state_modifier",
+      "files": 100,
+      "subfamilies": [
+        {
+          "id": "industry",
+          "files": 9,
+          "examples": [
+            "modifiers_SOV_civilian_labor_in_defense.dds",
+            "modifiers_generic_construction.dds",
+            "modifiers_generic_railways.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "modifiers_generic_railways.dds",
+              "size": 9
+            }
+          ],
+          "measured": {
+            "images": 9,
+            "framed_share": 0.111,
+            "loose_share": 0.889,
+            "saturation_mean": 0.289,
+            "warm_metal_share": 0.133
+          },
+          "form_note": "Vanilla state or dynamic modifier icon industry files: about 1 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 9 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "politics",
+          "files": 9,
+          "examples": [
+            "modifiers_FIN_confederated_finno_russian_republics.dds",
+            "modifiers_JAP_indigenous_socialism.dds",
+            "modifiers_bul_macedonian_revolutionaries.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "modifiers_bul_macedonian_revolutionaries.dds",
+              "size": 9
+            }
+          ],
+          "measured": {
+            "images": 9,
+            "framed_share": 0.222,
+            "loose_share": 0.778,
+            "saturation_mean": 0.312,
+            "warm_metal_share": 0.146
+          },
+          "form_note": "Vanilla state or dynamic modifier icon politics files: about 2 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 8 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "army",
+          "files": 15,
+          "examples": [
+            "modifier_generic_state_assault.dds",
+            "modifiers_JAP_desperate_defense.dds",
+            "modifiers_SWI_attack_from_the_mountains.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "modifiers_JAP_japanese_offensive.dds",
+              "size": 15
+            }
+          ],
+          "measured": {
+            "images": 15,
+            "framed_share": 0.133,
+            "loose_share": 0.867,
+            "saturation_mean": 0.217,
+            "warm_metal_share": 0.099
+          },
+          "form_note": "Vanilla state or dynamic modifier icon army files: about 1 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 9 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "other",
+          "files": 67,
+          "examples": [
+            "modifier_generic_guerilla_base.dds",
+            "modifiers_FIN_weapon_caches.dds",
+            "modifiers_RAJ_mughal_influence.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "modifier_generic_sabotage.dds",
+              "size": 16
+            },
+            {
+              "medoid": "modifiers_BEL_eben_emael_raided.dds",
+              "size": 14
+            },
+            {
+              "medoid": "modifiers_tur_kurdish_rebellion.dds",
+              "size": 13
+            },
+            {
+              "medoid": "modifiers_SOV_capital_of_the_tsars.dds",
+              "size": 11
+            },
+            {
+              "medoid": "modifiers_FIN_motti_tactics_modifier.dds",
+              "size": 9
+            },
+            {
+              "medoid": "modifiers_COG_state_loyal_to_belgium.dds",
+              "size": 4
+            }
+          ],
+          "measured": {
+            "images": 67,
+            "framed_share": 0.299,
+            "loose_share": 0.701,
+            "saturation_mean": 0.294,
+            "warm_metal_share": 0.091
+          },
+          "form_note": "Vanilla state or dynamic modifier icon files that match no theme: about 3 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 7 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        }
+      ]
+    },
+    {
+      "family": "mio_department",
+      "files": 337,
+      "subfamilies": [
+        {
+          "id": "naval",
+          "files": 71,
+          "examples": [
+            "generic_mio_department_icon_ship_all_cruiser_ship.dds",
+            "generic_mio_department_icon_ship_carrier_utility.dds",
+            "generic_mio_department_icon_ship_light_cruiser_ship_offense.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "generic_mio_department_icon_ship_screen_ship_engine.dds",
+              "size": 17
+            },
+            {
+              "medoid": "generic_mio_department_icon_ship_screen_ship_utility.dds",
+              "size": 15
+            },
+            {
+              "medoid": "generic_mio_department_icon_ship_light_cruiser_ship_weapons.dds",
+              "size": 13
+            },
+            {
+              "medoid": "generic_mio_department_icon_ship_carrier_offense.dds",
+              "size": 11
+            },
+            {
+              "medoid": "generic_mio_department_icon_ship_light_cruiser_ship_production.dds",
+              "size": 8
+            },
+            {
+              "medoid": "generic_mio_department_icon_ship_carrier_conversion.dds",
+              "size": 6
+            },
+            {
+              "medoid": "generic_mio_department_icon_ship_general_technology.dds",
+              "size": 1
+            }
+          ],
+          "measured": {
+            "images": 71,
+            "framed_share": 0.0,
+            "loose_share": 1.0,
+            "saturation_mean": 0.27,
+            "warm_metal_share": 0.023
+          },
+          "form_note": "Vanilla military industrial organization department icon naval files: nearly all are an open, loose subject with no frame, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "air",
+          "files": 146,
+          "examples": [
+            "generic_mio_department_icon_air_transport.dds",
+            "generic_mio_department_icon_plane_fighter_combat.dds",
+            "generic_mio_department_icon_plane_maritime_patrol_materials.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "generic_mio_department_icon_plane_strategic_bomber_combat.dds",
+              "size": 47
+            },
+            {
+              "medoid": "generic_mio_department_icon_plane_heavy_fighter_materials.dds",
+              "size": 20
+            },
+            {
+              "medoid": "generic_mio_department_icon_plane_fighter_conversion.dds",
+              "size": 19
+            },
+            {
+              "medoid": "generic_mio_department_icon_plane_cv_fighter_materials.dds",
+              "size": 17
+            },
+            {
+              "medoid": "generic_mio_department_icon_plane_fighter_technology.dds",
+              "size": 15
+            },
+            {
+              "medoid": "generic_mio_department_icon_plane_fighter_line_efficiency.dds",
+              "size": 14
+            },
+            {
+              "medoid": "generic_mio_department_icon_plane_cv_fighter_conversion.dds",
+              "size": 8
+            },
+            {
+              "medoid": "generic_mio_department_icon_anti_air_production.dds",
+              "size": 6
+            }
+          ],
+          "measured": {
+            "images": 146,
+            "framed_share": 0.0,
+            "loose_share": 1.0,
+            "saturation_mean": 0.293,
+            "warm_metal_share": 0.038
+          },
+          "form_note": "Vanilla military industrial organization department icon air files: nearly all are an open, loose subject with no frame, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "industry",
+          "files": 10,
+          "examples": [
+            "generic_mio_department_icon_air_transport_production.dds",
+            "generic_mio_department_icon_artillery_production.dds",
+            "generic_mio_department_icon_motorized_production.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "generic_mio_department_icon_rocket_production.dds",
+              "size": 10
+            }
+          ],
+          "measured": {
+            "images": 10,
+            "framed_share": 0.0,
+            "loose_share": 1.0,
+            "saturation_mean": 0.233,
+            "warm_metal_share": 0.12
+          },
+          "form_note": "Vanilla military industrial organization department icon industry files: nearly all are an open, loose subject with no frame, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "research",
+          "files": 14,
+          "examples": [
+            "generic_mio_department_icon_anti_tank_technology.dds",
+            "generic_mio_department_icon_mechanized_technology.dds",
+            "generic_mio_department_icon_motorized_technology.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "generic_mio_department_icon_rocket_technology.dds",
+              "size": 14
+            }
+          ],
+          "measured": {
+            "images": 14,
+            "framed_share": 0.0,
+            "loose_share": 1.0,
+            "saturation_mean": 0.274,
+            "warm_metal_share": 0.019
+          },
+          "form_note": "Vanilla military industrial organization department icon research files: nearly all are an open, loose subject with no frame, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "army",
+          "files": 89,
+          "examples": [
+            "generic_mio_department_icon_anti_tank.dds",
+            "generic_mio_department_icon_motorized.dds",
+            "generic_mio_department_icon_tank_heavy_tank_materials.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "generic_mio_department_icon_tank_medium_tank_weapons.dds",
+              "size": 19
+            },
+            {
+              "medoid": "generic_mio_department_icon_mechanized_hull.dds",
+              "size": 15
+            },
+            {
+              "medoid": "generic_mio_department_icon_tank_medium_tank_quality.dds",
+              "size": 13
+            },
+            {
+              "medoid": "generic_mio_department_icon_tank_general_materials.dds",
+              "size": 11
+            },
+            {
+              "medoid": "generic_mio_department_icon_tank_medium_tank_aa.dds",
+              "size": 9
+            },
+            {
+              "medoid": "generic_mio_department_icon_tank_medium_tank_production.dds",
+              "size": 9
+            },
+            {
+              "medoid": "generic_mio_department_icon_motorized_mechanized_line_efficiency.dds",
+              "size": 7
+            },
+            {
+              "medoid": "generic_mio_department_icon_tank_medium_tank_technology.dds",
+              "size": 6
+            }
+          ],
+          "measured": {
+            "images": 89,
+            "framed_share": 0.0,
+            "loose_share": 1.0,
+            "saturation_mean": 0.247,
+            "warm_metal_share": 0.037
+          },
+          "form_note": "Vanilla military industrial organization department icon army files: nearly all are an open, loose subject with no frame, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "other",
+          "files": 7,
+          "examples": [
+            "generic_mio_department_icon_facilities.dds",
+            "generic_mio_department_icon_support_conversion.dds",
+            "generic_mio_department_icon_support_line_efficiency.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "generic_mio_department_icon_support_conversion.dds",
+              "size": 7
+            }
+          ],
+          "measured": {
+            "images": 7,
+            "framed_share": 0.0,
+            "loose_share": 1.0,
+            "saturation_mean": 0.249,
+            "warm_metal_share": 0.078
+          },
+          "form_note": "Vanilla military industrial organization department icon files that match no theme: nearly all are an open, loose subject with no frame, in moderate colour. Choose the form that suits the brief within that range."
+        }
+      ]
+    },
+    {
+      "family": "operation_icon",
+      "files": 71,
+      "subfamilies": [
+        {
+          "id": "intelligence",
+          "files": 20,
+          "examples": [
+            "phase_bruneval_infiltration_small.dds",
+            "phase_free_operative_smuggle_in_escape_gear_small.dds",
+            "phase_infiltration_diplomatic_small.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "phase_infiltrate_military_seduction_small.dds",
+              "size": 13
+            },
+            {
+              "medoid": "phase_capture_tito_infiltration_small.dds",
+              "size": 7
+            }
+          ],
+          "measured": {
+            "images": 20,
+            "framed_share": 1.0,
+            "loose_share": 0.0,
+            "saturation_mean": 0.163,
+            "warm_metal_share": 0.012
+          },
+          "form_note": "Vanilla intelligence operation icon intelligence files: nearly all are a compact framed shape (a plaque, disc, shield or badge), in muted, nearly grey colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "army",
+          "files": 11,
+          "examples": [
+            "phase_bruneval_attack_small.dds",
+            "phase_coordinate_strike_mark_targets_small.dds",
+            "phase_fake_intel_decoy_tanks_small.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "phase_capture_tito_attack_small.dds",
+              "size": 11
+            }
+          ],
+          "measured": {
+            "images": 11,
+            "framed_share": 1.0,
+            "loose_share": 0.0,
+            "saturation_mean": 0.172,
+            "warm_metal_share": 0.007
+          },
+          "form_note": "Vanilla intelligence operation icon army files: nearly all are a compact framed shape (a plaque, disc, shield or badge), in muted, nearly grey colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "other",
+          "files": 40,
+          "examples": [
+            "phase_bruneval_exfiltration_small.dds",
+            "phase_fake_intel_press_releases_small.dds",
+            "phase_rescue_mussolini_exfiltration_small.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "phase_steal_blueprints_infiltrate_naval_design_office_small.dds",
+              "size": 29
+            },
+            {
+              "medoid": "phase_exfiltration_go_to_ground_small.dds",
+              "size": 8
+            },
+            {
+              "medoid": "phase_exfiltration_submarine_pickup_small.dds",
+              "size": 2
+            },
+            {
+              "medoid": "phase_fake_intel_deliberate_leaks_small.dds",
+              "size": 1
+            }
+          ],
+          "measured": {
+            "images": 40,
+            "framed_share": 1.0,
+            "loose_share": 0.0,
+            "saturation_mean": 0.161,
+            "warm_metal_share": 0.023
+          },
+          "form_note": "Vanilla intelligence operation icon files that match no theme: nearly all are a compact framed shape (a plaque, disc, shield or badge), in muted, nearly grey colour. Choose the form that suits the brief within that range."
+        }
+      ]
+    },
+    {
+      "family": "commander_trait",
+      "files": 81,
+      "subfamilies": [
+        {
+          "id": "naval",
+          "files": 30,
+          "examples": [
+            "trait_admiral_arctic_waters_expert.dds",
+            "trait_admiral_green_water_expert.dds",
+            "trait_admiral_mine_sweeper.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "trait_admiral_torpedo_expert.dds",
+              "size": 16
+            },
+            {
+              "medoid": "trait_admiral_mine_craft.dds",
+              "size": 10
+            },
+            {
+              "medoid": "trait_admiral_flight_deck_manager.dds",
+              "size": 4
+            }
+          ],
+          "measured": {
+            "images": 30,
+            "framed_share": 0.033,
+            "loose_share": 0.967,
+            "saturation_mean": 0.183,
+            "warm_metal_share": 0.094
+          },
+          "form_note": "Vanilla commander trait icon naval files: nearly all are an open, loose subject with no frame, in muted, nearly grey colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "army",
+          "files": 14,
+          "examples": [
+            "trait_aggressive_assaulter.dds",
+            "trait_defensive_doctrine.dds",
+            "trait_offensive_doctrine.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "trait_offensive_doctrine.dds",
+              "size": 14
+            }
+          ],
+          "measured": {
+            "images": 14,
+            "framed_share": 0.0,
+            "loose_share": 1.0,
+            "saturation_mean": 0.234,
+            "warm_metal_share": 0.191
+          },
+          "form_note": "Vanilla commander trait icon army files: nearly all are an open, loose subject with no frame, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "other",
+          "files": 37,
+          "examples": [
+            "trait_adaptable.dds",
+            "trait_fast_planner.dds",
+            "trait_paratroopers.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "trait_ranger.dds",
+              "size": 14
+            },
+            {
+              "medoid": "trait_jungle_rat.dds",
+              "size": 12
+            },
+            {
+              "medoid": "trait_organizer.dds",
+              "size": 11
+            }
+          ],
+          "measured": {
+            "images": 37,
+            "framed_share": 0.081,
+            "loose_share": 0.919,
+            "saturation_mean": 0.248,
+            "warm_metal_share": 0.16
+          },
+          "form_note": "Vanilla commander trait icon files that match no theme: about 1 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 9 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        }
+      ]
+    },
+    {
+      "family": "personal_trait",
+      "files": 96,
+      "subfamilies": [
+        {
+          "id": "naval",
+          "files": 8,
+          "examples": [
+            "trait_SOV_cowed_by_stalin_navy.dds",
+            "trait_carrier_officer.dds",
+            "trait_heavy_ship_officer.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "trait_destroyer_officer.dds",
+              "size": 8
+            }
+          ],
+          "measured": {
+            "images": 8,
+            "framed_share": 0.875,
+            "loose_share": 0.125,
+            "saturation_mean": 0.131,
+            "warm_metal_share": 0.088
+          },
+          "form_note": "Vanilla personal trait icon naval files: about 9 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 1 in 10 an open, loose subject, in muted, nearly grey colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "politics",
+          "files": 10,
+          "examples": [
+            "trait_HUN_fascist_sympathies.dds",
+            "trait_SOV_monarchist_sympathizer.dds",
+            "trait_communist_sympathizer.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "trait_JAP_government_supporter.dds",
+              "size": 10
+            }
+          ],
+          "measured": {
+            "images": 10,
+            "framed_share": 0.5,
+            "loose_share": 0.5,
+            "saturation_mean": 0.278,
+            "warm_metal_share": 0.156
+          },
+          "form_note": "Vanilla personal trait icon politics files: about 5 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 5 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "army",
+          "files": 11,
+          "examples": [
+            "trait_SOV_cowed_by_stalin_army.dds",
+            "trait_ascari_officer.dds",
+            "trait_irregulars_officer.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "trait_infantry_officer.dds",
+              "size": 11
+            }
+          ],
+          "measured": {
+            "images": 11,
+            "framed_share": 0.727,
+            "loose_share": 0.273,
+            "saturation_mean": 0.149,
+            "warm_metal_share": 0.118
+          },
+          "form_note": "Vanilla personal trait icon army files: about 7 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 3 in 10 an open, loose subject, in muted, nearly grey colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "other",
+          "files": 67,
+          "examples": [
+            "inspirational_bagpiper.dds",
+            "trait_SPA_carlist_loyalties.dds",
+            "trait_gentlemanly.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "trait_caustic_personality.dds",
+              "size": 27
+            },
+            {
+              "medoid": "trait_JAP_tohokai_sympathies.dds",
+              "size": 15
+            },
+            {
+              "medoid": "trait_YUN_dubious_loyalty.dds",
+              "size": 9
+            },
+            {
+              "medoid": "trait_demoted.dds",
+              "size": 9
+            },
+            {
+              "medoid": "trait_cautious.dds",
+              "size": 6
+            },
+            {
+              "medoid": "inspirational_bagpiper.dds",
+              "size": 1
+            }
+          ],
+          "measured": {
+            "images": 67,
+            "framed_share": 0.597,
+            "loose_share": 0.403,
+            "saturation_mean": 0.249,
+            "warm_metal_share": 0.13
+          },
+          "form_note": "Vanilla personal trait icon files that match no theme: about 6 in 10 are a compact framed shape (a plaque, disc, shield or badge) and 4 in 10 an open, loose subject, in moderate colour. Choose the form that suits the brief within that range."
+        }
+      ]
+    },
+    {
+      "family": "doctrine",
+      "files": 105,
+      "subfamilies": [
+        {
+          "id": "naval",
+          "files": 21,
+          "examples": [
+            "doctrine_battleship_antiair_screen.dds",
+            "doctrine_convoy_interdiction.dds",
+            "doctrine_naval_strike_tactics.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "doctrine_escort_carriers.dds",
+              "size": 12
+            },
+            {
+              "medoid": "doctrine_capital_ship_raiders.dds",
+              "size": 9
+            }
+          ],
+          "measured": {
+            "images": 21,
+            "framed_share": 0.0,
+            "loose_share": 1.0,
+            "saturation_mean": 0.185,
+            "warm_metal_share": 0.077
+          },
+          "form_note": "Vanilla doctrine icon naval files: nearly all are an open, loose subject with no frame, in muted, nearly grey colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "air",
+          "files": 9,
+          "examples": [
+            "doctrine_air_cavalry.dds",
+            "doctrine_air_skirmish.dds",
+            "doctrine_fighter_baiting.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "doctrine_air_cavalry.dds",
+              "size": 9
+            }
+          ],
+          "measured": {
+            "images": 9,
+            "framed_share": 0.0,
+            "loose_share": 1.0,
+            "saturation_mean": 0.18,
+            "warm_metal_share": 0.047
+          },
+          "form_note": "Vanilla doctrine icon air files: nearly all are an open, loose subject with no frame, in muted, nearly grey colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "army",
+          "files": 20,
+          "examples": [
+            "doctrine_armored_cavalry.dds",
+            "doctrine_floating_fortress.dds",
+            "doctrine_massed_strikes.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "doctrine_human_infantry_offensive.dds",
+              "size": 17
+            },
+            {
+              "medoid": "doctrine_mobile_recon_assault.dds",
+              "size": 3
+            }
+          ],
+          "measured": {
+            "images": 20,
+            "framed_share": 0.0,
+            "loose_share": 1.0,
+            "saturation_mean": 0.194,
+            "warm_metal_share": 0.159
+          },
+          "form_note": "Vanilla doctrine icon army files: nearly all are an open, loose subject with no frame, in muted, nearly grey colour. Choose the form that suits the brief within that range."
+        },
+        {
+          "id": "other",
+          "files": 55,
+          "examples": [
+            "doctrine_antitank_frontline.dds",
+            "doctrine_force_rotation.dds",
+            "doctrine_mission_type_tactics.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "doctrine_direct_ground_support.dds",
+              "size": 28
+            },
+            {
+              "medoid": "doctrine_fire_concentration.dds",
+              "size": 15
+            },
+            {
+              "medoid": "doctrine_trade_interdiction.dds",
+              "size": 9
+            },
+            {
+              "medoid": "doctrine_special_forces_1.dds",
+              "size": 2
+            },
+            {
+              "medoid": "doctrine_placeholder.dds",
+              "size": 1
+            }
+          ],
+          "measured": {
+            "images": 55,
+            "framed_share": 0.018,
+            "loose_share": 0.982,
+            "saturation_mean": 0.195,
+            "warm_metal_share": 0.111
+          },
+          "form_note": "Vanilla doctrine icon files that match no theme: nearly all are an open, loose subject with no frame, in muted, nearly grey colour. Choose the form that suits the brief within that range."
+        }
+      ]
+    },
+    {
+      "family": "report_event",
+      "files": 589,
+      "subfamilies": [
+        {
+          "id": "naval",
+          "files": 10,
+          "examples": [
+            "report_event_SOV_purge_navy.dds",
+            "report_event_generic_naval_treaty.dds",
+            "report_event_usa_british_sailors_destroyers.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "report_event_merchant_ship_01.dds",
+              "size": 6
+            }
+          ],
+          "measured": {
+            "images": 6,
+            "framed_share": 1.0,
+            "loose_share": 0.0,
+            "saturation_mean": 0.163,
+            "warm_metal_share": 0.015
+          },
+          "form_note": null
+        },
+        {
+          "id": "air",
+          "files": 13,
+          "examples": [
+            "report_event_AST_canberra_air_disaster.dds",
+            "report_event_SOV_purge_aircraft_2.dds",
+            "report_event_bul_aircraft_repairs.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "report_event_ITA_air_crash.dds",
+              "size": 9
+            }
+          ],
+          "measured": {
+            "images": 9,
+            "framed_share": 1.0,
+            "loose_share": 0.0,
+            "saturation_mean": 0.158,
+            "warm_metal_share": 0.01
+          },
+          "form_note": null
+        },
+        {
+          "id": "industry",
+          "files": 12,
+          "examples": [
+            "report_event_SWI_assembly_hall.dds",
+            "report_event_generic_construction_site.dds",
+            "report_event_nationalist_china_machinegun_firing.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "report_event_generic_polish_machinegunners.dds",
+              "size": 10
+            }
+          ],
+          "measured": {
+            "images": 10,
+            "framed_share": 1.0,
+            "loose_share": 0.0,
+            "saturation_mean": 0.181,
+            "warm_metal_share": 0.019
+          },
+          "form_note": null
+        },
+        {
+          "id": "politics",
+          "files": 71,
+          "examples": [
+            "report_event_ARG_coup_consolidating.dds",
+            "report_event_asian_politicians.dds",
+            "report_event_hungary_parliament.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "report_event_DEN_exiled_king.dds",
+              "size": 17
+            },
+            {
+              "medoid": "report_event_JAP_communists_arrested.dds",
+              "size": 14
+            },
+            {
+              "medoid": "report_event_hungary_parliament.dds",
+              "size": 11
+            },
+            {
+              "medoid": "report_event_gre_political_upheaval.dds",
+              "size": 9
+            },
+            {
+              "medoid": "report_event_DEN_danish_politics.dds",
+              "size": 2
+            }
+          ],
+          "measured": {
+            "images": 53,
+            "framed_share": 1.0,
+            "loose_share": 0.0,
+            "saturation_mean": 0.183,
+            "warm_metal_share": 0.014
+          },
+          "form_note": null
+        },
+        {
+          "id": "diplomacy",
+          "files": 34,
+          "examples": [
+            "report_event_BRA_us_cooperation.dds",
+            "report_event_generic_sign_treaty1.dds",
+            "report_event_hitler_croatia_handshake.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "report_event_chinese_japanese_handshake.dds",
+              "size": 18
+            },
+            {
+              "medoid": "report_event_gre_allied_diplomacy.dds",
+              "size": 6
+            }
+          ],
+          "measured": {
+            "images": 24,
+            "framed_share": 1.0,
+            "loose_share": 0.0,
+            "saturation_mean": 0.198,
+            "warm_metal_share": 0.021
+          },
+          "form_note": null
+        },
+        {
+          "id": "army",
+          "files": 145,
+          "examples": [
+            "report_event_AUS_military_march.dds",
+            "report_event_bunker_01.dds",
+            "report_event_japanese_soldiers_02.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "report_event_SWI_cantons_flags_soldiers.dds",
+              "size": 20
+            },
+            {
+              "medoid": "report_event_british_artillery.dds",
+              "size": 18
+            },
+            {
+              "medoid": "report_event_latvian_soldiers.dds",
+              "size": 16
+            },
+            {
+              "medoid": "report_event_por_salazar_military.dds",
+              "size": 13
+            },
+            {
+              "medoid": "report_event_bunker_01.dds",
+              "size": 12
+            },
+            {
+              "medoid": "report_event_soldiers_marching.dds",
+              "size": 12
+            },
+            {
+              "medoid": "report_event_gre_militaristic_march.dds",
+              "size": 7
+            },
+            {
+              "medoid": "report_event_japan_army_mountainside.dds",
+              "size": 1
+            }
+          ],
+          "measured": {
+            "images": 99,
+            "framed_share": 1.0,
+            "loose_share": 0.0,
+            "saturation_mean": 0.173,
+            "warm_metal_share": 0.014
+          },
+          "form_note": null
+        },
+        {
+          "id": "other",
+          "files": 304,
+          "examples": [
+            "report_event_001.dds",
+            "report_event_SOV_litvinov_beck.dds",
+            "report_event_gre_enosis.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "report_event_HUN_charles_von_habsburg_marching.dds",
+              "size": 34
+            },
+            {
+              "medoid": "report_event_FIN_armistice_of_moscow_negotiations.dds",
+              "size": 33
+            },
+            {
+              "medoid": "report_event_rom_mistress.dds",
+              "size": 31
+            },
+            {
+              "medoid": "report_event_tur_menderes_opposition.dds",
+              "size": 26
+            },
+            {
+              "medoid": "report_event_generic_rally_3.dds",
+              "size": 24
+            },
+            {
+              "medoid": "report_event_SWE_baltic_extradition.dds",
+              "size": 23
+            },
+            {
+              "medoid": "report_event_NOR_rikstanken.dds",
+              "size": 22
+            },
+            {
+              "medoid": "report_event_DEN_resistance.dds",
+              "size": 6
+            }
+          ],
+          "measured": {
+            "images": 199,
+            "framed_share": 1.0,
+            "loose_share": 0.0,
+            "saturation_mean": 0.181,
+            "warm_metal_share": 0.018
+          },
+          "form_note": null
+        }
+      ]
+    },
+    {
+      "family": "news_event",
+      "files": 281,
+      "subfamilies": [
+        {
+          "id": "politics",
+          "files": 15,
+          "examples": [
+            "news_event_ETH_selassie_crowning.dds",
+            "news_event_election_vote.dds",
+            "news_event_king_speech.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "news_event_por_return_of_monarchy.dds",
+              "size": 15
+            }
+          ],
+          "measured": {
+            "images": 15,
+            "framed_share": 1.0,
+            "loose_share": 0.0,
+            "saturation_mean": 0.0,
+            "warm_metal_share": 0.0
+          },
+          "form_note": null
+        },
+        {
+          "id": "diplomacy",
+          "files": 16,
+          "examples": [
+            "news_event_HUN_alliance_with_germany.dds",
+            "news_event_eng_churchill_sign_treaty.dds",
+            "news_event_generic_usa_treaty.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "news_event_secure_the_wayward_ally.dds",
+              "size": 16
+            }
+          ],
+          "measured": {
+            "images": 16,
+            "framed_share": 1.0,
+            "loose_share": 0.0,
+            "saturation_mean": 0.044,
+            "warm_metal_share": 0.0
+          },
+          "form_note": null
+        },
+        {
+          "id": "army",
+          "files": 55,
+          "examples": [
+            "news_event_AUS_military_march.dds",
+            "news_event_canadian_tank.dds",
+            "news_event_italian_tank_desert.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "news_event_CZE_hungarian_soldiers_walking.dds",
+              "size": 27
+            },
+            {
+              "medoid": "news_event_soviet_tanks.dds",
+              "size": 13
+            },
+            {
+              "medoid": "news_event_spr_spanish_civil_war.dds",
+              "size": 13
+            },
+            {
+              "medoid": "news_event_german_officers.dds",
+              "size": 1
+            },
+            {
+              "medoid": "news_event_romanian_soldiers.dds",
+              "size": 1
+            }
+          ],
+          "measured": {
+            "images": 55,
+            "framed_share": 1.0,
+            "loose_share": 0.0,
+            "saturation_mean": 0.013,
+            "warm_metal_share": 0.0
+          },
+          "form_note": null
+        },
+        {
+          "id": "other",
+          "files": 195,
+          "examples": [
+            "news_event_001.dds",
+            "news_event_FIN_karelian_forest_guerillas.dds",
+            "news_event_generic_read_write.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "news_event_generic_funeral.dds",
+              "size": 42
+            },
+            {
+              "medoid": "news_event_polish_resistance_warsaw.dds",
+              "size": 41
+            },
+            {
+              "medoid": "news_event_064.dds",
+              "size": 38
+            },
+            {
+              "medoid": "news_event_dimitrov_and_stalin.dds",
+              "size": 31
+            },
+            {
+              "medoid": "news_event_french_fleet_scuttled.dds",
+              "size": 24
+            },
+            {
+              "medoid": "news_event_023.dds",
+              "size": 13
+            },
+            {
+              "medoid": "news_event_hindenburg_intact.dds",
+              "size": 3
+            },
+            {
+              "medoid": "news_event_PLACEHOLDER.dds",
+              "size": 1
+            }
+          ],
+          "measured": {
+            "images": 193,
+            "framed_share": 1.0,
+            "loose_share": 0.0,
+            "saturation_mean": 0.01,
+            "warm_metal_share": 0.001
+          },
+          "form_note": null
+        }
+      ]
+    },
+    {
+      "family": "decision_category_picture",
+      "files": 130,
+      "subfamilies": [
+        {
+          "id": "politics",
+          "files": 14,
+          "examples": [
+            "decision_cat_generic_rattanakosin_kingdom.dds",
+            "decision_cat_picture_NOR_fascist_war.dds",
+            "decision_cat_picture_form_mountainous_republic.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "decision_cat_picture_NOR_monarchism.dds",
+              "size": 14
+            }
+          ],
+          "measured": {
+            "images": 14,
+            "framed_share": 1.0,
+            "loose_share": 0.0,
+            "saturation_mean": 0.176,
+            "warm_metal_share": 0.009
+          },
+          "form_note": null
+        },
+        {
+          "id": "army",
+          "files": 8,
+          "examples": [
+            "decision_cat_picture_CZE_border_fortification.dds",
+            "decision_cat_picture_JAP_imperial_soldiers.dds",
+            "decision_cat_picture_soviet_civil_war.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "decision_cat_picture_generic_border_conflicts.dds",
+              "size": 8
+            }
+          ],
+          "measured": {
+            "images": 8,
+            "framed_share": 1.0,
+            "loose_share": 0.0,
+            "saturation_mean": 0.163,
+            "warm_metal_share": 0.003
+          },
+          "form_note": null
+        },
+        {
+          "id": "other",
+          "files": 108,
+          "examples": [
+            "decision_cat_central_europan_federation.dds",
+            "decision_cat_picture_ITA_colonial_management.dds",
+            "decision_cat_picture_form_maphilindo.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "decision_cat_picture_form_ethiopian_empire.dds",
+              "size": 40
+            },
+            {
+              "medoid": "decision_cat_picture_national_iranian_radio.dds",
+              "size": 29
+            },
+            {
+              "medoid": "decision_cat_generic_ottoman_empire.dds",
+              "size": 18
+            },
+            {
+              "medoid": "decision_cat_picture_JAP_imperial_influence_hirohito.dds",
+              "size": 12
+            },
+            {
+              "medoid": "decision_cat_picture_macedonian_organizations.dds",
+              "size": 4
+            },
+            {
+              "medoid": "decision_cat_picture_AST_union_control_1.dds",
+              "size": 2
+            },
+            {
+              "medoid": "decision_cat_picture_JAP_kokutai.dds",
+              "size": 1
+            },
+            {
+              "medoid": "decision_cat_picture_PLACEHOLDER.dds",
+              "size": 1
+            }
+          ],
+          "measured": {
+            "images": 107,
+            "framed_share": 1.0,
+            "loose_share": 0.0,
+            "saturation_mean": 0.188,
+            "warm_metal_share": 0.034
+          },
+          "form_note": null
+        }
+      ]
+    },
+    {
+      "family": "operation_picture",
+      "files": 71,
+      "subfamilies": [
+        {
+          "id": "intelligence",
+          "files": 20,
+          "examples": [
+            "phase_bruneval_infiltration.dds",
+            "phase_free_operative_smuggle_in_escape_gear.dds",
+            "phase_infiltration_diplomatic.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "phase_lar_communist_uprising_infiltrate_civil_service.dds",
+              "size": 11
+            },
+            {
+              "medoid": "phase_capture_tito_infiltration.dds",
+              "size": 9
+            }
+          ],
+          "measured": {
+            "images": 20,
+            "framed_share": 1.0,
+            "loose_share": 0.0,
+            "saturation_mean": 0.175,
+            "warm_metal_share": 0.015
+          },
+          "form_note": null
+        },
+        {
+          "id": "army",
+          "files": 11,
+          "examples": [
+            "phase_bruneval_attack.dds",
+            "phase_coordinate_strike_mark_targets.dds",
+            "phase_fake_intel_decoy_tanks.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "phase_collaboration_government_contact_military_officers.dds",
+              "size": 11
+            }
+          ],
+          "measured": {
+            "images": 11,
+            "framed_share": 1.0,
+            "loose_share": 0.0,
+            "saturation_mean": 0.177,
+            "warm_metal_share": 0.013
+          },
+          "form_note": null
+        },
+        {
+          "id": "other",
+          "files": 40,
+          "examples": [
+            "phase_bruneval_exfiltration.dds",
+            "phase_fake_intel_press_releases.dds",
+            "phase_rescue_mussolini_exfiltration.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "phase_coordinated_strike_occupy_bridges.dds",
+              "size": 19
+            },
+            {
+              "medoid": "phase_exfiltration_air_pickup.dds",
+              "size": 11
+            },
+            {
+              "medoid": "phase_capture_cyphers_reverse_engineer.dds",
+              "size": 9
+            },
+            {
+              "medoid": "phase_fake_intel_deliberate_leaks.dds",
+              "size": 1
+            }
+          ],
+          "measured": {
+            "images": 40,
+            "framed_share": 1.0,
+            "loose_share": 0.0,
+            "saturation_mean": 0.174,
+            "warm_metal_share": 0.028
+          },
+          "form_note": null
+        }
+      ]
+    },
+    {
+      "family": "technology",
+      "files": 891,
+      "subfamilies": [
+        {
+          "id": "naval",
+          "files": 44,
+          "examples": [
+            "AUS_land_cruiser_armor.dds",
+            "SOV_land_cruiser_armor.dds",
+            "ita_carrier_naval2.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "est_naval_bomber1.dds",
+              "size": 16
+            }
+          ],
+          "measured": {
+            "images": 16,
+            "framed_share": 0.0,
+            "loose_share": 1.0,
+            "saturation_mean": 0.162,
+            "warm_metal_share": 0.014
+          },
+          "form_note": null
+        },
+        {
+          "id": "air",
+          "files": 353,
+          "examples": [
+            "AUS_light_ad_cas_1.dds",
+            "ITA_fighter3.dds",
+            "USA_supersonic_jet_plane.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "lit_early_bomber.dds",
+              "size": 32
+            },
+            {
+              "medoid": "est_fighter1.dds",
+              "size": 30
+            },
+            {
+              "medoid": "ENG_light_plane_2.dds",
+              "size": 23
+            },
+            {
+              "medoid": "SWE_small_ba_fighter_2.dds",
+              "size": 21
+            },
+            {
+              "medoid": "est_tactical_bomber3.dds",
+              "size": 20
+            },
+            {
+              "medoid": "PHI_light_im_fighter_1.dds",
+              "size": 18
+            },
+            {
+              "medoid": "JAP_jet_plane_1.dds",
+              "size": 10
+            },
+            {
+              "medoid": "ITA_supersonic_jet_plane.dds",
+              "size": 6
+            }
+          ],
+          "measured": {
+            "images": 160,
+            "framed_share": 0.0,
+            "loose_share": 1.0,
+            "saturation_mean": 0.181,
+            "warm_metal_share": 0.04
+          },
+          "form_note": null
+        },
+        {
+          "id": "industry",
+          "files": 15,
+          "examples": [
+            "ENG_railway_gun.dds",
+            "GER_railway_gun.dds",
+            "SOV_railway_gun.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "FRA_railway_gun.dds",
+              "size": 5
+            }
+          ],
+          "measured": {
+            "images": 5,
+            "framed_share": 0.0,
+            "loose_share": 1.0,
+            "saturation_mean": 0.101,
+            "warm_metal_share": 0.065
+          },
+          "form_note": null
+        },
+        {
+          "id": "research",
+          "files": 475,
+          "examples": [
+            "AUS_adv_heavy_tank.dds",
+            "FIN_imp_medium_tank.dds",
+            "PHI_rocket_Art_2.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "DEN_basic_medium_tank.dds",
+              "size": 45
+            },
+            {
+              "medoid": "ENG_armored_support_vehicle_recovery_1.dds",
+              "size": 38
+            },
+            {
+              "medoid": "NOR_medium_ad_tac_1.dds",
+              "size": 35
+            },
+            {
+              "medoid": "est_scout_plane1.dds",
+              "size": 29
+            },
+            {
+              "medoid": "por_infantry_equipment_1.dds",
+              "size": 23
+            },
+            {
+              "medoid": "PRC_main_battle_tank_2.dds",
+              "size": 23
+            },
+            {
+              "medoid": "AUS_medium_im_tac_2.dds",
+              "size": 22
+            },
+            {
+              "medoid": "placeholder_tech_icon.dds",
+              "size": 1
+            }
+          ],
+          "measured": {
+            "images": 216,
+            "framed_share": 0.023,
+            "loose_share": 0.977,
+            "saturation_mean": 0.208,
+            "warm_metal_share": 0.059
+          },
+          "form_note": null
+        },
+        {
+          "id": "other",
+          "files": 4,
+          "examples": [
+            "FIN_improved_light_tank_artillery.dds",
+            "FIN_mechanised_infantry.dds",
+            "ita_motorised_infantry.dds"
+          ],
+          "style_groups": [
+            {
+              "medoid": "por_mechanised_infantry.dds",
+              "size": 1
+            }
+          ],
+          "measured": {
+            "images": 1,
+            "framed_share": 0.0,
+            "loose_share": 1.0,
+            "saturation_mean": 0.157,
+            "warm_metal_share": 0.015
+          },
+          "form_note": null
+        }
+      ]
+    }
+  ]
+}

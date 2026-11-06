@@ -56,7 +56,7 @@ impl Engine {
     pub fn generate(&self, p: GenerateParams) -> EResult<Value> {
         validate_key(&p.idempotency_key)?;
         let plan = self.load_plan(&p.plan_id)?;
-        let profile = self.family_profile(plan.request.family)?.clone();
+        let profile = self.profile_with_pack(plan.request.family, plan.profile.style_pack.as_deref())?;
         if plan.profile.id != plan.request.family.as_str() {
             return Err(EngineError::refused("GFX-FAMILY-MISMATCH", "the plan's profile is not its family's profile", RetryClass::Terminal));
         }
@@ -64,7 +64,7 @@ impl Engine {
         if self.profile_ref(&profile).hash != plan.profile.hash {
             return Err(EngineError::refused(
                 "profile_changed",
-                "the profile changed after this plan was made (the kit's profiles.json or the project config was edited). Make a new plan",
+                "the profile changed after this plan was made (the kit's profiles.json, the project config or the style pack was edited). Make a new plan",
                 RetryClass::RefreshPreconditions,
             ));
         }
@@ -140,6 +140,7 @@ impl Engine {
                     provider_request_id: None,
                     usage: None,
                     note: None,
+                    subfamily: plan.subfamily.as_ref().map(|x| x.id.clone()),
                 },
                 provider_id: plan.provider.clone(),
                 request,
@@ -172,7 +173,7 @@ impl Engine {
             return Err(EngineError::invalid("instruction must be 1 to 4000 characters"));
         }
         let artifact = self.artifact(&p.candidate_id)?;
-        let profile = self.profile_of(&artifact)?.clone();
+        let profile = self.profile_of(&artifact)?;
         let (bytes, sha) = self.read_artifact(&artifact)?;
         let (base_img, _) = decode(&bytes, Some(&artifact.path), DecodeLimits::default())?;
         let base_png = encode_png(&base_img)?;
@@ -225,7 +226,8 @@ impl Engine {
         }
         text.push_str("\nThe result must still meet these requirements:\n");
         let subst = |s: &str| s.replace("{w}", &artifact.canvas[0].to_string()).replace("{h}", &artifact.canvas[1].to_string());
-        for rule in &profile.imagegen.prompt.rules {
+        let (rules, negative) = self.artifact_prompt_rules(&artifact, &profile);
+        for rule in &rules {
             text.push_str(&format!("- {}\n", subst(rule)));
         }
         text.push_str("\nProduce exactly one image.\n");
@@ -234,7 +236,7 @@ impl Engine {
         let request = ImageRequest {
             model: model.clone(),
             prompt: text.clone(),
-            negative: profile.imagegen.prompt.negative.clone(),
+            negative,
             width: artifact.canvas[0],
             height: artifact.canvas[1],
             transparent,
@@ -289,6 +291,7 @@ impl Engine {
                 provider_request_id: None,
                 usage: None,
                 note: Some(format!("edit: {instruction}")),
+                subfamily: artifact.subfamily.clone(),
             },
             provider_id,
             request,

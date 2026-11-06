@@ -16,7 +16,8 @@
 //! * `route-state.lock` carries a short-held lock around every read and every read-modify-write of the state file,
 //!   so several slot holders never lose each other's records.
 //! * `route-state.json` holds [`RouteState`]: the last request time of each slot (for pacing), the 429 backoff, the
-//!   fall back to one request at a time, the revocation record and refused efforts. It never contains a token, a
+//!   fall back to one request at a time, the revocation record, refused efforts, the per-slot pauses and the record of
+//!   "Unable to verify model access" answers. It never contains a token, a
 //!   header or a response body.
 //!
 //! Waiting for a slot or for the pacing gap honours the call's cancel token and uses the call's sleeper, so tests
@@ -57,6 +58,17 @@ pub const MAX_CONCURRENCY: usize = 6;
 pub const CONCURRENCY_ENV: &str = "HOI4_IMAGEGEN_CHATGPT_CONCURRENCY";
 /// How long the route stays at one request at a time after the last sign-out or rate limit.
 pub const FALLBACK_HOLD_SECS: i64 = 6 * 3600;
+/// A slot that got "Unable to verify model access" waits this long before its next request.
+pub const MODEL_ACCESS_PAUSE_SECS: i64 = 60;
+/// A second "Unable to verify model access" within this many seconds, anywhere on the machine, drops the route to
+/// one request at a time.
+pub const MODEL_ACCESS_WINDOW_SECS: i64 = 15 * 60;
+/// How long that fall back lasts after the last occurrence. Shorter than [`FALLBACK_HOLD_SECS`]: the message is a
+/// transient hiccup of the backend (three times in three minutes on 2026-11-05, with successes in between), not a
+/// sign-out or a plan limit, so an hour of one at a time is enough to see whether it passes.
+pub const MODEL_ACCESS_HOLD_SECS: i64 = 3600;
+/// The backend message, lower case. Matched case-insensitively anywhere in an error event or an HTTP error body.
+pub const MODEL_ACCESS_PHRASE: &str = "unable to verify model access";
 /// Waits for pacing and backoff sleep in slices of this length so a cancel is noticed within a second.
 const SLEEP_SLICE: Duration = Duration::from_secs(1);
 
@@ -69,6 +81,9 @@ const STATE_VERSION: u32 = 2;
 pub const FALLBACK_SIGN_OUT: &str = "sign_out";
 /// Fallback reason: a 429 or the backend's usage-limit message.
 pub const FALLBACK_RATE_LIMIT: &str = "rate_limit";
+
+/// Fallback reason: the backend could not verify model access twice within [`MODEL_ACCESS_WINDOW_SECS`].
+pub const FALLBACK_MODEL_ACCESS: &str = "model_access_unverified";
 
 /// The sentence every revoked report starts with is built here, so status, doctor and generation agree.
 pub const RELOGIN_HINT: &str = "run `hoi4-imagegen login` to sign in again";
@@ -121,13 +136,14 @@ impl Fallback {
 
     /// The warning shown with generations, errors, `doctor`, `login-status` and `hoi4.image_status`.
     pub fn message(&self) -> String {
-        let reason = match self.reason.as_str() {
-            FALLBACK_SIGN_OUT => "a sign-out by the server",
-            FALLBACK_RATE_LIMIT => "a rate limit",
-            other => other,
+        let (reason, new) = match self.reason.as_str() {
+            FALLBACK_SIGN_OUT => ("a sign-out by the server", "sign-out or rate limit"),
+            FALLBACK_RATE_LIMIT => ("a rate limit", "sign-out or rate limit"),
+            FALLBACK_MODEL_ACCESS => ("the backend failing twice within 15 minutes to verify model access", "model-access error"),
+            other => (other, "sign-out or rate limit"),
         };
         format!(
-            "the ChatGPT-login route dropped to one request at a time on this machine after {reason} ({}) at {}; it goes back to several at a time after {} if no new sign-out or rate limit arrives",
+            "the ChatGPT-login route dropped to one request at a time on this machine after {reason} ({}) at {}; it goes back to several at a time after {} if no new {new} arrives",
             self.code,
             self.at,
             rfc3339_utc(self.until_epoch)
@@ -159,6 +175,37 @@ pub struct RouteState {
     /// Reasoning efforts the backend refused recently, skipped until `until_epoch` so each image is one request.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub refused_efforts: Vec<RefusedEffort>,
+    /// Slots that wait before their next request, keyed by the slot number, until this epoch second.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub slot_pause: BTreeMap<String, i64>,
+    /// The backend's "Unable to verify model access" answers seen on this machine, if any.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub model_access: Option<ModelAccess>,
+}
+
+/// The "Unable to verify model access" occurrences. Holds no secret.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ModelAccess {
+    /// Occurrences recorded on this machine.
+    pub count: u32,
+    /// When the last one was seen (RFC 3339, UTC).
+    pub last_at: String,
+    /// The same instant in epoch seconds.
+    pub last_epoch: i64,
+    /// The occurrence before the last one, in epoch seconds.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub previous_epoch: Option<i64>,
+}
+
+/// What one "Unable to verify model access" came to.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ModelAccessHit {
+    /// Occurrences recorded so far, this one included.
+    pub count: u32,
+    /// This slot waits until this epoch second before its next request.
+    pub pause_until: i64,
+    /// This one followed another within [`MODEL_ACCESS_WINDOW_SECS`], so the route dropped to one request at a time.
+    pub fallback: bool,
 }
 
 /// A reasoning effort the backend refused, remembered for a while.
@@ -205,13 +252,34 @@ impl RouteState {
 
     /// Record a sign-out or rate limit: one request at a time from now for [`FALLBACK_HOLD_SECS`].
     pub fn record_fallback(&mut self, now: i64, reason: &str, code: &str) {
-        self.fallback = Some(Fallback {
-            reason: reason.to_string(),
-            code: code.to_string(),
-            at: rfc3339_utc(now),
-            at_epoch: now,
-            until_epoch: now + FALLBACK_HOLD_SECS,
-        });
+        self.record_fallback_for(now, reason, code, FALLBACK_HOLD_SECS);
+    }
+
+    /// Record a fall back that lasts `hold_secs`. A fall back already in force that lasts longer is kept, so a short
+    /// one never cuts a long one short.
+    pub fn record_fallback_for(&mut self, now: i64, reason: &str, code: &str, hold_secs: i64) {
+        let until_epoch = now + hold_secs;
+        if self.active_fallback(now).is_some_and(|f| f.until_epoch > until_epoch) {
+            return;
+        }
+        self.fallback = Some(Fallback { reason: reason.to_string(), code: code.to_string(), at: rfc3339_utc(now), at_epoch: now, until_epoch });
+    }
+
+    /// Record "Unable to verify model access" seen through `slot`: the slot pauses for [`MODEL_ACCESS_PAUSE_SECS`], and
+    /// a second one within [`MODEL_ACCESS_WINDOW_SECS`] of the last, from any slot or process, drops the route to one
+    /// request at a time for [`MODEL_ACCESS_HOLD_SECS`] after this occurrence.
+    pub fn record_model_access(&mut self, slot: usize, now: i64) -> ModelAccessHit {
+        let previous = self.model_access.as_ref().map(|m| m.last_epoch);
+        let fallback = previous.is_some_and(|p| (0..=MODEL_ACCESS_WINDOW_SECS).contains(&(now - p)));
+        let count = self.model_access.as_ref().map_or(0, |m| m.count).saturating_add(1);
+        self.model_access = Some(ModelAccess { count, last_at: rfc3339_utc(now), last_epoch: now, previous_epoch: previous });
+        let pause_until = now + MODEL_ACCESS_PAUSE_SECS;
+        self.slot_pause.retain(|_, until| *until > now);
+        self.slot_pause.insert(slot.to_string(), pause_until);
+        if fallback {
+            self.record_fallback_for(now, FALLBACK_MODEL_ACCESS, FALLBACK_MODEL_ACCESS, MODEL_ACCESS_HOLD_SECS);
+        }
+        ModelAccessHit { count, pause_until, fallback }
     }
 }
 
@@ -249,6 +317,12 @@ pub fn is_revocation(status: u16, body: &[u8]) -> bool {
 pub fn is_usage_limit(text: &str) -> bool {
     let lower = text.to_ascii_lowercase();
     lower.contains("usage limit") || lower.contains("usage_limit")
+}
+
+/// Whether a backend message is "Unable to verify model access right now", a transient answer the backend gave on
+/// 2026-11-05 to some requests of parallel slots. It arrives as an error event in the stream or in an HTTP error body.
+pub fn is_model_access_unverified(text: &str) -> bool {
+    text.to_ascii_lowercase().contains(MODEL_ACCESS_PHRASE)
 }
 
 /// A short, safe error code from an answer body. Never the body itself.
@@ -297,6 +371,23 @@ pub fn report(state: &RouteState, configured: usize, now: i64) -> Value {
         })
     });
     let last = state.any_last();
+    let model_access = state.model_access.as_ref().map(|m| {
+        let pauses: Vec<Value> = state
+            .slot_pause
+            .iter()
+            .filter(|(_, until)| **until > now)
+            .map(|(slot, until)| json!({"slot": slot.parse::<u64>().unwrap_or(0), "until": rfc3339_utc(*until), "remaining_secs": *until - now}))
+            .collect();
+        json!({
+            "count": m.count,
+            "last_at": m.last_at,
+            "last_ago_secs": (now - m.last_epoch).max(0),
+            "slot_pauses": pauses,
+            "pause_secs": MODEL_ACCESS_PAUSE_SECS,
+            "window_secs": MODEL_ACCESS_WINDOW_SECS,
+            "hold_secs": MODEL_ACCESS_HOLD_SECS,
+        })
+    });
     json!({
         "source": "route-state.json (recorded state only; no request was made)",
         "revoked": state.revoked.is_some(),
@@ -307,6 +398,7 @@ pub fn report(state: &RouteState, configured: usize, now: i64) -> Value {
             "min_gap_secs_per_slot": MIN_GAP_SECS,
         },
         "fallback": fallback,
+        "model_access_unverified": model_access,
         "last_request_at": last.map(rfc3339_utc),
         "last_request_ago_secs": last.map(|t| (now - t).max(0)),
         "refused_efforts": refused,
@@ -551,6 +643,15 @@ impl RouteGuard {
         let _ = self.update(|s| s.record_fallback(now_secs, FALLBACK_RATE_LIMIT, "usage_limit"));
     }
 
+    /// Record "Unable to verify model access" seen through this guard's slot (see [`RouteState::record_model_access`]).
+    /// Even if the save fails the caller returns its error, so a failed save still gives a first-occurrence answer.
+    pub fn record_model_access(&self, now_secs: i64) -> ModelAccessHit {
+        let slot = self.slot;
+        let mut hit = ModelAccessHit { count: 1, pause_until: now_secs + MODEL_ACCESS_PAUSE_SECS, fallback: false };
+        let _ = self.update(|s| hit = s.record_model_access(slot, now_secs));
+        hit
+    }
+
     /// Stamp this slot's request time (and the machine-wide last request) before a request is sent.
     pub fn stamp_request(&self, now_secs: i64) -> Result<(), ProviderError> {
         let slot = self.slot;
@@ -612,6 +713,10 @@ impl RouteGuard {
         }
         if let Some(rl) = &st.rate_limit {
             at = at.max(rl.retry_after_epoch.min(now_secs + RATE_LIMIT_BACKOFF_MAX_SECS));
+        }
+        if let Some(until) = st.slot_pause.get(&self.slot.to_string()) {
+            // a pause stamped in the future (clock moved back) never holds a caller for more than one pause
+            at = at.max((*until).min(now_secs + MODEL_ACCESS_PAUSE_SECS));
         }
         at
     }
@@ -1093,6 +1198,78 @@ mod tests {
         assert_eq!(r["fallback"]["remaining_secs"], FALLBACK_HOLD_SECS);
         assert!(r["fallback"]["message"].as_str().unwrap().starts_with("the ChatGPT-login route dropped to one request at a time"));
         assert_eq!(r["last_request_ago_secs"], 10);
+    }
+
+    #[test]
+    fn the_model_access_message_is_recognised_in_any_case() {
+        assert!(is_model_access_unverified("Unable to verify model access right now."));
+        assert!(is_model_access_unverified(r#"{"error":{"message":"UNABLE TO VERIFY MODEL ACCESS"}}"#));
+        assert!(!is_model_access_unverified("Invalid prompt."));
+        assert!(!is_model_access_unverified("model access denied"));
+    }
+
+    #[test]
+    fn model_access_occurrences_pause_the_slot_and_the_second_within_the_window_triggers() {
+        let mut st = RouteState::default();
+        let a = st.record_model_access(1, 10_000);
+        assert_eq!(a, ModelAccessHit { count: 1, pause_until: 10_060, fallback: false });
+        assert_eq!(st.fallback, None);
+        assert_eq!(st.slot_pause.get("1"), Some(&10_060));
+        // exactly 15 minutes later counts, one second more does not
+        let mut at_edge = st.clone();
+        assert!(at_edge.record_model_access(0, 10_000 + MODEL_ACCESS_WINDOW_SECS).fallback);
+        let mut past = st.clone();
+        assert!(!past.record_model_access(0, 10_000 + MODEL_ACCESS_WINDOW_SECS + 1).fallback);
+        // a clock that moved back never counts as "within the window"
+        let mut back = st.clone();
+        assert!(!back.record_model_access(0, 9_000).fallback);
+        // the second triggers, for an hour from itself
+        let b = st.record_model_access(0, 10_100);
+        assert!(b.fallback);
+        let f = st.fallback.clone().unwrap();
+        assert_eq!(
+            (f.reason.as_str(), f.code.as_str(), f.until_epoch),
+            (FALLBACK_MODEL_ACCESS, FALLBACK_MODEL_ACCESS, 10_100 + MODEL_ACCESS_HOLD_SECS)
+        );
+        assert_eq!(st.fallback.as_ref().map(|f| f.until_epoch - f.at_epoch), Some(3600), "one hour, not the six of a sign-out");
+        assert_eq!(st.model_access.as_ref().map(|m| (m.count, m.previous_epoch)), Some((2, Some(10_000))));
+        // a long fall back already in force is not shortened
+        let mut long = RouteState::default();
+        long.record_fallback(10_000, FALLBACK_RATE_LIMIT, "http_429");
+        long.record_model_access(0, 10_010);
+        assert!(long.record_model_access(0, 10_020).fallback);
+        assert_eq!(long.fallback.unwrap().reason, FALLBACK_RATE_LIMIT);
+        // and a state file from 0.3.3 without these fields still reads
+        let old: RouteState = serde_json::from_str(r#"{"version":2,"slot_last_request":{"0":5}}"#).unwrap();
+        assert!(old.model_access.is_none() && old.slot_pause.is_empty());
+    }
+
+    #[test]
+    fn a_slot_pause_holds_only_that_slot_and_is_bounded_by_a_moved_clock() {
+        let d = work_dir();
+        let route = route_at(&d, 3, 1000);
+        let a = route.acquire(&CancelToken::new(), &CountingSleeper::default()).unwrap();
+        let b = route.acquire(&CancelToken::new(), &CountingSleeper::default()).unwrap();
+        a.record_model_access(1000);
+        assert_eq!((a.next_allowed(1000), b.next_allowed(1000)), (1060, 1000));
+        a.update(|s| {
+            s.slot_pause.insert("0".into(), 9_000_000);
+        })
+        .unwrap();
+        assert_eq!(a.next_allowed(1000), 1060, "a pause stamped far ahead holds a caller for one pause at most");
+    }
+
+    #[test]
+    fn the_report_shows_the_model_access_record_and_pauses() {
+        let mut st = RouteState::default();
+        assert!(report(&st, 3, 1000)["model_access_unverified"].is_null());
+        st.record_model_access(2, 1000);
+        let r = report(&st, 3, 1030);
+        let m = &r["model_access_unverified"];
+        assert_eq!((m["count"].as_u64(), m["last_ago_secs"].as_i64()), (Some(1), Some(30)));
+        assert_eq!(m["slot_pauses"], json!([{"slot": 2, "until": rfc3339_utc(1060), "remaining_secs": 30}]));
+        assert_eq!((m["pause_secs"].as_i64(), m["window_secs"].as_i64(), m["hold_secs"].as_i64()), (Some(60), Some(900), Some(3600)));
+        assert_eq!(report(&st, 3, 1061)["model_access_unverified"]["slot_pauses"], json!([]), "an expired pause is not listed");
     }
 
     #[test]

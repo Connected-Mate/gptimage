@@ -6,7 +6,7 @@
 use imagegen_core::family::{Family, GuiTextureKind};
 use imagegen_core::profile::{Profile, ProfileSet};
 use imagegen_core::style::{self, StyleProfile, StyleWhy};
-use imagegen_core::stylesrc::{self, Resolved, SourceCtx};
+use imagegen_core::stylesrc::{self, RequestKey, Resolved, SourceCtx};
 use imagegen_core::validate::StyleModel;
 
 use super::Engine;
@@ -48,6 +48,7 @@ impl Engine {
         max_send: usize,
         scan_all: bool,
         gui_kind: Option<GuiTextureKind>,
+        request: Option<RequestKey<'_>>,
     ) -> Resolved {
         let game = self.game_dir();
         let builtin = ProfileSet::builtin();
@@ -60,14 +61,42 @@ impl Engine {
             max_send,
             scan_all,
             gui_kind,
+            request,
         })
     }
 
-    /// The style distribution the `style` check compares with, when some tier has enough images.
+    /// The style distribution the `style` check compares with, when some tier has enough images. A profile with a
+    /// style pack takes the pack's references for the family as its pinned style.
     pub(crate) fn style_model(&self, profile: &Profile) -> Option<StyleModel> {
-        let pinned = self.pinned_style_for(profile.family, None);
-        let r = self.resolve_style(profile, pinned.as_ref(), 1, false, None);
+        let from_pack = profile.pack.as_ref().and_then(|pk| {
+            let p = imagegen_core::pack::load(&self.fs, &pk.name).ok()?;
+            let references = p.resolve(profile.family, None)?.references;
+            (!references.is_empty()).then(|| StyleProfile {
+                schema: 1,
+                name: pk.name.clone(),
+                description: String::new(),
+                prompt_fragments: Vec::new(),
+                negative_rules: Vec::new(),
+                palette_notes: String::new(),
+                families: vec![profile.family],
+                default: None,
+                references,
+                provider: None,
+                model: None,
+                seed_policy: None,
+                approved_by: None,
+                approved_on: None,
+            })
+        });
+        let pinned = from_pack.or_else(|| self.pinned_style_for(profile.family, None));
+        let r = self.resolve_style(profile, pinned.as_ref(), 1, false, None, None);
         let (tier, drift) = (r.tier?, r.drift?);
-        Some(StyleModel { drift, tier: tier.number(), tier_name: tier.label().to_string(), subject: r.subject.unwrap_or_default() })
+        Some(StyleModel {
+            drift,
+            tier: tier.number(),
+            tier_name: tier.label().to_string(),
+            subject: r.subject.unwrap_or_default(),
+            near_duplicate_bits: r.near_duplicate_bits,
+        })
     }
 }

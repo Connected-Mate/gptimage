@@ -153,3 +153,29 @@ fn the_configured_concurrency_and_a_fall_back_show_in_the_status_route_block() {
     let (_d, e) = open("", RunMode::Hosted, false, &[]);
     assert!(e.status()["chatgpt_login"].get("route").is_none());
 }
+
+/// "Unable to verify model access": the occurrences, the slot pause and the fall back they cause show in
+/// `hoi4.image_status`. SYNTHETIC state; the status reads it only.
+#[test]
+fn model_access_answers_show_in_the_status_route_block() {
+    let (d, e) = open("", RunMode::LocalStdio, false, &[]);
+    assert!(e.status()["chatgpt_login"]["route"]["model_access_unverified"].is_null());
+    let route = provider_chatgpt_login::route::Route::new(CredentialStore::at(d.path().join("chatgpt-auth.json")).state_dir());
+    route
+        .update(|s| {
+            let _ = s.record_model_access(1, 1_793_404_800 - 30);
+        })
+        .unwrap();
+    let r = &e.status()["chatgpt_login"]["route"];
+    assert_eq!(r["model_access_unverified"]["count"], 1);
+    assert_eq!(r["model_access_unverified"]["slot_pauses"][0]["slot"], 1);
+    assert!(r["fallback"].is_null());
+    route
+        .update(|s| {
+            let _ = s.record_model_access(2, 1_793_404_800 - 10);
+        })
+        .unwrap();
+    let r = &e.status()["chatgpt_login"]["route"];
+    assert_eq!(r["model_access_unverified"]["count"], 2);
+    assert_eq!((r["fallback"]["reason"].as_str(), r["concurrency"]["effective"].as_u64()), (Some("model_access_unverified"), Some(1)));
+}

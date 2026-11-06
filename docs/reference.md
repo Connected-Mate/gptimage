@@ -21,7 +21,7 @@ status -> families -> icon | picture | portrait | flag | unit | interface   (fre
 |---|---|
 | `hoi4.image_status` | Providers (key present or not, never the value), model tables with their date, game folder, profile source, ledger chain, ChatGPT-login state |
 | `hoi4.image_families` | The catalogue: every family (or one) with its group and tool, the vanilla-measured canvas and frames, accepted sizes, the mod's override, naming, checks, review rubric, final paths and the style sources that exist for it. `calibrate: true` compares the table with the installed game's file headers |
-| `hoi4.image_references` | Reference images with role and rights note, and project style profiles pinned by SHA-256 |
+| `hoi4.image_references` | Reference images with role and rights note, project style profiles pinned by SHA-256, and style packs (`pack_list`, `pack_get`, `pack_save`, `pack_validate`) |
 | `hoi4.image_icon`, `hoi4.image_picture`, `hoi4.image_portrait`, `hoi4.image_flag`, `hoi4.image_unit`, `hoi4.image_interface`, `hoi4.image_animation` | One tool per group of families. Each has a **required `family`** whose schema enum lists only that group's families. Without `approve`: a free plan (prompt, references, provider, model, size, cost estimate with its basis, output paths) and a `plan_id`. With `approve: true` and an `idempotency_key`: plan and generate in one call |
 | `hoi4.image_generate` | Runs a stored plan. One provider call per variant. The same `idempotency_key` replays instead of paying again |
 | `hoi4.image_edit` | Refines a candidate with an instruction, an optional mask and extra references. Also makes the ruined second frame of a building and the further key frames of an `anim_blend_keyframes` strip |
@@ -89,7 +89,8 @@ A chain is the caller's optional pre-steps followed by the family's mandatory fi
 |---|---|---|---|
 | `icon` | transparent icons, technology, modifier_stat_icon, gui_texture | trim, fit to the canvas with the profile margin, grayscale where the family needs it. A focus icon also gets its `_shine` sprite entry at install. A technology picture gets its tier numeral when `overlay` asks for one (see below) | one DDS |
 | `raid` | `raid` | trim, fit, then `gold_gradient`: the subject recoloured on vanilla's gold ramp, pale gold at the top to brown at the bottom, with the black outline on its edge | one DDS |
-| `doctrine` | `doctrine` | trim, fit 2 px further in, then `doctrine_look`: the units filled black with vanilla's pale outline and glow, warm orange and yellow accents kept with a dark shadow | one DDS |
+| `doctrine` | `doctrine` | trim, fit 3 px inside the 1 px checked margin (the reach of the dark shadow around an accent, so the glow keeps the margin; 73 of 105 vanilla icons keep 1 px or less), then `doctrine_look`: the units filled black with vanilla's pale outline and glow, warm orange and yellow accents kept with a dark shadow | one DDS |
+| `vignette` | `agency_upgrade` | trim, then `round_vignette`: the subject cut to the disc inscribed in its centred square (clear pixels laid over vanilla's median disc colour), its mean saturation lowered to vanilla's median 0.249, its mean value moved to vanilla's median 0.423 to 75th percentile 0.466, gold and bronze tones held to vanilla's 75th percentile 0.218, and the edge darkened to vanilla's profile (0.47 of the inner value at the rim, back to 0.99 nine pixels in), then fit with the 8 px margin. An opaque picture works as a source too | one DDS |
 | `line_art` | `special_project_icon` | `line_art`: any image redrawn as vanilla's thin, pale white lines with nothing filled, then grayscale | one DDS |
 | `picture` | decision pictures, news, super_event | flatten on black, cover-resize, grayscale for news | one DDS |
 | `report_card` v2 | `report_event` | flatten, then the report card: sepia, grain, tilt and a soft shadow fitted to vanilla, 210x176 with transparent corners | one DDS |
@@ -100,8 +101,13 @@ A chain is the caller's optional pre-steps followed by the family's mandatory fi
 | `flag` | `flag` | flatten, then the 82x52, 41x26 and 10x7 ladder | three TGA, bottom-left origin |
 | `selected_strip` | `faction_logo`, `agency_logo` | fit with a margin, then frame 2 as the selected state. A faction logo also gets its 32x32 `_miniature` | one two-frame DDS, plus the miniature for a faction logo |
 | `landmark_strip` | `building` | fit, then frame 2 as the ruined landmark, made from a second candidate of the same asset (`hoi4.image_edit` on the first, passed as `second_frame_candidate`). A 64x64 landmark also gets the 32x32 `_small` strip, a flat orange pictogram like vanilla's small landmarks | one or two two-frame DDS |
+| `upright_print` | `report_event`, `operation_picture` with a style pack's `upright_print` | the art fitted to the pack's canvas as it is: no tilt, mask, tone or shadow (see [style packs](#processing-switches)) | one DDS |
+| `kept_unit_art` | counters and `division_emblem` with a style pack's `keep_colours` | the art fitted into vanilla's glyph box in its own colours, and a counter's NATO box as an outline in the glyph's colour | one DDS, or two |
+| `filled_icon` | transparent icon families with a style pack's `fill_canvas` | the art cover-resized to the whole canvas, opaque allowed | one DDS |
 | `unit_counter` | `counter_large`, `counter_small` | `unit_glyph`: the silhouette in vanilla's green (or the on-map grey) material, then `nato_frame`: the NATO box as frame 2. The on-map counter also gets its text icon | one DDS, or two |
 | `division_symbol` | `division_emblem` | `unit_glyph` in vanilla's green material, and the 30x12 small symbol | two DDS |
+
+A style pack's `crisp` switch keeps the recipe and swaps each Lanczos3 fit for an area-filter fit (`area_fit`, `area_cover`), with no defringe.
 
 A medal is made as one 56x84 frame, registered as `GFX_medal_icon_<asset>_large`, and its 28x42 `GFX_medal_icon_<asset>` is derived from it. The medal is fitted into vanilla's 33x56 box in that frame (`fit_in_box`), so it spans two thirds of the frame as vanilla's do.
 
@@ -156,33 +162,148 @@ A plan picks style references for the family on its own. The mod comes first and
 | 1 | The project's pinned style profile for the family (`.hoi4-imagegen/styles/`) |
 | 2 | The mod's own copy of the asset skill's shelf, `.claude/skills/*/assets/*/<shelf folder>/`. It holds vanilla art but is the mod's copy |
 | 3 | The mod's own installed assets: the family's texture folders, plus textures its `.gfx` files register under the family's sprite pattern |
-| 4 | Vanilla art from the installed game |
+| 4 | Vanilla art from the installed game and its DLC folders (`dlc/<dlc>/gfx/...`, read the same way; a zipped DLC is not read) |
 
 A pinned style profile is tier 1 only when it applies to the family. A plan's `style: <name>` always applies it. Otherwise a profile applies by itself only when its `families` list names the family, or when it has `default: true` (then it covers the families it lists, or every family when it lists none). A profile with an empty `families` list and no `default` is available by name to any family but never applied by itself. `default: false` turns automatic use off. A profile that names the family ranks above a `default: true` profile for all families. The plan says which profile it applied and why.
 
 Tier 4 keeps each family to the vanilla files of its one form. Commander traits leave out the operative traits. operation_icon takes only the 59x58 phase icons and operation_picture only the 210x176 phase pictures, building takes only the 128x64 painted landmark strips, and bop_side leaves out the coloured `_improved` and `_max` state variants. A `gui_texture` takes vanilla references only when the request names its `texture_kind`: `button` (`gfx/interface/button_*` and `gfx/interface/buttons/`), `frame` (`gfx/interface/*_frame*`), `panel` (`gfx/interface/tiles/tiled_*`) or `background` (`gfx/interface/*_bg` of at least 256 px a side). The kind also adds its vanilla form to the prompt.
 
-When the mod's own references (tier 2 or 3) show a form, such as a frame or a background, that form wins over the vanilla form the family rules describe. References the request sends itself with the role `style_anchor` win the same way. Then no vanilla reference and no vanilla style paragraph go with them, because vanilla art beside them pulls the image back to the vanilla form.
+When the mod's own references (tier 2 or 3) show a form, such as a frame or a background, that form wins over the vanilla form the family rules describe.
 
-The first tier with at least 3 usable images is used. A pinned style is always sent, even with fewer images, but then gives no statistics. The plan reports every reference with its tier, reason, SHA-256 and whether it goes to the provider (`style_sources` in the plan, also in `hoi4.image_families`).
+**Caller anchors.** References the request sends itself with the role `style_anchor` replace every automatic tier (`style_mode: "replace"`, the default). Only the caller's references are sent, a pinned style stays only when the request names it, and each tier's entry says why nothing of it was sent. The family's form sentence in the prompt gives way to a neutral one (take the frame and form from the anchors), while the size, transparency, margin and readability rules stay. `style_mode: "add"` sends the automatic references beside the anchors instead. The plan's `style_selection.style_mode` says which mode applied. Until 0.3.3 anchors dropped only tier 4, so a mod with the kit's shelf copy sent four shelf files ahead of the anchors.
 
-Selection is deterministic. Each candidate is measured (colour, saturation, edge density, alpha, outline share, hue histogram), and a fixed k-medoids picks up to 4 images to send, within the model's reference limit. The same images give the same choice. The measured statistics also become a short style paragraph in the prompt.
+The first tier with at least 3 usable images is used. A pinned style is always sent, even with fewer images, but then gives no statistics. The plan reports every reference with its tier, reason, SHA-256 and whether it goes to the provider, and the candidates it left out with the reason (`style_sources` in the plan, also in `hoi4.image_families`).
+
+**Statistics.** Each candidate of the used tier is measured (colour, saturation, edge density, alpha, outline share, hue histogram). A fixed k-medoids over an even sample of up to 256 of them picks up to 24 images for the statistics and the drift model. These do not depend on the request, so the measured style stays stable. The statistics become a short style paragraph in the prompt, which goes only with at least one sent automatic reference.
+
+**What is sent (since 0.3.4).** Until 0.3.3 the same k-medoids picked the images to send, so every request in a family got the same few files, nation-specific art included. For tiers 2 to 4 the sent set now depends on the request:
+
+1. **Nation-specific files are left out** unless the brief names the country. A file is nation-specific when its name starts with a country tag (`GER_`), has the tag after the family word (`focus_GER_`, `goal_JAP_`, `idea_SOV_`, and in lower case `focus_jap_` as the kit's shelf copy names them), lies in a tag-named folder (`gfx/leaders/JAP/`), or names a country or its adjective (`focus_generic_attack_romania`). Tags come from the game's `common/country_tags/*.txt` plus a built-in list of the vanilla tags, names from the game's `countries_l_english.yml` plus built-in names of the major powers. A lower-case tag that is also an ordinary word (`cat`, `can`, `car`, `gen`) is not read as a tag. A brief names a country by its tag in capitals or by its name or adjective (`JAP`, `Japan`, `Japanese`). On 1.19.4.1 only 274 of the 2,733 focus files are not nation-specific.
+2. **The sub-family** (below) limits the pool when the request has one.
+3. **About half the slots are theme matches.** The brief's words are matched with each file's name and folder tokens, directly (3 points) and through a built-in synonym table (2 points per shared theme: industry, naval, air, army, politics, research, economy, intelligence, diplomacy, war, defence, infrastructure, agriculture, population, religion). A brief that names a country adds 3 points to that country's files. The picks are drawn from the best matches and must lie within the family's style distribution.
+4. **The other slots are style-typical**, drawn from the more typical half of the eligible files (generic files such as `goal_generic_*` first). Each pick takes, of the next six, the one furthest in style from the images already chosen.
+5. **A hash of the family, asset and brief seeds every draw.** The same request gives the same set and the same plan. Two different briefs rarely share a set. Over 50 focus briefs on 1.19.4.1 the mean overlap between sets is 0.016, where the fixed set of 0.3.3 gave 1. The mean pairwise spread of the sent images (64-bit dHash bits, frame shape, palette) is 22.9, 34.9 and 0.25, against 23.7, 38.2 and 0.30 for vanilla and 17.7, 20.8 and 0.24 for the 0.3.3 set.
+
+With automatic references (tiers 2 to 4) the prompt adds a line: they show the style only, so the model never copies their frame, emblem, subject or composition and varies them within the family's range. The line is left out beside caller anchors.
+
+**Sub-families (since 0.3.4).** Large families split into kinds: `naval`, `air`, `industry`, `economy`, `research`, `intelligence`, `politics`, `diplomacy`, `society`, `army` and `other`. A file's sub-family is the group its name and folder tokens hit most in the theme table. `crates/imagegen-core/data/subfamilies.json` holds, for the 17 families with at least 60 vanilla files and themed names, each sub-family's file count, example names, style groups (a k-medoids of the style descriptors) and measured form and palette numbers, with a form note written from them. Flags, portraits, advisor cards and achievements are not split. The `subfamilies_data` test regenerates the file from the game and fails when it is stale (`UPDATE_SUBFAMILIES=1` rewrites it).
+
+* A plan or a group tool takes `subfamily`. Without it the brief's words pick one, or none when they match no theme. The plan then warns and uses the whole family.
+* References come from that sub-family only. When it has too few eligible files the whole family is used, and `style_sources.subfamily` says so.
+* The sub-family's form note goes into the prompt after the family's form sentence, except beside caller anchors.
+* The vanilla-match check compares with the sub-family's own spread when it has at least 20 measured vanilla files, else with the whole family, and records which in `compared_with`.
+* The plan (`subfamily`) and the candidate record, and so the ledger, keep it. `hoi4.image_families` lists each family's sub-families with counts, examples and form notes.
 
 `style` is part of every family's check set. It warns with `GFX-STYLE-DRIFT` when a candidate is far from the family's style distribution. It is a warning, never an error, and never blocks an install.
 
+**Near-duplicates (since 0.3.4).** Processing and validation compare an output with the project's earlier outputs of the same family: the latest processed artifact of each other asset, up to 200, or the latest raw candidate for a raw one. The measure is a 128-bit dHash of the image over mid grey at its own size, which sees the frame and the placement of the large shapes. The threshold is the family's own: the 1st percentile of the distances between distinct images of the used reference set, at least 6 bits (16 when there is no set). On 1.19.4.1 it is 28 bits for focus, 31 for national spirits, 27 for decisions, 15 for decision categories, 41 for report events, 22 for unit leader traits and 24 for technologies. An output that close to an earlier one gets the warning `GFX-NEAR-DUPLICATE`, naming it and the reference images both used. It is a warning, never an error. The candidate record lists the references each image was made with, and the recorded validation keeps the finding.
+
 Vanilla references may always be sent to a provider (a maintainer decision of 2026-11-01), and the tool never copies a vanilla file into a mod. Vanilla art is left out of the contact sheet that is written into the mod. The vanilla side-by-side sheet (see the review below) goes to the user's cache folder instead.
+
+## Style packs
+
+A mod with a house style of its own needs that style in many families at once, not one style profile at a time. A total conversion such as The New Order (TNO) draws decisions, counters, commander traits, technology and GUI panels as a flat teal terminal, its operations and super events as teal archival photographs, and its events on an upright print or a tall press strip. Vanilla's processing and checks would pull every one of those back to the vanilla look. A **style pack** carries the mod's look for every family it covers, in one named file.
+
+A pack lives in `.hoi4-imagegen/packs/<name>/pack.toml`, with its reference images in the mod, usually in the same folder. It has no authority of its own: it changes which references, prompt text, canvas and finishing a plan uses, never what an agent may do.
+
+```toml
+schema = 1
+name = "tno"
+description = "TNO house style"
+
+[families.decision]
+look = "flat teal pictogram on transparent, crisp pixel edges, white and salmon red accents only, no frame and no shading"
+form = ["A flat pictogram for a {w}x{h} canvas, drawn in thin teal lines (#4cc6c0) with white and salmon accents, with no frame, plate or shading."]
+negative = ["painted texture", "a frame or plate", "gradients"]
+processing = { crisp = true }
+
+[[families.decision.references]]
+path = ".hoi4-imagegen/packs/tno/decision/tno_decision_ref_1.png"
+sha256 = "5f0c..."
+note = "imported with the pack from decision/tno_decision_ref_1.png"
+
+[families.report_event]
+look = "black and white photograph printed on a slightly tilted white paper print with a soft shadow, upright frame"
+form = ["A black and white photograph on a white paper print, slightly tilted, on a transparent background, filling a {w}x{h} upright frame."]
+canvas = [175, 204]
+processing = { upright_print = true }
+
+[families.gui_texture]
+look = "near-black navy panel with 1 px teal and green lines, terminal look, no ornament"
+
+[families.gui_texture.kinds.panel]
+look = "a near-black navy panel with a 1 px teal border"
+
+[[families.gui_texture.kinds.panel.references]]
+path = ".hoi4-imagegen/packs/tno/gui_texture/tno_gui_texture_ref_3.png"
+sha256 = "9a41..."
+```
+
+Each family entry holds:
+
+| Key | What it does |
+|---|---|
+| `references` | Images inside the mod, pinned by SHA-256. A plan checks every hash and refuses a changed file (`pack_reference_changed`) or a missing one (`pack_reference_missing`), as pinned styles do. At most 16 |
+| `look` | One line appended to the prompt's style |
+| `form` | Form rules that replace the family's vanilla form rules in the prompt, one sentence each (`{w}` and `{h}` are the canvas). Without it the vanilla rules stand |
+| `negative` | Negatives that replace the family's vanilla negatives. Without it the vanilla negatives stand |
+| `canvas` | The canvas of one frame, replacing the family's (the vanilla size stays accepted) |
+| `processing` | Processing switches, all off by default (below) |
+| `kinds` | `gui_texture` only: `references`, `look`, `form` and `negative` per texture kind (`button`, `frame`, `panel`, `background`). A kind without its own value uses the family's |
+
+**Applying a pack.** A plan's `style_pack: "<name>"` applies a pack, and so does the project default:
+
+```toml
+[defaults]
+style_pack = "tno"
+```
+
+`style_pack: "none"` plans without the default. With a pack that covers the family:
+
+* the pack's references for the family (or the request's texture kind) go to the provider as style anchors, at most 8 and within the model's reference limit. They count as the caller's own anchors: the prompt says their form wins, and with `style_mode` `replace` (the default) no automatic reference goes with them, while `style_mode: "add"` sends the automatic tiers beside them. The sub-family is still inferred and recorded, but the pack decides the references, and its form note stays out when the pack's form replaces the family's,
+* the look line goes into the prompt's style, and the form override replaces the vanilla form rules and negatives. A pack form also replaces a GUI texture kind's vanilla form,
+* the pack's canvas and processing switches apply to the plan, the candidate, processing, validation, the review and the install. They are part of the effective profile, so its hash ties every step to the pack,
+* references the request sends itself with the role `style_anchor` still win: the pack's references are then not sent, and its look, form and switches still apply,
+* the plan reports the pack, why it applied (`explicit` or `project_default`), the entry (`decision`, or `gui_texture.panel` for a kind), the look, whether the form and negatives were replaced, the canvas, the switches and each reference with whether it was sent (`style_pack` in the plan, and a tier 0 contribution in `style_selection`).
+
+A family the pack does not cover falls back to the normal tiers above, and the plan says so. A pack entry without references keeps the automatic references, but a pack form drops the vanilla ones. An import (`hoi4.image_process` with `import`) applies the pack's canvas and switches the same way, and takes `style_pack` too.
+
+`hoi4.image_references` manages packs: `pack_list` (with the project default), `pack_get`, `pack_save` (pins every reference, keeps a backup of a replaced file) and `pack_validate`. The validation checks the pinned hashes and the switches, reports each family's reference sizes beside its canvas (and suggests a canvas when three quarters of the references share another size), says which checks and recipe the family then has, and runs the pack-match check of each reference against ranges fitted on the others. On the command line: `hoi4-imagegen pack list`, `pack get <name>`, `pack validate <name>` and `pack import` (see the [how-to](how-to.md#5-make-a-style-pack-for-a-mod-with-its-own-look)).
+
+### Processing switches
+
+Each switch is off by default and applies only to the families named. Each was measured on the references of a mod whose art differs from vanilla processing (TNO's, 8 files per family, read in place and never copied into this repository) and on synthetic images in the tests (`crates/imagegen-mcp/tests/packs.rs`). The validation checks a switch would contradict follow it.
+
+| Switch | Families | What changes | Why (measured) |
+|---|---|---|---|
+| `keep_colours` | `counter_large`, `counter_small`, `division_emblem` | The `kept_unit_art` recipe: no redraw in vanilla's green (or grey) material. Finished art at the accepted size is kept as it is (`conform`). Other art is fitted into vanilla's glyph box in its own colours, and a counter's frame 2 is the NATO box drawn as an outline in the glyph's colour, with no fill and no shadow. Size, frames and alpha still conform. The `unit_material` check is left out | TNO's 8 battalion strips are 152x42 like vanilla's, but their glyph is flat teal (median colour 89, 199, 194) beside an unfilled teal NATO box. None of their 3612 frame-1 glyph pixels has red within 14 levels of blue, which vanilla's material requires, so the vanilla chain would redraw every one in green |
+| `upright_print` | `report_event`, `operation_picture` | The `upright_print` recipe: no tilt, mask, sepia tone or shadow. Art with alpha is fitted to the canvas with its own alpha kept, opaque art is cover-resized. The `card_corners` check is left out | 6 of TNO's 8 report pictures are 175x204, upright, with the photograph's print drawn in the art itself on transparency (16 percent of each is transparent around the print), and black and white (median saturation 0.03). The vanilla card would tilt, tone and mask it a second time. TNO's operation pictures are 150x150 opaque archival photographs |
+| `fill_canvas` | transparent icon families such as `technology` and `gui_texture` | The `filled_icon` recipe: the art is cover-resized to the whole canvas and may be opaque, and the model is asked for an opaque picture. The margin, fill, opaque-corner and side-view checks are left out | TNO's 8 technology pictures are 239x117 blueprint panels, 93 percent opaque (dark navy with teal lines, median saturation 0.77). The vanilla chain refuses an opaque source (`no_transparency_in_source`), and the side-view check measures vanilla's painted form |
+| `crisp` | transparent icon families, and the unit families with `keep_colours` | Every resize uses an area (box) filter (`area_fit`, `area_cover`) instead of Lanczos3, and no defringe erosion runs. The `fringe` check is left out | The icon chain adds no blur filter and no shading: it is a defringe (only when edge pixels carry a key colour), a trim, one resample and, for some families, grayscale. The resample is what changes flat art: a 640 px flat teal pictogram fitted to the 33x32 decision canvas keeps 148 visible pixels off its own colour with Lanczos3 (ringing at hard edges), and none with the area filter. Green line art, which the defringe reads as key colour, is refused by the vanilla chain ("no uncontaminated opaque interior"). Anti-aliasing stays: TNO's decision icons are soft-edged on 44 to 81 percent of their visible pixels |
+
+A news strip needs no switch: a pack `canvas = [161, 420]` makes the tall press strip (TNO's 8 news pictures are all 161x420, vanilla's 397x153), and the picture recipe cover-resizes and greys it at that size. Technology needs a form override too: the pack's form and look replace vanilla's painted side-view rule. `pack_validate` warns when `keep_colours`, `upright_print` or `fill_canvas` is on without a form override, because the vanilla rules then still ask for the vanilla form.
+
+### The review with a pack
+
+An artifact made with a pack is measured against the pack's references for its family (and texture kind), not vanilla's, because art in the mod's style rightly fails vanilla's ranges. Measured on TNO's references as raw candidates against the installed game: all 8 report pictures, battalion counters, news strips, technology pictures and operation pictures, and 7 of 8 commander traits, fail the vanilla-match check, while its decision icons and 7 of 8 focus icons pass it. The preview's side-by-side sheet shows the pack's references, and the review records the set it used (`reference_set` in `vanilla_check`: `kind` `style_pack`, the pack, the entry and the rule).
+
+The features and the checked list are the vanilla-match check's. Only the ranges differ: a pack has about 8 references a family, too few for percentiles, so the rule `pack_match_v1` takes each feature's minimum to maximum over the pack's references and widens it on each side by that whole width, never narrower than twice the vanilla rule's floor. For a normally distributed feature the range of 8 samples is about 2.85 standard deviations on average, so the accepted span is about 8.5 of them, close to the 9.3 of the vanilla rule (1st to 99th percentile widened by half on each side). It needs at least 3 measurable references. `pack_validate` reports, per family, how many references pass ranges fitted on the others: on the 14 TNO families with at least 4 references that was 104 of 110 references, measured with the `vanilla_match_v1` features. The override with a reason stays available and is recorded as before.
 
 ## Validation and install
 
 Install is the last step and the strictest.
 
-1. `hoi4.image_validate` runs the family's full check set, never fewer, with stable finding codes (size, alpha, margins, fill, ghosting, chroma fringe, fake checkerboard, frames, DDS or TGA layout, style). The record carries a hash of the check set.
+1. `hoi4.image_validate` runs the family's full check set, never fewer, with stable finding codes (size, alpha, margins, fill, ghosting, chroma fringe, fake checkerboard, frames, DDS or TGA layout, style, and on icons with a side of 40 px or less the `small_detail` warning). The record carries a hash of the check set.
 2. The gate compares that hash and audits the processing chain against the family's recipe. A record with a missing step is refused.
 3. `hoi4.image_preview` makes the contact sheet and the vanilla side-by-side sheet. `hoi4.image_review` answers the family's rubric and runs the vanilla-match check (next section). Agents may approve. The reviewer's name is recorded with the review.
 4. `hoi4.image_install` needs the `approval_id` of an approval of this exact file, and refuses if any hash changed since.
 5. The write is atomic: every file of an asset (companions, `.gfx` text or the handoff note) is written together and all are undone if one fails.
 
 `mode: handoff` (default) writes the sprite snippet into `docs/assets/<feature>/gfx_handoff.md` for the main agent to wire. `mode: register` inserts the entries into the suggested `.gfx` file as text, keeping comments and layout. Families without a sprite (achievements and flags) are loaded by the game from the file name, so both modes install the files alone. A final file is replaced only if this tool installed it and it is unchanged (`on_exists: replace`).
+
+**Small icons.** An icon family with a side of 40 px or less (decision, decision category icon, state modifier, raid, commander and personal traits) gets one more rule in its prompt: one bold object of a few large, solid shapes, with no thin parallel lines, lattices, groups of small figures or scene. It also gets the `small_detail` check. The check measures the share of the subject's opaque pixels that lie on its edge, which is high for thin lines and small parts, and warns with `GFX-SMALL-DETAIL` above the family's vanilla 95th percentile (raid 0.468, state modifier 0.364, decision 0.342, commander trait 0.347, personal trait 0.448, decision category icon 0.112). Edge density was measured too, but it is high for every small icon, readable or not, so it does not separate them. The warning never blocks an install. The review decides.
+
+**Portrait backdrops.** Each portrait family has its own vanilla backdrop, measured in the two top corners of its own vanilla files: leaders and commanders a pale cream-grey template (L*a*b* 89.8, -1.9, 8.5), scientists a pale blue-grey one lit from the upper left (66.0, -7.2, -14.4, the `gfx/leaders/scientists` folder), and operatives dark warm charcoal (11.9, -0.1, 5.3) with a soft spotlight behind the figure (La Resistance's 163 operative portraits in the DLC folder). Each family's prompt rule names its own backdrop, its vanilla references and vanilla-match files keep to its own files, and the `backdrop` check warns with `GFX-PORTRAIT-BACKDROP` when the top corners are more than 15 (CIE76) from it, and for an operative also when the side band at two thirds of the height is less than 15 lighter than the corners (vanilla 17.1 to 29.2). The backdrop is not recoloured in processing: telling the backdrop from hair, hats and shoulders is not reliable enough to repaint it safely. A council or otherwise unusual portrait may have another backdrop when the brief asks for it.
 
 Deterministic checks are not a style verdict. Composition and readability at game size go to the review. In-game appearance can only be checked by running the game, which this tool never does. It says "installed", not "verified in game".
 
@@ -199,13 +320,15 @@ An approval needs all of these, in this order:
 
 **The vanilla side-by-side sheet.** For an artifact, `hoi4.image_preview` also makes a second sheet: the candidate under a light bar, then the family's six most typical vanilla images, at native size on the top row and enlarged on the bottom row. It holds vanilla pixels, so it is written outside the mod, to `HOI4_IMAGEGEN_CACHE_DIR` or the platform cache folder (`%LOCALAPPDATA%/hoi4-imagegen/cache` on Windows, `$XDG_CACHE_HOME/hoi4-imagegen` or `~/.cache/hoi4-imagegen` elsewhere). The MCP reply returns it as a second image. The preview record lists every vanilla file shown by path and SHA-256.
 
-**The vanilla-match check.** The family's vanilla art is read from the installed game, through the same folders and name rules as the vanilla style tier, at the family's vanilla sizes (large medals are cut out of their strips). Each image is measured: palette (lightness, saturation, value, their spread, dark, bright and middle shares, colours, gold tones), outline share, edge density, alpha coverage, soft alpha, background fill, and form (the subject's size, position and aspect, how much of its box, convex hull and inscribed ellipse it fills, left-right symmetry, the saturation of its top band where a ribbon sits). Each family gets an accepted range per feature from its own vanilla files: the 1st to 99th percentile, widened on each side by half of that width.
+**The vanilla-match check.** The family's vanilla art is read from the installed game and its DLC folders, through the same folders and name rules as the vanilla style tier, at the family's vanilla sizes (large medals are cut out of their strips). Each image is measured: palette (lightness, saturation, value, their spread, dark, bright and middle shares, colours, gold tones), outline share, edge density, alpha coverage, soft alpha, background fill, and form (the subject's size, position and aspect, how much of its box, convex hull and inscribed ellipse it fills, left-right symmetry, the saturation of its top band where a ribbon sits), and the lightness and yellow-blue tone of the two top corners, where a portrait shows its backdrop. Each family gets an accepted range per feature from its own vanilla files: the 1st to 99th percentile, widened on each side by half of that width.
 
-Thirteen features can fail a candidate: the form features and the two medium features that separate painted, line and grey art (the middle-value share and the saturation). The others are measured and reported only, because the art labelled good differs from vanilla in them as much as the rejected art does. A failure names each feature with its value, vanilla's range and vanilla's median. On HOI4 1.19.4.1 between 97.6 and 100 percent of each family's own vanilla files pass its check. The check is version `vanilla_match_v1`, recorded with every result.
+Thirteen features can fail a candidate of any family: the form features and the two medium features that separate painted, line and grey art (the middle-value share and the saturation). The others are measured and reported only, because the art labelled good differs from vanilla in them as much as the rejected art does. A family whose vanilla art is one consistent palette also has its own palette checks with a narrower range. `agency_upgrade` checks the mean saturation, the mean value and the share of gold and bronze tones, each widened by a quarter of the percentile range instead of a half: saturation 0.053 to 0.471, value 0.179 to 0.586 and gold tones up to 0.476, where vanilla's 15 files run 0.115 to 0.402, 0.239 to 0.518 and 0 to 0.399. With the general widening a saturated, warm painted medallion passed. The four portrait families check the lightness and yellow-blue tone of the backdrop in the two top corners against their own vanilla files (see Portrait backdrops below): leaders and commanders refuse the scientists' blue-grey, scientists refuse the leaders' cream, and operatives refuse both and also check the spotlight behind the figure (the side band at two thirds of the height against the top corners). Vanilla leaders include special dark backdrops, so their check passes a dark one, and the `backdrop` warning names it. A failure names each feature with its value, vanilla's range and vanilla's median. On HOI4 1.19.4.1 between 97.6 and 100 percent of each family's own vanilla files pass its check, and all 15 agency upgrades pass. Their own vanilla files pass at 268 of 271 for leaders and commanders (a regency council, a placeholder and a cut-out portrait fail), 217 of 217 for scientists and 163 of 163 for operatives, base game and DLC. The check is version `vanilla_match_v2`, recorded with every result. Version 1 had no family palette checks.
 
 The check is a gate, not a verdict. Art that looks wrong in a way these features cannot see still passes it, and must then fail the rubric. For example, on the gallery the loose steel gate (focus), the war economy cluster (idea spirit) and the bread basket (industrial concern) measure inside vanilla's own spread. The v3 rubric questions are asked against the vanilla sheet for that reason.
 
-**Families without vanilla art** (`gui_texture`, `super_event` and the animation families) cannot be checked. Approve them with an override.
+**Families without vanilla art** (`gui_texture`, `super_event` and the animation families) cannot be checked against vanilla. Approve them with an override, or make them with a [style pack](#style-packs) whose references the review then measures against.
+
+**With a style pack** the check measures the file against the pack's references instead of vanilla's, with a rule for small sets (see [the review with a pack](#the-review-with-a-pack)).
 
 **Override.** A deliberate mod style can be approved past a failing or unavailable check with `"override_vanilla_check": true` and an `"override_reason"` of 10 to 1000 characters. Both are recorded in the ledger and the reply (`vanilla_override`, with the status it overrode). Every review, approving or not, records the check it ran (`vanilla_check`).
 
@@ -237,21 +360,22 @@ What to know before you use it:
 * A refusal by the provider's safety system is reported as a moderation block, with advice to change the brief or the references.
 * **Up to three requests at once.** The route sends at most three requests at a time on your machine, across every process (maintainer decision W5-8 of 2026-11-05, a trial). Set `HOI4_IMAGEGEN_CHATGPT_CONCURRENCY` from 1 to 6 to change it, or `concurrency` under `[providers.chatgpt_login]` in the project config. The variable wins, and 1 means one at a time. Each slot waits at least 20 seconds between its own requests.
 * After a sign-out by the server, a 429 or the backend's usage-limit message, the route drops to one request at a time on the whole machine for six hours. Generations, `doctor`, `login-status` and `hoi4.image_status` show a warning with the reason and the time while it holds.
+* **"Unable to verify model access".** When the backend answers this (seen three times in three minutes on 2026-11-05, with successes in between), the failed request returns a retryable error and its slot waits 60 seconds before its next request. A second answer within 15 minutes, from any slot or process, drops the route to one request at a time for one hour after that answer, with the reason `model_access_unverified` and the same warning. Two answers more than 15 minutes apart do not. `doctor`, `login-status` and `hoi4.image_status` (`chatgpt_login.route.model_access_unverified`) show the count, the last time and the slots still paused.
 * Spend is recorded as unknown, because there is no per-image price and no usage report.
 
 Details, the sign-in steps and the recorded evidence are in [docs/chatgpt-login.md](chatgpt-login.md).
 
 ## Install
 
-The releases are on GitHub: <https://github.com/klimPaskov/hoi4-imagegen-mcp/releases>. Version 0.3.3 has one archive per platform:
+The releases are on GitHub: <https://github.com/klimPaskov/hoi4-imagegen-mcp/releases>. Version 0.3.4 has one archive per platform:
 
 | Platform | Archive |
 |---|---|
-| Windows x64 | `hoi4-imagegen-v0.3.3-x86_64-pc-windows-msvc.zip` |
-| macOS arm64 | `hoi4-imagegen-v0.3.3-aarch64-apple-darwin.tar.gz` |
-| macOS x64 | `hoi4-imagegen-v0.3.3-x86_64-apple-darwin.tar.gz` |
-| Linux x64 | `hoi4-imagegen-v0.3.3-x86_64-unknown-linux-gnu.tar.gz` |
-| Linux arm64 | `hoi4-imagegen-v0.3.3-aarch64-unknown-linux-gnu.tar.gz` |
+| Windows x64 | `hoi4-imagegen-v0.3.4-x86_64-pc-windows-msvc.zip` |
+| macOS arm64 | `hoi4-imagegen-v0.3.4-aarch64-apple-darwin.tar.gz` |
+| macOS x64 | `hoi4-imagegen-v0.3.4-x86_64-apple-darwin.tar.gz` |
+| Linux x64 | `hoi4-imagegen-v0.3.4-x86_64-unknown-linux-gnu.tar.gz` |
+| Linux arm64 | `hoi4-imagegen-v0.3.4-aarch64-unknown-linux-gnu.tar.gz` |
 
 Each archive holds both programs, `LICENSE`, `NOTICE`, `README.md` and `UPSTREAM.md`. The release also has a `SHA256SUMS` file. The binaries are **unsigned**, so Windows SmartScreen and macOS Gatekeeper may warn. The archives and `SHA256SUMS` carry GitHub build attestations. To check a download:
 
@@ -302,6 +426,7 @@ To build from source, use Rust 1.88 or newer and run `cargo build --release`. Th
 ```toml
 [defaults]
 provider = "openai"                  # optional; without it the provider order above applies
+style_pack = "tno"                   # optional: the style pack every plan uses unless it names another or "none"
 
 [policy]
 forbidden_families = []              # for example ["leader_portrait"]
@@ -321,7 +446,7 @@ workflow = ".hoi4-imagegen/comfyui/text_to_image.json"
 canvas = [94, 86]
 ```
 
-Project state lives in `.hoi4-imagegen/`: config, styles, plans, the ledger (`ledger.jsonl`) and records. Working files go in `docs/assets/<feature>/`, as the kit's asset skill describes.
+Project state lives in `.hoi4-imagegen/`: config, styles, style packs (`packs/`), plans, the ledger (`ledger.jsonl`) and records. Working files go in `docs/assets/<feature>/`, as the kit's asset skill describes.
 
 ## Rules the tools enforce
 

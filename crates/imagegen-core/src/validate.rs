@@ -140,6 +140,8 @@ pub const ALL_CHECKS: &[&str] = &[
     "line_art",
     "unit_material",
     "side_view",
+    "small_detail",
+    "backdrop",
     "style",
     "dds",
     "tga",
@@ -147,7 +149,7 @@ pub const ALL_CHECKS: &[&str] = &[
 
 /// Checks that judge the main image only: a companion (a tinted text icon, a smaller strip) is not the family's
 /// finished art and skips them.
-pub const MAIN_IMAGE_ONLY_CHECKS: &[&str] = &["unit_material", "side_view", "line_art"];
+pub const MAIN_IMAGE_ONLY_CHECKS: &[&str] = &["unit_material", "side_view", "line_art", "small_detail", "backdrop"];
 
 /// Code of a special project drawing with a filled area (`line_art` check).
 pub const FILLED_CODE: &str = "GFX-FILLED-INTERIOR";
@@ -155,6 +157,86 @@ pub const FILLED_CODE: &str = "GFX-FILLED-INTERIOR";
 pub const UNIT_MATERIAL_CODE: &str = "GFX-UNIT-MATERIAL";
 /// Code of a technology picture that may not be vanilla's side view (`side_view` check).
 pub const SIDE_VIEW_CODE: &str = "GFX-TECH-VIEW";
+/// Code of a small icon made of thin lines and small parts (`small_detail` check).
+pub const SMALL_DETAIL_CODE: &str = "GFX-SMALL-DETAIL";
+/// Code of a portrait whose backdrop is far from its family's vanilla backdrop (`backdrop` check).
+pub const BACKDROP_CODE: &str = "GFX-PORTRAIT-BACKDROP";
+
+/// A portrait family's vanilla backdrop: the median CIE L*a*b* of the two top corners ([`crate::vanillamatch::backdrop_lab`]
+/// at 156x210) over the family's vanilla files (HOI4 1.19.4.1, measured by `tests/vanilla_forms.rs`), and the largest
+/// colour distance (CIE76) before `GFX-PORTRAIT-BACKDROP` warns. Leaders and commanders share one pale cream-grey
+/// template, scientists have a pale blue-grey one, and vanilla's 163 operative portraits (La Resistance's
+/// `portrait_*_operative_*`) are dark warm charcoal at the top. The distance
+/// between the leader and scientist backdrops is about 33 and between the leader and operative ones about 77, so a
+/// limit of 15 tells them apart. `None` for a family that is not a portrait.
+pub fn portrait_backdrop(family: crate::family::Family) -> Option<([f64; 3], f64)> {
+    use crate::family::Family::*;
+    match family {
+        LeaderPortrait | CommanderPortrait => Some((LEADER_BACKDROP, BACKDROP_LIMIT)),
+        ScientistPortrait => Some((SCIENTIST_BACKDROP, BACKDROP_LIMIT)),
+        OperativePortrait => Some((OPERATIVE_BACKDROP, BACKDROP_LIMIT)),
+        _ => None,
+    }
+}
+const LEADER_BACKDROP: [f64; 3] = [89.8, -1.9, 8.5];
+const SCIENTIST_BACKDROP: [f64; 3] = [66.0, -7.2, -14.4];
+const OPERATIVE_BACKDROP: [f64; 3] = [11.9, -0.1, 5.3];
+const BACKDROP_LIMIT: f64 = 15.0;
+
+/// The least light behind the figure an operative portrait has before `GFX-PORTRAIT-BACKDROP` warns
+/// ([`crate::vanillamatch::backdrop_glow`], in CIE L*): vanilla's operatives sit in a soft spotlight that makes the side
+/// band at two thirds of the height 17.1 to 29.2 lighter than the top corners (median 27.6, 163 files). The 0.3.3
+/// gallery's two operatives were dark but evenly lit (0.2 and 11.4). `None` for the other families.
+pub fn portrait_min_glow(family: crate::family::Family) -> Option<f64> {
+    (family == crate::family::Family::OperativePortrait).then_some(OPERATIVE_MIN_GLOW)
+}
+const OPERATIVE_MIN_GLOW: f64 = 15.0;
+
+/// Share of a subject's opaque pixels (alpha 128 and up) that lie on its edge, next to a pixel that is not opaque
+/// (4-neighbours; outside the canvas counts as clear). A shape of thick, solid parts has a low share; thin lines, wires,
+/// lattices and scattered small parts have a high one. At a small native size it separates what reads from what
+/// does not better than edge density, which is high for every small icon (vanilla raid icons 0.61 to 1.00, median
+/// 0.89, the 0.3.2 gallery's raid icons 0.72 to 0.92, the unreadable ones among them). `None` with fewer than 8
+/// opaque pixels.
+pub fn edge_share(img: &Rgba) -> Option<f64> {
+    let (w, h) = (i64::from(img.width), i64::from(img.height));
+    let solid = |x: i64, y: i64| x >= 0 && y >= 0 && x < w && y < h && img.alpha(x as u32, y as u32) >= 128;
+    let (mut n, mut edge) = (0u64, 0u64);
+    for y in 0..h {
+        for x in 0..w {
+            if !solid(x, y) {
+                continue;
+            }
+            n += 1;
+            if !(solid(x - 1, y) && solid(x + 1, y) && solid(x, y - 1) && solid(x, y + 1)) {
+                edge += 1;
+            }
+        }
+    }
+    (n >= 8).then(|| edge as f64 / n as f64)
+}
+
+/// The highest [`edge_share`] of a small icon family before `GFX-SMALL-DETAIL` warns: the 95th percentile of the
+/// family's vanilla files at its canvas (HOI4 1.19.4.1, measured by `tests/vanilla_forms.rs`), so about one vanilla
+/// file in twenty would get the warning too. `None` for a family without a limit.
+pub fn small_detail_limit(family: crate::family::Family) -> Option<f64> {
+    use crate::family::Family::*;
+    match family {
+        Raid => Some(RAID_LIMIT),
+        StateModifier => Some(STATE_MODIFIER_LIMIT),
+        Decision => Some(DECISION_LIMIT),
+        CommanderTrait => Some(COMMANDER_TRAIT_LIMIT),
+        PersonalTrait => Some(PERSONAL_TRAIT_LIMIT),
+        DecisionCategoryIcon => Some(DECISION_CATEGORY_ICON_LIMIT),
+        _ => None,
+    }
+}
+const RAID_LIMIT: f64 = 0.468;
+const STATE_MODIFIER_LIMIT: f64 = 0.364;
+const DECISION_LIMIT: f64 = 0.342;
+const COMMANDER_TRAIT_LIMIT: f64 = 0.347;
+const PERSONAL_TRAIT_LIMIT: f64 = 0.448;
+const DECISION_CATEGORY_ICON_LIMIT: f64 = 0.112;
 
 /// The narrowest a technology picture's subject may be, width over height of its visible box, before the side view
 /// is doubted: vanilla's 10th percentile (HOI4 1.19.4.1: 2.30 over 269 pictures at 146x54, 1.81 over 55 at 131x52;
@@ -509,6 +591,57 @@ pub fn validate_image(img: &Rgba, profile: &Profile, checks: &[String], opts: &O
         }
     }
 
+    if wants("backdrop") {
+        run.push("backdrop".into());
+        if let (Some((want, limit)), Some(got)) = (portrait_backdrop(profile.family), crate::vanillamatch::backdrop_lab(img)) {
+            let d = ((got[0] - want[0]).powi(2) + (got[1] - want[1]).powi(2) + (got[2] - want[2]).powi(2)).sqrt();
+            if d > limit {
+                findings.push(Finding::new(
+                    BACKDROP_CODE,
+                    Level::Warning,
+                    format!(
+                        "the backdrop at the top corners is L*a*b* ({:.0}, {:.0}, {:.0}), {d:.0} from vanilla's {} backdrop ({:.0}, {:.0}, {:.0}). Unless the brief asks for a council or otherwise unusual portrait, plan again with the family's own backdrop",
+                        got[0], got[1], got[2], profile.family, want[0], want[1], want[2]
+                    ),
+                    None,
+                    json!({"backdrop_lab": got, "vanilla_lab": want, "distance": d, "limit": limit}),
+                ));
+            }
+        }
+        if let (Some(min), Some(glow)) = (portrait_min_glow(profile.family), crate::vanillamatch::backdrop_glow(img)) {
+            if glow < min {
+                findings.push(Finding::new(
+                    BACKDROP_CODE,
+                    Level::Warning,
+                    format!(
+                        "the backdrop beside the shoulders is only {glow:.0} lighter than at the top corners (CIE L*). Vanilla's {} backdrops have a soft spotlight behind the figure, at least {min:.0} lighter. Unless the brief asks for an unusual portrait, plan again with the family's own backdrop",
+                        profile.family
+                    ),
+                    None,
+                    json!({"glow": glow, "vanilla_min": min}),
+                ));
+            }
+        }
+    }
+
+    if wants("small_detail") {
+        run.push("small_detail".into());
+        if let (Some(limit), Some(share)) = (small_detail_limit(profile.family), edge_share(img)) {
+            if share > limit {
+                findings.push(Finding::new(
+                    SMALL_DETAIL_CODE,
+                    Level::Warning,
+                    format!(
+                        "{share:.2} of the subject's pixels lie on its edge, more than the {limit:.2} of all but one in twenty of vanilla's {} icons: it is made of thin lines or small parts that may not read at {}x{}. Check in the review that one bold object reads at native size",
+                        profile.family, img.width, img.height
+                    ),
+                    None,
+                    json!({"edge_share": share, "vanilla_p95": limit}),
+                ));
+            }
+        }
+    }
+
     if wants("checker") {
         run.push("checker".into());
         if let Some(c) = detect_fake_checkerboard(img) {
@@ -654,6 +787,8 @@ pub struct StyleModel {
     pub tier_name: String,
     /// What the distribution describes, for the message.
     pub subject: String,
+    /// The family's near-duplicate threshold in dHash bits, measured on the same set ([`crate::diversity`]).
+    pub near_duplicate_bits: Option<u32>,
 }
 
 /// The `style` check: a candidate far from the family's style distribution gets `GFX-STYLE-DRIFT` at warning level

@@ -220,7 +220,7 @@ mod tests {
     const ART: &str = "f.a-v1-p1";
 
     fn profile() -> ProfileRef {
-        ProfileRef { id: "focus".into(), hash: "h".into(), kit_sha256: None }
+        ProfileRef { id: "focus".into(), hash: "h".into(), kit_sha256: None, style_pack: None }
     }
 
     fn full_set() -> Vec<String> {

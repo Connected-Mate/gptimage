@@ -53,7 +53,7 @@ impl Engine {
             }
             (None, Some(spec)) => (self.import(spec, p.canvas)?, true),
         };
-        let profile = self.profile_of(&artifact)?.clone();
+        let profile = self.profile_of(&artifact)?;
         let recipe = recipe_of(&profile);
         if p.portrait_crop.is_some() && recipe != Recipe::Portrait {
             return Err(EngineError::invalid(format!("portrait_crop is for portrait families, not {}", profile.family)));
@@ -71,13 +71,14 @@ impl Engine {
         // 1. the caller's pre-steps, 2. the family's finishing steps, 3. the engine-level stages
         let (prepared, mut records) = run_chain_limited(&img, &pre, limit)?;
         let keyed = pre.iter().any(|o| matches!(o, Op::ChromaKey { .. }));
-        if p.counter_symbol.is_some() && recipe != Recipe::UnitCounter {
+        let counter_recipe = recipe == Recipe::UnitCounter || (recipe == Recipe::KeptUnitArt && profile.family != Family::DivisionEmblem);
+        if p.counter_symbol.is_some() && !counter_recipe {
             return Err(EngineError::invalid(format!("counter_symbol is for counter_large and counter_small, not {}", profile.family)));
         }
         let opts = chain::FinishOptions { counter_symbol: p.counter_symbol.clone(), asset: Some(artifact.asset.clone()), overlay: p.overlay.clone() };
         let plan = chain::plan_finishing_with(&profile, artifact.canvas, &prepared, imported, keyed, &artifact.recorded_sha256, &opts)?;
         let symbol = match recipe {
-            Recipe::UnitCounter if plan.ops.iter().any(|o| matches!(o, Op::NatoFrame { .. })) => {
+            _ if counter_recipe && plan.ops.iter().any(|o| matches!(o, Op::NatoFrame { .. } | Op::NatoOutline { .. })) => {
                 let (text, source) = chain::counter_symbol(&opts)?;
                 Some(json!({"symbol": text, "source": source}))
             }
@@ -184,6 +185,9 @@ impl Engine {
         let opts = Options { canvas: (profile.free_canvas() && artifact.canvas != profile.canvas).then_some(artifact.canvas) };
         let quick = validate_image(&main, &profile, &profile.imagegen.checks, &opts);
         let problems = chain::audit(&record, &profile);
+        let subject =
+            super::diversity::Subject { family: artifact.family, asset_id: &artifact.asset_id, processed: true, root_id: &artifact.root_id };
+        let near = self.near_duplicate_findings(&subject, &main, self.style_model(&profile).and_then(|m| m.near_duplicate_bits));
         Ok(json!({
             "artifact_id": id,
             "path": written_rel,
@@ -197,6 +201,7 @@ impl Engine {
             "counter_symbol": symbol,
             "notes": plan.notes,
             "chain": {"complete": problems.is_empty(), "problems": problems},
+            "near_duplicates": near,
             "quick_check": {
                 "status": quick.status,
                 "errors": quick.errors(),
@@ -216,7 +221,15 @@ impl Engine {
     fn import(&self, spec: &ImportSpec, canvas_override: Option<[u32; 2]>) -> EResult<Artifact> {
         export::validate_asset_name(spec.family, &spec.asset)?;
         naming::validate_snake("feature slug", &spec.feature_slug)?;
-        let profile = self.family_profile(spec.family)?.clone();
+        // the style pack's canvas and processing switches apply to imported art as to generated art
+        let base = self.family_profile(spec.family)?.clone();
+        let profile = match self.choose_pack(spec.style_pack.as_deref())? {
+            Some(c) => match c.pack.families.get(&spec.family) {
+                Some(e) => imagegen_core::pack::apply_profile(&base, &c.pack.name, e),
+                None => base,
+            },
+            None => base,
+        };
         if self.config.policy.forbidden_families.contains(&spec.family) {
             return Err(EngineError::refused("family_forbidden_by_project", format!("this project forbids {}", spec.family), RetryClass::Terminal));
         }
@@ -266,7 +279,10 @@ impl Engine {
             _ => return Err(EngineError::invalid("give exactly one of import.path or import.frames")),
         };
         reuse::ensure_no_cross_family_reuse(&self.fs, &self.profiles, spec.family, &reuse::pixel_hash(&img), &source_label)?;
-        lock::check_native_size(&self.profiles, spec.family, [img.width, img.height])?;
+        // a size the style pack gives the family is the family's own in this mod
+        if !profile.accepted_strips().contains(&[img.width, img.height]) {
+            lock::check_native_size(&self.profiles, spec.family, [img.width, img.height])?;
+        }
         let canvas = if profile.needs_mod_canvas() {
             canvas_override.ok_or_else(|| EngineError::invalid(format!("{} has no fixed canvas: pass canvas [width, height]", spec.family)))?
         } else {
@@ -324,6 +340,7 @@ impl Engine {
             provider_request_id: None,
             usage: None,
             note: Some(note),
+            subfamily: None,
         };
         self.ledger.append(kind::IMPORTED, Some(&aid), Some(&rec.candidate_id), &rec)?;
         self.artifact(&rec.candidate_id)
@@ -370,7 +387,7 @@ impl Engine {
             ));
         }
         let (img, _) = decode(&bytes, Some(&second.path), DecodeLimits::default())?;
-        let profile = self.profile_of(&second)?.clone();
+        let profile = self.profile_of(&second)?;
         let (prepared, _) = run_chain_limited(&img, pre, limit)?;
         let keyed = pre.iter().any(|o| matches!(o, Op::ChromaKey { .. }));
         let plan = chain::plan_finishing(&profile, second.canvas, &prepared, false, keyed, &second.recorded_sha256)?;

@@ -10,10 +10,12 @@
 //!    under the family's sprite name pattern),
 //! 4. vanilla art from the installed game.
 //!
-//! The first tier with at least three usable images wins. Its images are measured ([`crate::styledesc`]), a
-//! deterministic k-medoids picks the few that are sent to the provider, and up to 24 medoids feed the style
-//! statistics. The plan reports each choice with its tier, reason and hash. Vanilla art may always be sent; the tool
-//! never copies it into the mod.
+//! The first tier with at least three usable images wins. Its images are measured ([`crate::styledesc`]) and up to
+//! 24 k-medoids feed the style statistics, so the measured style does not depend on the request. The images sent to
+//! the provider depend on the request ([`crate::refselect`]): nation-specific art is left out unless the brief names
+//! the country, files that match the brief's theme are drawn beside style-typical ones, and a hash of the request
+//! seeds the draws. The plan reports each choice and each exclusion with its tier, reason and hash. Vanilla art may
+//! always be sent; the tool never copies it into the mod.
 
 use std::fs::File;
 use std::io::Read;
@@ -22,12 +24,14 @@ use std::path::{Path, PathBuf};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+use crate::diversity;
 use crate::family::{Family, GuiTextureKind};
 use crate::fsio::{display_path, read_limited, ProjectFs};
 use crate::hashing::sha256_hex;
 use crate::pixels::{decode, DecodeLimits};
 use crate::profile::Profile;
 use crate::refs::{classify_project_path, RefOrigin, MAX_REFERENCE_BYTES};
+use crate::refselect::{self, Brief, NationMark, Nations, Rng};
 use crate::style::StyleProfile;
 use crate::styledesc::{self, Analysis, DriftModel, StyleStats, Vector, STATS_IMAGES};
 
@@ -39,6 +43,14 @@ pub const DEFAULT_SEND: usize = 4;
 pub const POOL_CAP: usize = 256;
 /// Most directory entries looked at per scan.
 const SCAN_BUDGET: usize = 12_000;
+/// Most excluded candidates listed in a report.
+pub const MAX_EXCLUDED_LISTED: usize = 40;
+/// Theme matches considered per sent theme slot.
+const THEME_WINDOW_PER_SLOT: usize = 4;
+/// Style-typical images considered per sent typical slot, at least (the window is at least the more typical half).
+const TYPICAL_WINDOW_PER_SLOT: usize = 6;
+/// Style-typical candidates compared per pick (the one furthest from the images already chosen wins).
+const TYPICAL_LOOKAHEAD: usize = 6;
 /// Most `.gfx` files read when looking for registered sprites.
 const MAX_GFX_FILES: usize = 400;
 /// Largest `.gfx` file read.
@@ -119,6 +131,27 @@ pub struct ChosenRef {
     pub used_for_statistics: bool,
 }
 
+/// A candidate of the used tier that the request left out.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct ExcludedRef {
+    /// Project-relative path, or an absolute path inside the installed game.
+    pub path: String,
+    /// Why it was left out.
+    pub reason: String,
+}
+
+/// How the near-duplicate check (`GFX-NEAR-DUPLICATE`) is set up for the family.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct NearDuplicateSummary {
+    /// Images of the used tier that were hashed.
+    pub images: usize,
+    /// Distinct pairs measured.
+    pub pairs: usize,
+    /// dHash distance (of 128 bits) at or below which two outputs are near-duplicates: the 1st percentile of the
+    /// distances between distinct images of the set.
+    pub threshold_bits: u32,
+}
+
 /// How the drift check is set up.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct DriftSummary {
@@ -153,6 +186,16 @@ pub struct StyleReport {
     pub style_paragraph: Option<String>,
     /// Drift check set-up.
     pub drift: Option<DriftSummary>,
+    /// Near-duplicate check set-up.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub near_duplicate: Option<NearDuplicateSummary>,
+    /// The sub-family the references were drawn from, when the request had one.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub subfamily: Option<SubfamilyUse>,
+    /// Candidates of the used tier the request left out, with the reason (at most [`MAX_EXCLUDED_LISTED`]; `notes`
+    /// gives the full count).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub excluded: Vec<ExcludedRef>,
     /// Things to know (skipped tiers, undecodable files).
     pub notes: Vec<String>,
 }
@@ -168,6 +211,8 @@ pub struct Resolved {
     pub tier: Option<Tier>,
     /// What the distribution describes, for messages (for example `the mod's existing national focus icon art`).
     pub subject: Option<String>,
+    /// The near-duplicate threshold measured on the used tier, in dHash bits.
+    pub near_duplicate_bits: Option<u32>,
 }
 
 impl Resolved {
@@ -220,6 +265,33 @@ pub struct SourceCtx<'a> {
     /// The kind of a `gui_texture` (button, frame, panel, background): it picks the vanilla references. Without
     /// it a GUI texture has no automatic reference.
     pub gui_kind: Option<GuiTextureKind>,
+    /// The request the references are for. Without one, the send set is the style-typical k-medoids of the
+    /// family's generic art.
+    pub request: Option<RequestKey<'a>>,
+}
+
+/// What the per-request selection reads from a plan.
+#[derive(Debug, Clone, Copy)]
+pub struct RequestKey<'a> {
+    /// Asset name.
+    pub asset: &'a str,
+    /// The brief.
+    pub brief: &'a str,
+    /// The sub-family to draw from (named in the request or inferred from the brief).
+    pub subfamily: Option<&'a str>,
+}
+
+/// How a request's sub-family limited the references.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct SubfamilyUse {
+    /// Sub-family id.
+    pub id: String,
+    /// True when the references were drawn from the sub-family alone.
+    pub used: bool,
+    /// Eligible files of the used tier in the sub-family.
+    pub files: usize,
+    /// Why, for a person.
+    pub note: String,
 }
 
 // ---- family tables ----
@@ -233,12 +305,28 @@ struct Dir {
     not_suffix: &'static [&'static str],
     contains: &'static [&'static str],
     suffixes: &'static [&'static str],
+    /// Folders below `path` a file must lie under (any one of them, compared case-blind), empty for any.
+    under: &'static [&'static str],
+    /// Folders below `path` whose files are left out.
+    skip: &'static [&'static str],
     /// Smallest width and height a file must have (0: any). Read from the header.
     min_side: u32,
 }
 
 fn dir(path: &'static str, recursive: bool) -> Dir {
-    Dir { path, recursive, prefixes: &[], not_prefix: &[], not_contains: &[], not_suffix: &[], contains: &[], suffixes: &[], min_side: 0 }
+    Dir {
+        path,
+        recursive,
+        prefixes: &[],
+        not_prefix: &[],
+        not_contains: &[],
+        not_suffix: &[],
+        contains: &[],
+        suffixes: &[],
+        under: &[],
+        skip: &[],
+        min_side: 0,
+    }
 }
 
 impl Dir {
@@ -257,6 +345,19 @@ impl Dir {
     fn not_end(mut self, p: &'static [&'static str]) -> Dir {
         self.not_suffix = p;
         self
+    }
+    fn under(mut self, p: &'static [&'static str]) -> Dir {
+        self.under = p;
+        self
+    }
+    fn skip(mut self, p: &'static [&'static str]) -> Dir {
+        self.skip = p;
+        self
+    }
+    /// True when the folders between `path` and the file (`folders`, lower case) meet `under` and `skip`.
+    fn folders_ok(&self, folders: &[String]) -> bool {
+        (self.under.is_empty() || folders.iter().any(|f| self.under.contains(&f.as_str())))
+            && !folders.iter().any(|f| self.skip.contains(&f.as_str()))
     }
     fn has(mut self, p: &'static [&'static str]) -> Dir {
         self.contains = p;
@@ -375,7 +476,18 @@ fn texture_dirs(f: Family, gui_kind: Option<GuiTextureKind>) -> Vec<Dir> {
         OperationPicture => vec![dir("gfx/interface/operations", true).pre(&["phase_"]).not_has(&["_small"])],
         Technology => vec![dir("gfx/interface/technologies", true)],
         Achievement => vec![dir("gfx/achievements", false).not_has(&["_grey", "_not_eligible"])],
-        LeaderPortrait | CommanderPortrait | OperativePortrait | ScientistPortrait => vec![dir("gfx/leaders", true)],
+        // Each portrait family keeps to the files with its own backdrop (measured on 1.19.4.1, see
+        // validate::portrait_backdrop): scientists are the gfx/leaders/scientists folder (pale blue-grey), operatives
+        // La Resistance's portrait_*_operative_* files (163 at 156x210, dark warm charcoal with a spotlight behind the
+        // head) plus a mod's own operatives folder, and leaders and commanders the rest of gfx/leaders (one pale
+        // cream-grey template). The base game's operative_unknown silhouette is a placeholder and belongs to none.
+        LeaderPortrait | CommanderPortrait => {
+            vec![dir("gfx/leaders", true).skip(&["scientists", "operatives", "placeholder"]).not_has(&["_operative_"]).not_pre(&["operative_"])]
+        }
+        OperativePortrait => {
+            vec![dir("gfx/leaders", true).has(&["_operative_"]).skip(&["scientists"]), dir("gfx/leaders", true).under(&["operatives"])]
+        }
+        ScientistPortrait => vec![dir("gfx/leaders", true).under(&["scientists"])],
         AdvisorCard => vec![dir("gfx/interface/ideas", true)],
         Flag => vec![dir("gfx/flags", false)],
         CounterLarge => vec![dir("gfx/interface/counters/divisions_large", true)],
@@ -475,7 +587,19 @@ fn scan_dirs(base: &Path, dirs: &[Dir], sizes: &[[u32; 2]], exts: &[&str]) -> Ve
         walk(&base.join(d.path), d.recursive, 0, &mut budget, &mut found);
         for p in found {
             let big_enough = d.min_side == 0 || header_size(&p).is_some_and(|s| s[0] >= d.min_side && s[1] >= d.min_side);
-            if exts.contains(&ext_of(&p).as_str()) && d.accepts(&stem_of(&p)) && big_enough && size_ok(&p, sizes) && !files.contains(&p) {
+            let folders: Vec<String> = p
+                .strip_prefix(base.join(d.path))
+                .ok()
+                .and_then(|r| r.parent())
+                .map(|r| r.components().map(|c| c.as_os_str().to_string_lossy().to_ascii_lowercase()).collect())
+                .unwrap_or_default();
+            if exts.contains(&ext_of(&p).as_str())
+                && d.accepts(&stem_of(&p))
+                && d.folders_ok(&folders)
+                && big_enough
+                && size_ok(&p, sizes)
+                && !files.contains(&p)
+            {
                 files.push(p);
             }
         }
@@ -484,11 +608,34 @@ fn scan_dirs(base: &Path, dirs: &[Dir], sizes: &[[u32; 2]], exts: &[&str]) -> Ve
     files
 }
 
-/// The family's vanilla texture files in the installed game, limited to `sizes` (empty: any size), sorted by path.
+/// The folders the game loads art from: the game folder, then each DLC folder under `dlc/` in name order. A DLC keeps
+/// its art in the same layout (`dlc/<dlc>/gfx/...`), and some families live mostly there: vanilla's 163 operative
+/// portraits at 156x210 are La Resistance's (`dlc028_la_resistance/gfx/leaders/<region>/portrait_*_operative_*`).
+/// A DLC packed as a zip archive is not read.
+pub fn game_roots(game: &Path) -> Vec<PathBuf> {
+    let mut roots = vec![game.to_path_buf()];
+    let mut dlcs: Vec<PathBuf> = std::fs::read_dir(game.join("dlc"))
+        .map(|rd| rd.filter_map(|e| e.ok()).filter(|e| e.file_type().is_ok_and(|t| t.is_dir())).map(|e| e.path()).collect())
+        .unwrap_or_default();
+    dlcs.sort();
+    roots.extend(dlcs);
+    roots
+}
+
+/// [`scan_dirs`] over every root of [`game_roots`], sorted by path.
+fn scan_game(game: &Path, dirs: &[Dir], sizes: &[[u32; 2]], exts: &[&str]) -> Vec<PathBuf> {
+    let mut files: Vec<PathBuf> = game_roots(game).iter().flat_map(|root| scan_dirs(root, dirs, sizes, exts)).collect();
+    files.sort();
+    files.dedup();
+    files
+}
+
+/// The family's vanilla texture files in the installed game and its DLC folders ([`game_roots`]), limited to `sizes`
+/// (empty: any size), sorted by path.
 /// The same folders and name rules as the vanilla style tier, so the review's vanilla-match check and the style
 /// sources agree on what a family's vanilla art is.
 pub fn vanilla_files(game: &Path, family: Family, sizes: &[[u32; 2]]) -> Vec<PathBuf> {
-    scan_dirs(game, &texture_dirs(family, None), sizes, &RASTER)
+    scan_game(game, &texture_dirs(family, None), sizes, &RASTER)
 }
 
 fn unify(p: &str) -> String {
@@ -574,10 +721,20 @@ pub fn parse_sprites(text: &str) -> Vec<(String, String)> {
     out
 }
 
+#[derive(Clone)]
 struct Pooled {
     cand: Cand,
     file_sha: String,
     analysis: Analysis,
+    dhash: u128,
+}
+
+/// Read, decode and measure one candidate.
+fn measure(c: &Cand) -> Option<Pooled> {
+    let bytes = read_limited(&c.abs, MAX_REFERENCE_BYTES).ok()?;
+    let (img, _) = decode(&bytes, c.abs.file_name().map(|n| n.to_string_lossy().to_string()).as_deref(), DecodeLimits::default()).ok()?;
+    let analysis = styledesc::analyse(&img)?;
+    Some(Pooled { cand: c.clone(), file_sha: sha256_hex(&bytes), analysis, dhash: diversity::dhash(&img) })
 }
 
 /// Measure candidates: sample evenly beyond the cap, drop what cannot be read, drop duplicates, order by content hash.
@@ -586,29 +743,257 @@ fn build_pool(cands: &[Cand], cap: usize, notes: &mut Vec<String>) -> Vec<Pooled
     let mut pool: Vec<Pooled> = Vec::new();
     let mut unreadable = 0usize;
     for c in picked {
-        let Ok(bytes) = read_limited(&c.abs, MAX_REFERENCE_BYTES) else {
+        let Some(p) = measure(c) else {
             unreadable += 1;
             continue;
         };
-        let Ok((img, _)) = decode(&bytes, c.abs.file_name().map(|n| n.to_string_lossy().to_string()).as_deref(), DecodeLimits::default()) else {
-            unreadable += 1;
-            continue;
-        };
-        let Some(analysis) = styledesc::analyse(&img) else {
-            unreadable += 1;
-            continue;
-        };
-        let file_sha = sha256_hex(&bytes);
-        if pool.iter().any(|p| p.file_sha == file_sha) {
+        if pool.iter().any(|q| q.file_sha == p.file_sha) {
             continue;
         }
-        pool.push(Pooled { cand: c.clone(), file_sha, analysis });
+        pool.push(p);
     }
     if unreadable > 0 {
         notes.push(format!("{unreadable} candidate file(s) could not be decoded or were empty and were left out"));
     }
     pool.sort_by(|a, b| a.file_sha.cmp(&b.file_sha).then(a.cand.display.cmp(&b.cand.display)));
     pool
+}
+
+/// What the per-request selection needs to know about the used tier.
+struct Selection<'s> {
+    tier: Tier,
+    family: Family,
+    label: &'s str,
+    found: usize,
+    sampled: &'s str,
+    model: &'s DriftModel,
+    send_slots: usize,
+}
+
+/// Folders of a candidate below `gfx/` (or all of them for a file outside it), for tag-named folders.
+fn rel_dirs(display: &str) -> Vec<&str> {
+    let parts: Vec<&str> = display.split('/').collect();
+    let dirs = &parts[..parts.len().saturating_sub(1)];
+    match dirs.iter().rposition(|d| d.eq_ignore_ascii_case("gfx")) {
+        Some(i) => dirs[i + 1..].to_vec(),
+        None => dirs.to_vec(),
+    }
+}
+
+/// The original-case file stem.
+fn raw_stem(c: &Cand) -> String {
+    c.abs.file_stem().map(|s| s.to_string_lossy().to_string()).unwrap_or_default()
+}
+
+/// File-name tokens plus the name of the folder that holds the file.
+fn file_tokens(c: &Cand) -> Vec<String> {
+    let mut t = refselect::tokens(&raw_stem(c));
+    if let Some(dir) = rel_dirs(&c.display).last() {
+        t.extend(refselect::tokens(dir));
+    }
+    t
+}
+
+/// The send set of an automatic tier (2 to 4) for one request.
+fn select(
+    sel: &Selection,
+    ctx: &SourceCtx,
+    cands: &[Cand],
+    pool: &[Pooled],
+    excluded: &mut Vec<ExcludedRef>,
+    sub_use: &mut Option<SubfamilyUse>,
+    notes: &mut Vec<String>,
+) -> Vec<(Pooled, String)> {
+    let Selection { tier, family, label, found, sampled, model, send_slots } = *sel;
+    let tier_name = match tier {
+        Tier::ModAssetFolderCopy => "mod asset folder copy",
+        Tier::ModAssets => "mod asset",
+        _ => "vanilla",
+    };
+    let nations = Nations::load(ctx.game_dir);
+    let brief = ctx.request.map(|r| Brief::new(family, r.asset, r.brief, &nations));
+    let empty = Brief { words: vec![], themes: Default::default(), nations: Default::default(), seed: 0 };
+    let b = brief.as_ref().unwrap_or(&empty);
+
+    // nation-specific files are left out unless the brief names the country
+    let marks: Vec<Option<NationMark>> = cands.iter().map(|c| nations.nation_of(&raw_stem(c), &rel_dirs(&c.display))).collect();
+    let mut eligible: Vec<usize> = Vec::new();
+    let mut left_out: Vec<(usize, String)> = Vec::new();
+    for (i, m) in marks.iter().enumerate() {
+        match m {
+            Some(m) if !Nations::allows(b, m) => left_out.push((i, format!("nation-specific: {}, and the brief names no such country", m.reason))),
+            _ => eligible.push(i),
+        }
+    }
+    let need = MIN_TIER_IMAGES.max(send_slots);
+    if eligible.len() < need && !left_out.is_empty() {
+        notes.push(format!(
+            "only {} of {} {label} images are not nation-specific (fewer than {need}), so nation-specific files stay in the selection",
+            eligible.len(),
+            cands.len()
+        ));
+        eligible = (0..cands.len()).collect();
+        left_out.clear();
+    }
+    if !left_out.is_empty() {
+        notes.push(format!(
+            "{} of {} {label} images were left out as nation-specific ({}); the first {} are listed under excluded",
+            left_out.len(),
+            cands.len(),
+            nations.source,
+            left_out.len().min(MAX_EXCLUDED_LISTED)
+        ));
+    }
+    excluded.extend(left_out.iter().take(MAX_EXCLUDED_LISTED).map(|(i, why)| ExcludedRef { path: cands[*i].display.clone(), reason: why.clone() }));
+
+    // the request's sub-family: only its files, unless it has too few, then the whole family
+    if let (Some(id), Some(fam)) = (ctx.request.and_then(|r| r.subfamily), crate::subfamily::for_family(family)) {
+        let member = |i: usize| {
+            let dirs = rel_dirs(&cands[i].display);
+            fam.member(&raw_stem(&cands[i]), &dirs[dirs.len().saturating_sub(1)..]) == Some(id)
+        };
+        let (inside, outside): (Vec<usize>, Vec<usize>) = eligible.iter().partition(|&&i| member(i));
+        if inside.len() >= need {
+            notes.push(format!(
+                "{} of the {} eligible {label} images are outside the sub-family {id} and were left out",
+                outside.len(),
+                eligible.len()
+            ));
+            excluded.extend(
+                outside
+                    .iter()
+                    .take(MAX_EXCLUDED_LISTED / 2)
+                    .map(|&i| ExcludedRef { path: cands[i].display.clone(), reason: format!("outside the sub-family {id}") }),
+            );
+            *sub_use = Some(SubfamilyUse {
+                id: id.to_string(),
+                used: true,
+                files: inside.len(),
+                note: format!("references drawn from the {} eligible {label} images of the sub-family {id}", inside.len()),
+            });
+            eligible = inside;
+        } else {
+            let note = format!(
+                "the sub-family {id} has only {} eligible {label} images here (fewer than {need}), so the references come from the whole family",
+                inside.len()
+            );
+            notes.push(note.clone());
+            *sub_use = Some(SubfamilyUse { id: id.to_string(), used: false, files: inside.len(), note });
+        }
+    }
+
+    // the style-typical images among the eligible ones: generic files first, then by distance from the style
+    let eligible_set: Vec<&Cand> = eligible.iter().map(|&i| &cands[i]).collect();
+    let own_pool;
+    let typical_pool: &[Pooled] = if eligible.len() == cands.len() {
+        pool
+    } else {
+        let list: Vec<Cand> = eligible_set.iter().map(|c| (*c).clone()).collect();
+        own_pool = build_pool(&list, POOL_CAP, &mut Vec::new());
+        &own_pool
+    };
+    if typical_pool.is_empty() {
+        return Vec::new();
+    }
+    let Some(brief) = brief else {
+        // no request: the k-medoids of the eligible images, as a stable overview
+        let points: Vec<Vector> = typical_pool.iter().map(|p| p.analysis.v).collect();
+        let m = styledesc::kmedoids(&points, send_slots.min(points.len()));
+        return m
+            .medoids
+            .iter()
+            .zip(&m.sizes)
+            .enumerate()
+            .map(|(rank, (&i, size))| {
+                (typical_pool[i].clone(), format!("{tier_name}: medoid {} of {found} {label} images{sampled} (cluster of {size})", rank + 1))
+            })
+            .collect();
+    };
+
+    let mut rng = Rng::new(brief.seed);
+    let mut out: Vec<(Pooled, String)> = Vec::new();
+
+    // theme matches: about half the slots, drawn from the best matches
+    let mut scored: Vec<(u32, u64, usize, Vec<String>)> = eligible
+        .iter()
+        .map(|&i| {
+            let toks = file_tokens(&cands[i]);
+            let (mut score, mut terms) = brief.score(&toks);
+            if let Some(m) = &marks[i] {
+                if Nations::allows(&brief, m) {
+                    score += 3;
+                    terms.push(format!("country {}", m.tags.iter().next().cloned().or(m.region.clone()).unwrap_or_default()));
+                }
+            }
+            (score, rng.next_u64(), i, terms)
+        })
+        .filter(|s| s.0 > 0)
+        .collect();
+    scored.sort_by(|a, b| b.0.cmp(&a.0).then(a.1.cmp(&b.1)));
+    let theme_slots = if scored.is_empty() { 0 } else { send_slots.div_ceil(2) };
+    let window = scored.len().min((THEME_WINDOW_PER_SLOT * theme_slots).max(8));
+    let matches = scored.len();
+    let mut theme: Vec<_> = scored.into_iter().take(window).collect();
+    rng.shuffle(&mut theme);
+    for (score, _, i, terms) in theme {
+        if out.len() >= theme_slots {
+            break;
+        }
+        let Some(p) = measure(&cands[i]) else { continue };
+        if out.iter().any(|(q, _)| q.file_sha == p.file_sha) {
+            continue;
+        }
+        let d = model.check(&p.analysis.v);
+        if d.drifted {
+            if excluded.len() < MAX_EXCLUDED_LISTED * 2 {
+                excluded.push(ExcludedRef {
+                    path: p.cand.display.clone(),
+                    reason: format!("theme match left out: off the family's style (z {:.2} above {:.2})", d.z_rms, d.threshold),
+                });
+            }
+            continue;
+        }
+        let why = format!(
+            "{tier_name}: theme match ({}; score {score}), drawn from the {window} best of {matches} matching {label} images by the request seed",
+            terms.join(", ")
+        );
+        out.push((p, why));
+    }
+
+    // style-typical picks for the other slots, drawn from the most typical (generic first)
+    let mut ranked: Vec<(bool, f64, usize)> =
+        typical_pool.iter().enumerate().map(|(i, p)| (!refselect::is_generic(&file_tokens(&p.cand)), model.check(&p.analysis.v).z_rms, i)).collect();
+    ranked.sort_by(|a, b| a.0.cmp(&b.0).then(a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal)).then(a.2.cmp(&b.2)));
+    let left = send_slots.saturating_sub(out.len());
+    // the more typical half of the eligible images (generic first), so the draw keeps the family's palette spread
+    let window = ranked.len().min((TYPICAL_WINDOW_PER_SLOT * left).max(ranked.len() / 2).max(8));
+    let generic = ranked.iter().take(window).filter(|r| !r.0).count();
+    let mut typical: Vec<_> = ranked.into_iter().take(window).collect();
+    rng.shuffle(&mut typical);
+    // each pick takes, of the next few in the seeded order, the one furthest in style from the images already chosen,
+    // so a set spreads over the family's frames and palettes instead of four near neighbours
+    typical.retain(|t| !out.iter().any(|(q, _)| q.file_sha == typical_pool[t.2].file_sha));
+    while out.len() < send_slots && !typical.is_empty() {
+        let look = typical.len().min(TYPICAL_LOOKAHEAD);
+        let chosen_z: Vec<Vector> = out.iter().map(|(q, _)| model.std.z(&q.analysis.v)).collect();
+        let far = |t: &(bool, f64, usize)| {
+            let z = model.std.z(&typical_pool[t.2].analysis.v);
+            chosen_z.iter().map(|c| c.iter().zip(&z).map(|(a, b)| (a - b).powi(2)).sum::<f64>()).fold(f64::INFINITY, f64::min)
+        };
+        let pick = (0..look).fold(0, |best, k| if far(&typical[k]) > far(&typical[best]) + 1e-12 { k } else { best });
+        let (_, z, i) = typical.remove(pick);
+        let p = &typical_pool[i];
+        if out.iter().any(|(q, _)| q.file_sha == p.file_sha) {
+            continue;
+        }
+        let kind = if generic == window { "generic " } else { "" };
+        let why = format!(
+            "{tier_name}: style-typical, drawn from the {window} most typical {kind}{label} images of {} by the request seed, the furthest in style from the others of {TYPICAL_LOOKAHEAD} looked at (z {z:.2})",
+            typical_pool.len()
+        );
+        out.push((p.clone(), why));
+    }
+    out
 }
 
 fn subject_phrase(tier: Tier, family: Family, pinned: Option<&StyleProfile>) -> String {
@@ -628,6 +1013,7 @@ pub fn resolve(ctx: &SourceCtx) -> Resolved {
     let mut chosen_tier: Option<Tier> = None;
     let mut chosen_pool: Vec<Pooled> = Vec::new();
     let mut chosen_found = 0usize;
+    let mut chosen_cands: Vec<Cand> = Vec::new();
     // a pinned style with fewer than three images has no statistics but is always sent
     let mut pinned_small: Vec<Cand> = Vec::new();
 
@@ -733,7 +1119,7 @@ pub fn resolve(ctx: &SourceCtx) -> Resolved {
                     vec![]
                 }
                 Some(game) => {
-                    let list = game_cands(scan_dirs(game, &texture_dirs(family, ctx.gui_kind), &vanilla_sizes, &RASTER));
+                    let list = game_cands(scan_game(game, &texture_dirs(family, ctx.gui_kind), &vanilla_sizes, &RASTER));
                     if family == Family::GuiTexture && ctx.gui_kind.is_none() {
                         summary.note =
                             "a GUI texture takes vanilla references by its kind: pass texture_kind (button, frame, panel or background)".into();
@@ -763,6 +1149,7 @@ pub fn resolve(ctx: &SourceCtx) -> Resolved {
                     );
                     chosen_tier = Some(tier);
                     chosen_found = cands.len();
+                    chosen_cands = cands.clone();
                     chosen_pool = pool;
                 } else {
                     summary.note = format!("only {} of {} image(s) could be decoded, at least {MIN_TIER_IMAGES} are needed", pool.len(), cands.len());
@@ -796,6 +1183,10 @@ pub fn resolve(ctx: &SourceCtx) -> Resolved {
         });
     }
 
+    let mut excluded: Vec<ExcludedRef> = Vec::new();
+    let mut subfamily_use: Option<SubfamilyUse> = None;
+    let mut near_duplicate = None;
+    let mut near_duplicate_bits = None;
     if let Some(tier) = chosen_tier {
         let pool = &chosen_pool;
         let points: Vec<Vector> = pool.iter().map(|p| p.analysis.v).collect();
@@ -805,52 +1196,51 @@ pub fn resolve(ctx: &SourceCtx) -> Resolved {
         if !sampled.is_empty() {
             notes.push(format!("tier {} has {chosen_found} images; {n} were measured, sampled evenly by path", tier.number()));
         }
-        let (send_idx, send_why): (Vec<usize>, Vec<String>) = if tier == Tier::PinnedStyle && n <= send_slots {
-            // pinned references are sent as the style's author ordered them
-            let order: Vec<usize> = ctx
-                .pinned
-                .map(|s| s.references.iter().filter_map(|r| pool.iter().position(|p| p.cand.display == unify(&r.path))).collect())
-                .unwrap_or_default();
-            let why = (0..order.len())
-                .map(|i| format!("pinned style '{}': reference {} of {}", ctx.pinned.map(|s| s.name.as_str()).unwrap_or(""), i + 1, order.len()))
-                .collect();
-            (order, why)
-        } else {
-            let m = styledesc::kmedoids(&points, send_slots.min(n));
-            let why = m
-                .medoids
-                .iter()
-                .enumerate()
-                .zip(&m.sizes)
-                .map(|((rank, _), size)| match tier {
-                    Tier::PinnedStyle => format!("pinned style: medoid {} of {} references (cluster of {size})", rank + 1, n),
-                    Tier::ModAssetFolderCopy => {
-                        format!("mod asset folder copy: medoid {} of {chosen_found} {label} images{sampled} (cluster of {size})", rank + 1)
-                    }
-                    Tier::ModAssets => format!("mod asset: medoid {} of {chosen_found} {label} images{sampled} (cluster of {size})", rank + 1),
-                    Tier::Vanilla => format!("vanilla: medoid {} of {chosen_found} {label} images{sampled} (cluster of {size})", rank + 1),
-                })
-                .collect();
-            (m.medoids, why)
-        };
+        let model = DriftModel::fit(&points);
         let stats_idx: Vec<usize> = if n <= STATS_IMAGES { (0..n).collect() } else { styledesc::kmedoids(&points, STATS_IMAGES).medoids };
-        for (k, &i) in send_idx.iter().enumerate() {
-            let p = &pool[i];
+        // what is sent: the pinned style as its author ordered it, else the per-request selection
+        let sends: Vec<(Pooled, String)> = if tier == Tier::PinnedStyle {
+            let (idx, why): (Vec<usize>, Vec<String>) = if n <= send_slots {
+                let order: Vec<usize> = ctx
+                    .pinned
+                    .map(|s| s.references.iter().filter_map(|r| pool.iter().position(|p| p.cand.display == unify(&r.path))).collect())
+                    .unwrap_or_default();
+                let why = (0..order.len())
+                    .map(|i| format!("pinned style '{}': reference {} of {}", ctx.pinned.map(|s| s.name.as_str()).unwrap_or(""), i + 1, order.len()))
+                    .collect();
+                (order, why)
+            } else {
+                let m = styledesc::kmedoids(&points, send_slots.min(n));
+                let why = m
+                    .sizes
+                    .iter()
+                    .enumerate()
+                    .map(|(rank, size)| format!("pinned style: medoid {} of {} references (cluster of {size})", rank + 1, n))
+                    .collect();
+                (m.medoids, why)
+            };
+            idx.into_iter().zip(why).map(|(i, w)| (pool[i].clone(), w)).collect()
+        } else {
+            let sel = Selection { tier, family, label, found: chosen_found, sampled: &sampled, model: &model, send_slots };
+            select(&sel, ctx, &chosen_cands, pool, &mut excluded, &mut subfamily_use, &mut notes)
+        };
+        let stats_sha: Vec<&str> = stats_idx.iter().map(|&i| pool[i].file_sha.as_str()).collect();
+        for (p, why) in &sends {
             chosen.push(ChosenRef {
                 path: p.cand.display.clone(),
                 origin: p.cand.origin,
                 tier: tier.number(),
-                reason: send_why[k].clone(),
+                reason: why.clone(),
                 sha256: p.file_sha.clone(),
                 sent_to_provider: true,
-                used_for_statistics: stats_idx.contains(&i),
+                used_for_statistics: stats_sha.contains(&p.file_sha.as_str()),
             });
         }
         for (rank, &i) in stats_idx.iter().enumerate() {
-            if send_idx.contains(&i) {
+            let p = &pool[i];
+            if sends.iter().any(|(s, _)| s.file_sha == p.file_sha) {
                 continue;
             }
-            let p = &pool[i];
             chosen.push(ChosenRef {
                 path: p.cand.display.clone(),
                 origin: p.cand.origin,
@@ -865,7 +1255,6 @@ pub fn resolve(ctx: &SourceCtx) -> Resolved {
         let stats = styledesc::aggregate(&items);
         paragraph = Some(styledesc::style_paragraph_for(&subject_phrase(tier, family, ctx.pinned), &stats, Some(family)));
         statistics = Some(stats);
-        let model = DriftModel::fit(&points);
         drift = Some(DriftSummary {
             images: model.images,
             p95_leave_one_out: (model.p95_leave_one_out * 1000.0).round() / 1000.0,
@@ -873,6 +1262,11 @@ pub fn resolve(ctx: &SourceCtx) -> Resolved {
             minimum_threshold: styledesc::MIN_DRIFT_THRESHOLD,
         });
         drift_model = Some(model);
+        let hashes: Vec<u128> = pool.iter().map(|p| p.dhash).collect();
+        if let Some((bits, pairs)) = diversity::threshold_from(&hashes) {
+            near_duplicate = Some(NearDuplicateSummary { images: n, pairs, threshold_bits: bits });
+            near_duplicate_bits = Some(bits);
+        }
     } else {
         notes.push(format!("no tier has {MIN_TIER_IMAGES} usable images: nothing is chosen automatically and no style statistics exist"));
     }
@@ -884,18 +1278,23 @@ pub fn resolve(ctx: &SourceCtx) -> Resolved {
             tiers: summaries,
             send_limit: ctx.max_send,
             method: format!(
-                "descriptors (Lab mean/std, saturation, Sobel edge density, alpha coverage, dark-outline share, 6-bin hue histogram) are standardised; deterministic k-medoids (PAM, no random start, candidates ordered by content hash) picks up to {} images to send and up to {STATS_IMAGES} for statistics",
-                ctx.max_send
+                "descriptors (Lab mean/std, saturation, Sobel edge density, alpha coverage, dark-outline share, 6-bin hue histogram) are standardised; deterministic k-medoids (PAM, no random start, candidates ordered by content hash) picks up to {STATS_IMAGES} images for statistics and drift. Up to {} images are sent: a pinned style as ordered; otherwise nation-specific files are left out unless the brief names the country, about half the slots are drawn from the files whose names best match the brief's words and themes and the rest from the family's most style-typical generic files, all seeded by a hash of the family, asset and brief{}",
+                ctx.max_send,
+                if ctx.request.is_none() { " (no request here: the style-typical k-medoids of the generic files are shown)" } else { "" }
             ),
             chosen,
             statistics,
             style_paragraph: paragraph,
             drift,
+            near_duplicate,
+            subfamily: subfamily_use,
+            excluded,
             notes,
         },
         drift: drift_model,
         tier: chosen_tier,
         subject: chosen_tier.map(|t| subject_phrase(t, family, ctx.pinned)),
+        near_duplicate_bits,
     }
 }
 

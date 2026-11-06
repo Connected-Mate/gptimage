@@ -14,7 +14,8 @@
 //! |---|---|---|
 //! | `icon` v1 | transparent icons, technology, modifier icon, GUI texture | `fit_subject` (`conform` when finished art was imported at an accepted size), `grayscale` for grayscale families; technology adds `tech_overlay` when the caller asks for a tier numeral |
 //! | `raid` v1 | raid | `fit_subject`, `gold_gradient` (vanilla's gold ramp and black outline), or one `conform` for imported finished art |
-//! | `doctrine` v1 | doctrine | `fit_subject`, `doctrine_look` (black units, pale outline and glow), or one `conform` for imported finished art |
+//! | `doctrine` v2 | doctrine | `fit_subject`, `doctrine_look` (black units, pale outline and glow), or one `conform` for imported finished art |
+//! | `vignette` v1 | agency upgrade | `round_vignette` (the disc in vanilla's muted palette with its darkened edge), `fit_subject`, or one `conform` for imported finished art |
 //! | `picture` v1 | opaque pictures, news, super event | `flatten_on`, `cover_resize` or `conform`, `grayscale` for news |
 //! | `report_card` v2 | report event | `report_card` or `conform` (an imported finished card) |
 //! | `phase_card` v1 | operation picture | `phase_card` (the report card on vanilla's phase picture mask) or `conform` (an imported finished card) |
@@ -31,6 +32,12 @@
 //! | `anim_keyframes` v1 | blend key frames | `key_frames`: the base and its `frame_candidates` fitted with one crop and scale (or one `conform`) |
 //! | `anim_scroll` v1 | scroll | `flatten_on`, `cover_resize`, `scroll_frames` (or `flatten_on`, `conform`) |
 //! | `anim_spin` v1 | spin | `spin_frames` (or one `conform`) |
+//! | `upright_print` v1 | report event, operation picture with a style pack's `upright_print` | `fit_subject` (art with alpha) or `cover_resize` (opaque art), or `conform` for imported finished art; no tilt, mask, tone or shadow |
+//! | `kept_unit_art` v1 | counters and the division emblem with a style pack's `keep_colours` | `fit_in_box` (or `area_fit`) into vanilla's glyph box in the art's own colours, then `nato_outline` for a counter, or `conform` for imported finished art |
+//! | `filled_icon` v1 | transparent icon families with a style pack's `fill_canvas` | `cover_resize` (or `area_cover`) to the whole canvas, or `conform` |
+//!
+//! A style pack's `crisp` switch keeps the recipe and swaps every Lanczos3 fit for its area-filter twin (`area_fit`,
+//! `area_cover`) and drops the defringe erosion (see `pack::ProcessingSwitches`).
 //!
 //! Families whose sprite the game looks up together with a companion (the division emblem's small symbol, the
 //! on-map counter's text icon, the faction logo's miniature, a landmark's small strip, a medal's small strip) end
@@ -110,6 +117,8 @@ pub enum Recipe {
     Raid,
     /// A doctrine icon: black units with vanilla's pale outline and glow, warm accents kept.
     Doctrine,
+    /// An agency upgrade: the subject cut to vanilla's round, muted vignette with its darkened edge.
+    Vignette,
     /// Portraits.
     Portrait,
     /// Advisor card.
@@ -126,6 +135,14 @@ pub enum Recipe {
     AnimScroll,
     /// Turning strip.
     AnimSpin,
+    /// A style pack's upright print (`upright_print`): report or phase art fitted as it is, with no tilt, mask, tone
+    /// or shadow.
+    UprightPrint,
+    /// A style pack's unit art in its own colours (`keep_colours`): fitted into vanilla's glyph box, and for a counter
+    /// frame 2 is the NATO box as an outline in the glyph's colour.
+    KeptUnitArt,
+    /// A style pack's panel (`fill_canvas`): a transparent icon family whose art fills the whole canvas.
+    FilledIcon,
 }
 
 impl Recipe {
@@ -143,6 +160,7 @@ impl Recipe {
             Recipe::LineArt => "line_art",
             Recipe::Raid => "raid",
             Recipe::Doctrine => "doctrine",
+            Recipe::Vignette => "vignette",
             Recipe::Portrait => "portrait",
             Recipe::AdvisorCard => "advisor_card",
             Recipe::Achievement => "achievement",
@@ -151,6 +169,9 @@ impl Recipe {
             Recipe::AnimKeyframes => "anim_keyframes",
             Recipe::AnimScroll => "anim_scroll",
             Recipe::AnimSpin => "anim_spin",
+            Recipe::UprightPrint => "upright_print",
+            Recipe::KeptUnitArt => "kept_unit_art",
+            Recipe::FilledIcon => "filled_icon",
         }
     }
 
@@ -162,6 +183,7 @@ impl Recipe {
             Recipe::LineArt => crate::recipes::line_art::RECIPE_VERSION,
             Recipe::Raid => crate::recipes::raid::RECIPE_VERSION,
             Recipe::Doctrine => crate::recipes::doctrine::RECIPE_VERSION,
+            Recipe::Vignette => crate::recipes::vignette::RECIPE_VERSION,
             Recipe::AnimGlow | Recipe::AnimKeyframes | Recipe::AnimScroll | Recipe::AnimSpin => crate::animation::RECIPE_VERSION,
             _ => 1,
         }
@@ -179,7 +201,10 @@ impl Recipe {
 
 /// The recipe of a family.
 pub fn recipe_of(profile: &Profile) -> Recipe {
+    let sw = profile.processing();
     match profile.family {
+        Family::ReportEvent | Family::OperationPicture if sw.upright_print => Recipe::UprightPrint,
+        Family::CounterLarge | Family::CounterSmall | Family::DivisionEmblem if sw.keep_colours => Recipe::KeptUnitArt,
         Family::ReportEvent => Recipe::ReportCard,
         Family::OperationPicture => Recipe::PhaseCard,
         Family::FactionLogo | Family::AgencyLogo => Recipe::SelectedStrip,
@@ -189,6 +214,7 @@ pub fn recipe_of(profile: &Profile) -> Recipe {
         Family::SpecialProjectIcon => Recipe::LineArt,
         Family::Raid => Recipe::Raid,
         Family::Doctrine => Recipe::Doctrine,
+        Family::AgencyUpgrade => Recipe::Vignette,
         Family::LeaderPortrait | Family::CommanderPortrait | Family::OperativePortrait | Family::ScientistPortrait => Recipe::Portrait,
         Family::AdvisorCard => Recipe::AdvisorCard,
         Family::Achievement => Recipe::Achievement,
@@ -197,6 +223,7 @@ pub fn recipe_of(profile: &Profile) -> Recipe {
         Family::AnimBlendKeyframes => Recipe::AnimKeyframes,
         Family::AnimScroll => Recipe::AnimScroll,
         Family::AnimSpin => Recipe::AnimSpin,
+        _ if sw.fill_canvas => Recipe::FilledIcon,
         _ if profile.imagegen.background == Background::Opaque => Recipe::Picture,
         _ => Recipe::Icon,
     }
@@ -286,6 +313,20 @@ fn transparent_icon_ops(img: &Rgba, canvas: [u32; 2], keyed: bool, margin: u32) 
     Ok(ops)
 }
 
+/// The cleaning and fit of a transparent subject into a `box_size` box centred on `canvas`. With `crisp` (a style
+/// pack's switch) no defringe erosion runs and the fit uses the area filter (`area_fit`).
+fn subject_fit_ops(img: &Rgba, canvas: [u32; 2], box_size: [u32; 2], keyed: bool, crisp: bool) -> Result<Vec<Op>> {
+    let mut ops = transparent_icon_ops(img, canvas, keyed, 0)?;
+    ops.pop();
+    if crisp {
+        ops.retain(|o| !matches!(o, Op::Defringe { .. }));
+        ops.push(Op::AreaFit { width: canvas[0], height: canvas[1], box_width: box_size[0], box_height: box_size[1], min_alpha: 16 });
+    } else {
+        ops.push(Op::FitInBox { width: canvas[0], height: canvas[1], box_width: box_size[0], box_height: box_size[1], min_alpha: 16 });
+    }
+    Ok(ops)
+}
+
 /// What the caller may choose about a family's finishing beyond the image itself.
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct FinishOptions {
@@ -341,6 +382,7 @@ pub fn plan_finishing_with(
     opts: &FinishOptions,
 ) -> Result<ChainPlan> {
     let recipe = recipe_of(profile);
+    let crisp = profile.processing().crisp;
     let frames = profile.frames.max(1);
     let size = [img.width, img.height];
     let accepted_single = |s: [u32; 2]| profile.accepted.contains(&s) || s == canvas;
@@ -354,6 +396,10 @@ pub fn plan_finishing_with(
         Recipe::Icon => {
             if imported && accepted_single(size) {
                 ops.push(Op::Conform { width: size[0], height: size[1] });
+            } else if crisp {
+                let inner = [canvas[0].saturating_sub(2 * profile.margin).max(1), canvas[1].saturating_sub(2 * profile.margin).max(1)];
+                let box_size = if profile.family == Family::Medal && canvas == [56, 84] { MEDAL_BOX } else { inner };
+                ops = subject_fit_ops(img, canvas, box_size, keyed, true)?;
             } else {
                 ops = transparent_icon_ops(img, canvas, keyed, profile.margin)?;
                 if profile.family == Family::Medal && canvas == [56, 84] {
@@ -378,6 +424,20 @@ pub fn plan_finishing_with(
                 let margin = if recipe == Recipe::Doctrine { profile.margin + crate::recipes::doctrine::GLOW_PX } else { profile.margin };
                 ops = transparent_icon_ops(img, canvas, keyed, margin)?;
                 ops.push(if recipe == Recipe::Raid { Op::GoldGradient } else { Op::DoctrineLook });
+            }
+        }
+        Recipe::Vignette => {
+            if imported && accepted_single(size) {
+                ops.push(Op::Conform { width: size[0], height: size[1] });
+            } else {
+                // the vignette cuts its own disc and lays clear pixels over vanilla's backdrop, so an opaque picture is
+                // as good a source as a disc on transparency
+                if img.has_transparency() && edge_stats(img).1 > 0 {
+                    ops.push(Op::Defringe { erosion: 1 });
+                }
+                ops.push(Op::TrimToSubject { min_alpha: 16 });
+                ops.push(Op::RoundVignette);
+                ops.push(Op::FitSubject { width: canvas[0], height: canvas[1], margin: profile.margin, min_alpha: 16 });
             }
         }
         Recipe::Picture => {
@@ -538,6 +598,60 @@ pub fn plan_finishing_with(
                 }
             }
         }
+        Recipe::UprightPrint => {
+            // an upright print keeps the art as it is: no tilt, mask, tone or shadow; its own alpha stays
+            if imported && accepted_single(size) {
+                ops.push(Op::Conform { width: size[0], height: size[1] });
+            } else if img.has_transparency() || keyed {
+                ops.push(Op::TrimToSubject { min_alpha: 16 });
+                ops.push(Op::FitSubject { width: canvas[0], height: canvas[1], margin: profile.margin, min_alpha: 16 });
+            } else if crisp {
+                ops.push(Op::AreaCover { width: canvas[0], height: canvas[1] });
+            } else {
+                ops.push(Op::CoverResize { width: canvas[0], height: canvas[1] });
+            }
+        }
+        Recipe::KeptUnitArt => {
+            let kind = unit_art_kind(profile.family).expect("unit families have a unit art kind");
+            let counter = kind != crate::recipes::unit_art::UnitArtKind::DivisionEmblem;
+            let finished =
+                if counter { size[0].is_multiple_of(frames) && accepted_single([size[0] / frames, size[1]]) } else { accepted_single(size) };
+            if imported && finished {
+                ops.push(Op::Conform { width: size[0], height: size[1] });
+            } else {
+                let style = crate::recipes::unit_art::GlyphStyle::of(kind);
+                if canvas != style.frame {
+                    return Err(Error::Invalid(format!(
+                        "{} art is fitted on vanilla's {}x{} frame, and this profile's canvas is {}x{}. Import finished art at the profile's size instead",
+                        profile.family, style.frame[0], style.frame[1], canvas[0], canvas[1]
+                    )));
+                }
+                // the glyph keeps its own colours and is fitted into vanilla's largest glyph box, centred on the frame
+                let box_size = [style.max_box[0].round() as u32, style.max_box[1].round() as u32];
+                ops = subject_fit_ops(img, canvas, box_size, keyed, crisp)?;
+                if counter {
+                    let (symbol, _) = counter_symbol(opts)?;
+                    ops.push(Op::NatoOutline { kind, symbol });
+                }
+            }
+        }
+        Recipe::FilledIcon => {
+            // a panel fills the canvas, so an opaque source is right and its own alpha (rounded corners) stays
+            if imported && accepted_single(size) {
+                ops.push(Op::Conform { width: size[0], height: size[1] });
+            } else if crisp {
+                ops.push(Op::AreaCover { width: canvas[0], height: canvas[1] });
+            } else {
+                ops.push(Op::CoverResize { width: canvas[0], height: canvas[1] });
+            }
+            if profile.imagegen.grayscale {
+                ops.push(Op::Grayscale);
+            }
+            if let Some(overlay) = &opts.overlay {
+                crate::recipes::tech_overlay::roman(overlay.tier)?;
+                ops.push(Op::TechOverlay { overlay: overlay.clone() });
+            }
+        }
     }
     if !crate::lookup::derived_companions(profile.family, canvas).is_empty() {
         finishers.push(Finisher::DerivedCompanions);
@@ -556,8 +670,14 @@ pub fn companion_keys_of(profile: &Profile, canvas: [u32; 2]) -> Vec<&'static st
 /// Stages a processed record must show, in order. Each stage lists the names that satisfy it. A single `conform`
 /// may satisfy several consecutive stages: it stands for finished art accepted whole.
 pub fn required_stages(profile: &Profile) -> Vec<Vec<&'static str>> {
+    let counter = matches!(profile.family, Family::CounterLarge | Family::CounterSmall);
     let mut stages: Vec<Vec<&'static str>> = match recipe_of(profile) {
+        Recipe::Icon if profile.processing().crisp => vec![vec!["area_fit", "conform"]],
         Recipe::Icon => vec![vec!["fit_subject", "fit_in_box", "conform"]],
+        Recipe::UprightPrint => vec![vec!["fit_subject", "cover_resize", "area_cover", "conform"]],
+        Recipe::KeptUnitArt if counter => vec![vec!["fit_in_box", "area_fit", "conform"], vec!["nato_outline", "conform"]],
+        Recipe::KeptUnitArt => vec![vec!["fit_in_box", "area_fit", "conform"]],
+        Recipe::FilledIcon => vec![vec!["cover_resize", "area_cover", "conform"]],
         Recipe::Picture => vec![vec!["flatten_on"], vec!["cover_resize", "conform"]],
         Recipe::ReportCard => vec![vec!["report_card", "conform"]],
         Recipe::PhaseCard => vec![vec!["phase_card", "conform"]],
@@ -568,6 +688,7 @@ pub fn required_stages(profile: &Profile) -> Vec<Vec<&'static str>> {
         Recipe::LineArt => vec![vec!["line_art", "conform"]],
         Recipe::Raid => vec![vec!["fit_subject", "conform"], vec!["gold_gradient", "conform"]],
         Recipe::Doctrine => vec![vec!["fit_subject", "conform"], vec!["doctrine_look", "conform"]],
+        Recipe::Vignette => vec![vec!["round_vignette", "conform"], vec!["fit_subject", "conform"]],
         Recipe::Portrait => vec![vec!["flatten_on"], vec!["extract_portrait", "conform"]],
         Recipe::AdvisorCard => vec![vec!["advisor_card", "conform"]],
         Recipe::Achievement => vec![vec!["fit_subject", "conform"], vec!["achievement_triplet"]],
@@ -982,6 +1103,83 @@ mod tests {
         assert!(a.black_share > b.black_share + 0.2, "units turn black: {b:?} -> {a:?}");
     }
 
+    /// Every transparent family's own processing keeps the margin its `margin` check reads (`profile.margin`), on a
+    /// subject that fills the whole source: a dark one, and a warm accent, whose doctrine shadow reaches furthest. The
+    /// doctrine fit leaves room for the glow ([`crate::recipes::doctrine::GLOW_PX`], which is the glow's computed
+    /// reach). Only finished frames are measured: frame 1, and every frame of a strip the ops make whole, except the
+    /// selected frame 2 whose glow runs to the edge as vanilla's does (the check skips it too). Families whose last
+    /// stage is an engine finisher that fits the frames itself (blend key frames) have no fitted output here.
+    #[test]
+    fn every_familys_processing_keeps_the_margin_the_check_reads() {
+        assert_eq!(crate::recipes::doctrine::glow_reach(), crate::recipes::doctrine::GLOW_PX);
+        let mut checked = Vec::new();
+        let set = ProfileSet::builtin();
+        for p in set.all() {
+            if p.imagegen.background != Background::Transparent || !p.imagegen.checks.iter().any(|c| c == "margin") || p.margin == 0 {
+                continue;
+            }
+            let canvas = if p.canvas == [0, 0] { [64, 64] } else { p.canvas };
+            for colour in [[60, 60, 60, 255], [230, 140, 20, 255]] {
+                // a solid block in a clear 8 px border, at four times the canvas: trimmed, it fills the whole canvas
+                let (w, h) = (canvas[0] * 4, canvas[1] * 4);
+                let mut src = Rgba::new(w, h);
+                for y in 8..h - 8 {
+                    for x in 8..w - 8 {
+                        src.set_px(x, y, colour);
+                    }
+                }
+                let plan = plan_finishing(p, canvas, &src, false, false, "").unwrap();
+                let (out, _) = crate::process::run_chain(&src, &plan.ops).unwrap_or_else(|e| panic!("{}: {e}", p.family));
+                if out.height != canvas[1] || !out.width.is_multiple_of(canvas[0]) {
+                    assert!(plan.finishers.contains(&Finisher::KeyFrames), "{}: {}x{} out of the ops", p.family, out.width, out.height);
+                    continue;
+                }
+                let frames = out.split_frames(out.width / canvas[0]).unwrap();
+                let selected = crate::recipes::frames::selected_fit_margin(p.family) > 0;
+                for (i, f) in frames.iter().enumerate() {
+                    if i > 0 && selected {
+                        continue;
+                    }
+                    let Some(b) = f.alpha_bbox(16) else { continue };
+                    let m = [b[0], b[1], f.width - b[2], f.height - b[3]];
+                    assert!(
+                        m.iter().all(|x| *x >= p.margin),
+                        "{} frame {}: margins {m:?} under the checked minimum {} (colour {colour:?})",
+                        p.family,
+                        i + 1,
+                        p.margin
+                    );
+                }
+            }
+            checked.push(p.family);
+        }
+        assert!(checked.contains(&Family::Doctrine) && checked.contains(&Family::AgencyUpgrade) && checked.len() > 20, "{checked:?}");
+    }
+
+    /// An agency upgrade runs the round vignette before the fit, from a disc on transparency or from an opaque
+    /// picture, and the audit wants the vignette. Imported finished art of the canvas size is taken as it is.
+    #[test]
+    fn agency_upgrades_get_the_round_vignette_and_the_audit_wants_it() {
+        let p = prof(Family::AgencyUpgrade);
+        assert_eq!(recipe_of(&p).id(), "vignette");
+        for src in [blob(), Rgba::filled(200, 160, [150, 90, 40, 255])] {
+            let plan = plan_finishing(&p, p.canvas, &src, false, false, "").unwrap();
+            let n = plan.ops.len();
+            assert_eq!(plan.ops[n - 2], Op::RoundVignette, "{:?}", plan.ops);
+            assert_eq!(plan.ops[n - 1], Op::FitSubject { width: 68, height: 68, margin: 8, min_alpha: 16 });
+            let (out, _) = crate::process::run_chain(&src, &plan.ops).unwrap();
+            let report = crate::validate::validate_image(&out, &p, &p.imagegen.checks, &Default::default());
+            assert!(report.findings.iter().all(|f| f.level != crate::validate::Level::Error), "{:?}", report.findings);
+        }
+        let fit = Op::FitSubject { width: 68, height: 68, margin: 8, min_alpha: 16 };
+        assert!(audit(&record(&p, &[Op::RoundVignette, fit.clone()], &[], &[], ""), &p).is_empty());
+        let missing = audit(&record(&p, &[fit], &[], &[], ""), &p);
+        assert!(missing.iter().any(|m| m.contains("round_vignette")), "{missing:?}");
+        assert!(audit(&record(&p, &[Op::Conform { width: 68, height: 68 }], &[], &[], ""), &p).is_empty());
+        let finished = Rgba::filled(68, 68, [10, 10, 10, 0]);
+        assert_eq!(plan_finishing(&p, p.canvas, &finished, true, false, "").unwrap().ops, vec![Op::Conform { width: 68, height: 68 }]);
+    }
+
     /// The 0.3.1 riveted cruiser tank (judged wrong: a three-quarter view) gets the side-view hint; the side views do
     /// not. The hint is a warning, so the review decides.
     #[test]
@@ -1060,7 +1258,7 @@ mod tests {
             pixels_sha256: if pixels.is_empty() { last } else { pixels.to_string() },
             size: [1, 1],
             steps: recs,
-            profile: ProfileRef { id: profile.id.clone(), hash: "h".into(), kit_sha256: None },
+            profile: ProfileRef { id: profile.id.clone(), hash: "h".into(), kit_sha256: None, style_pack: None },
             recipe: Some(RecipeRecord { id: recipe.id().into(), version: recipe.version(), finishers: fins }),
             companions: companions
                 .iter()

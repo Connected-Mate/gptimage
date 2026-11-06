@@ -120,8 +120,9 @@ fn a_mod_with_its_own_icons_uses_them_before_vanilla() {
     for c in &s {
         assert_eq!(c["tier"], 3);
         assert!(c["path"].as_str().unwrap().starts_with("gfx/interface/ideas/my_feature/"), "{c}");
-        assert!(c["reason"].as_str().unwrap().starts_with("mod asset: medoid "), "{c}");
-        assert!(c["reason"].as_str().unwrap().contains("of 12 idea_spirit images"), "{c}");
+        // the send set is drawn per request (theme matches and style-typical images), seeded by the request
+        assert!(c["reason"].as_str().unwrap().starts_with("mod asset: "), "{c}");
+        assert!(c["reason"].as_str().unwrap().contains("by the request seed"), "{c}");
         assert_eq!(c["sha256"].as_str().unwrap().len(), 64);
     }
     assert!(plan.references.iter().all(|x| x.origin == RefOrigin::Project));
@@ -202,7 +203,8 @@ fn a_copy_of_the_asset_skill_shelf_is_tier_two() {
     assert_eq!(r["chosen_tier"], 2, "{r:#}");
     assert_eq!(r["tiers"][1]["found"], 12);
     for c in sent(&r) {
-        assert!(c["reason"].as_str().unwrap().starts_with("mod asset folder copy: medoid "), "{c}");
+        assert!(c["reason"].as_str().unwrap().starts_with("mod asset folder copy: "), "{c}");
+        assert!(c["reason"].as_str().unwrap().contains("by the request seed"), "{c}");
         assert_eq!(c["origin"], "kit_shelf", "a shelf copy holds vanilla art and is recorded as such");
     }
     assert!(plan.references.iter().all(|x| x.origin == RefOrigin::KitShelf));
@@ -220,8 +222,9 @@ fn with_nothing_in_the_mod_vanilla_is_used_and_needs_no_flag() {
     assert!(!s.is_empty());
     for c in &s {
         assert_eq!(c["origin"], "installed_game");
-        assert!(c["reason"].as_str().unwrap().starts_with("vanilla: medoid "), "{c}");
-        assert!(c["reason"].as_str().unwrap().contains("of 9 idea_spirit images"), "{c}");
+        assert!(c["reason"].as_str().unwrap().starts_with("vanilla: "), "{c}");
+        assert!(c["reason"].as_str().unwrap().contains("idea_spirit images"), "{c}");
+        assert!(c["reason"].as_str().unwrap().contains("by the request seed"), "{c}");
     }
     assert!(plan.references.iter().all(|x| x.origin == RefOrigin::InstalledGame));
     assert!(!plan.approvals.iter().any(|a| a.contains("Paradox") || a.contains("allow_vanilla")), "{:?}", plan.approvals);
@@ -268,7 +271,7 @@ fn too_few_images_in_a_tier_fall_through_to_the_next() {
 fn the_same_images_give_the_same_choice_in_the_same_order() {
     let make = |feature: &str| {
         let h = openai_harness();
-        // enough images that the choice is a real k-medoids, in two colour groups
+        // enough images for a real choice, in two colour groups
         mod_spirits(h.root(), feature, 20, [110, 110, 110], true);
         for i in 0..20 {
             write_png(h.root(), &format!("gfx/interface/ideas/{feature}/idea_warm_{i:02}.png"), &spirit_icon([200, 90 + i as u8, 40], false, i + 5));
@@ -289,9 +292,10 @@ fn the_same_images_give_the_same_choice_in_the_same_order() {
         sources(p)["chosen"].as_array().unwrap().iter().map(|c| c["sha256"].as_str().unwrap().to_string()).collect::<Vec<_>>()
     };
     assert_eq!(stat_shas(&pa), stat_shas(&pb));
-    // two colour groups: the four medoids are not all from one group
-    let reds = pa.references.iter().filter(|r| r.path.contains("warm")).count();
-    assert!(reds > 0 && reds < 4, "medoids should cover both groups, got {reds} warm of 4: {:?}", pa.references);
+    // the statistics cover both colour groups, whatever the request draws to send
+    let stats: Vec<Value> = chosen(&sources(&pa)).into_iter().filter(|c| c["used_for_statistics"] == true).collect();
+    let warm = stats.iter().filter(|c| c["path"].as_str().unwrap().contains("warm")).count();
+    assert!(warm > 0 && warm < stats.len(), "the statistics should cover both groups, got {warm} warm of {}", stats.len());
 }
 
 #[test]

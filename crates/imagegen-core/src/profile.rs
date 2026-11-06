@@ -172,9 +172,18 @@ pub struct Profile {
     pub vanilla: Option<VanillaDefault>,
     /// Generation, export and naming details.
     pub imagegen: ImagegenSpec,
+    /// The style pack applied to this profile and its processing switches (`None` without a pack). Not written when
+    /// unset, so the hash of a profile without a pack is what it was before packs existed.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pack: Option<crate::pack::PackProfile>,
 }
 
 impl Profile {
+    /// The processing switches of the applied style pack (all off without a pack).
+    pub fn processing(&self) -> crate::pack::ProcessingSwitches {
+        self.pack.as_ref().map(|p| p.processing).unwrap_or_default()
+    }
+
     /// Full canvas width including all frames.
     pub fn strip_width(&self) -> u32 {
         self.canvas[0] * self.frames.max(1)

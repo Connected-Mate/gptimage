@@ -19,10 +19,12 @@ use serde_json::Value;
 
 pub mod audit;
 pub mod autostyle;
+pub mod diversity;
 pub mod finish;
 pub mod generate;
 pub mod install;
 pub mod misc;
+pub mod pack;
 pub mod plan;
 pub mod preview;
 pub mod process;
@@ -239,18 +241,24 @@ impl Engine {
         self.profiles.for_family(family).ok_or_else(|| EngineError::new("not_found", format!("no profile for family {family}"), RetryClass::Terminal))
     }
 
-    /// The profile of an artifact: always its own family's, never a caller's choice.
-    pub(crate) fn profile_of(&self, a: &Artifact) -> EResult<&Profile> {
-        self.family_profile(a.family)
+    /// The profile of an artifact: always its own family's, never a caller's choice, with the style pack it was
+    /// planned with applied again (its canvas, processing switches and checks).
+    pub(crate) fn profile_of(&self, a: &Artifact) -> EResult<Profile> {
+        self.profile_with_pack(a.family, a.profile.style_pack.as_deref())
     }
 
-    /// What the install gate expects of the records of an artifact.
-    pub(crate) fn gate_expect(&self, family: Family) -> EResult<imagegen_core::gate::GateExpect> {
-        Ok(imagegen_core::gate::GateExpect::for_profile(self.family_profile(family)?))
+    /// What the install gate expects of the records of an artifact with this effective profile.
+    pub(crate) fn gate_expect(&self, profile: &Profile) -> imagegen_core::gate::GateExpect {
+        imagegen_core::gate::GateExpect::for_profile(profile)
     }
 
     pub(crate) fn profile_ref(&self, p: &Profile) -> ProfileRef {
-        ProfileRef { id: p.id.clone(), hash: ProfileSet::profile_hash(p), kit_sha256: self.profiles.kit_sha256.clone() }
+        ProfileRef {
+            id: p.id.clone(),
+            hash: ProfileSet::profile_hash(p),
+            kit_sha256: self.profiles.kit_sha256.clone(),
+            style_pack: p.pack.as_ref().map(|x| x.name.clone()),
+        }
     }
 
     pub(crate) fn game_dir(&self) -> Option<std::path::PathBuf> {
@@ -328,6 +336,8 @@ pub struct Artifact {
     pub provider: String,
     /// The record of a processed artifact (its recipe and companions).
     pub record: Option<ProcessedRecord>,
+    /// The sub-family the root candidate was planned in, when it had one.
+    pub subfamily: Option<String>,
 }
 
 impl Artifact {
@@ -383,6 +393,7 @@ impl Engine {
                 root_id,
                 provider: root.provider,
                 record: Some(p),
+                subfamily: root.subfamily,
             });
         }
         if let Some(c) = find_candidate(id) {
@@ -407,6 +418,7 @@ impl Engine {
                 root_id: id.to_string(),
                 provider: c.provider,
                 record: None,
+                subfamily: c.subfamily,
             });
         }
         Err(EngineError::new("not_found", format!("no candidate or processed artifact '{id}' in the ledger"), RetryClass::Terminal))

@@ -23,8 +23,8 @@
 use crate::error::{Error, Result};
 use crate::pixels::{over, Rgba};
 
-/// Version of the doctrine recipe (bump when an output could change).
-pub const RECIPE_VERSION: u32 = 1;
+/// Version of the doctrine recipe (bump when an output could change). 2: the subject is fitted 3 px inside the margin, not 2.
+pub const RECIPE_VERSION: u32 = 2;
 
 /// The unit fill: vanilla's median luminance inside a dark shape.
 pub const FILL: u8 = 0;
@@ -35,9 +35,29 @@ pub const PALE_GLOW: [(f64, f64); 2] = [(180.0, 136.0), (214.0, 37.0)];
 /// Dark shadow next to an accent, at 1 to 4 px: luminance and alpha.
 pub const DARK_GLOW: [(f64, f64); 4] = [(62.0, 140.0), (57.0, 65.0), (41.0, 24.0), (0.0, 4.0)];
 
-/// How far the glow reaches with alpha 16 and up (alpha 37 two pixels out, nothing three out). The chain fits the
-/// subject this much further inside the canvas, so the glow fills the family's margin and never touches the edge.
-pub const GLOW_PX: u32 = 2;
+/// How far the glow reaches with alpha 16 and up: the pale outline to 2 px (alpha 37 two pixels out, 28 at a
+/// knight's move), the dark shadow around an accent to 3 px (alpha 24 three pixels out, 4 at four). The chain fits the
+/// subject this much further inside the canvas than the margin the `margin` check reads, so neither glow eats it.
+/// Until 0.3.4 this was 2, and a doctrine icon whose accent reached the fitted box kept only 1 px
+/// (`GFX-MARGIN` on the gallery's battle_line_broadside). [`glow_reach`] computes it from the rings.
+pub const GLOW_PX: u32 = 3;
+
+/// The farthest whole-pixel offset at which either glow still has alpha 16 or more, from [`PALE_GLOW`] and
+/// [`DARK_GLOW`] as [`doctrine_look`] spreads them (the Euclidean distance of every offset within the reach).
+pub fn glow_reach() -> u32 {
+    let mut reach = 0;
+    for table in [&PALE_GLOW[..], &DARK_GLOW[..]] {
+        for dx in 0..8i64 {
+            for dy in 0..=dx {
+                let d = ((dx * dx + dy * dy) as f64).sqrt();
+                if d > 0.0 && ring(table, d).1.round() >= 16.0 {
+                    reach = reach.max(dx as u32);
+                }
+            }
+        }
+    }
+    reach
+}
 
 /// True for a warm accent colour: hue 15 to 60 degrees (orange to yellow), saturation 0.45 and up, value 0.45 and up.
 pub fn is_accent(p: [u8; 4]) -> bool {

@@ -104,6 +104,9 @@ pub struct ProviderConfig {
 pub struct DefaultsConfig {
     /// Provider used when a plan does not name one.
     pub provider: Option<String>,
+    /// Style pack (`.hoi4-imagegen/packs/<name>/pack.toml`) applied to every plan that does not name one. A plan's
+    /// `style_pack: "none"` turns it off for that plan.
+    pub style_pack: Option<String>,
 }
 
 /// Where the engine-level recipes find the Paradox-derived templates the mod's copy of the asset skill ships.

@@ -41,7 +41,7 @@ impl Engine {
     pub fn install(&self, p: InstallParams) -> EResult<Value> {
         let _install_lock = self.install_lock()?;
         let artifact = self.artifact(&p.target)?;
-        let profile = self.profile_of(&artifact)?.clone();
+        let profile = self.profile_of(&artifact)?;
         let (bytes, sha) = self.read_artifact(&artifact)?;
         let entries = self.ledger.entries()?;
 
@@ -88,7 +88,7 @@ impl Engine {
                 });
             }
         }
-        let report = gate::evaluate(&entries, &artifact.id, &sha, &p.approval_id, &checks, &self.gate_expect(artifact.family)?);
+        let report = gate::evaluate(&entries, &artifact.id, &sha, &p.approval_id, &checks, &self.gate_expect(&profile));
         if !report.passed {
             let details = json!({"failures": report.failures});
             let first = report.failures[0].code.clone();

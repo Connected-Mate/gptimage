@@ -8,7 +8,7 @@ Every example below was made by the tool itself on the [ChatGPT login](chatgpt-l
 
 * **Canvas and frames** are measured from the installed game, HOI4 1.19.4.1.
 * **Names the game looks up** follow the vanilla evidence in `crates/imagegen-core/src/lookup.rs`, as fixed in v0.2.2. Where a script names the sprite in full the name is free. Where the game builds the name, the tool builds the same one and the install result's `script` field says what to write.
-* **Processing** is the family's fixed chain. The tool appends it and you cannot skip it. The steps listed are the ones that ran on the example. The examples were made with version 0.2.0. Since 0.3.2 more families have their own chain: raid icons get vanilla's gold gradient, doctrine icons black units with a pale outline and glow, special project icons are redrawn as line art, counters and division emblems always end in the unit recipe, and a landmark's small strip is a flat orange pictogram. The [reference](reference.md#processing-chains) lists every chain.
+* **Processing** is the family's fixed chain. The tool appends it and you cannot skip it. The steps listed are the ones that ran on the example. The examples were made with version 0.2.0. Since 0.3.2 more families have their own chain: raid icons get vanilla's gold gradient, doctrine icons black units with a pale outline and glow, special project icons are redrawn as line art, counters and division emblems always end in the unit recipe, and a landmark's small strip is a flat orange pictogram. Since 0.3.4 agency upgrades are cut to vanilla's round, muted vignette with its darkened edge. The [reference](reference.md#processing-chains) lists every chain.
 * **Checks** are the deterministic set that `hoi4.image_validate` always runs for the family. Composition and readability at game size go to the visual review.
 * **Example call** is the one-call form (`approve: true` plans and generates together) as it was run for the image. `hoi4-imagegen call <tool> '<json>'` runs the same operation on the command line. The rest of the loop (process, validate, preview, review, install) is in the [how-to](how-to.md).
 * The example mod's feature slug is `gallery`. Replace it and the asset name with your own.
@@ -31,7 +31,7 @@ Planned with `hoi4.image_icon`.
 
 *An example follows when hoi4-imagegen 0.3.4 lands. The 0.2.x example was removed.*
 
-**Vanilla form (since 0.3.2).** Measured on the 15 vanilla upgrades (`agency_cryptology_1`, `agency_invisible_ink`, `agency_portable_radios`): a round disc whose whole face is one small painted scene or close-up, a semi-realistic 1930s or 1940s illustration in muted colours. The scene runs to the softly darkened edge of the disc. There is no ring or frame around it. The example above predates this rule and shows a loose object instead, which is not the vanilla form.
+**Vanilla form (since 0.3.2, palette since 0.3.4).** Measured on the 15 vanilla upgrades (`agency_cryptology_1`, `agency_invisible_ink`, `agency_portable_radios`): a round disc whose whole face is one simple painted close-up, a semi-realistic 1930s or 1940s illustration. The disc is 52 px across on the 68 px canvas with a one-pixel soft edge, and its edge is darkened to about half the inner value. There is no ring or frame around it. The palette is pale and muted: mean saturation 0.249 and mean value 0.423 in the median file, gold and bronze tones on 11 percent of the disc. The 0.3.2 gallery's upgrades were darker, more saturated and warmer, busy rooms full of small objects. Since 0.3.4 the `vignette` recipe cuts any subject to vanilla's disc, brings its saturation, value and gold tones into vanilla's range and darkens its edge, the rule asks for a light, simple close-up, and the vanilla-match check refuses a saturated, warm medallion. The example above predates these rules and shows a loose object instead.
 
 | | |
 |---|---|
@@ -356,7 +356,7 @@ common/military_industrial_organization/policies/_general_policies.txt:77 icon =
 
 *An example follows when hoi4-imagegen 0.3.4 lands. The 0.2.x example was removed.*
 
-**Vanilla form (since 0.3.2).** Measured on the 44 vanilla trait icons (`generic_mio_trait_icon_armor_value`, `generic_mio_trait_icon_detection`, `generic_mio_trait_icon_build_cost_ic`): one small, simple glyph of one object or symbol with light shading, often with a small accent sign such as a green plus or a red target ring. Every file has a dark outline and a soft dark shadow, and about 29 percent of the canvas is covered. There is no badge or disc behind the object. The rule before 0.3.2 asked for a round badge, which vanilla does not use.
+**Vanilla form (since 0.3.2, flat glyph since 0.3.4).** Measured on the 44 vanilla trait icons (`generic_mio_trait_icon_armor_value`, `generic_mio_trait_icon_detection`, `generic_mio_trait_icon_build_cost_ic`): one small, simple glyph of one object or symbol, often with a small accent sign such as a green plus or a red target ring. Inside the glyph the tones are light and flat: mean value 0.50 in the median file, 6 percent dark and 15 percent light pixels, about 14 colours for most of the glyph. Every file has a dark outline and a soft dark shadow, which is about half of the visible pixels, and about 29 percent of the canvas is covered. There is no badge or disc behind the object. The 0.3.2 gallery's traits had as few colours but were dark painted objects with little light area, so since 0.3.4 the rule asks for a flat, light glyph without texture or small parts. The colour count already matches vanilla, so no posterising step is added. The rule before 0.3.2 asked for a round badge, which vanilla does not use.
 
 | | |
 |---|---|
@@ -464,6 +464,8 @@ common/unit_leader/*.txt: 189 of 196 leader traits have GFX_trait_<key>; traits 
 ### raid
 
 <img src="gallery/raid.webp" alt="Example raid asset made by hoi4-imagegen" width="128">
+
+**Readable at 32x32 (since 0.3.4).** Like every icon family with a side of 40 px or less, raid icons ask for one bold object of a few large, solid shapes, with no thin parallel lines, lattices, groups of small figures or scene. On the 0.3.2 gallery a dinghy with figures, a broken arch bridge and twisted rails did not read at 32x32. The `small_detail` check warns (`GFX-SMALL-DETAIL`) when more of the subject's pixels lie on its edge than in all but one in twenty of vanilla's raid icons, which catches the bridge and the rails, but not the dinghy, whose problem is its small figures.
 
 | | |
 |---|---|
@@ -740,6 +742,8 @@ common/characters/*.txt: all 2,887 small values are full GFX_ names (interface/i
 
 <img src="gallery/commander_portrait.webp" alt="Example commander_portrait asset made by hoi4-imagegen" width="156">
 
+**Vanilla backdrop (since 0.3.4).** Leaders and commanders share one vanilla backdrop: a plain pale cream-grey studio background (about RGB 229, 226, 209 at the top, L*a*b* 89.8, -1.9, 8.5 in the top corners), darker toward the bottom (about 190, 186, 170 at the sides by the shoulders). 424 of the 447 decodable portraits outside the scientists folder use it. The rest are special portraits. The rule asks for this backdrop, and the `backdrop` check warns (`GFX-PORTRAIT-BACKDROP`) when the top corners are more than 15 away from it. The vanilla-match check compares the corners' lightness and yellow-blue tone with this family's own files.
+
 | | |
 |---|---|
 | Group and tool | portrait, `hoi4.image_portrait` |
@@ -765,6 +769,8 @@ common/characters/*.txt: 2,045 of 2,047 large values are full GFX_ names (interf
 ### leader_portrait
 
 <img src="gallery/leader_portrait.webp" alt="Example leader_portrait asset made by hoi4-imagegen" width="156">
+
+**Vanilla backdrop (since 0.3.4).** Leaders and commanders share one vanilla backdrop: a plain pale cream-grey studio background (about RGB 229, 226, 209 at the top, L*a*b* 89.8, -1.9, 8.5 in the top corners), darker toward the bottom (about 190, 186, 170 at the sides by the shoulders). 424 of the 447 decodable portraits outside the scientists folder use it. The rest are special portraits. The rule asks for this backdrop, and the `backdrop` check warns (`GFX-PORTRAIT-BACKDROP`) when the top corners are more than 15 away from it. The vanilla-match check compares the corners' lightness and yellow-blue tone with this family's own files.
 
 | | |
 |---|---|
@@ -792,6 +798,8 @@ common/characters/*.txt: 2,045 of 2,047 large values are full GFX_ names (interf
 
 *An example follows when hoi4-imagegen 0.3.4 lands. The 0.2.x example was removed.*
 
+**Vanilla backdrop (since 0.3.4).** Vanilla's operative portraits are La Resistance's 163 `portrait_*_operative_*` files at 156x210 (`dlc/dlc028_la_resistance/gfx/leaders/<region>/`). All of them share one backdrop: a dark warm charcoal studio background (about RGB 34, 31, 24 in the top corners, L*a*b* 11.9, -0.1, 5.3) with a soft lighter spotlight behind the figure. The glow is centred behind the head and shoulders and is lightest beside the shoulders (about RGB 95, 92, 85 at two thirds of the height, 17.1 to 29.2 lighter in L* than the corners). The family's vanilla references and its vanilla-match check use these files and a mod's own operatives folder. The base game's grey `operative_unknown` silhouette is a placeholder and is not used. The rule asks for this backdrop. The `backdrop` check warns when the top corners are more than 15 away from it, or when the side band is less than 15 lighter than the corners, as on the gallery's two operatives (0.2 and 11.4): dark but evenly lit.
+
 | | |
 |---|---|
 | Group and tool | portrait, `hoi4.image_portrait` |
@@ -817,6 +825,8 @@ common/characters/*.txt: 2,045 of 2,047 large values are full GFX_ names (interf
 ### scientist_portrait
 
 *An example follows when hoi4-imagegen 0.3.4 lands. The 0.2.x example was removed.*
+
+**Vanilla backdrop (since 0.3.4).** All 217 vanilla scientist portraits (`gfx/leaders/scientists`) share one backdrop: a plain pale blue-grey studio background lit from the upper left (about RGB 135, 171, 193 at the top left, L*a*b* 66.0, -7.2, -14.4 in the top corners) and darker toward the lower right (about 93, 129, 151). It is not the leaders' cream. The family's vanilla references and its vanilla-match check now use only this folder, the rule names the backdrop, and the `backdrop` check warns when the top corners are more than 15 away from it.
 
 | | |
 |---|---|
@@ -904,7 +914,7 @@ common/intelligence_agencies/00_intelligence_agencies.txt:719 picture = GFX_inte
 
 <img src="gallery/building.webp" alt="Example building asset made by hoi4-imagegen" width="256">
 
-**Vanilla form (since 0.3.2).** Measured on the 27 vanilla 128x64 landmark strips (`eiffel_tower_icon`, `big_ben_icon`, `colosseum_icon`): frame 1 is a real-world landmark (a monument, a government building, a tower, a statue, a dam or an industrial site) as a small, detailed painted miniature in muted stone colours with a dark outline, seen from the front at a slightly raised angle. It stands on nothing: no ground, rock or hill under it, only water for a dam or a canal. Frame 2 is the same building as ruins with one small orange flame above it. There is no landscape, backdrop or diorama base, and no fantasy castle. References come from these 128x64 strips only, because vanilla's 64x32 small strips are flat orange pictograms, a different form. The citadel above predates this rule and stands on a hill.
+**Vanilla form (since 0.3.2).** Measured on the 27 vanilla 128x64 landmark strips (`eiffel_tower_icon`, `big_ben_icon`, `colosseum_icon`): frame 1 is a real-world landmark (a monument, a government building, a tower, a statue, a dam or an industrial site) as a small, detailed painted miniature in muted stone colours with a dark outline, seen from the front at a slightly raised angle. It stands on nothing: no ground, rock or hill under it, only water for a dam or a canal. Frame 2 is the same building as ruins with one small orange flame above it. There is no landscape, backdrop or diorama base, and no fantasy castle. References come from these 128x64 strips only, because vanilla's 64x32 small strips are flat orange pictograms, a different form. Since 0.3.4 the rule also keeps the building compact and centred, at most about four times as wide as tall: frame 1 of vanilla's landmarks runs from 0.34 (Big Ben) to 4.0 (the small Cataract dam), median 1.41, and its box is always centred. A long dam, wall or palace is shown foreshortened, from an angle or as its central part. The citadel above predates these rules and stands on a hill.
 
 | | |
 |---|---|

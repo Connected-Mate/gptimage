@@ -30,8 +30,9 @@ pub struct Cli {
     pub command: Command,
 }
 
-/// Commands.
+/// Commands. Parsed once per run, so the size of the largest variant does not matter.
 #[derive(Subcommand, Debug)]
+#[allow(clippy::large_enum_variant)]
 pub enum Command {
     /// Check the setup: providers and keys, game folder, profiles, ledger.
     Doctor,
@@ -52,6 +53,9 @@ pub enum Command {
     Install(InstallArgs),
     /// Trace the sprites and textures the mod uses to their families and report reuse, missing and mis-sized art. Read only.
     Audit(AuditArgs),
+    /// Style packs: a mod's house style across families (`.hoi4-imagegen/packs/<name>/pack.toml`).
+    #[command(subcommand)]
+    Pack(PackCommand),
     /// Run any hoi4.image_* operation with JSON parameters (a string, or @file).
     Call {
         /// Tool name, for example hoi4.image_process.
@@ -80,6 +84,40 @@ pub enum Command {
     ChatgptLogin {
         /// login, status or logout
         action: String,
+    },
+}
+
+/// `pack` subcommands.
+#[derive(Subcommand, Debug)]
+pub enum PackCommand {
+    /// Build a pack from a folder with one sub-folder of reference images per family id (`decision/`,
+    /// `gui_texture/`...). Each may hold `references.json` (a `references` list of `{ref}` objects, optionally with
+    /// `texture_kind`) and `look.txt`; a top-level `gallery-plan.json` may give the looks. The images are copied into
+    /// the mod under the pack's folder and pinned by SHA-256.
+    Import {
+        /// Pack name (snake_case).
+        name: String,
+        /// The folder to read.
+        #[arg(long)]
+        from: PathBuf,
+        /// The family of images listed by a top-level manifest.json or references.json (for example focus).
+        #[arg(long)]
+        top_family: Option<String>,
+        /// Import over an existing pack (its file is backed up; each entry keeps its form, canvas and switches).
+        #[arg(long)]
+        replace: bool,
+    },
+    /// List the saved packs and the project's default.
+    List,
+    /// Print one pack.
+    Get {
+        /// Pack name.
+        name: String,
+    },
+    /// Check a pack: pinned hashes, switches, reference sizes and how well each family's references agree.
+    Validate {
+        /// Pack name.
+        name: String,
     },
 }
 
@@ -125,6 +163,9 @@ pub struct PlanArgs {
     /// GUI textures only: button, frame, panel or background.
     #[arg(long)]
     pub texture_kind: Option<String>,
+    /// Style pack to apply (`none` turns the project default off).
+    #[arg(long)]
+    pub style_pack: Option<String>,
 }
 
 /// `generate` arguments.
@@ -294,12 +335,28 @@ pub fn execute(engine: &Engine, cli: &Cli, out: &mut dyn Write) -> i32 {
                 "references": refs, "variants": a.variants, "budget_usd": a.budget,
                 "canvas": a.canvas.as_deref().map(parse_canvas).transpose()?,
                 "texture_kind": a.texture_kind,
+                "style_pack": a.style_pack,
             });
             let fam: imagegen_core::Family = a.family.parse().map_err(EngineError::from)?;
             let v = dispatch(engine, fam.group().tool_name(), params)?;
             let text = plan_text(&v["plan"]);
             Ok((v, 0, Some(text)))
         }
+        Command::Pack(cmd) => match cmd {
+            PackCommand::Import { name, from, top_family, replace } => {
+                let top = top_family.as_deref().map(str::parse::<imagegen_core::Family>).transpose().map_err(EngineError::from)?;
+                let v = engine.import_pack_folder(name, from, top, *replace)?;
+                let ok = v["validation"]["ok"] == json!(true);
+                Ok((v, i32::from(!ok), None))
+            }
+            PackCommand::List => Ok((dispatch(engine, "hoi4.image_references", json!({"action": "pack_list"}))?, 0, None)),
+            PackCommand::Get { name } => Ok((dispatch(engine, "hoi4.image_references", json!({"action": "pack_get", "name": name}))?, 0, None)),
+            PackCommand::Validate { name } => {
+                let v = dispatch(engine, "hoi4.image_references", json!({"action": "pack_validate", "name": name}))?;
+                let ok = v["ok"] == json!(true);
+                Ok((v, i32::from(!ok), None))
+            }
+        },
         Command::Generate(a) => Ok((
             dispatch(engine, "hoi4.image_generate", json!({"plan_id": a.plan_id, "idempotency_key": a.key, "approve_cost": a.approve_cost}))?,
             0,
@@ -399,6 +456,27 @@ fn route_text(r: &Value) -> Option<String> {
     }
     if let Some(m) = r["fallback"]["message"].as_str() {
         t.push_str(&format!("  warning: {m}\n"));
+    }
+    if let Some(m) = r["model_access_unverified"].as_object() {
+        t.push_str(&format!(
+            "  \"Unable to verify model access\" answers: {} so far, the last at {} ({} ago); a slot waits {} s after one, two within {} min drop the route to one at a time for {} min
+",
+            m["count"],
+            m["last_at"].as_str().unwrap_or("?"),
+            ago(m["last_ago_secs"].as_i64().unwrap_or(0)),
+            m["pause_secs"],
+            m["window_secs"].as_i64().unwrap_or(0) / 60,
+            m["hold_secs"].as_i64().unwrap_or(0) / 60
+        ));
+        for p in m["slot_pauses"].as_array().into_iter().flatten() {
+            t.push_str(&format!(
+                "  slot {} is paused until {} ({} left)
+",
+                p["slot"],
+                p["until"].as_str().unwrap_or("?"),
+                ago(p["remaining_secs"].as_i64().unwrap_or(0))
+            ));
+        }
     }
     match r["last_request_at"].as_str() {
         Some(at) => t.push_str(&format!("  last request: {at} ({} ago)\n", ago(r["last_request_ago_secs"].as_i64().unwrap_or(0)))),
@@ -750,6 +828,41 @@ mod tests {
         note_route_state(&mut s, &env, now - 10 + provider_chatgpt_login::route::FALLBACK_HOLD_SECS);
         let text = doctor_text(&s);
         assert!(text.contains("requests at once: up to 3 on this machine") && !text.contains("warning:"), "{text}");
+    }
+
+    #[test]
+    fn the_doctor_shows_the_model_access_answers_and_the_slot_pause() {
+        let (_dir, env, route) = work_env("dm");
+        let now = 1_793_000_000;
+        route
+            .acquire(&CancelToken::new(), &RealSleeper)
+            .unwrap()
+            .update(|st| {
+                let _ = st.record_model_access(0, now - 20);
+            })
+            .unwrap();
+        let mut s = json!({"chatgpt_login": {"state": "signed in"}});
+        note_route_state(&mut s, &env, now);
+        let text = doctor_text(&s);
+        assert!(text.contains("\"Unable to verify model access\" answers: 1 so far, the last at"), "{text}");
+        assert!(text.contains("a slot waits 60 s after one, two within 15 min drop the route to one at a time for 60 min"), "{text}");
+        assert!(text.contains("slot 0 is paused until") && text.contains("(40 s left)"), "{text}");
+        assert!(!text.contains("warning:"), "{text}");
+        route
+            .acquire(&CancelToken::new(), &RealSleeper)
+            .unwrap()
+            .update(|st| {
+                let _ = st.record_model_access(0, now - 10);
+            })
+            .unwrap();
+        let mut s = json!({"chatgpt_login": {"state": "signed in"}});
+        note_route_state(&mut s, &env, now);
+        let text = doctor_text(&s);
+        assert!(
+            text.contains("requests at once: 1 (configured 3)") && text.contains("warning: the ChatGPT-login route dropped to one request at a time"),
+            "{text}"
+        );
+        assert!(text.contains("(model_access_unverified)"), "{text}");
     }
 
     #[test]

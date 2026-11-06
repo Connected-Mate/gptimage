@@ -159,8 +159,8 @@ impl Engine {
         // the vanilla side-by-side sheet and the measured check, for artifacts (their family is known)
         let (vanilla_sheet, vanilla_png, vanilla_check) = match &artifact {
             Some(a) => {
-                let check = self.vanilla_check(a.family, &img);
-                match self.vanilla_side_by_side(a.family, &img, &stem) {
+                let check = self.reference_check(a, &img);
+                match self.vanilla_side_by_side(a, &img, &stem) {
                     Ok((report, png)) => (report, Some(png), check),
                     Err(reason) => (json!({"unavailable": reason}), None, check),
                 }
@@ -201,7 +201,7 @@ impl Engine {
     /// The frame sheet and loop GIF of an animated artifact (`Value::Null` for any other). Only a whole strip is
     /// previewed as an animation: a raw candidate is one base frame.
     fn animation_preview(&self, a: &super::Artifact, img: &Rgba, dir: &str, stem: &str) -> EResult<Value> {
-        let profile = self.profile_of(a)?;
+        let profile = &self.profile_of(a)?;
         let Some(anim) = profile.imagegen.animation.clone() else { return Ok(Value::Null) };
         let frames = profile.frames.max(1);
         if !a.processed || frames < 2 || !img.width.is_multiple_of(frames) {
