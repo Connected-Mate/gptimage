@@ -183,7 +183,7 @@ pub const MEANINGS: [&str; N] = [
 
 /// Smallest half-width of an accepted range, per feature. Keeps a family whose vanilla art is nearly uniform in a
 /// feature from refusing a rounding difference.
-const FLOOR: [f64; N] = [
+pub const FLOOR: [f64; N] = [
     4.0, 3.0, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 2.0, 0.03, 0.05, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.08, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04,
     0.04, 0.04, 4.0, 3.0, 4.0,
 ];
@@ -676,7 +676,20 @@ pub fn calibrate(family: Family, rows: &[Features]) -> Option<Calibration> {
 /// Fit ranges from a small set (a style pack's references): each feature's minimum to maximum, widened on each side
 /// by `widening` times that width, and never narrower than `floor_factor` times the feature's floor. `version` names
 /// the rule in the result. `None` with fewer than [`MIN_FILES`] rows. The median is reported as for [`calibrate`].
-pub fn calibrate_min_max(family: Family, rows: &[Features], widening: f64, floor_factor: f64, version: &str) -> Option<Calibration> {
+///
+/// `shade` (one value per feature, or `None`) is how far the feature moves when the references are drawn one shade
+/// lighter or darker. Where the references barely spread in a feature (the floor decides its range), the half-width is
+/// at least that: one shade step then cannot fail a candidate. `unchecked` names features that are measured and
+/// reported but never fail a candidate of this family.
+pub fn calibrate_min_max(
+    family: Family,
+    rows: &[Features],
+    widening: f64,
+    floor_factor: f64,
+    version: &str,
+    shade: Option<&Features>,
+    unchecked: &[&str],
+) -> Option<Calibration> {
     if rows.len() < MIN_FILES {
         return None;
     }
@@ -690,15 +703,17 @@ pub fn calibrate_min_max(family: Family, rows: &[Features], widening: f64, floor
         let mid = (lo + hi) / 2.0;
         let floor = floor_factor * FLOOR[d];
         if hi - lo < 2.0 * floor {
-            lo = mid - floor;
-            hi = mid + floor;
+            // degenerate: the references hardly spread, so the floor (or one shade step, if larger) decides
+            let half = floor.max(shade.map_or(0.0, |s| s[d]));
+            lo = mid - half;
+            hi = mid + half;
         }
         ranges.push(FeatureRange {
             feature: NAMES[d].to_string(),
             min: round(lo),
             max: round(hi),
             median: round(quantile(&col, 0.5)),
-            checked: CHECKED.contains(&NAMES[d]),
+            checked: CHECKED.contains(&NAMES[d]) && !unchecked.contains(&NAMES[d]),
         });
     }
     Some(Calibration { family, version: version.to_string(), files: rows.len(), ranges })

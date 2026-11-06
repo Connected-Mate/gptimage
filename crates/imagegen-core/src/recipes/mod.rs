@@ -22,6 +22,7 @@
 //! | Doctrine black units, pale outline and glow | Rust only, fitted to vanilla | [`doctrine`] |
 //! | Technology tier numeral and gem | Rust only, fitted to vanilla | [`tech_overlay`] |
 //! | Agency upgrade round vignette (disc, muted palette, darkened edge) | Rust only, fitted to vanilla | [`vignette`] |
+//! | A style pack's palette snap and edge glow on kept-colours unit art | Rust only, measured on the pack's references | [`pack_look`] |
 //!
 //! `convert_to_dds.py` is already [`crate::dds::write_a8r8g8b8`].
 
@@ -36,6 +37,7 @@ pub mod flatten;
 pub mod focus_shine;
 pub mod frames;
 pub mod line_art;
+pub mod pack_look;
 pub mod pillow;
 pub mod portrait;
 pub mod raid;

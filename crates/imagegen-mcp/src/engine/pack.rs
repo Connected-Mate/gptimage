@@ -161,13 +161,13 @@ impl Engine {
 
     /// The images the review measures an artifact against, and a description of the set. An artifact made with a
     /// style pack is measured against the pack's references for its family (and texture kind), calibrated with the
-    /// small-set rule (`pack_match_v1`); any other against the family's vanilla art.
+    /// small-set rule (`pack_match_v2`); any other against the family's vanilla art.
     pub(crate) fn comparison_set(&self, a: &Artifact) -> (Result<Arc<VanillaSet>, String>, Value) {
         let Some(name) = a.profile.style_pack.clone() else {
             return (self.vanilla_set(a.family), json!({"kind": "vanilla", "rule": vanillamatch::VERSION}));
         };
         let kind = self.artifact_texture_kind(a);
-        let mut described = json!({"kind": "style_pack", "pack": name, "rule": pack::MATCH_VERSION, "widening": pack::MATCH_WIDENING, "floor_factor": pack::MATCH_FLOOR_FACTOR});
+        let mut described = json!({"kind": "style_pack", "pack": name, "rule": pack::MATCH_VERSION, "widening": pack::MATCH_WIDENING, "floor_factor": pack::MATCH_FLOOR_FACTOR, "shade_step": pack::SHADE_STEP, "shade_margin": pack::SHADE_MARGIN});
         let p = match pack::load(&self.fs, &name) {
             Ok(p) => p,
             Err(e) => return (Err(format!("the style pack '{name}' cannot be read: {e}")), described),
@@ -180,14 +180,19 @@ impl Engine {
             return (Err(e.to_string()), described);
         }
         let mut images = Vec::new();
+        let mut rows = Vec::new();
         for s in &r.references {
             let Ok(bytes) = self.fs.read(&s.path, refs::MAX_REFERENCE_BYTES) else { continue };
             let Ok((image, _)) = decode(&bytes, Some(&s.path), DecodeLimits::default()) else { continue };
-            let Some(features) = vanillamatch::measure(&image) else { continue };
-            images.push(VanillaImage { path: PathBuf::from(&s.path), frame: None, sha256: s.sha256.clone(), image, features });
+            let Some(row) = pack::measure_reference(&image) else { continue };
+            rows.push(row);
+            images.push(VanillaImage { path: PathBuf::from(&s.path), frame: None, sha256: s.sha256.clone(), image, features: row.features });
         }
         described["files"] = json!(images.len());
-        let rows: Vec<_> = images.iter().map(|i| i.features).collect();
+        let unchecked = pack::unchecked(a.family);
+        if !unchecked.is_empty() {
+            described["unchecked"] = json!(unchecked);
+        }
         match pack::calibrate(a.family, &rows) {
             Some(calibration) => (Ok(Arc::new(VanillaSet { images, calibration })), described),
             None => (
@@ -200,6 +205,30 @@ impl Engine {
                 described,
             ),
         }
+    }
+
+    /// The look of a style pack's references for kept-colours unit art: the glyph size, the glyph palette
+    /// (`snap_palette`) and the edge glow per frame (`edge_glow`), measured on the family's references, with their
+    /// hashes. `None` when the profile has no pack or no reference can be read. A changed or missing reference is
+    /// refused, as at plan time.
+    pub(crate) fn pack_finish(&self, profile: &Profile) -> EResult<Option<imagegen_core::chain::PackFinish>> {
+        let Some(pp) = profile.pack.as_ref() else { return Ok(None) };
+        let p = pack::load(&self.fs, &pp.name)?;
+        let Some(r) = p.resolve(profile.family, None) else { return Ok(None) };
+        pack::verify_references(&self.fs, &pp.name, &r.references)?;
+        let mut images = Vec::new();
+        let mut hashes = Vec::new();
+        for s in &r.references {
+            let bytes = self.fs.read(&s.path, refs::MAX_REFERENCE_BYTES)?;
+            let Ok((image, _)) = decode(&bytes, Some(&s.path), DecodeLimits::default()) else { continue };
+            images.push(image);
+            hashes.push(s.sha256.clone());
+        }
+        if images.is_empty() {
+            return Ok(None);
+        }
+        let look = imagegen_core::recipes::pack_look::measure(&images, profile.frames.max(1), profile.canvas[0]);
+        Ok(Some(imagegen_core::chain::PackFinish { pack: pp.name.clone(), references: hashes, look }))
     }
 
     /// Pin every reference of a pack to the hash of its file now. Each must be an image inside the project.
@@ -282,7 +311,7 @@ impl Engine {
                     match decode(&bytes, Some(&r.path), DecodeLimits::default()) {
                         Ok((img, _)) => {
                             *sizes.entry(format!("{}x{}", img.width, img.height)).or_default() += 1;
-                            if let Some(f) = vanillamatch::measure(&img) {
+                            if let Some(f) = pack::measure_reference(&img) {
                                 rows.push(f);
                             }
                         }

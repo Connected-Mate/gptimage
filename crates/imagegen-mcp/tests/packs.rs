@@ -483,7 +483,7 @@ fn the_review_measures_pack_art_against_the_packs_references() {
     let set = &ok["vanilla_check"]["reference_set"];
     assert_eq!(
         (set["kind"].as_str(), set["pack"].as_str(), set["entry"].as_str(), set["rule"].as_str()),
-        (Some("style_pack"), Some("house"), Some("decision"), Some("pack_match_v1"))
+        (Some("style_pack"), Some("house"), Some("decision"), Some("pack_match_v2"))
     );
     assert_eq!(ok["vanilla_check"]["status"], "pass");
 
@@ -520,11 +520,11 @@ fn the_review_measures_pack_art_against_the_packs_references() {
 fn the_pack_match_rule_accepts_the_spread_of_its_own_references() {
     // leave one out over synthetic sets: each reference passes ranges fitted on the others
     let rows: Vec<_> = (0..8)
-        .map(|i| imagegen_core::vanillamatch::measure(&disc(40, 40, 13.0 + f64::from(i) * 0.6, [70 + i as u8 * 3, 198, 190, 255])).unwrap())
+        .map(|i| imagegen_core::pack::measure_reference(&disc(40, 40, 13.0 + f64::from(i) * 0.6, [70 + i as u8 * 3, 198, 190, 255])).unwrap())
         .collect();
     assert_eq!(imagegen_core::pack::leave_one_out(Family::Decision, &rows), Some((8, 8)));
     let cal = imagegen_core::pack::calibrate(Family::Decision, &rows).unwrap();
-    assert_eq!(cal.version, "pack_match_v1");
+    assert_eq!(cal.version, "pack_match_v2");
     let mut bar = Rgba::new(40, 40);
     for y in 18..21 {
         for x in 2..38 {
@@ -533,6 +533,180 @@ fn the_pack_match_rule_accepts_the_spread_of_its_own_references() {
     }
     assert!(!cal.check(&imagegen_core::vanillamatch::measure(&bar).unwrap()).pass);
     assert!(imagegen_core::pack::calibrate(Family::Decision, &rows[..2]).is_none(), "fewer than three references give no ranges");
+}
+
+// ------------------------------------------------------------------ kept-colours unit art with a pack's references
+
+const LIGHT_TEAL: [u8; 3] = [89, 199, 194];
+
+/// A flat glyph (a hull with a turret) of `w` x `h` pixels in `colour`, centred on a 76x42 frame.
+fn glyph_frame(w: u32, h: u32, colour: [u8; 3]) -> Rgba {
+    let mut f = Rgba::new(76, 42);
+    let (x0, y0) = (38 - w / 2, 22 - h / 2);
+    for y in 0..h {
+        for x in 0..w {
+            let turret = y < h / 3 && x > w / 3 && x < 2 * w / 3;
+            if y >= h / 3 || turret {
+                f.set_px(x0 + x, y0 + y, [colour[0], colour[1], colour[2], 255]);
+            }
+        }
+    }
+    f
+}
+
+/// A counter strip like a terminal-style mod's: the glyph, then the NATO box outlined in its colour, both with a soft
+/// glow (alpha 73 and 12 on frame 1, 60 and 18 on frame 2).
+fn counter_strip(w: u32, h: u32, colour: [u8; 3]) -> Rgba {
+    use imagegen_core::recipes::{pack_look, unit_art};
+    let marks = unit_art::parse_symbol("medium_armor").unwrap();
+    let strip = unit_art::outline_strip(&glyph_frame(w, h, colour), unit_art::UnitArtKind::CounterLarge, &marks).unwrap();
+    pack_look::glow(&strip, 2, &[[73, 12], [60, 18]]).unwrap()
+}
+
+fn counter_refs(h: &Harness) -> Vec<Value> {
+    [(36, 18), (35, 19), (44, 20), (30, 21), (48, 24), (52, 22), (40, 18), (56, 21)]
+        .iter()
+        .enumerate()
+        .map(|(i, (w, hh))| {
+            let rel = format!("art/counter_refs/ref_{i}.png");
+            write(h, &rel, &counter_strip(*w, *hh, LIGHT_TEAL));
+            json!({"path": rel, "sha256": "", "note": "synthetic test reference"})
+        })
+        .collect()
+}
+
+fn counter_pack(h: &Harness, processing: Value) -> Value {
+    save_pack(
+        h,
+        json!({"name": "house", "families": {"counter_large": {"look": "teal glyph", "form": ["A flat teal glyph."], "processing": processing, "references": counter_refs(h)}}}),
+    )
+}
+
+/// A large source glyph in `colour`, as a model draws it.
+fn big_glyph(colour: [u8; 3]) -> Rgba {
+    let mut src = Rgba::new(600, 300);
+    for y in 60..240 {
+        for x in 60..540 {
+            if y >= 120 || (x > 220 && x < 380) {
+                src.set_px(x, y, [colour[0], colour[1], colour[2], 255]);
+            }
+        }
+    }
+    src
+}
+
+fn step_names(v: &Value) -> Vec<String> {
+    v["steps"].as_array().unwrap().iter().map(|s| s["op"]["op"].as_str().unwrap().to_string()).collect()
+}
+
+#[test]
+fn the_palette_snap_moves_a_darker_teal_to_the_packs_light_teal_and_records_it() {
+    let h = openai_harness();
+    let saved = counter_pack(&h, json!({"keep_colours": true, "crisp": true}));
+    let hashes: Vec<Value> =
+        saved["pack"]["families"]["counter_large"]["references"].as_array().unwrap().iter().map(|r| r["sha256"].clone()).collect();
+    let made = import(&h, "counter_large", &big_glyph([59, 181, 177]), json!({"style_pack": "house", "counter_symbol": "medium_armor"})).unwrap();
+    assert_eq!(made["recipe"], json!({"id": "kept_unit_art", "version": 2}));
+    let names = step_names(&made);
+    assert_eq!(names, vec!["trim_to_subject", "area_fit", "palette_snap", "nato_outline", "edge_glow"], "{names:?}");
+    let snap = &made["steps"][2]["op"];
+    assert_eq!(snap["palette"], json!([{"rgb": LIGHT_TEAL, "share": 1.0}]));
+    assert_eq!(snap["pack"], "house");
+    assert_eq!(snap["references"], json!(hashes), "the step records the hash of every reference it was measured from");
+    assert_eq!(made["steps"][4]["op"]["glow"], json!([[73, 12], [60, 18]]));
+    let fit = &made["steps"][1]["op"];
+    assert!(fit["box_width"].as_u64().unwrap() < 62, "a dense glyph is fitted to the references' size: {fit}");
+
+    let out = pixels(&h, made["path"].as_str().unwrap());
+    let f = out.split_frames(2).unwrap();
+    assert_eq!(f[0].px(38, 26), [89, 199, 194, 255], "the glyph is the pack's teal");
+    assert_eq!(f[1].px(14, 20), [89, 199, 194, 255], "so is the outline drawn in its colour");
+    assert_eq!(f[1].px(13, 20), [89, 199, 194, 60], "the outline has the pack's glow");
+    let edge = (0..76).find(|&x| f[0].px(x, 26)[3] >= 200).unwrap();
+    assert_eq!(f[0].px(edge - 2, 26)[3], 12, "two pixels outside the glyph, the outer glow");
+    assert_eq!(validated(&h, made["artifact_id"].as_str().unwrap())["status"], "pass");
+
+    // a colour the pack does not have is kept: a salmon naval glyph stays salmon
+    let salmon = import(&h, "counter_large", &big_glyph([213, 102, 100]), json!({"style_pack": "house", "counter_symbol": "medium_armor"})).unwrap();
+    let s = pixels(&h, salmon["path"].as_str().unwrap()).split_frames(2).unwrap().remove(0);
+    assert_eq!(s.px(38, 26), [213, 102, 100, 255]);
+
+    // the switches turn it off; the fit to the references' size stays
+    counter_pack(&h, json!({"keep_colours": true, "crisp": true, "snap_palette": false, "edge_glow": false}));
+    let off = import(&h, "counter_large", &big_glyph([59, 181, 177]), json!({"style_pack": "house", "counter_symbol": "medium_armor"})).unwrap();
+    assert_eq!(step_names(&off), vec!["trim_to_subject", "area_fit", "nato_outline"]);
+    assert_eq!(pixels(&h, off["path"].as_str().unwrap()).split_frames(2).unwrap()[0].px(38, 26), [59, 181, 177, 255]);
+}
+
+#[test]
+fn a_flat_glyph_one_shade_off_passes_the_pack_match_and_a_half_size_one_still_fails() {
+    use imagegen_core::{pack, vanillamatch};
+    let sizes = [(36, 18), (35, 19), (44, 20), (30, 21), (48, 24), (52, 22), (40, 18), (56, 21)];
+    let rows: Vec<pack::ReferenceRow> = sizes.iter().map(|(w, h)| pack::measure_reference(&counter_strip(*w, *h, LIGHT_TEAL)).unwrap()).collect();
+    let feats: Vec<vanillamatch::Features> = rows.iter().map(|r| r.features).collect();
+    // one shade darker: every channel 16 levels down, the step of `pack::SHADE_STEP`
+    let shade = [LIGHT_TEAL[0] - 16, LIGHT_TEAL[1] - 16, LIGHT_TEAL[2] - 16];
+    let darker = vanillamatch::measure(&counter_strip(44, 20, shade)).unwrap();
+    // the 0.3.5 rule refused it on the middle-value share, a step function of one flat colour
+    let v1 = vanillamatch::calibrate_min_max(Family::CounterLarge, &feats, 1.0, 2.0, "pack_match_v1", None, &[]).unwrap();
+    let old = v1.check(&darker);
+    assert!(!old.pass && old.outside.iter().any(|o| o.feature == "mid_tone_share"), "{old:?}");
+    for family in [Family::CounterLarge, Family::Decision] {
+        let cal = pack::calibrate(family, &rows).unwrap();
+        assert_eq!(cal.version, "pack_match_v2");
+        let res = cal.check(&darker);
+        assert!(res.pass, "{family}: {:?}", res.outside);
+    }
+    let cal = pack::calibrate(Family::CounterLarge, &rows).unwrap();
+    let mid = cal.ranges.iter().find(|r| r.feature == "mid_tone_share").unwrap();
+    assert!(!mid.checked, "unit art measures and reports the middle-value share, and never fails on it");
+    assert!(cal.ranges.iter().find(|r| r.feature == "saturation_mean").unwrap().checked);
+    assert!(pack::calibrate(Family::Decision, &rows).unwrap().ranges.iter().find(|r| r.feature == "mid_tone_share").unwrap().checked);
+
+    // three shades off is another colour, and still fails on saturation
+    let far = [LIGHT_TEAL[0] - 48, LIGHT_TEAL[1] - 48, LIGHT_TEAL[2] - 48];
+    let res = cal.check(&vanillamatch::measure(&counter_strip(44, 20, far)).unwrap());
+    assert!(res.outside.iter().any(|o| o.feature == "saturation_mean"), "{res:?}");
+
+    // a glyph half the size (a quarter of the ink) still fails. Alpha coverage stays checked, but on a two-frame strip
+    // the glowing NATO box holds most of the visible pixels, so the strip's centre of mass, pulled toward frame 2, is
+    // what sees the light glyph
+    let half = cal.check(&vanillamatch::measure(&counter_strip(22, 10, LIGHT_TEAL)).unwrap());
+    assert!(!half.pass && half.outside.iter().any(|o| o.feature == "subject_center_x"), "{half:?}");
+    assert!(cal.ranges.iter().find(|r| r.feature == "alpha_coverage").unwrap().checked);
+    // a strip with no glyph on frame 1 at all fails alpha coverage too
+    let marks = imagegen_core::recipes::unit_art::parse_symbol("medium_armor").unwrap();
+    let empty = imagegen_core::recipes::unit_art::outline_strip(
+        &glyph_frame(2, 2, LIGHT_TEAL),
+        imagegen_core::recipes::unit_art::UnitArtKind::CounterLarge,
+        &marks,
+    )
+    .unwrap();
+    let res = cal.check(&vanillamatch::measure(&empty).unwrap());
+    assert!(res.outside.iter().any(|o| o.feature == "alpha_coverage"), "{res:?}");
+}
+
+#[test]
+fn without_a_pack_the_counter_and_the_vanilla_check_are_unchanged() {
+    let h = openai_harness();
+    // no pack: vanilla's material, no palette or glow step
+    let plain = import(&h, "counter_large", &big_glyph([59, 181, 177]), json!({"counter_symbol": "medium_armor"})).unwrap();
+    assert_eq!(plain["recipe"]["id"], "unit_counter");
+    let names = step_names(&plain);
+    assert!(names.contains(&"unit_glyph".to_string()) && !names.iter().any(|n| n == "palette_snap" || n == "edge_glow"), "{names:?}");
+    // the vanilla rule still checks the middle-value share of unit art
+    let rows: Vec<_> = (0..5).map(|i| imagegen_core::vanillamatch::measure(&counter_strip(36 + i * 4, 20, LIGHT_TEAL)).unwrap()).collect();
+    let cal = imagegen_core::vanillamatch::calibrate(Family::CounterLarge, &rows).unwrap();
+    assert!(cal.ranges.iter().find(|r| r.feature == "mid_tone_share").unwrap().checked);
+    assert_eq!(cal.version, "vanilla_match_v2");
+    // a pack that keeps colours but has no references: the art keeps its shades, and the note says why
+    save_pack(
+        &h,
+        json!({"name": "house", "families": {"counter_large": {"look": "teal glyph", "form": ["A flat teal glyph."], "processing": {"keep_colours": true}}}}),
+    );
+    let bare = import(&h, "counter_large", &big_glyph([59, 181, 177]), json!({"style_pack": "house", "counter_symbol": "medium_armor"})).unwrap();
+    assert_eq!(step_names(&bare), vec!["trim_to_subject", "fit_in_box", "nato_outline"]);
+    assert!(bare["notes"].as_array().unwrap().iter().any(|n| n.as_str().unwrap().contains("snap_palette")), "{}", bare["notes"]);
 }
 
 // ------------------------------------------------------------------ the folder import

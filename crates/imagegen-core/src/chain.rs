@@ -33,7 +33,7 @@
 //! | `anim_scroll` v1 | scroll | `flatten_on`, `cover_resize`, `scroll_frames` (or `flatten_on`, `conform`) |
 //! | `anim_spin` v1 | spin | `spin_frames` (or one `conform`) |
 //! | `upright_print` v1 | report event, operation picture with a style pack's `upright_print` | `fit_subject` (art with alpha) or `cover_resize` (opaque art), or `conform` for imported finished art; no tilt, mask, tone or shadow |
-//! | `kept_unit_art` v1 | counters and the division emblem with a style pack's `keep_colours` | `fit_in_box` (or `area_fit`) into vanilla's glyph box in the art's own colours, then `nato_outline` for a counter, or `conform` for imported finished art |
+//! | `kept_unit_art` v2 | counters and the division emblem with a style pack's `keep_colours` | `fit_in_box` (or `area_fit`) into vanilla's glyph box in the art's own colours, `palette_snap` to the pack's measured palette (`snap_palette`), `nato_outline` for a counter, `edge_glow` (the pack's measured glow, `edge_glow`), or `conform` for imported finished art |
 //! | `filled_icon` v1 | transparent icon families with a style pack's `fill_canvas` | `cover_resize` (or `area_cover`) to the whole canvas, or `conform` |
 //!
 //! A style pack's `crisp` switch keeps the recipe and swaps every Lanczos3 fit for its area-filter twin (`area_fit`,
@@ -185,6 +185,8 @@ impl Recipe {
             Recipe::Doctrine => crate::recipes::doctrine::RECIPE_VERSION,
             Recipe::Vignette => crate::recipes::vignette::RECIPE_VERSION,
             Recipe::AnimGlow | Recipe::AnimKeyframes | Recipe::AnimScroll | Recipe::AnimSpin => crate::animation::RECIPE_VERSION,
+            // v2 (0.3.6): the pack's palette snap and edge glow
+            Recipe::KeptUnitArt => 2,
             _ => 1,
         }
     }
@@ -337,6 +339,21 @@ pub struct FinishOptions {
     pub asset: Option<String>,
     /// Technology only: the tier numeral (and gem) to stamp where vanilla bakes it into the picture.
     pub overlay: Option<crate::recipes::tech_overlay::TechOverlay>,
+    /// Kept-colours unit art with a style pack: the look measured on the pack's references for the family (the glyph
+    /// size the fit scales to, and the palette and glow of the `snap_palette` and `edge_glow` switches). `None`
+    /// without a pack or without readable references.
+    pub pack_look: Option<PackFinish>,
+}
+
+/// A style pack's measured look on unit art, and where it came from.
+#[derive(Debug, Clone, PartialEq)]
+pub struct PackFinish {
+    /// The pack.
+    pub pack: String,
+    /// SHA-256 of each reference it was measured from.
+    pub references: Vec<String>,
+    /// What was measured.
+    pub look: crate::recipes::pack_look::PackLook,
 }
 
 /// Which unit art a family makes.
@@ -626,9 +643,23 @@ pub fn plan_finishing_with(
                         profile.family, style.frame[0], style.frame[1], canvas[0], canvas[1]
                     )));
                 }
-                // the glyph keeps its own colours and is fitted into vanilla's largest glyph box, centred on the frame
-                let box_size = [style.max_box[0].round() as u32, style.max_box[1].round() as u32];
+                // the glyph keeps its own colours and is fitted into vanilla's largest glyph box, centred on the frame.
+                // TNO's 8 battalion glyphs span 26 to 62 by 18 to 29 px, so vanilla's 62x30 box (the 90th percentile
+                // of vanilla's) is also the pack's envelope and stays the cap. With the pack's references the glyph is
+                // scaled to their median size inside it, so a dense glyph is not drawn heavier than theirs
+                let look = opts.pack_look.as_ref();
+                let max_box = [style.max_box[0].round() as u32, style.max_box[1].round() as u32];
+                let box_size = match look {
+                    Some(f) if f.look.glyph_ink > 0.0 => crate::recipes::pack_look::ink_box(img, max_box, f.look.glyph_ink),
+                    _ => max_box,
+                };
                 ops = subject_fit_ops(img, canvas, box_size, keyed, crisp)?;
+                if let (Some(f), true) = (look, box_size != max_box) {
+                    notes.push(format!(
+                        "the glyph is fitted into a {}x{} box, inside the {}x{} glyph box, so it holds about the {:.0} opaque pixels of the style pack's references",
+                        box_size[0], box_size[1], max_box[0], max_box[1], f.look.glyph_ink
+                    ));
+                }
                 // the fit shrinks everything the trim keeps into the box, so a drawing that holds more than the unit's
                 // glyph (its own NATO box beside it, a second element) ends as a sliver with the real box added to it
                 if let Some(b) = img.alpha_bbox(16) {
@@ -637,15 +668,36 @@ pub fn plan_finishing_with(
                             "unit_art_holds_more_than_the_glyph",
                             format!(
                                 "the art holds more than the glyph: after trimming, its subject is {shape}, so fitting it into the {}x{} glyph box would shrink the unit to a sliver. It probably draws its own NATO box or a second element beside the unit. Redraw it with only the unit's glyph, one object, and process it again",
-                                box_size[0], box_size[1]
+                                max_box[0], max_box[1]
                             ),
                             RetryClass::Terminal,
                         ));
                     }
                 }
+                let sw = profile.processing();
+                // the palette goes onto the glyph before the outline, which is drawn in the glyph's colour
+                match look {
+                    Some(f) if sw.snaps_palette() && !f.look.palette.is_empty() => ops.push(Op::PaletteSnap {
+                        palette: f.look.palette.clone(),
+                        max_distance: crate::recipes::pack_look::SNAP_DISTANCE,
+                        pack: f.pack.clone(),
+                        references: f.references.clone(),
+                    }),
+                    _ if sw.snaps_palette() => notes.push(
+                        "snap_palette is on but the pack has no measurable references for the family, so the glyph keeps the model's shades"
+                            .to_string(),
+                    ),
+                    _ => {}
+                }
                 if counter {
                     let (symbol, _) = counter_symbol(opts)?;
                     ops.push(Op::NatoOutline { kind, symbol });
+                }
+                match look {
+                    Some(f) if sw.draws_edge_glow() && f.look.glow.len() == frames as usize && f.look.glow.iter().any(|g| g[0] >= 16) => {
+                        ops.push(Op::EdgeGlow { frames, glow: f.look.glow.clone(), pack: f.pack.clone(), references: f.references.clone() })
+                    }
+                    _ => {}
                 }
             }
         }

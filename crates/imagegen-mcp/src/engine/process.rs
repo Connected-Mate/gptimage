@@ -75,7 +75,13 @@ impl Engine {
         if p.counter_symbol.is_some() && !counter_recipe {
             return Err(EngineError::invalid(format!("counter_symbol is for counter_large and counter_small, not {}", profile.family)));
         }
-        let opts = chain::FinishOptions { counter_symbol: p.counter_symbol.clone(), asset: Some(artifact.asset.clone()), overlay: p.overlay.clone() };
+        let pack_look = if recipe == Recipe::KeptUnitArt { self.pack_finish(&profile)? } else { None };
+        let opts = chain::FinishOptions {
+            counter_symbol: p.counter_symbol.clone(),
+            asset: Some(artifact.asset.clone()),
+            overlay: p.overlay.clone(),
+            pack_look,
+        };
         let plan = chain::plan_finishing_with(&profile, artifact.canvas, &prepared, imported, keyed, &artifact.recorded_sha256, &opts)?;
         let symbol = match recipe {
             _ if counter_recipe && plan.ops.iter().any(|o| matches!(o, Op::NatoFrame { .. } | Op::NatoOutline { .. })) => {

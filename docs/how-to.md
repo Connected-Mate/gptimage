@@ -214,6 +214,8 @@ A style pack gives every family the mod restyles its own references, look line, 
 
    Keep the keys that are already in each family's table (`look` and the `references` list) and add these to it.
 
+   With `keep_colours` and the family's references in the pack, counters and division emblems also get the references' look by default (since 0.3.6): the glyph is scaled to the references' glyph size, its colours are snapped to the palette measured on them (`snap_palette`) and their soft edge glow is drawn (`edge_glow`). A colour the references do not have, such as TNO's salmon for naval units, is kept. Set `snap_palette = false` or `edge_glow = false` in `processing` to turn either off, for example when the references mix several house colours you do not want a glyph pulled to. The process reply lists the `palette_snap` and `edge_glow` steps with the palette, the glow and the reference hashes.
+
 4. **Check it.** `hoi4-imagegen pack validate tno` checks the hashes and the switches, warns about a switch without a form, and shows each family's checks, recipe and self-check (how many references pass ranges fitted on the others).
 
 5. **Use it.** Name it in a plan (`"style_pack": "tno"`, or `--style-pack tno` with `hoi4-imagegen plan`), or make it the project default in `.hoi4-imagegen/config.toml`:
@@ -225,7 +227,7 @@ A style pack gives every family the mod restyles its own references, look line, 
 
    Read `style_pack` in the plan: the entry that applied, the references sent and the switches. Families the pack does not cover keep the vanilla look. `"style_pack": "none"` plans one asset without the default.
 
-6. **Review against the pack.** The preview shows the pack's references beside the candidate, and the review measures the file against them (`reference_set` in the reply). A TNO-style image no longer needs an override for differing from vanilla.
+6. **Review against the pack.** The preview shows the pack's references beside the candidate, and the review measures the file against them (`reference_set` in the reply). A TNO-style image no longer needs an override for differing from vanilla. Flat references get a range at least one shade wide in each colour feature, and unit art is not failed on its middle-value share (see [the review with a pack](reference.md#the-review-with-a-pack)). Counters processed with 0.3.5 have recipe `kept_unit_art` v1: process their source candidate again to get the palette and the glow, since validation asks for v2.
 
 If you change a reference file, save the pack again to pin it: a plan refuses a changed file. Pack references are the mod's own art: keep them in the mod and do not share them beyond what the mod's own terms allow.
 

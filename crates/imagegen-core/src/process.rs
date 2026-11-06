@@ -233,6 +233,31 @@ pub enum Op {
         /// The NATO symbol: marks joined by `+`.
         symbol: String,
     },
+    /// A style pack's `snap_palette` on kept-colours unit art: each visible pixel within `max_distance` (CIE76) of a
+    /// colour of the palette measured on the pack's references is moved onto it, alpha kept. See
+    /// `recipes::pack_look::snap`.
+    PaletteSnap {
+        /// The palette, most used first.
+        palette: Vec<crate::recipes::pack_look::PaletteColour>,
+        /// Largest CIE76 distance snapped.
+        max_distance: f64,
+        /// The style pack the palette was measured from.
+        pack: String,
+        /// SHA-256 of each reference it was measured from.
+        references: Vec<String>,
+    },
+    /// A style pack's `edge_glow` on kept-colours unit art: the soft glow measured on the pack's references, one
+    /// `[ring 1, ring 2]` alpha per frame. See `recipes::pack_look::glow`.
+    EdgeGlow {
+        /// Frames in the strip.
+        frames: u32,
+        /// Alpha one and two pixels outside a shape's core, per frame.
+        glow: Vec<[u8; 2]>,
+        /// The style pack the glow was measured from.
+        pack: String,
+        /// SHA-256 of each reference it was measured from.
+        references: Vec<String>,
+    },
 }
 
 impl Op {
@@ -269,6 +294,8 @@ impl Op {
             Op::AreaFit { .. } => "area_fit",
             Op::AreaCover { .. } => "area_cover",
             Op::NatoOutline { .. } => "nato_outline",
+            Op::PaletteSnap { .. } => "palette_snap",
+            Op::EdgeGlow { .. } => "edge_glow",
         }
     }
 }
@@ -367,6 +394,11 @@ pub fn apply(img: &Rgba, op: &Op) -> Result<Rgba> {
             let marks = crate::recipes::unit_art::parse_symbol(symbol)?;
             crate::recipes::unit_art::outline_strip(img, *kind, &marks)
         }
+        Op::PaletteSnap { palette, max_distance, .. } => {
+            let colours: Vec<[u8; 3]> = palette.iter().map(|c| c.rgb).collect();
+            Ok(crate::recipes::pack_look::snap(img, &colours, *max_distance).0)
+        }
+        Op::EdgeGlow { frames, glow, .. } => crate::recipes::pack_look::glow(img, *frames, glow),
     }
 }
 
