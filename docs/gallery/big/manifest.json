@@ -3300,6 +3300,22 @@
   {
    "section": "vanilla",
    "family": "agency_upgrade",
+   "asset": "safe_house_window",
+   "brief": "A shuttered townhouse window with a single lit lamp behind a curtain on a narrow cobbled Lisbon street at night, a safe house.",
+   "build": "0.3.4",
+   "size": [
+    68,
+    68
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/agency_upgrade/safe_house_window.webp",
+   "enlarged": "vanilla/agency_upgrade/safe_house_window@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "agency_upgrade",
    "asset": "steel_filing_vault",
    "brief": "A heavy steel filing cabinet with a large combination lock and thick folders spilling from the top drawer, counterintelligence records room.",
    "build": "0.3.4",
@@ -6372,6 +6388,22 @@
   {
    "section": "vanilla",
    "family": "operative_portrait",
+   "asset": "factory_worker_infiltrator",
+   "brief": "A Soviet infiltrator in a worker's flat cap and oil-stained overalls, blank dutiful face.",
+   "build": "0.3.4",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/operative_portrait/factory_worker_infiltrator.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "operative_portrait",
    "asset": "istanbul_cafe_informant",
    "brief": "A Turkish informant in a fez and rumpled suit, watchful eyes over a thin moustache.",
    "build": "0.3.4",
@@ -6382,6 +6414,22 @@
    "vanilla_check": "pass",
    "subfamily": "all",
    "native": "vanilla/operative_portrait/istanbul_cafe_informant.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "operative_portrait",
+   "asset": "lisbon_fur_collar_spy",
+   "brief": "A glamorous woman spy in a veiled hat and fur-collared coat, appraising stare.",
+   "build": "0.3.4",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/operative_portrait/lisbon_fur_collar_spy.webp",
    "enlarged": null,
    "scale": 1
   },
