@@ -41,6 +41,16 @@ impl Engine {
     pub fn install(&self, p: InstallParams) -> EResult<Value> {
         let _install_lock = self.install_lock()?;
         let artifact = self.artifact(&p.target)?;
+        if artifact.family == imagegen_core::Family::ModelReference {
+            return Err(EngineError::refused(
+                "install_not_game_art",
+                format!(
+                    "{} is a model reference, the input picture of a 3D tool, not game art: nothing is installed into the mod. Use the PNG at {}",
+                    artifact.id, artifact.path
+                ),
+                RetryClass::Terminal,
+            ));
+        }
         let profile = self.profile_of(&artifact)?;
         let (bytes, sha) = self.read_artifact(&artifact)?;
         let entries = self.ledger.entries()?;

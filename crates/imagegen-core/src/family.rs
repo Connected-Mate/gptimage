@@ -199,6 +199,7 @@ families! {
     ModifierStatIcon => ("modifier_stat_icon", Interface, "modifier tooltip stat icon"),
     GuiTexture => ("gui_texture", Interface, "GUI texture"),
     SuperEvent => ("super_event", Interface, "super event picture"),
+    ModelReference => ("model_reference", Interface, "3D model reference picture"),
     AnimBlendGlow => ("anim_blend_glow", Animation, "two-frame pulsing glow"),
     AnimBlendKeyframes => ("anim_blend_keyframes", Animation, "three-frame blended animation"),
     AnimScroll => ("anim_scroll", Animation, "scrolling animated strip"),
@@ -252,7 +253,7 @@ mod tests {
 
     #[test]
     fn groups_partition_the_families() {
-        assert_eq!(Family::ALL.len(), 44);
+        assert_eq!(Family::ALL.len(), 45);
         let mut total = 0;
         for g in Group::ALL {
             let fams = g.families();
@@ -266,7 +267,7 @@ mod tests {
         assert_eq!(Group::Portrait.families().len(), 5);
         assert_eq!(Group::Flag.families(), vec![Family::Flag]);
         assert_eq!(Group::Unit.families().len(), 6);
-        assert_eq!(Group::Interface.families().len(), 3);
+        assert_eq!(Group::Interface.families().len(), 4);
         assert_eq!(Group::Animation.families().len(), 4);
         assert_eq!(Group::Animation.tool_name(), "hoi4.image_animation");
         assert_eq!(Family::Focus.group(), Group::Icon);

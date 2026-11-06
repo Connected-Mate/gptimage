@@ -140,7 +140,7 @@ Before you use the login, know that it calls a ChatGPT backend that OpenAI does 
 ## More
 
 * [How-to](docs/how-to.md): sign in, make a first image, fix problems
-* [Asset gallery](docs/families.md): the 40 still families with real examples, and the [animated sprites](docs/families.md#animated-sprites)
+* [Asset gallery](docs/families.md): the still families with real examples, and the [animated sprites](docs/families.md#animated-sprites)
 * [Reference](docs/reference.md): families, processing chains, names the game looks up, style references, validation, install and project config
 * [ChatGPT login](docs/chatgpt-login.md), [rules and terms](docs/rules-and-terms.md), [kit integration](docs/kit-integration.md), [test layers](docs/testing.md), [recipes](examples/recipes.md)
 

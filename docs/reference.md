@@ -39,7 +39,7 @@ That is 21 tools.
 
 ## Families
 
-There are 44 families in seven groups. The group names the tool that plans them.
+There are 45 families in seven groups. The group names the tool that plans them.
 
 | Tool | Families |
 |---|---|
@@ -48,7 +48,7 @@ There are 44 families in seven groups. The group names the tool that plans them.
 | `hoi4.image_portrait` | leader_portrait, commander_portrait, operative_portrait, scientist_portrait, advisor_card |
 | `hoi4.image_flag` | flag |
 | `hoi4.image_unit` | counter_large, counter_small, division_emblem, building, faction_logo, agency_logo |
-| `hoi4.image_interface` | modifier_stat_icon, gui_texture, super_event |
+| `hoi4.image_interface` | modifier_stat_icon, gui_texture, super_event, model_reference (the input picture of an image-to-3D tool, not game art: install refuses it) |
 | `hoi4.image_animation` | anim_blend_glow, anim_blend_keyframes, anim_scroll, anim_spin |
 
 ### Measured from the game

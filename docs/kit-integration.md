@@ -16,7 +16,7 @@ Changes to the skill are made here first and copied to the kit. The two copies s
 
 * The kit's rewrite of its `hoi4-imagegen` skill and its profile and shelf work were on the kit branch `claude/hoi4-imagegen` when this page was written. Check that they are merged.
 * `hoi4.image_audit` runs the shared engine's sprite trace (hoi4-agent-tools) over the whole mod and reports cross-family reuse as a warning, with a per-mod allowlist. New reuse is refused at import and install.
-* This repository does not read `family_ids.json`. Its own list of 44 families (40 still and 4 animated) is in the code, and a test keeps it equal to the measurement data. A check that the two lists agree is not built.
+* This repository does not read `family_ids.json`. Its own list of 45 families (41 still, among them `model_reference`, which is not game art, and 4 animated) is in the code, and a test keeps it equal to the measurement data. A check that the two lists agree is not built.
 * The kit's profile rows carry geometry only. None has an `imagegen` object yet, so every family uses the built-in sprite, naming and check defaults.
 * Nothing here has been checked in game. That needs a user-operated session.
 

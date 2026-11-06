@@ -307,7 +307,7 @@ fn every_group_tool_refuses_a_family_of_another_group_at_runtime() {
             tried += 1;
         }
     }
-    assert_eq!(tried, 7 * 44 - 44);
+    assert_eq!(tried, 7 * 45 - 45);
     // the right group works without spending
     let (req, follow) =
         serde_json::from_value::<IconRequest>(json!({"family": "focus", "feature_slug": "f", "asset": "a", "brief": "x", "provider": "openai"}))
@@ -359,7 +359,7 @@ fn the_family_enum_of_each_tool_schema_lists_exactly_its_group() {
 fn the_families_tool_reports_measured_specs_and_style_sources() {
     let h = openai_harness();
     let all = h.engine.families_info(serde_json::from_value(json!({})).unwrap()).unwrap();
-    assert_eq!(all["families"].as_array().unwrap().len(), 44);
+    assert_eq!(all["families"].as_array().unwrap().len(), 45);
     assert_eq!(all["groups"].as_array().unwrap().len(), 7);
     let one = h.engine.families_info(serde_json::from_value(json!({"family": "idea_spirit"})).unwrap()).unwrap();
     let f = &one["family"];

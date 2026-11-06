@@ -143,6 +143,7 @@ pub const ALL_CHECKS: &[&str] = &[
     "side_view",
     "small_detail",
     "backdrop",
+    "plain_backdrop",
     "style",
     "dds",
     "tga",
@@ -151,6 +152,45 @@ pub const ALL_CHECKS: &[&str] = &[
 /// Checks that judge the main image only: a companion (a tinted text icon, a smaller strip) is not the family's
 /// finished art and skips them.
 pub const MAIN_IMAGE_ONLY_CHECKS: &[&str] = &["unit_material", "unit_glyph_shape", "side_view", "line_art", "small_detail", "backdrop"];
+
+/// Code of a model reference whose backdrop is not plain or whose subject touches the edge (`plain_backdrop` check).
+pub const PLAIN_BACKDROP_CODE: &str = "GFX-MODEL-BACKDROP";
+
+/// The border ring a model reference's backdrop is measured on: this share of the shorter side, at least 2 px.
+pub const PLAIN_BACKDROP_RING: f64 = 0.03;
+/// Largest spread (the mean over R, G and B of the standard deviation, in levels) of a plain backdrop's border ring.
+/// A flat backdrop with grain or a soft vignette stays under it; a subject that runs into the edge, a ground plane
+/// or a scene does not.
+pub const PLAIN_BACKDROP_SPREAD: f64 = 12.0;
+
+/// Mean colour and spread of the border ring ([`PLAIN_BACKDROP_RING`]) of an image. `None` for an image too small to
+/// have a ring.
+pub fn plain_backdrop(img: &Rgba) -> Option<([f64; 3], f64)> {
+    let (w, h) = (img.width, img.height);
+    let ring = ((f64::from(w.min(h)) * PLAIN_BACKDROP_RING).round() as u32).max(2);
+    if w <= 2 * ring || h <= 2 * ring {
+        return None;
+    }
+    let mut sum = [0f64; 3];
+    let mut sq = [0f64; 3];
+    let mut n = 0f64;
+    for y in 0..h {
+        for x in 0..w {
+            if x >= ring && x < w - ring && y >= ring && y < h - ring {
+                continue;
+            }
+            let p = img.px(x, y);
+            for c in 0..3 {
+                sum[c] += f64::from(p[c]);
+                sq[c] += f64::from(p[c]).powi(2);
+            }
+            n += 1.0;
+        }
+    }
+    let mean = [sum[0] / n, sum[1] / n, sum[2] / n];
+    let spread = (0..3).map(|c| (sq[c] / n - mean[c] * mean[c]).max(0.0).sqrt()).sum::<f64>() / 3.0;
+    Some((mean, spread))
+}
 
 /// Code of a special project drawing with a filled area (`line_art` check).
 pub const FILLED_CODE: &str = "GFX-FILLED-INTERIOR";
@@ -649,6 +689,36 @@ pub fn validate_image(img: &Rgba, profile: &Profile, checks: &[String], opts: &O
                     ),
                     None,
                     json!({"glow": glow, "vanilla_min": min}),
+                ));
+            }
+        }
+    }
+
+    if wants("plain_backdrop") {
+        run.push("plain_backdrop".into());
+        if let Some((mean, spread)) = plain_backdrop(img) {
+            if spread > PLAIN_BACKDROP_SPREAD {
+                findings.push(Finding::new(
+                    PLAIN_BACKDROP_CODE,
+                    Level::Error,
+                    format!(
+                        "the border of the picture is not one plain backdrop (spread {spread:.1} levels, at most {PLAIN_BACKDROP_SPREAD}): the subject runs into the edge, or there is a scene, ground or shadow. A 3D tool needs the whole subject on a plain light grey backdrop with a margin"
+                    ),
+                    None,
+                    json!({"border_mean": mean, "spread": spread, "limit": PLAIN_BACKDROP_SPREAD}),
+                ));
+            }
+            let (max, min) = (mean.iter().cloned().fold(0.0, f64::max), mean.iter().cloned().fold(255.0, f64::min));
+            if max < 150.0 || max - min > 30.0 {
+                findings.push(Finding::new(
+                    PLAIN_BACKDROP_CODE,
+                    Level::Warning,
+                    format!(
+                        "the backdrop is RGB ({:.0}, {:.0}, {:.0}), not a light neutral grey. A light grey backdrop separates best from the subject in image-to-3D",
+                        mean[0], mean[1], mean[2]
+                    ),
+                    None,
+                    json!({"border_mean": mean}),
                 ));
             }
         }

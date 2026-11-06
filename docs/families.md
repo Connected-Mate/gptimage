@@ -1,4 +1,4 @@
-# Asset gallery: the 40 still families and 4 animated sprites
+# Asset gallery: the still families and 4 animated sprites
 
 Every example below was made by the tool itself on the [ChatGPT login](chatgpt-login.md) with version 0.3 or later: planned, generated, processed and validated by `hoi4-imagegen`, and passed by its check against the game's own art. Each is shown at its native size on a dark tile, enlarged by a whole number when small so the pixels stay crisp. Nothing is retouched. They are files the tool made, not in-game captures. The [big gallery](gallery/big/README.md) has many more per family beside vanilla references, and [`gallery/examples.json`](gallery/examples.json) lists the brief and build of each example here.
 
@@ -1152,6 +1152,24 @@ hoi4-imagegen call hoi4.image_interface '{"family": "super_event", "feature_slug
 no vanilla super events; a mod's .gui names the sprite in full
 
 </details>
+
+### model_reference
+
+Not game art: the input picture of an image-to-3D tool such as Meshy, for the kit's `hoi4-3d-model-pipeline`.
+
+| | |
+|---|---|
+| Group and tool | interface, `hoi4.image_interface` |
+| Canvas and frames | set by the caller (portrait 2:3 for figures, landscape for animals and vehicles), 1 frame |
+| Prompt | one subject shown whole with a margin, a three-quarter front view, even studio light, a plain light grey backdrop (about RGB 200, 200, 200) with no ground plane or cast shadow, and no grain or noise |
+| References | the caller's own style anchors only: no automatic vanilla set |
+| Checks | `size`, `checker`, `opaque`, `plain_backdrop` (the border ring is one plain backdrop: an error when it spreads more than 12 levels, which catches a subject that runs off the edge, a warning when it is not a light neutral grey), `style` |
+| Review | `interface_model_v3`: whole subject, plain backdrop, clean detail, readable form, no text |
+| Install | refused (`install_not_game_art`). The result is the raw or processed PNG |
+
+```sh
+hoi4-imagegen call hoi4.image_interface '{"family": "model_reference", "feature_slug": "zin", "asset": "knight", "brief": "an armoured knight with a tower shield", "canvas": [1024, 1536]}'
+```
 
 ## Animated sprites
 

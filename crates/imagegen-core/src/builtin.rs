@@ -61,6 +61,8 @@ const LINE_ART_CHECKS: &[&str] = &["size", "alpha", "opaque_canvas", "fringe", "
 const TECH_CHECKS: &[&str] = &["size", "alpha", "opaque_canvas", "fringe", "margin", "fill", "side_view", "checker", "style", "dds"];
 const INTERFACE_CHECKS: &[&str] = &["size", "alpha", "style", "dds"];
 const SUPER_CHECKS: &[&str] = &["size", "checker", "opaque", "style", "dds"];
+/// Model references are opaque PNG input for a 3D tool: a plain backdrop and a whole subject, and no DDS.
+const MODEL_CHECKS: &[&str] = &["size", "checker", "opaque", "plain_backdrop", "style"];
 const ANIM_CHECKS: &[&str] = &["size", "alpha", "opaque_canvas", "margin", "frames", "animation", "checker", "style", "dds"];
 const SCROLL_CHECKS: &[&str] = &["size", "opaque", "frames", "animation", "checker", "style", "dds"];
 
@@ -361,6 +363,23 @@ const NEWS_RULES: &[&str] = &[
     "Period newspaper look with natural grain.",
 ];
 const PICTURE_NEGATIVE: &[&str] = &["text, captions or headlines", "watermark or signature", "a frame or border"];
+/// A model reference is the input picture of an image-to-3D tool (Meshy): the whole subject, nothing cropped, on a
+/// plain backdrop the tool can separate, with no grain or noise that would end up in the model's texture.
+const MODEL_RULES: &[&str] = &[
+    "One subject, shown whole from head to foot (or end to end), with a clear margin on every side and nothing cropped, composed for a {w}x{h} frame.",
+    "A three-quarter front view with natural perspective and even, soft studio lighting, so every part of the subject's form reads.",
+    "A plain, flat light grey backdrop (about RGB 200, 200, 200) with no ground plane, no cast shadow, no horizon and no setting.",
+    "Clean, sharp detail with no film grain, noise, blur or painterly texture: the picture becomes the model's texture.",
+];
+const MODEL_NEGATIVE: &[&str] = &[
+    "a landscape, room or other setting",
+    "a ground plane, floor or cast shadow",
+    "film grain, noise or texture overlays",
+    "a second subject",
+    "a cropped or cut-off subject",
+    "text, captions or watermarks",
+    "a frame or border",
+];
 
 /// Vanilla leader portraits (gfx/leaders, 1.19.4.1): a close head-and-shoulders crop (the face is about half the
 /// height) on a plain pale backdrop. Generated portraits use that crop and backdrop. A custom backdrop is only for
@@ -844,6 +863,16 @@ fn rows() -> Vec<Row> {
             note: "Super events have no vanilla texture: they are a mod pattern (GUI windows), so the mod defines the canvas.",
             ..base(SuperEvent, [0, 0], &[], "gfx/super_events/{feature_slug}", "super_event_", "interface/{feature_slug}_super_events.gfx")
         },
+        Row {
+            background: Background::Opaque,
+            margin: 0,
+            checks: MODEL_CHECKS,
+            rules: MODEL_RULES,
+            negative: MODEL_NEGATIVE,
+            sprite: None,
+            note: "Not game art: the input picture of an image-to-3D tool (Meshy), one whole subject on a plain light grey backdrop. The caller sets the canvas (portrait 2:3 for figures, landscape for animals and vehicles). Only the caller's own style anchors are sent, the raw or processed PNG is the result, and install refuses it.",
+            ..base(ModelReference, [0, 0], &[], "docs/assets/{feature_slug}/model_reference", "model_reference_", "")
+        },
         // ---- animation group: the canvas is a default; a plan may name the size of the element the strip sits on
         Row {
             frames: 2,
@@ -923,7 +952,10 @@ pub fn animation_of(family: Family) -> Option<AnimationSpec> {
 /// The rubric id of a family: one per group (officer spirits and every other icon get the icon rubric). v3 asks
 /// every question against the vanilla references beside the candidate in the preview.
 pub fn rubric_of(family: Family) -> String {
-    format!("{}_v3", family.group().as_str())
+    match family {
+        Family::ModelReference => "interface_model_v3".into(),
+        _ => format!("{}_v3", family.group().as_str()),
+    }
 }
 
 /// The evidence text of a family: the measurement sentence, then what the measurement does not say.

@@ -457,6 +457,8 @@ mod tests {
             ModifierStatIcon => ("army_speed", None, one("GFX_MODIFIER_ARMY_SPEED", "gfx/interface/modifiers/iron_pact/modifier_army_speed.dds")),
             GuiTexture => ("panel", None, one("GFX_gui_panel", "gfx/interface/iron_pact/gui_panel.dds")),
             SuperEvent => ("victory", None, one("GFX_super_event_victory", "gfx/super_events/iron_pact/super_event_victory.dds")),
+            // not game art: no sprite, and install refuses it (the file list is what a final file would be named)
+            ModelReference => ("knight", None, one("", "docs/assets/iron_pact/model_reference/model_reference_knight.dds")),
             AnimBlendGlow => ("alert", None, vec![("GFX_glow_alert", "gfx/interface/animated/iron_pact/glows/glow_alert.dds", 2)]),
             AnimBlendKeyframes => ("beacon", None, vec![("GFX_anim_beacon", "gfx/interface/animated/iron_pact/keyframes/anim_beacon.dds", 3)]),
             AnimScroll => ("research", None, vec![("GFX_scroll_research", "gfx/interface/animated/iron_pact/scroll/scroll_research.dds", 9)]),

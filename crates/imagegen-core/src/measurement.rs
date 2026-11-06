@@ -178,7 +178,7 @@ pub fn entries_of(family: Family) -> &'static [&'static str] {
         FactionLogo => &["faction_icon"],
         AgencyLogo => &["intel_agency_logo"],
         ModifierStatIcon => &["stat_modifier_tooltip_icon"],
-        GuiTexture | SuperEvent => &[],
+        GuiTexture | SuperEvent | ModelReference => &[],
         AnimBlendGlow => &["anim_blend_glow"],
         AnimBlendKeyframes => &["anim_blend_keyframes"],
         AnimScroll => &["anim_scroll"],
