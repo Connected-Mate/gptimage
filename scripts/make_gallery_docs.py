@@ -310,7 +310,7 @@ def docs():
     fams = {f: cli("families", f)["family"] for f in order}
     out = []
     w = out.append
-    w("# Asset gallery: all 40 families\n")
+    w("# Asset gallery: the 40 still families and 4 animated sprites\n")
     w(
         "Every family below was made by the tool itself, on the [ChatGPT login](chatgpt-login.md) (your own ChatGPT plan, no API key, no money). "
         "Each image is a real output: planned, generated, processed, validated, reviewed and installed by `hoi4-imagegen`, then shown here at its native size on a dark tile. "
@@ -318,7 +318,7 @@ def docs():
         "They are installed files, not in-game captures: the tool says \"installed\", never \"verified in game\". "
         "[`gallery/manifest.json`](gallery/manifest.json) lists the family, prompt, model, date and SHA-256 of every image.\n"
     )
-    w('<p align="center"><a href="gallery/contact-sheet.webp"><img src="gallery/contact-sheet.webp" alt="All 40 families on one contact sheet" width="100%"></a></p>\n')
+    w('<p align="center"><a href="gallery/contact-sheet.webp"><img src="gallery/contact-sheet.webp" alt="One current example of each still family" width="100%"></a></p>\n')
     w("## How to read an entry\n")
     w(
         "* **Canvas and frames** are measured from the installed game, HOI4 1.19.4.1.\n"

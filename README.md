@@ -27,11 +27,15 @@
   <a href="docs/rules-and-terms.md">Rules and terms</a>
 </p>
 
+Ask your coding agent for a focus icon, an event picture, a portrait, a flag or a counter. HOI4 Imagegen generates it, fits it to the exact canvas the game expects, checks it against vanilla's own art and installs a ready DDS file with its sprite entry. It covers 44 asset families: 40 still ones and 4 animated sprites.
+
+**[See the gallery](docs/gallery/big/README.md)**: every family beside vanilla references, plus sections in the style of *The New Order* and *The Fire Rises*.
+
+[![One current example of each still family](docs/gallery/contact-sheet.webp)](docs/gallery/big/README.md)
+
 <p align="center">
   <a href="https://www.youtube.com/watch?v=4ko6f-icwDc"><img src="docs/images/imagegen-trailer-thumbnail.png" alt="Watch the HOI4 Imagegen trailer"></a>
 </p>
-
-Focus icons, idea pictures, decision icons, technology pictures, event pictures, portraits, flags, counters, logos, animated sprites and more: 44 asset families, each with the canvas, frames, naming, processing and checks measured from the game itself.
 
 > ### Part of the Agentic HOI4 Modding workflow
 >
@@ -53,9 +57,7 @@ You ask your agent for an asset. HOI4 Imagegen plans the job, shows the cost, ca
 
 ## Examples
 
-Every image below was made by the tool on the ChatGPT login with version 0.3 or later, then processed and validated by it and passed by its check against the game's own art. They are shown on a dark tile, enlarged by whole numbers when small, and are not retouched.
-
-[![One current example of each family](docs/gallery/contact-sheet.webp)](docs/gallery/big/README.md)
+Every image below was made by the tool on the ChatGPT login, then processed and validated by it and passed by its check against the game's own art. They are shown on a dark tile, enlarged by whole numbers when small, and are not retouched.
 
 | Focus icon (100x88) | Leader portrait (156x210) | Faction logo (two frames) |
 |:---:|:---:|:---:|
@@ -65,11 +67,11 @@ Every image below was made by the tool on the ChatGPT login with version 0.3 or 
 |:---:|:---:|:---:|
 | <img src="docs/gallery/news_event.webp" alt="News event picture" width="397"> | <img src="docs/gallery/report_event.webp" alt="Report event card" width="210"> | <img src="docs/gallery/technology.webp" alt="Technology picture" width="292"> |
 
-See many more in the [gallery](docs/gallery/big/README.md): every family beside vanilla references from the game, plus sections in the style of *The New Order* and *The Fire Rises*. Together they hold 748 images, and the gallery grows as more runs finish. The [documentation](docs/families.md) covers all 40 families, each with its canvas, the names the game looks up, the processing chain, the checks, an example call and a current example.
+See many more in the [gallery](docs/gallery/big/README.md): every family beside vanilla references from the game, plus sections in the style of *The New Order* and *The Fire Rises*. It grows as more runs finish. The [documentation](docs/families.md) covers the 40 still families, each with its canvas, the names the game looks up, the processing chain, the checks, an example call and a current example, and the 4 animated sprites.
 
 ## Quick start
 
-1. **Install it.** The easy way is [HOI4 Mod Setup](https://github.com/klimPaskov/HOI4-Mod-Setup/releases/latest) 0.9.2 or later: tick **Install hoi4-imagegen** on the image step. Setup downloads the [latest release](https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/latest) (v0.3.6) for your computer, checks its SHA-256, installs it in your mod and then opens the ChatGPT sign-in in your browser by itself. Other backends are under **Use another backend**. To install by hand, download the archive for your platform from the [releases](https://github.com/klimPaskov/hoi4-imagegen-mcp/releases) (Windows, macOS and Linux, `SHA256SUMS` included) and unpack it somewhere on your `PATH`.
+1. **Install it.** The easy way is [HOI4 Mod Setup](https://github.com/klimPaskov/HOI4-Mod-Setup/releases/latest) 0.9.2 or later: tick **Install hoi4-imagegen** on the image step. Setup downloads the [latest release](https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/latest) (<!-- latest-release -->v0.3.6<!-- /latest-release -->) for your computer, checks its SHA-256, installs it in your mod and then opens the ChatGPT sign-in in your browser by itself. Other backends are under **Use another backend**. To install by hand, download the archive for your platform from the [releases](https://github.com/klimPaskov/hoi4-imagegen-mcp/releases) (Windows, macOS and Linux, `SHA256SUMS` included) and unpack it somewhere on your `PATH`.
 2. **Sign in once** with your ChatGPT account, and no API key is needed. Setup does this step for you. By hand it is one command, which opens the browser, with nothing to type or confirm:
 
    ```sh
@@ -133,7 +135,7 @@ Every tool is also on the command line: `hoi4-imagegen call <tool> '<json>'`. Th
 
 Once you have signed in, the ChatGPT login is the default provider on your machine. A provider named in a plan, a style profile or the project config wins. Keys come from the environment, or from the credential store where HOI4 Mod Setup saved them, and are never written into a project file.
 
-Before you use the login, know that it calls a ChatGPT backend that OpenAI does not document for other tools, so it can change or be blocked without notice. Heavy use counts against your plan, and the consequences are yours. The risk note is shown as information at sign-in, and signing in accepts it. Every image runs on `gpt-6-luna`. The route asks for the highest reasoning effort the backend accepts, falls back to the backend's default when it refuses the named efforts, and records the effort each image ran at. Since 0.3.3 it sends up to three requests at once across your machine, and it drops to one at a time for six hours by itself after a sign-out by the server, a rate limit or a usage-limit answer. Since 0.3.4 an "Unable to verify model access" answer pauses only its own slot for a minute, and a second one within 15 minutes drops the machine to one at a time for an hour. The route cannot force image quality or size, so check the pixels in the preview. Details and recorded evidence are in [docs/chatgpt-login.md](docs/chatgpt-login.md).
+Before you use the login, know that it calls a ChatGPT backend that OpenAI does not document for other tools, so it can change or be blocked without notice. Heavy use counts against your plan, and the consequences are yours. The risk note is shown as information at sign-in, and signing in accepts it. How the route picks the reasoning effort, how many requests it sends at once and when it slows down are in [docs/chatgpt-login.md](docs/chatgpt-login.md).
 
 ## More
 

@@ -1,6 +1,6 @@
 ---
 name: hoi4-imagegen
-description: Make Hearts of Iron IV graphical assets (40 families: focus, ideas, decisions, technology and event pictures, flags, portraits, counters and more) with the hoi4-imagegen MCP. Use for any new or replaced mod art that is generated or processed rather than hand-drawn. Covers plan, generate, process, validate, preview, review and install.
+description: Make Hearts of Iron IV graphical assets (44 families: 40 still ones such as focus, ideas, decisions, technology and event pictures, flags, portraits, counters, and 4 animated sprites) with the hoi4-imagegen MCP. Use for any new or replaced mod art that is generated or processed rather than hand-drawn. Covers plan, generate, process, validate, preview, review and install.
 ---
 
 # hoi4-imagegen
@@ -13,19 +13,20 @@ Use the `hoi4_imagegen` MCP (tools `hoi4.image_*`). It owns canvas sizes, alpha,
 * `hoi4.image_generate`, `hoi4.image_edit`, `hoi4.image_process`, `hoi4.image_validate`, `hoi4.image_preview`, `hoi4.image_review`, `hoi4.image_install`, `hoi4.image_ledger`, `hoi4.image_cancel`.
 * `hoi4.image_audit` audits the whole mod for cross-family reuse, missing textures, missing focus shine and wrong canvases. Run it before a release or after importing art. Existing reuse is a warning; add intended aliases to `.hoi4-imagegen/audit-allowlist.json`.
 
-## The 40 families
+## The 44 families
 * Icon group (`hoi4.image_icon`): `focus`, `idea_spirit`, `idea_concern`, `officer_corps_spirit`, `decision` (also missions), `decision_category_icon`, `state_modifier` (also dynamic modifiers), `special_project_icon`, `raid`, `mio_department`, `mio_trait`, `mio_policy`, `bop_side`, `medal`, `agency_upgrade`, `operation_icon`, `commander_trait`, `personal_trait`, `doctrine`.
 * Picture group (`hoi4.image_picture`): `report_event`, `news_event`, `decision_category_picture`, `operation_picture`, `technology`, `achievement`.
 * Portrait group (`hoi4.image_portrait`): `leader_portrait`, `commander_portrait`, `operative_portrait`, `scientist_portrait`, `advisor_card`.
 * Flag (`hoi4.image_flag`): `flag`.
 * Unit group (`hoi4.image_unit`): `counter_large`, `counter_small`, `division_emblem`, `building`, `faction_logo`, `agency_logo`.
 * Interface group (`hoi4.image_interface`): `modifier_stat_icon`, `gui_texture`, `super_event`.
+* Animation group (`hoi4.image_animation`): `anim_blend_glow`, `anim_blend_keyframes`, `anim_scroll`, `anim_spin`. One base frame is generated and the other frames are derived from it.
 
 ## When not to use it
 * Animation beyond a frame strip, and 3D models, rigs and exports (the kit has `hoi4-frame-animation` and `hoi4-3d-model-pipeline` for these). Bring a finished frame strip under the ledger with `hoi4.image_process` and `import`.
-* Sourced and user-provided art of one of the 40 families is not generated, but it is imported with `hoi4.image_process` (a required `family`) so its crop, validation, review and install run under the same ledger. An image of another family's size, or the pixels of an installed asset of another family, is refused.
+* Sourced and user-provided art of one of the 44 families is not generated, but it is imported with `hoi4.image_process` (a required `family`) so its crop, validation, review and install run under the same ledger. An image of another family's size, or the pixels of an installed asset of another family, is refused.
 * Real people. A real identity should use an attributed source, imported through `hoi4.image_process`, never a generated likeness (the kit's `hoi4-feature-assets` decides this first). Only wholly fictional identities are generated. Providers may refuse or treat differently images of real people, the Steam warranty covers personal rights, and the project may forbid a category outright.
-* Art that is not one of the 40 families has no route here.
+* Art that is not one of the 44 families has no route here.
 
 ## Providers
 * The ChatGPT login is the default local provider once you have run `hoi4-imagegen login` (a browser sign-in and a one-time risk note). Every image runs on gpt-6-luna at high reasoning effort, and the route refuses a response whose model or effort differs. The backend's own image tool chooses the quality and size, which the route cannot force, so check the pixels. It calls an undocumented backend that OpenAI does not support for other tools, and it is never part of a hosted deployment.

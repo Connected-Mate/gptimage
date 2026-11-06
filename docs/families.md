@@ -1,8 +1,8 @@
-# Asset gallery: all 40 families
+# Asset gallery: the 40 still families and 4 animated sprites
 
 Every example below was made by the tool itself on the [ChatGPT login](chatgpt-login.md) with version 0.3 or later: planned, generated, processed and validated by `hoi4-imagegen`, and passed by its check against the game's own art. Each is shown at its native size on a dark tile, enlarged by a whole number when small so the pixels stay crisp. Nothing is retouched. They are files the tool made, not in-game captures. The [big gallery](gallery/big/README.md) has many more per family beside vanilla references, and [`gallery/examples.json`](gallery/examples.json) lists the brief and build of each example here.
 
-<p align="center"><a href="gallery/contact-sheet.webp"><img src="gallery/contact-sheet.webp" alt="All 40 families on one contact sheet" width="100%"></a></p>
+<p align="center"><a href="gallery/contact-sheet.webp"><img src="gallery/contact-sheet.webp" alt="One current example of each still family" width="100%"></a></p>
 
 ## How to read an entry
 

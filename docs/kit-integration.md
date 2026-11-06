@@ -5,7 +5,7 @@ The [Agentic HOI4 Modding Kit](https://github.com/klimPaskov/Agentic-HOI4-Moddin
 ## What the integration is
 
 * **Profile rows.** The kit's `.tools/gfx/profiles.json` has one row per family, 40 rows in all, with the canvas for new art, accepted sizes, minimum margin, frame count and the vanilla evidence for each number. The values are the sizes measured on HOI4 1.19.4.1. The kit stays the single owner of those sizes. This repository reads the same file over its built-in defaults (also measured from 1.19.4.1) and under the project's own overrides, and reports the difference with `hoi4-imagegen calibrate`.
-* **`family_ids.json`.** `.tools/gfx/family_ids.json` is the kit's list of the 40 family ids. The kit's `shelf` check verifies that its profiles, shelf catalog and shelf builder input name exactly that list.
+* **`family_ids.json`.** `.tools/gfx/family_ids.json` is the kit's list of the 40 still family ids (the 4 animated families are not in it). The kit's `shelf` check verifies that its profiles, shelf catalog and shelf builder input name exactly that list.
 * **The shelf.** The kit's asset skill ships a vanilla reference shelf (`assets/vanilla_reference/` with a `CATALOG.md` that lists the canvas of every family). A mod's copy of the shelf is style tier 2, and the advisor, achievement and portrait templates and the YuNet face model come from the mod's copy of the same skill (see the [reference](reference.md)).
 * **Skills and agents.** The kit's `hoi4-imagegen` skill (a downstream copy of `skill/hoi4-imagegen/SKILL.md` in this repository) and its icon, portrait and generated-feature-art agents call the `hoi4.image_*` tools. They pick the `family`, run the loop and never build a second image pipeline. The kit's `hoi4-feature-assets` skill keeps the source, naming and handoff rules that the loop follows.
 * **HOI4 Mod Setup.** Setup installs the release binary per project and writes the project-level MCP entry under the server id `hoi4_imagegen`. The kit's setup manifest lists the skill and the runtime.
@@ -16,7 +16,7 @@ Changes to the skill are made here first and copied to the kit. The two copies s
 
 * The kit's rewrite of its `hoi4-imagegen` skill and its profile and shelf work were on the kit branch `claude/hoi4-imagegen` when this page was written. Check that they are merged.
 * `hoi4.image_audit` runs the shared engine's sprite trace (hoi4-agent-tools) over the whole mod and reports cross-family reuse as a warning, with a per-mod allowlist. New reuse is refused at import and install.
-* This repository does not read `family_ids.json`. Its own list of 40 families is in the code, and a test keeps it equal to the measurement data. A check that the two lists agree is not built.
+* This repository does not read `family_ids.json`. Its own list of 44 families (40 still and 4 animated) is in the code, and a test keeps it equal to the measurement data. A check that the two lists agree is not built.
 * The kit's profile rows carry geometry only. None has an `imagegen` object yet, so every family uses the built-in sprite, naming and check defaults.
 * Nothing here has been checked in game. That needs a user-operated session.
 
