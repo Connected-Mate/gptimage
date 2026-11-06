@@ -3,8 +3,9 @@
 
   build_gallery_site.py <repo root>
 
-An image is published when it was made on hoi4-imagegen 0.3 or later, passes validation, and passes the tool's own
-vanilla-match check (hoi4.image_preview's vanilla_check; families the check cannot measure are marked so). Families
+An image is published when it was processed on hoi4-imagegen 0.3.4 or later (an image generated earlier counts once
+its raw candidate was processed again on a current build, which .work/restamp.py records as `process_version`), passes
+validation, and passes the tool's own vanilla-match check (hoi4.image_preview's vanilla_check; families the check cannot measure are marked so). Families
 that wait for a later build are left out. Each family page shows a few vanilla references from the installed game
 beside the generated examples, at native size and enlarged by a whole number when small. The TNO section shows only
 generated images: TNO's own art is not reproduced. Environment as for make_gallery_big.py; TNO_MOD and TNO_RES point
@@ -21,9 +22,10 @@ from PIL import Image
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import make_gallery_big as m  # noqa: E402
 
-HELD = {"agency_upgrade", "mio_trait", "operative_portrait", "scientist_portrait"}
+HELD = set()  # families waiting for a later build (the four held for 0.3.4 ran on it on 2026-11-06)
 CACHE = os.path.join(m.WORK, "vanilla-check-cache.json")
 COMPARE = os.environ.get("GALLERY_COMPARE", "")
+MIN_BUILD = "0.3.4"  # older processing is hidden unless the image was processed again on a current build
 STYLES = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "gallery_styles.json"), encoding="utf-8"))["styles"]
 
 
@@ -83,7 +85,8 @@ def build(repo):
     index, manifest = {}, []
     for section, mod, res, fams in sections:
         for fam, asset, rec in entries(mod, res, fams):
-            if (rec.get("tool_version") or "0") < "0.3" or rec.get("validation") != "pass" or not rec.get("processed"):
+            made, processed = rec.get("tool_version") or "0", rec.get("process_version") or rec.get("tool_version") or "0"
+            if made < "0.3" or processed < MIN_BUILD or rec.get("validation") != "pass" or not rec.get("processed"):
                 continue
             vc = vanilla_check(mod, rec["processed"], cache)
             if vc["status"] not in ("pass", "unavailable"):
@@ -97,7 +100,7 @@ def build(repo):
             native = webp(src, os.path.join(folder, asset + ".webp"))
             k = scale_for(w, h)
             enlarged = webp(src, os.path.join(folder, asset + f"@{k}x.webp"), k) if k > 1 else None
-            e = {"section": section, "family": fam, "asset": asset, "brief": rec.get("brief", ""), "build": rec.get("tool_version"),
+            e = {"section": section, "family": fam, "asset": asset, "brief": rec.get("brief", ""), "build": made, "processed_on": processed,
                  "size": [w, h], "vanilla_check": vc["status"], "subfamily": ((rec.get("anchors") or [{}])[0] or {}).get("subfamily"),
                  "native": f"{section}/{fam}/{asset}.webp", "enlarged": f"{section}/{fam}/{asset}@{k}x.webp" if enlarged else None, "scale": k}
             index.setdefault((section, fam), []).append(e)
@@ -112,14 +115,24 @@ def build(repo):
                 webp(os.path.join(COMPARE, f), os.path.join(folder, f"vanilla_{n}.webp"))
                 refs.setdefault(fam, []).append(f"vanilla_{n}.webp")
     write_pages(out, index, refs)
-    json.dump({"about": "Published gallery images: hoi4-imagegen 0.3 or later, validation passed, the tool's vanilla-match check passed (or not measurable for the family).",
+    json.dump({"about": "Published gallery images: generated on hoi4-imagegen 0.3 or later and processed on 0.3.4 or later, validation passed, the tool's vanilla-match check passed (or not measurable for the family). build is the generation build, processed_on the processing build.",
                "images": manifest}, open(os.path.join(out, "manifest.json"), "w", encoding="utf-8", newline="\n"), indent=1, ensure_ascii=False)
     print(len(manifest), "images,", len(index), "family pages")
 
 
 NOTE = ("Every image here was made by `hoi4-imagegen` on the ChatGPT login, then processed, validated and passed by the tool's own check"
-        " against the game's art. Nothing is retouched. Only images from version 0.3 or later that pass both checks are shown, and the gallery"
-        " grows as more runs finish. Click an image to open it enlarged.")
+        " against the game's art. Nothing is retouched. Only images processed on version 0.3.4 or later that pass both checks are shown:"
+        " an image generated on an older build was processed again from its raw candidate. The gallery grows as more runs finish."
+        " Hover over an image for its prompt, or open the prompts under each family. Click an image to open it enlarged.")
+
+
+def caption(e):
+    """A short caption: the asset name in words."""
+    return e["asset"].replace("_", " ")
+
+
+def stamp(e):
+    return f"build {e['build']}" + (f", processed on {e['processed_on']}" if e["processed_on"] != e["build"] else "")
 
 
 def anchor(text):
@@ -148,12 +161,16 @@ def write_pages(out, index, refs):
             lines += ["", f'<a id="{anchor(sec + " " + fam)}"></a>', "", f"### {fam}" + ("" if sec == "vanilla" else f" ({title})"), ""]
             if sec == "vanilla" and refs.get(fam):
                 lines += ["Vanilla: " + " ".join(f'<img src="vanilla/{fam}/{r}" alt="vanilla {fam}" title="Hearts of Iron IV (Paradox Interactive)">' for r in refs[fam]), ""]
-            cells = []
+            cells, prompts = [], []
             for e in items:
-                tip = e["brief"].replace('"', "'").replace("\n", " ")[:300] + f" (build {e['build']}, {e['size'][0]}x{e['size'][1]})"
-                img = f'<img src="{e["native"]}" alt="{e["asset"]}" title="{tip}">'
+                brief = e["brief"].replace("\n", " ").strip()
+                tip = brief.replace('"', "'") + f" ({stamp(e)}, {e['size'][0]}x{e['size'][1]})"
+                img = f'<img src="{e["native"]}" alt="{caption(e)}" title="{tip}">'
                 cells.append(f'<a href="{e["enlarged"] or e["native"]}">{img}</a>')
-            lines += ["Generated: " + " ".join(cells), ""]
+                prompts.append(f"| {caption(e)} | {stamp(e)} | {brief.replace('|', '/')} |")
+            # short captions on the images, the full prompt on hover and in a folded table under the family
+            lines += ["Generated: " + " ".join(cells), "",
+                      f"<details><summary>Prompts ({len(items)})</summary>", "", "| Image | Build | Prompt |", "|---|---|---|", *prompts, "", "</details>", ""]
     lines += ["", "Families still waiting for a later build are not shown yet. [`manifest.json`](manifest.json) lists every image with its brief, build and check result."]
     with open(os.path.join(out, "README.md"), "w", encoding="utf-8", newline="\n") as f:
         f.write("\n".join(lines) + "\n")

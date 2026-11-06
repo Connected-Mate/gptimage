@@ -55,9 +55,9 @@
   "brief": "A blacksmith's anvil with a heavy hammer resting across it, a few glowing sparks, one bold object. Bold two-colour carved print."
  },
  "decision_category_icon": {
-  "asset": "border_post_barrier",
-  "build": "0.3.4",
-  "brief": "A striped border post and a lowered barrier gate with coils of barbed wire, grim emblem of border conflicts. Bold two-colour carved print."
+  "asset": "military_reform_manual",
+  "build": "0.3.1",
+  "brief": "A crossed rifle and sabre laid over an open field manual with a sharpened pencil, emblem of army reform."
  },
  "division_emblem": {
   "asset": "bear_standing",
@@ -100,9 +100,9 @@
   "brief": "Swiss mountain villagers with rifles and a cowbell standing watch above a snowy pass, calm and watchful readiness."
  },
  "leader_portrait": {
-  "asset": "american_new_deal_president",
+  "asset": "argentine_colonel_president",
   "build": "0.3.3",
-  "brief": "A cheerful American president in his fifties, pinstripe suit, wire-rimmed glasses, hopeful chin-up smile, limestone portico and a bright sky behind, festive optimistic mood. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure."
+  "brief": "A charismatic Argentine colonel-president in his forties, open-collared uniform tunic, slicked dark hair, confident grin, a cheering crowd on a plaza blurred behind him. An invented person: the face, the name and the likeness are fictional and must not resemble any real historical figure."
  },
  "mio_department": {
   "asset": "armour_plate_mill",
