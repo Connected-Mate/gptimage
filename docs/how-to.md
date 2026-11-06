@@ -122,6 +122,7 @@ The family's rules already describe vanilla's form, so the brief only names the 
 | What you see | What to do |
 |---|---|
 | `no_transparency_in_source` | The provider returned an opaque picture and the family needs transparency. Regenerate. A `chroma_key` pre-step works only when the background is one flat colour. The tool never invents transparency |
+| `unit_art_holds_more_than_the_glyph` when processing a counter or division emblem, or `GFX-UNIT-GLYPH-SHAPE` when validating one | The art holds more than the unit's glyph, usually the model's own NATO box or a second element drawn beside the vehicle. Fitted into the glyph box it would shrink to a thin sliver. Regenerate with a prompt that asks for only the unit's glyph, one centred object and no frame or box (the tool draws the NATO box itself), then process again. Do not install the sliver |
 | `GFX-FAMILY-MISMATCH` | The image has the size of another family. Use the right group tool and family, or import art of the correct size |
 | `GFX-FAMILY-REUSE` | These pixels are already installed for another family. Make a new image |
 | Template missing for an advisor card, achievement or portrait | These chains need the mod's copy of the asset skill inside the project. The message lists the paths searched. Copy the skill's `assets/` and `tools/models/` folders into `.claude/skills/<skill>/`, or point `[templates] dir` and `face_model` in `.hoi4-imagegen/config.toml` at them |

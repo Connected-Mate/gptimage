@@ -139,6 +139,7 @@ pub const ALL_CHECKS: &[&str] = &[
     "animation",
     "line_art",
     "unit_material",
+    "unit_glyph_shape",
     "side_view",
     "small_detail",
     "backdrop",
@@ -149,12 +150,15 @@ pub const ALL_CHECKS: &[&str] = &[
 
 /// Checks that judge the main image only: a companion (a tinted text icon, a smaller strip) is not the family's
 /// finished art and skips them.
-pub const MAIN_IMAGE_ONLY_CHECKS: &[&str] = &["unit_material", "side_view", "line_art", "small_detail", "backdrop"];
+pub const MAIN_IMAGE_ONLY_CHECKS: &[&str] = &["unit_material", "unit_glyph_shape", "side_view", "line_art", "small_detail", "backdrop"];
 
 /// Code of a special project drawing with a filled area (`line_art` check).
 pub const FILLED_CODE: &str = "GFX-FILLED-INTERIOR";
 /// Code of finished unit art that is not in vanilla's material (`unit_material` check).
 pub const UNIT_MATERIAL_CODE: &str = "GFX-UNIT-MATERIAL";
+/// Code of unit art whose glyph is not shaped like a unit glyph, for example a vehicle beside its own NATO box shrunk
+/// to a sliver (`unit_glyph_shape` check).
+pub const UNIT_GLYPH_SHAPE_CODE: &str = "GFX-UNIT-GLYPH-SHAPE";
 /// Code of a technology picture that may not be vanilla's side view (`side_view` check).
 pub const SIDE_VIEW_CODE: &str = "GFX-TECH-VIEW";
 /// Code of a small icon made of thin lines and small parts (`small_detail` check).
@@ -567,6 +571,32 @@ pub fn validate_image(img: &Rgba, profile: &Profile, checks: &[String], opts: &O
                         None,
                         json!({"problems": problems}),
                     ));
+                }
+            }
+        }
+    }
+
+    if wants("unit_glyph_shape") {
+        if let Some(kind) = crate::chain::unit_art_kind(profile.family) {
+            run.push("unit_glyph_shape".into());
+            let style = crate::recipes::unit_art::GlyphStyle::of(kind);
+            let want = [style.frame[0] * frames, style.frame[1]];
+            if [img.width, img.height] == want {
+                // a counter's glyph is frame 1 (the left frame of the strip), a division symbol's the whole image
+                if let Some(b) = frame_imgs[0].alpha_bbox(crate::recipes::unit_art::SHAPE_ALPHA) {
+                    let kept = profile.processing().keep_colours;
+                    let (w, h) = (b[2] - b[0], b[3] - b[1]);
+                    if let Some(shape) = crate::recipes::unit_art::glyph_shape_problem(kind, kept, w, h) {
+                        findings.push(Finding::new(
+                            UNIT_GLYPH_SHAPE_CODE,
+                            Level::Error,
+                            format!(
+                                "frame 1's art is {shape}. The art holds more than the unit's glyph, for example its own NATO box or a second element, shrunk beside it. Redraw the source with only the unit's glyph and process it again"
+                            ),
+                            Some(1),
+                            json!({"width": w, "height": h, "aspect": f64::from(w) / f64::from(h.max(1)), "allowed": crate::recipes::unit_art::glyph_aspect_range(kind, kept), "kept_colours": kept}),
+                        ));
+                    }
                 }
             }
         }
@@ -1245,5 +1275,111 @@ mod tests {
         assert!(validate_container(&top, "GER.tga", &flag, &fc).iter().any(|f| f.code == "GFX-FLAG-ORIGIN"));
         let bottom = tga::write_truecolor32(&Rgba::filled(82, 52, [1, 2, 3, 255]), tga::Origin::BottomLeft);
         assert!(validate_container(&bottom, "GER.tga", &flag, &fc).is_empty());
+    }
+    fn kept_profile(c: Family) -> Profile {
+        use crate::pack::{PackProfile, ProcessingSwitches};
+        let mut p = profile(c);
+        p.pack = Some(PackProfile { name: "t".into(), processing: ProcessingSwitches { keep_colours: true, crisp: true, ..Default::default() } });
+        p
+    }
+
+    /// A counter strip (two frames of 76x42) whose frame 1 holds a `w` x `h` teal block centred on the glyph place.
+    fn strip_with_glyph(w: u32, h: u32) -> Rgba {
+        let mut f1 = Rgba::new(76, 42);
+        for y in (21 - h / 2)..(21 - h / 2 + h) {
+            for x in (38 - w / 2)..(38 - w / 2 + w) {
+                f1.set_px(x, y, [30, 160, 150, 255]);
+            }
+        }
+        let mut f2 = Rgba::new(76, 42);
+        for y in 10..33 {
+            for x in 14..61 {
+                if y == 10 || y == 32 || x == 14 || x == 60 {
+                    f2.set_px(x, y, [30, 160, 150, 255]);
+                }
+            }
+        }
+        Rgba::join_frames(&[f1, f2]).unwrap()
+    }
+
+    fn shape_checks() -> Vec<String> {
+        vec!["unit_glyph_shape".to_string()]
+    }
+
+    #[test]
+    fn a_glyph_shrunk_to_a_sliver_fails_the_shape_check_and_normal_glyphs_pass() {
+        // the 0.3.4 bug: a vehicle and its own NATO box fitted as one 62-wide, 14-tall strip
+        let p = kept_profile(Family::CounterLarge);
+        let sliver = validate_image(&strip_with_glyph(62, 14), &p, &shape_checks(), &Default::default());
+        assert_eq!(sliver.status, Status::Fail);
+        let f = sliver.findings.iter().find(|f| f.code == UNIT_GLYPH_SHAPE_CODE).expect("sliver finding");
+        assert_eq!(f.level, Level::Error);
+        assert_eq!(f.frame, Some(1));
+        assert!(f.message.contains("more than the unit's glyph"), "{}", f.message);
+        assert_eq!(sliver.checks_run, vec!["unit_glyph_shape".to_string()]);
+        // vanilla's own processing allows what vanilla itself draws (its guided missile is 65x14), but not a thinner strip
+        let vp = profile(Family::CounterLarge);
+        assert!(validate_image(&strip_with_glyph(62, 14), &vp, &shape_checks(), &Default::default()).findings.is_empty());
+        assert!(!validate_image(&strip_with_glyph(62, 8), &vp, &shape_checks(), &Default::default()).findings.is_empty());
+        // normal glyphs pass in both modes, whatever frame 2 holds
+        for (w, h) in [(47, 23), (62, 30), (30, 30), (25, 31)] {
+            for prof in [&p, &vp] {
+                let r = validate_image(&strip_with_glyph(w, h), prof, &shape_checks(), &Default::default());
+                assert!(r.findings.is_empty(), "{w}x{h}: {:?}", r.findings);
+            }
+        }
+        // a division symbol is the whole image
+        let e = kept_profile(Family::DivisionEmblem);
+        let mut wide = Rgba::new(76, 42);
+        for y in 18..26 {
+            for x in 6..70 {
+                wide.set_px(x, y, [30, 160, 150, 255]);
+            }
+        }
+        assert!(validate_image(&wide, &e, &shape_checks(), &Default::default()).findings.iter().any(|f| f.code == UNIT_GLYPH_SHAPE_CODE));
+        // the wrong size is the size check's business
+        assert!(validate_image(&Rgba::new(10, 10), &p, &shape_checks(), &Default::default()).findings.is_empty());
+    }
+
+    #[test]
+    fn the_unit_art_families_run_the_shape_check_by_default() {
+        for c in [Family::CounterLarge, Family::CounterSmall, Family::DivisionEmblem] {
+            assert!(checks(&profile(c)).iter().any(|k| k == "unit_glyph_shape"), "{c}");
+            assert!(checks(&kept_profile(c)).iter().any(|k| k == "unit_glyph_shape"), "{c} kept");
+        }
+    }
+
+    /// Every vanilla counter and symbol passes the check (skipped when the game is absent).
+    #[test]
+    fn vanilla_counters_and_symbols_pass_the_shape_check() {
+        let game = std::env::var("HOI4_GAME_DIR")
+            .map(std::path::PathBuf::from)
+            .unwrap_or_else(|_| "C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV".into());
+        if !game.join("gfx/interface/counters").is_dir() {
+            eprintln!("SKIPPED vanilla shape check: Hearts of Iron IV not found (set HOI4_GAME_DIR)");
+            return;
+        }
+        for (family, folder, size) in [
+            (Family::CounterLarge, "divisions_large", (152, 42)),
+            (Family::CounterSmall, "divisions_small", (60, 12)),
+            (Family::DivisionEmblem, "division_templates_large", (76, 42)),
+        ] {
+            let p = profile(family);
+            let (mut checked, mut failed, mut strict_over) = (0, Vec::new(), 0);
+            for e in std::fs::read_dir(game.join("gfx/interface/counters").join(folder)).unwrap().filter_map(|e| e.ok()) {
+                let Ok(img) = dds::decode(&std::fs::read(e.path()).unwrap()) else { continue };
+                if (img.width, img.height) != size {
+                    continue;
+                }
+                checked += 1;
+                if !validate_image(&img, &p, &shape_checks(), &Default::default()).findings.is_empty() {
+                    failed.push(e.file_name().to_string_lossy().to_string());
+                }
+                strict_over += usize::from(!validate_image(&img, &kept_profile(family), &shape_checks(), &Default::default()).findings.is_empty());
+            }
+            eprintln!("{family}: {checked} vanilla files checked, {} refused, {strict_over} beyond the kept-colours limit", failed.len());
+            assert!(checked >= 50, "{family}: only {checked}");
+            assert!(failed.is_empty(), "{family}: vanilla refused: {failed:?}");
+        }
     }
 }

@@ -48,6 +48,24 @@ pub fn framed_sprite(name: &str, texture_path: &str, frames: u32) -> SpriteEntry
     }
 }
 
+/// A frame strip with `legacy_lazy_load = no`, in vanilla's field order (name, texture, the line, `noOfFrames`).
+/// Vanilla's text icons (`GFX_unit_*_icon_small`) all have it, and without it the icon is blank in game.
+pub fn framed_sprite_eager(name: &str, texture_path: &str, frames: u32) -> SpriteEntry {
+    SpriteEntry {
+        name: name.to_string(),
+        text: format!(
+            "	spriteType = {{
+		name = \"{name}\"
+		texturefile = \"{texture_path}\"
+		legacy_lazy_load = no
+		noOfFrames = {frames}
+	}}
+"
+        ),
+        caveat: String::new(),
+    }
+}
+
 /// An animated strip: a `frameAnimatedSpriteType` with the family's frame rate, loop flags and effect file
 /// ([`crate::animation::sprite_block`]).
 pub fn animated_sprite(name: &str, texture_path: &str, frames: u32, spec: &crate::animation::AnimationSpec) -> Result<SpriteEntry> {
@@ -291,6 +309,22 @@ mod tests {
         assert!(s.text.contains("animationrotationoffset = { x = 0.0 y = 0.0 }"));
         assert!(s.caveat.contains("required"));
         assert_eq!(s.text.matches('{').count(), s.text.matches('}').count());
+    }
+
+    #[test]
+    fn eager_frame_strips_carry_legacy_lazy_load_in_vanillas_order() {
+        let f = framed_sprite_eager("GFX_unit_x_icon_small", "gfx/texticons/x.dds", 2);
+        assert_eq!(
+            f.text,
+            "	spriteType = {
+		name = \"GFX_unit_x_icon_small\"
+		texturefile = \"gfx/texticons/x.dds\"
+		legacy_lazy_load = no
+		noOfFrames = 2
+	}
+"
+        );
+        assert!(!framed_sprite("GFX_a", "gfx/a.dds", 2).text.contains("legacy_lazy_load"));
     }
 
     #[test]

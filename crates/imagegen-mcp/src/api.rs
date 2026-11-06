@@ -101,7 +101,7 @@ macro_rules! group_request {
             /// Quality tier where the model has tiers.
             #[serde(default)]
             pub quality: Option<String>,
-            /// Canvas `[width, height]` of one frame, for families whose size the mod defines (GUI textures, super events, and animated strips, which take the size of the element they sit on). Refused for the others.
+            /// Canvas `[width, height]` of one frame, for families whose size the mod defines (GUI textures, super events, and animated strips, which take the size of the element they sit on), and for technology pictures, which take the size of the tree item the technology gets: 146x54 (default, the 183x84 item of a technology that enables equipment or sub-units in the infantry, support, armour or air folders), 64x64 (the small 72x72 item of any other technology) or 285x56 (the 204x72 item of naval, artillery and electronics equipment). Refused for the others.
             #[serde(default)]
             pub canvas: Option<[u32; 2]>,
             /// GUI textures only: the kind of texture (`button`, `frame`, `panel` or `background`). It adds that kind's vanilla form to the prompt and picks vanilla references of that kind. Refused for the others.

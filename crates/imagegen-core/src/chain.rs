@@ -629,6 +629,20 @@ pub fn plan_finishing_with(
                 // the glyph keeps its own colours and is fitted into vanilla's largest glyph box, centred on the frame
                 let box_size = [style.max_box[0].round() as u32, style.max_box[1].round() as u32];
                 ops = subject_fit_ops(img, canvas, box_size, keyed, crisp)?;
+                // the fit shrinks everything the trim keeps into the box, so a drawing that holds more than the unit's
+                // glyph (its own NATO box beside it, a second element) ends as a sliver with the real box added to it
+                if let Some(b) = img.alpha_bbox(16) {
+                    if let Some(shape) = crate::recipes::unit_art::glyph_shape_problem(kind, true, b[2] - b[0], b[3] - b[1]) {
+                        return Err(Error::refused(
+                            "unit_art_holds_more_than_the_glyph",
+                            format!(
+                                "the art holds more than the glyph: after trimming, its subject is {shape}, so fitting it into the {}x{} glyph box would shrink the unit to a sliver. It probably draws its own NATO box or a second element beside the unit. Redraw it with only the unit's glyph, one object, and process it again",
+                                box_size[0], box_size[1]
+                            ),
+                            RetryClass::Terminal,
+                        ));
+                    }
+                }
                 if counter {
                     let (symbol, _) = counter_symbol(opts)?;
                     ops.push(Op::NatoOutline { kind, symbol });
@@ -1355,5 +1369,94 @@ mod tests {
         assert_eq!(a, bundle_sha256("m", &[c("_not_eligible", "2"), c("_grey", "1")]));
         assert_ne!(a, bundle_sha256("m", &[c("_grey", "1"), c("_not_eligible", "3")]));
         assert_ne!(a, "m");
+    }
+    fn kept(f: Family) -> Profile {
+        use crate::pack::{PackProfile, ProcessingSwitches};
+        let mut p = prof(f);
+        p.pack = Some(PackProfile { name: "t".into(), processing: ProcessingSwitches { keep_colours: true, crisp: true, ..Default::default() } });
+        p
+    }
+
+    /// A transparent drawing of `w` x `h`: a filled block over the left `glyph_w` columns (the "vehicle") and, when
+    /// `with_box`, an outlined box (the model's own NATO box) over the rest.
+    fn glyph_and_box(w: u32, h: u32, glyph_w: u32, with_box: bool) -> Rgba {
+        let mut img = Rgba::new(w, h);
+        for y in h / 5..h * 4 / 5 {
+            for x in 0..glyph_w {
+                img.set_px(x, y, [30, 160, 150, 255]);
+            }
+        }
+        if with_box {
+            let x0 = glyph_w + w / 25;
+            for y in 0..h {
+                for x in x0..w {
+                    if y < 6 || y >= h - 6 || x < x0 + 6 || x >= w - 6 {
+                        img.set_px(x, y, [30, 160, 150, 255]);
+                    }
+                }
+            }
+        }
+        img
+    }
+
+    #[test]
+    fn kept_unit_art_refuses_a_source_with_its_own_nato_box_beside_the_glyph() {
+        // the 0.3.4 bug: a 1552x359 strip (a vehicle and a drawn NATO box) was shrunk into the glyph box as a sliver
+        for family in [Family::CounterLarge, Family::CounterSmall, Family::DivisionEmblem] {
+            let p = kept(family);
+            let src = glyph_and_box(1552, 359, 700, true);
+            let opts = FinishOptions { asset: Some("tank".into()), ..Default::default() };
+            let msg = plan_finishing_with(&p, p.canvas, &src, false, false, "", &opts).unwrap_err().to_string();
+            assert!(msg.contains("holds more than the glyph"), "{family}: {msg}");
+            assert!(msg.contains("NATO box") && msg.contains("Redraw it with only the unit's glyph"), "{family}: {msg}");
+        }
+        // the plan sees the image after a chroma key, so a keyed source is measured the same way
+        let p = kept(Family::CounterLarge);
+        let src = glyph_and_box(1552, 359, 700, true);
+        assert!(plan_finishing_with(&p, p.canvas, &src, false, true, "", &Default::default()).is_err());
+        // a tall column is refused too
+        let mut column = Rgba::new(100, 600);
+        for y in 0..600 {
+            for x in 40..60 {
+                column.set_px(x, y, [30, 160, 150, 255]);
+            }
+        }
+        assert!(plan_finishing_with(&p, p.canvas, &column, false, false, "", &Default::default()).is_err());
+    }
+
+    #[test]
+    fn kept_unit_art_fits_a_normal_glyph() {
+        for (family, w, h) in [
+            (Family::CounterLarge, 1000, 480),
+            (Family::CounterSmall, 900, 380),
+            (Family::DivisionEmblem, 700, 360),
+            (Family::DivisionEmblem, 400, 520),
+        ] {
+            let p = kept(family);
+            let src = glyph_and_box(w, h, w, false);
+            let opts = FinishOptions { asset: Some("tank".into()), ..Default::default() };
+            let plan = plan_finishing_with(&p, p.canvas, &src, false, false, "", &opts).unwrap();
+            assert!(plan.ops.iter().any(|o| matches!(o, Op::AreaFit { .. })), "{family}");
+        }
+    }
+    #[test]
+    fn a_glyph_the_kept_recipe_accepts_passes_the_shape_check_after_the_fit() {
+        // just inside the limit (4.1 against 4.13 for a large counter, the drawing is 0.6 of the height), where rounding could push the result over it
+        for (family, w, h) in [
+            (Family::CounterLarge, 1230, 500),
+            (Family::CounterLarge, 1000, 480),
+            (Family::CounterSmall, 1180, 500),
+            (Family::DivisionEmblem, 1150, 500),
+        ] {
+            let p = kept(family);
+            let src = glyph_and_box(w, h, w, false);
+            let opts = FinishOptions { asset: Some("tank".into()), ..Default::default() };
+            let Ok(plan) = plan_finishing_with(&p, p.canvas, &src, false, false, "", &opts) else {
+                panic!("{family} {w}x{h} refused");
+            };
+            let (out, _) = crate::process::run_chain(&src, &plan.ops).unwrap();
+            let report = crate::validate::validate_image(&out, &p, &["unit_glyph_shape".to_string()], &Default::default());
+            assert!(report.findings.is_empty(), "{family} {w}x{h}: {:?}", report.findings);
+        }
     }
 }

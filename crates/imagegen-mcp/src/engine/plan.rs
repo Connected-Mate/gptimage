@@ -56,13 +56,24 @@ impl Engine {
         let canvas = match (profile.canvas, req.canvas) {
             (_, Some(c)) if profile.free_canvas() && (1..=4096).contains(&c[0]) && (1..=4096).contains(&c[1]) => c,
             (_, Some(_)) if profile.free_canvas() => return Err(EngineError::invalid("canvas sides must be 1 to 4096")),
+            (_, Some(c)) if profile.canvas_choices().contains(&c) => c,
             ([0, 0], None) => return Err(EngineError::invalid(format!("{} has no fixed canvas: pass canvas [width, height]", req.family))),
             (p, None) => p,
             (p, Some(c)) if c == p => p,
             (p, Some(_)) => {
                 return Err(EngineError::invalid(format!(
-                    "{} has a fixed canvas of {}x{}; to use another, override the profile in .hoi4-imagegen/config.toml or the kit's profiles.json",
-                    req.family, p[0], p[1]
+                    "{} has a fixed canvas of {}x{}; to use another, override the profile in .hoi4-imagegen/config.toml or the kit's profiles.json{}",
+                    req.family,
+                    p[0],
+                    p[1],
+                    if profile.canvas_choices().is_empty() {
+                        String::new()
+                    } else {
+                        format!(
+                            " (or pick one of {})",
+                            profile.canvas_choices().iter().map(|c| format!("{}x{}", c[0], c[1])).collect::<Vec<_>>().join(", ")
+                        )
+                    }
                 )))
             }
         };
@@ -231,7 +242,9 @@ impl Engine {
         let quality = req.quality.clone().or_else(|| self.config.provider(&provider_id).quality);
         let transparent = req.transparent.unwrap_or(profile.source_transparent());
         // what the model is asked for: the canvas, or a different shape when the recipe needs one (a tall portrait for the advisor card)
-        let source_canvas = profile.imagegen.source_canvas.filter(|c| *c != canvas);
+        // a canvas wider than the models' 3:1 limit (the 285x56 technology picture) is drawn at 3:1 and fitted by the chain
+        let too_wide = (canvas[0] > 3 * canvas[1]).then_some([3 * canvas[1], canvas[1]]);
+        let source_canvas = profile.imagegen.source_canvas.or(too_wide).filter(|c| *c != canvas);
         let ask = source_canvas.unwrap_or(canvas);
         // finishing that needs the mod's templates is refused now, before anything is spent
         self.check_finishing_resources(imagegen_core::chain::recipe_of(&profile))?;
@@ -504,7 +517,7 @@ impl Engine {
         normalized.brief = brief;
         normalized.provider = Some(provider_id.clone());
         normalized.model = Some(model_id.clone());
-        normalized.canvas = (profile.free_canvas() && canvas != profile.canvas).then_some(canvas);
+        normalized.canvas = profile.canvas_overridden(canvas).then_some(canvas);
         normalized.transparent = Some(transparent);
         normalized.variants = Some(variants);
         normalized.quality = quality.clone();

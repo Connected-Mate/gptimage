@@ -228,6 +228,34 @@ fn the_style_only_line_goes_with_automatic_references_and_not_with_caller_anchor
 
 /// A mod with a tier-2 shelf copy, tier-3 assets and a vanilla tier: caller anchors replace every automatic tier.
 #[test]
+fn a_shelf_of_mostly_national_art_falls_through_to_generic_vanilla_for_a_generic_brief() {
+    // the kit's shelf copy holds a few vanilla focus icons, nearly all of one country or region
+    let game = fake_focus_game();
+    let h = harness_with_game(game.path());
+    let shelf = ".claude/skills/hoi4-feature-assets/assets/vanilla_reference/icons/national_focus";
+    for (k, name) in
+        ["focus_NORDIC_dem_army", "focus_JAP_integrate_the_government", "focus_ITA_blackshirts", "focus_jap_koiso", "focus_generic_tanks"]
+            .iter()
+            .enumerate()
+    {
+        let p = h.root().join(format!("{shelf}/{name}.png"));
+        std::fs::create_dir_all(p.parent().unwrap()).unwrap();
+        std::fs::write(p, encode_png(&plaque(k as u32)).unwrap()).unwrap();
+    }
+    let p = plan(&h, "tanks", "A column of light tanks rolling through a dusty avenue", json!({}));
+    let r = p.style_sources.as_ref().unwrap();
+    assert_eq!(r.chosen_tier, Some(4), "the shelf has one generic file, so vanilla is used: {r:#?}");
+    let s = sent(&p);
+    assert!(!s.is_empty());
+    for f in &s {
+        let l = f.to_ascii_lowercase();
+        assert!(!l.contains("_jap_") && !l.contains("_ger_") && !l.contains("nordic") && !l.contains("_ita_"), "nation file sent: {s:?}");
+    }
+    let tiers = &r.tiers;
+    assert!(tiers.iter().any(|t| t.tier == 2 && t.note.contains("next tier is used")), "{tiers:#?}");
+}
+
+#[test]
 fn caller_anchors_replace_every_automatic_tier() {
     let game = fake_focus_game();
     let h = harness_with_game(game.path());
@@ -247,10 +275,12 @@ fn caller_anchors_replace_every_automatic_tier() {
         std::fs::write(h.root().join(&a), encode_png(&plaque(40 + k)).unwrap()).unwrap();
         refs.push(json!({"path": a, "role": "style_anchor"}));
     }
-    // without anchors the shelf (tier 2) is used, and its lower-case nation files are left out of a generic brief
+    // without anchors, a shelf (tier 2) of only lower-case nation files is skipped for a generic brief, and the
+    // mod's own art (tier 3) is used
     let plain = plan(&h, "plain", "a steel gate", json!({}));
     let r = plain.style_sources.as_ref().unwrap();
-    assert_eq!(r.chosen_tier, Some(2), "{r:#?}");
+    assert_eq!(r.chosen_tier, Some(3), "{r:#?}");
+    assert!(r.tiers.iter().any(|t| t.tier == 2 && t.note.contains("next tier is used")), "{:#?}", r.tiers);
     let p = plan(&h, "anchored", "a steel gate", json!({"references": refs}));
     assert_eq!(p.references.len(), 3, "only the caller's anchors are sent: {:?}", p.references);
     assert!(p.references.iter().all(|x| x.path.starts_with("docs/anchor_")));

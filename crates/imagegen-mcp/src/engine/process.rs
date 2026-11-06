@@ -182,7 +182,7 @@ impl Engine {
         };
         self.ledger.append(kind::PROCESSED, Some(&artifact.asset_id), Some(&id), &record)?;
 
-        let opts = Options { canvas: (profile.free_canvas() && artifact.canvas != profile.canvas).then_some(artifact.canvas) };
+        let opts = Options { canvas: profile.canvas_overridden(artifact.canvas).then_some(artifact.canvas) };
         let quick = validate_image(&main, &profile, &profile.imagegen.checks, &opts);
         let problems = chain::audit(&record, &profile);
         let subject =
@@ -280,7 +280,7 @@ impl Engine {
         };
         reuse::ensure_no_cross_family_reuse(&self.fs, &self.profiles, spec.family, &reuse::pixel_hash(&img), &source_label)?;
         // a size the style pack gives the family is the family's own in this mod
-        if !profile.accepted_strips().contains(&[img.width, img.height]) {
+        if !profile.accepted_strips().contains(&[img.width, img.height]) && !profile.canvas_choices().contains(&[img.width, img.height]) {
             lock::check_native_size(&self.profiles, spec.family, [img.width, img.height])?;
         }
         let canvas = if profile.needs_mod_canvas() {
@@ -288,7 +288,7 @@ impl Engine {
         } else {
             // finished art of an accepted size keeps that size; anything else is fitted to the family's canvas
             let frame = [img.width / frames, img.height];
-            if img.width % frames == 0 && profile.accepted.contains(&frame) {
+            if img.width % frames == 0 && (profile.accepted.contains(&frame) || profile.canvas_choices().contains(&frame)) {
                 frame
             } else {
                 profile.canvas

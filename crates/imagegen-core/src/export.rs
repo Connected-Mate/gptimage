@@ -7,7 +7,7 @@ use crate::naming::{expand, validate_flag_name, validate_snake};
 use crate::pixels::Rgba;
 use crate::profile::{Container, Profile};
 use crate::resize::resize_lanczos3;
-use crate::sprite::{animated_sprite, framed_sprite, plain_sprite, shine_sprite, SpriteEntry};
+use crate::sprite::{animated_sprite, framed_sprite, framed_sprite_eager, plain_sprite, shine_sprite, SpriteEntry};
 use crate::{dds, tga};
 
 /// One file an install writes.
@@ -117,6 +117,10 @@ pub fn script_usage(profile: &Profile, canvas: [u32; 2], feature_slug: &str, ass
     if let Some(n) = number {
         text = text.replace("{n}", &n.to_string());
     }
+    if profile.family == Family::Technology {
+        text.push_str(". ");
+        text.push_str(&crate::lookup::tech_box_note(canvas));
+    }
     Ok(text)
 }
 
@@ -156,7 +160,13 @@ pub fn sprite_entries(
             .find(|f| f.variant.as_deref() == Some(d.key))
             .ok_or_else(|| Error::Invalid(format!("the {} companion file of {asset} is missing", d.key)))?;
         let cname = expand(&with_number(d.sprite, number)?, feature_slug, asset, &prefix)?;
-        entries.push(if d.frames > 1 { framed_sprite(&cname, &file.rel, d.frames) } else { plain_sprite(&cname, &file.rel) });
+        entries.push(if d.legacy_lazy_load_no {
+            framed_sprite_eager(&cname, &file.rel, d.frames)
+        } else if d.frames > 1 {
+            framed_sprite(&cname, &file.rel, d.frames)
+        } else {
+            plain_sprite(&cname, &file.rel)
+        });
     }
     Ok(Some((gfx_file, entries)))
 }
@@ -502,6 +512,34 @@ mod tests {
     }
 
     #[test]
+    fn legacy_lazy_load_is_written_where_vanilla_uses_it_and_nowhere_else() {
+        for f in Family::ALL.iter().copied() {
+            let prof = p(f);
+            let canvas = if prof.needs_mod_canvas() { [64, 64] } else { prof.canvas };
+            let (asset, number, _) = expected(f);
+            let files = final_files(&prof, canvas, "iron_pact", asset).unwrap();
+            let Some((_, entries)) = sprite_entries(&prof, "iron_pact", asset, &files, number).unwrap() else { continue };
+            for e in &entries {
+                // vanilla: 201 of 201 text icons and 2,930 of 2,930 focus shines have the line, no other kind reaches 2%
+                let want = e.name.ends_with("_icon_small") && e.name.starts_with("GFX_unit_") || e.name.ends_with("_shine");
+                assert_eq!(
+                    e.text.contains("legacy_lazy_load = no"),
+                    want,
+                    "{f}: {}
+{}",
+                    e.name,
+                    e.text
+                );
+            }
+        }
+        let prof = p(Family::CounterSmall);
+        let files = final_files(&prof, prof.canvas, "iron_pact", "mountain_rangers").unwrap();
+        let (_, entries) = sprite_entries(&prof, "iron_pact", "mountain_rangers", &files, None).unwrap().unwrap();
+        let text_icon = entries.iter().find(|e| e.name == "GFX_unit_mountain_rangers_icon_small").unwrap();
+        assert!(text_icon.text.contains("legacy_lazy_load = no") && text_icon.text.contains("noOfFrames = 2"), "{}", text_icon.text);
+    }
+
+    #[test]
     fn the_short_key_families_hand_the_agent_the_short_key() {
         let usage = |f: Family, asset: &str| {
             let prof = p(f);
@@ -513,6 +551,18 @@ mod tests {
         assert_eq!(usage(Family::DecisionCategoryPicture, "council"), "decision category: picture = council");
         assert!(usage(Family::CounterLarge, "mountain_rangers").contains("name the sub-unit mountain_rangers"));
         assert!(usage(Family::Technology, "rifle_tech").contains("name the technology rifle_tech"));
+        let tech = usage(Family::Technology, "rifle_tech");
+        assert!(tech.contains("countrytechtreeview.gui") && tech.contains("tech_support_tree"), "{tech}");
+        assert!(tech.contains("146x54") && tech.contains("183x84") && tech.contains("The game picks the item from the technology"), "{tech}");
+        let small = script_usage(&p(Family::Technology), [64, 64], "iron_pact", "rifle_tech", None).unwrap();
+        assert!(small.contains("64x64") && small.contains("72x72") && small.contains("neither equipment nor sub-units"), "{small}");
+        assert!(tech.contains("Found no grid box for tech") && tech.contains("path from an existing vanilla technology"), "{tech}");
+        let landmark = usage(Family::Building, "iron_gate");
+        assert!(
+            landmark.contains("gfx/entities") && landmark.contains("building_<building key>") && landmark.contains("building_landmark_eiffel_tower"),
+            "{landmark}"
+        );
+        assert!(landmark.contains("doesn't have an entity") && landmark.contains("does not write entities"), "{landmark}");
         assert!(usage(Family::Focus, "steel_will").contains("icon = GFX_focus_steel_will"));
         assert!(usage(Family::Medal, "valour").contains("icon = GFX_medal_icon_valour with frame = 1"));
         let prof = p(Family::DivisionEmblem);

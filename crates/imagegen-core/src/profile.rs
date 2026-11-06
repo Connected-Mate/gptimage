@@ -210,6 +210,22 @@ impl Profile {
         out
     }
 
+    /// The extra canvases a plan may pick for a fixed-canvas family: the technology's tree item sizes
+    /// ([`crate::lookup::TECH_BOXES`]). Empty for every other family.
+    pub fn canvas_choices(&self) -> &'static [[u32; 2]] {
+        if self.family == Family::Technology {
+            &crate::lookup::TECH_BOX_CANVASES
+        } else {
+            &[]
+        }
+    }
+
+    /// True when `canvas` is one this profile can be asked for that is not its default: any size for a free
+    /// canvas, or one of [`Self::canvas_choices`].
+    pub fn canvas_overridden(&self, canvas: [u32; 2]) -> bool {
+        (self.free_canvas() || self.canvas_choices().contains(&canvas)) && canvas != self.canvas
+    }
+
     /// True when a plan may name its own canvas: families with none, and animated sprites, whose size vanilla takes
     /// from the GUI element they sit on (66 two-frame glow textures come in 47 sizes).
     pub fn free_canvas(&self) -> bool {

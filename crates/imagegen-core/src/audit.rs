@@ -324,6 +324,11 @@ pub fn run_audit(input: &AuditInput) -> Result<AuditReport> {
             if seen_canvas.insert((family, key.clone())) {
                 if let Some(profile) = input.profiles.for_family(family) {
                     let mut accepted = profile.accepted_strips();
+                    for c in profile.canvas_choices() {
+                        if !accepted.contains(c) {
+                            accepted.push(*c);
+                        }
+                    }
                     // a companion the game looks up next to the main sprite has its own size (a medal's small
                     // strip is what script names, a faction logo's miniature sits beside it)
                     let frames: Vec<[u32; 2]> = profile.accepted.iter().copied().chain(std::iter::once(profile.canvas)).collect();

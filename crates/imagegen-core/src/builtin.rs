@@ -52,8 +52,9 @@ const ADVISOR_CHECKS: &[&str] = &["size", "alpha", "checker", "card_corners", "s
 const PORTRAIT_CHECKS: &[&str] = &["size", "checker", "opaque", "backdrop", "style", "dds"];
 const FLAG_CHECKS: &[&str] = &["size", "opaque", "style", "tga"];
 const UNIT_CHECKS: &[&str] = &["size", "alpha", "frames", "style", "dds"];
-/// Counters and the division emblem: finished art must be vanilla's material (`GFX-UNIT-MATERIAL`).
-const COUNTER_CHECKS: &[&str] = &["size", "alpha", "frames", "unit_material", "style", "dds"];
+/// Counters and the division emblem: finished art must be vanilla's material (`GFX-UNIT-MATERIAL`) and shaped like one
+/// glyph (`GFX-UNIT-GLYPH-SHAPE`).
+const COUNTER_CHECKS: &[&str] = &["size", "alpha", "frames", "unit_material", "unit_glyph_shape", "style", "dds"];
 /// Special project icons: nothing may be filled (`GFX-FILLED-INTERIOR`).
 const LINE_ART_CHECKS: &[&str] = &["size", "alpha", "opaque_canvas", "fringe", "margin", "fill", "line_art", "checker", "style", "dds"];
 /// Technology pictures: a hint when the subject is too narrow for vanilla's side view (`GFX-TECH-VIEW`).

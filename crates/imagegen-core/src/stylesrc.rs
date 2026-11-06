@@ -1131,7 +1131,25 @@ pub fn resolve(ctx: &SourceCtx) -> Resolved {
             },
         };
         summary.found = cands.len();
-        if chosen_tier.is_none() && !cands.is_empty() {
+        // the kit's shelf copy is vanilla art, mostly nation-specific: for a request, it counts only with enough files
+        // the brief may use, otherwise the request falls through to the next tier instead of getting other countries'
+        // art (the mod's own art in tier 3 keeps its tags: they are the mod's style)
+        let shelf_short = (tier == Tier::ModAssetFolderCopy && chosen_tier.is_none() && cands.len() >= MIN_TIER_IMAGES)
+            .then(|| ctx.request.map(|r| (r, Nations::load(ctx.game_dir))))
+            .flatten()
+            .and_then(|(r, nations)| {
+                let b = Brief::new(family, r.asset, r.brief, &nations);
+                let usable =
+                    cands.iter().filter(|c| nations.nation_of(&raw_stem(c), &rel_dirs(&c.display)).is_none_or(|m| Nations::allows(&b, &m))).count();
+                (usable < MIN_TIER_IMAGES.max(DEFAULT_SEND)).then_some(usable)
+            });
+        if let Some(usable) = shelf_short {
+            summary.note = format!(
+                "only {usable} of {} image(s) are not specific to a country the brief does not name (at least {} are needed), so the next tier is used",
+                cands.len(),
+                MIN_TIER_IMAGES.max(DEFAULT_SEND)
+            );
+        } else if chosen_tier.is_none() && !cands.is_empty() {
             if cands.len() < MIN_TIER_IMAGES && tier != Tier::PinnedStyle {
                 summary.note = format!("only {} image(s), at least {MIN_TIER_IMAGES} are needed", cands.len());
             } else if tier == Tier::PinnedStyle && cands.len() < MIN_TIER_IMAGES {

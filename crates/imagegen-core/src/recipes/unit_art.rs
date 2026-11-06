@@ -1196,6 +1196,75 @@ pub fn outline_strip(frame1: &Rgba, kind: UnitArtKind, marks: &[Mark]) -> Result
     Rgba::join_frames(&[frame1.clone(), second])
 }
 
+// ------------------------------------------------------------------ glyph shape
+
+/// Alpha at and above which a pixel of finished unit art counts as visible when its shape is measured. It is low enough
+/// that the half-covered edge row of a fitted glyph still counts, so a glyph the recipe accepted never fails by a pixel.
+pub const SHAPE_ALPHA: u8 = 64;
+
+/// How many times wider than the glyph box's aspect a kept-colours glyph may be before it is more than one glyph.
+pub const KEPT_WIDE_FACTOR: f64 = 2.0;
+
+/// The widest and the narrowest glyph (width over height) vanilla draws, with a margin, measured on frame 1 of every
+/// file of HOI4 1.19.4.1 (alpha 128 and up, and the limits hold at [`SHAPE_ALPHA`] too). Large counters (111 strips) run from 0.81 to 4.64, on-map counters (83)
+/// from 0.50 to 4.00 and division symbols (101) from 0.48 to 6.10. The widest are special art such as the guided
+/// missile counter and a few wide symbols.
+pub fn vanilla_aspect_range(kind: UnitArtKind) -> [f64; 2] {
+    match kind {
+        UnitArtKind::CounterLarge => [0.6, 5.0],
+        UnitArtKind::CounterSmall => [0.4, 4.5],
+        UnitArtKind::DivisionEmblem => [0.35, 6.5],
+    }
+}
+
+/// The narrowest and widest glyph aspect vanilla has (see [`vanilla_aspect_range`]).
+pub fn vanilla_aspect_extremes(kind: UnitArtKind) -> [f64; 2] {
+    match kind {
+        UnitArtKind::CounterLarge => [0.81, 4.64],
+        UnitArtKind::CounterSmall => [0.50, 4.00],
+        UnitArtKind::DivisionEmblem => [0.48, 6.10],
+    }
+}
+
+/// The aspect range a glyph of `kind` may have. With `kept` (a kept-colours style pack, whose glyph is fitted into the
+/// glyph box) the wide limit is also at most [`KEPT_WIDE_FACTOR`] times the box's aspect and at most vanilla's widest
+/// glyph: a wider drawing is a unit beside a second element (its own NATO box, a caption) that the fit would shrink into a sliver.
+pub fn glyph_aspect_range(kind: UnitArtKind, kept: bool) -> [f64; 2] {
+    let [min, mut max] = vanilla_aspect_range(kind);
+    if kept {
+        let b = GlyphStyle::of(kind).max_box;
+        max = max.min(KEPT_WIDE_FACTOR * b[0] / b[1]).min(vanilla_aspect_extremes(kind)[1]);
+    }
+    [min, max]
+}
+
+/// What is wrong with the shape of a glyph of `w` x `h` visible pixels for `kind`, or `None` when it is one a unit
+/// glyph can have. See [`glyph_aspect_range`].
+pub fn glyph_shape_problem(kind: UnitArtKind, kept: bool, w: u32, h: u32) -> Option<String> {
+    let (wf, hf) = (f64::from(w), f64::from(h.max(1)));
+    let aspect = wf / hf;
+    let [min, max] = glyph_aspect_range(kind, kept);
+    let [vmin, vmax] = vanilla_aspect_extremes(kind);
+    // half a pixel of slack on the short side: a fit rounds its size to whole pixels, and a 25x6 glyph on the small
+    // counter may be a 4.0 drawing
+    if wf > max * (hf + 0.5) {
+        Some(format!(
+            "{w}x{h} pixels, {aspect:.1} times as wide as tall, where a {} glyph is at most {max:.1} (vanilla's widest is {vmax:.1})",
+            kind.as_str()
+        ))
+    } else if wf + 0.5 < min * hf {
+        Some(format!(
+            "{w}x{h} pixels, {:.1} times as tall as wide, where a {} glyph is at most {:.1} (vanilla's tallest is {:.1})",
+            1.0 / aspect,
+            kind.as_str(),
+            1.0 / min,
+            1.0 / vmin
+        ))
+    } else {
+        None
+    }
+}
+
 // ------------------------------------------------------------------ material check
 
 /// Share of the glyph pixels of frame 1 that must lie on the kind's material for finished art to count as vanilla's.
