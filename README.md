@@ -65,7 +65,7 @@ Every image below was made by the tool on the ChatGPT login with version 0.3 or 
 |:---:|:---:|:---:|
 | <img src="docs/gallery/news_event.webp" alt="News event picture" width="397"> | <img src="docs/gallery/report_event.webp" alt="Report event card" width="210"> | <img src="docs/gallery/technology.webp" alt="Technology picture" width="292"> |
 
-See many more in the [gallery](docs/gallery/big/README.md): every family beside vanilla references from the game, plus a section in the style of *The New Order*. It grows as more runs finish. The [documentation](docs/families.md) covers all 40 families, each with its canvas, the names the game looks up, the processing chain, the checks, an example call and a current example.
+See many more in the [gallery](docs/gallery/big/README.md): every family beside vanilla references from the game, plus sections in the style of *The New Order* and *The Fire Rises*. Together they hold 748 images, and the gallery grows as more runs finish. The [documentation](docs/families.md) covers all 40 families, each with its canvas, the names the game looks up, the processing chain, the checks, an example call and a current example.
 
 ## Quick start
 

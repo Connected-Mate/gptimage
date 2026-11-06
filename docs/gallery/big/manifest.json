@@ -10640,6 +10640,1334 @@
    "native": "tno/gui_texture/terminal_tooltip.webp",
    "enlarged": null,
    "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "focus",
+   "asset": "combat_drone_desert_road",
+   "brief": "A combat drone over a desert road. In the style of The Fire Rises: cut-out modern news photo collage with flags, saturated red and electric blue glow, no wreath or frame, dark drop shadow, wide 170x150 shape.",
+   "build": "0.3.6",
+   "size": [
+    170,
+    150
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/focus/combat_drone_desert_road.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "focus",
+   "asset": "container_ship_stacked_high",
+   "brief": "A container ship stacked high beside harbour cranes. In the style of The Fire Rises: cut-out modern news photo collage with flags, saturated red and electric blue glow, no wreath or frame, dark drop shadow, wide 170x150 shape.",
+   "build": "0.3.6",
+   "size": [
+    170,
+    150
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/focus/container_ship_stacked_high.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "focus",
+   "asset": "crowd_protesters_raising_fists",
+   "brief": "A crowd of protesters raising fists in front of a parliament building. In the style of The Fire Rises: cut-out modern news photo collage with flags, saturated red and electric blue glow, no wreath or frame, dark drop shadow, wide 170x150 shape.",
+   "build": "0.3.6",
+   "size": [
+    170,
+    150
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/focus/crowd_protesters_raising_fists.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "focus",
+   "asset": "fibre_optic_cable_bundle",
+   "brief": "A fibre-optic cable bundle glowing beside a server rack. In the style of The Fire Rises: cut-out modern news photo collage with flags, saturated red and electric blue glow, no wreath or frame, dark drop shadow, wide 170x150 shape.",
+   "build": "0.3.6",
+   "size": [
+    170,
+    150
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/focus/fibre_optic_cable_bundle.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "focus",
+   "asset": "main_battle_tank_national",
+   "brief": "A main battle tank under a national flag. In the style of The Fire Rises: cut-out modern news photo collage with flags, saturated red and electric blue glow, no wreath or frame, dark drop shadow, wide 170x150 shape.",
+   "build": "0.3.6",
+   "size": [
+    170,
+    150
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/focus/main_battle_tank_national.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "focus",
+   "asset": "oil_pump_jack_against",
+   "brief": "An oil pump jack against a burning sky. In the style of The Fire Rises: cut-out modern news photo collage with flags, saturated red and electric blue glow, no wreath or frame, dark drop shadow, wide 170x150 shape.",
+   "build": "0.3.6",
+   "size": [
+    170,
+    150
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/focus/oil_pump_jack_against.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "focus",
+   "asset": "riot_shield_wall_facing",
+   "brief": "A riot shield wall facing burning barricades. In the style of The Fire Rises: cut-out modern news photo collage with flags, saturated red and electric blue glow, no wreath or frame, dark drop shadow, wide 170x150 shape.",
+   "build": "0.3.6",
+   "size": [
+    170,
+    150
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/focus/riot_shield_wall_facing.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "focus",
+   "asset": "rocket_lifting_off_coastal",
+   "brief": "A rocket lifting off from a coastal launch pad. In the style of The Fire Rises: cut-out modern news photo collage with flags, saturated red and electric blue glow, no wreath or frame, dark drop shadow, wide 170x150 shape.",
+   "build": "0.3.6",
+   "size": [
+    170,
+    150
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/focus/rocket_lifting_off_coastal.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "focus",
+   "asset": "satellite_dish_array_pointed",
+   "brief": "A satellite dish array pointed at the night sky. In the style of The Fire Rises: cut-out modern news photo collage with flags, saturated red and electric blue glow, no wreath or frame, dark drop shadow, wide 170x150 shape.",
+   "build": "0.3.6",
+   "size": [
+    170,
+    150
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/focus/satellite_dish_array_pointed.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "focus",
+   "asset": "stock_exchange_board_falling",
+   "brief": "A stock exchange board with falling red numbers. In the style of The Fire Rises: cut-out modern news photo collage with flags, saturated red and electric blue glow, no wreath or frame, dark drop shadow, wide 170x150 shape.",
+   "build": "0.3.6",
+   "size": [
+    170,
+    150
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/focus/stock_exchange_board_falling.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "focus",
+   "asset": "two_hands_shaking_stack",
+   "brief": "Two hands shaking over a stack of trade agreements. In the style of The Fire Rises: cut-out modern news photo collage with flags, saturated red and electric blue glow, no wreath or frame, dark drop shadow, wide 170x150 shape.",
+   "build": "0.3.6",
+   "size": [
+    170,
+    150
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/focus/two_hands_shaking_stack.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "focus",
+   "asset": "wind_farm_ridge_power",
+   "brief": "A wind farm on a ridge with a power line in front. In the style of The Fire Rises: cut-out modern news photo collage with flags, saturated red and electric blue glow, no wreath or frame, dark drop shadow, wide 170x150 shape.",
+   "build": "0.3.6",
+   "size": [
+    170,
+    150
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/focus/wind_farm_ridge_power.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "idea_spirit",
+   "asset": "ballot_box_paper_vote",
+   "brief": "A ballot box with a paper vote going in. In the style of The Fire Rises: small cut-out photo collage of modern objects with a flag or emblem, cool silver tones lit by a teal, blue or magenta glow, no frame.",
+   "build": "0.3.6",
+   "size": [
+    60,
+    68
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/idea_spirit/ballot_box_paper_vote.webp",
+   "enlarged": "tfr/idea_spirit/ballot_box_paper_vote@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "tfr",
+   "family": "idea_spirit",
+   "asset": "field_hospital_tent_red",
+   "brief": "A field hospital tent with a red cross. In the style of The Fire Rises: small cut-out photo collage of modern objects with a flag or emblem, cool silver tones lit by a teal, blue or magenta glow, no frame.",
+   "build": "0.3.6",
+   "size": [
+    60,
+    68
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/idea_spirit/field_hospital_tent_red.webp",
+   "enlarged": "tfr/idea_spirit/field_hospital_tent_red@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "tfr",
+   "family": "idea_spirit",
+   "asset": "microchip_held_tweezers",
+   "brief": "A microchip held in tweezers. In the style of The Fire Rises: small cut-out photo collage of modern objects with a flag or emblem, cool silver tones lit by a teal, blue or magenta glow, no frame.",
+   "build": "0.3.6",
+   "size": [
+    60,
+    68
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/idea_spirit/microchip_held_tweezers.webp",
+   "enlarged": "tfr/idea_spirit/microchip_held_tweezers@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "tfr",
+   "family": "idea_spirit",
+   "asset": "offshore_oil_platform",
+   "brief": "An offshore oil platform. In the style of The Fire Rises: small cut-out photo collage of modern objects with a flag or emblem, cool silver tones lit by a teal, blue or magenta glow, no frame.",
+   "build": "0.3.6",
+   "size": [
+    60,
+    68
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/idea_spirit/offshore_oil_platform.webp",
+   "enlarged": "tfr/idea_spirit/offshore_oil_platform@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "tfr",
+   "family": "idea_spirit",
+   "asset": "police_car_lights_flashing",
+   "brief": "A police car with its lights flashing. In the style of The Fire Rises: small cut-out photo collage of modern objects with a flag or emblem, cool silver tones lit by a teal, blue or magenta glow, no frame.",
+   "build": "0.3.6",
+   "size": [
+    60,
+    68
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/idea_spirit/police_car_lights_flashing.webp",
+   "enlarged": "tfr/idea_spirit/police_car_lights_flashing@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "tfr",
+   "family": "idea_spirit",
+   "asset": "smartphone_news_feed",
+   "brief": "A smartphone showing a news feed. In the style of The Fire Rises: small cut-out photo collage of modern objects with a flag or emblem, cool silver tones lit by a teal, blue or magenta glow, no frame.",
+   "build": "0.3.6",
+   "size": [
+    60,
+    68
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/idea_spirit/smartphone_news_feed.webp",
+   "enlarged": "tfr/idea_spirit/smartphone_news_feed@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "tfr",
+   "family": "idea_spirit",
+   "asset": "stack_banknotes_bound_paper",
+   "brief": "A stack of banknotes bound with a paper band. In the style of The Fire Rises: small cut-out photo collage of modern objects with a flag or emblem, cool silver tones lit by a teal, blue or magenta glow, no frame.",
+   "build": "0.3.6",
+   "size": [
+    60,
+    68
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/idea_spirit/stack_banknotes_bound_paper.webp",
+   "enlarged": "tfr/idea_spirit/stack_banknotes_bound_paper@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "tfr",
+   "family": "idea_spirit",
+   "asset": "surveillance_camera_pole",
+   "brief": "A surveillance camera on a pole. In the style of The Fire Rises: small cut-out photo collage of modern objects with a flag or emblem, cool silver tones lit by a teal, blue or magenta glow, no frame.",
+   "build": "0.3.6",
+   "size": [
+    60,
+    68
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/idea_spirit/surveillance_camera_pole.webp",
+   "enlarged": "tfr/idea_spirit/surveillance_camera_pole@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "tfr",
+   "family": "idea_spirit",
+   "asset": "tractor_ploughing_wide_field",
+   "brief": "A tractor ploughing a wide field. In the style of The Fire Rises: small cut-out photo collage of modern objects with a flag or emblem, cool silver tones lit by a teal, blue or magenta glow, no frame.",
+   "build": "0.3.6",
+   "size": [
+    60,
+    68
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/idea_spirit/tractor_ploughing_wide_field.webp",
+   "enlarged": "tfr/idea_spirit/tractor_ploughing_wide_field@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "tfr",
+   "family": "decision",
+   "asset": "first_aid_kit",
+   "brief": "A first aid kit. In the style of The Fire Rises: tiny photo cut-out of a modern subject with a flag or a blue electric glow, no frame.",
+   "build": "0.3.6",
+   "size": [
+    33,
+    32
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/decision/first_aid_kit.webp",
+   "enlarged": "tfr/decision/first_aid_kit@4x.webp",
+   "scale": 4
+  },
+  {
+   "section": "tfr",
+   "family": "decision",
+   "asset": "gas_pipeline_valve",
+   "brief": "A gas pipeline valve. In the style of The Fire Rises: tiny photo cut-out of a modern subject with a flag or a blue electric glow, no frame.",
+   "build": "0.3.6",
+   "size": [
+    33,
+    32
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/decision/gas_pipeline_valve.webp",
+   "enlarged": "tfr/decision/gas_pipeline_valve@4x.webp",
+   "scale": 4
+  },
+  {
+   "section": "tfr",
+   "family": "decision",
+   "asset": "loudspeaker",
+   "brief": "A loudspeaker. In the style of The Fire Rises: tiny photo cut-out of a modern subject with a flag or a blue electric glow, no frame.",
+   "build": "0.3.6",
+   "size": [
+    33,
+    32
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/decision/loudspeaker.webp",
+   "enlarged": "tfr/decision/loudspeaker@4x.webp",
+   "scale": 4
+  },
+  {
+   "section": "tfr",
+   "family": "decision",
+   "asset": "missile_launcher",
+   "brief": "A missile on a launcher. In the style of The Fire Rises: tiny photo cut-out of a modern subject with a flag or a blue electric glow, no frame.",
+   "build": "0.3.6",
+   "size": [
+    33,
+    32
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/decision/missile_launcher.webp",
+   "enlarged": "tfr/decision/missile_launcher@4x.webp",
+   "scale": 4
+  },
+  {
+   "section": "tfr",
+   "family": "decision",
+   "asset": "padlocked_server",
+   "brief": "A padlocked server. In the style of The Fire Rises: tiny photo cut-out of a modern subject with a flag or a blue electric glow, no frame.",
+   "build": "0.3.6",
+   "size": [
+    33,
+    32
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/decision/padlocked_server.webp",
+   "enlarged": "tfr/decision/padlocked_server@4x.webp",
+   "scale": 4
+  },
+  {
+   "section": "tfr",
+   "family": "decision",
+   "asset": "radio_tower",
+   "brief": "A radio tower. In the style of The Fire Rises: tiny photo cut-out of a modern subject with a flag or a blue electric glow, no frame.",
+   "build": "0.3.6",
+   "size": [
+    33,
+    32
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/decision/radio_tower.webp",
+   "enlarged": "tfr/decision/radio_tower@4x.webp",
+   "scale": 4
+  },
+  {
+   "section": "tfr",
+   "family": "decision",
+   "asset": "shipping_container",
+   "brief": "A shipping container. In the style of The Fire Rises: tiny photo cut-out of a modern subject with a flag or a blue electric glow, no frame.",
+   "build": "0.3.6",
+   "size": [
+    33,
+    32
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/decision/shipping_container.webp",
+   "enlarged": "tfr/decision/shipping_container@4x.webp",
+   "scale": 4
+  },
+  {
+   "section": "tfr",
+   "family": "decision",
+   "asset": "signed_treaty_pen",
+   "brief": "A signed treaty with a pen. In the style of The Fire Rises: tiny photo cut-out of a modern subject with a flag or a blue electric glow, no frame.",
+   "build": "0.3.6",
+   "size": [
+    33,
+    32
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/decision/signed_treaty_pen.webp",
+   "enlarged": "tfr/decision/signed_treaty_pen@4x.webp",
+   "scale": 4
+  },
+  {
+   "section": "tfr",
+   "family": "operation_icon",
+   "asset": "burner_phone",
+   "brief": "A burner phone. In the style of The Fire Rises: small desaturated photograph in a round dark vignette with a black rim, red and cyan colour split.",
+   "build": "0.3.6",
+   "size": [
+    59,
+    58
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/operation_icon/burner_phone.webp",
+   "enlarged": "tfr/operation_icon/burner_phone@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "tfr",
+   "family": "operation_icon",
+   "asset": "forged_passport",
+   "brief": "A forged passport. In the style of The Fire Rises: small desaturated photograph in a round dark vignette with a black rim, red and cyan colour split.",
+   "build": "0.3.6",
+   "size": [
+    59,
+    58
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/operation_icon/forged_passport.webp",
+   "enlarged": "tfr/operation_icon/forged_passport@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "tfr",
+   "family": "operation_icon",
+   "asset": "listening_device_table",
+   "brief": "A listening device under a table. In the style of The Fire Rises: small desaturated photograph in a round dark vignette with a black rim, red and cyan colour split.",
+   "build": "0.3.6",
+   "size": [
+    59,
+    58
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/operation_icon/listening_device_table.webp",
+   "enlarged": "tfr/operation_icon/listening_device_table@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "tfr",
+   "family": "operation_icon",
+   "asset": "sniper_scope_view_doorway",
+   "brief": "A pair of binoculars on a windowsill overlooking a street. In the style of The Fire Rises: small desaturated photograph in a round dark vignette with a black rim, red and cyan colour split.",
+   "build": "0.3.6",
+   "size": [
+    59,
+    58
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/operation_icon/sniper_scope_view_doorway.webp",
+   "enlarged": "tfr/operation_icon/sniper_scope_view_doorway@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "tfr",
+   "family": "operation_icon",
+   "asset": "usb_stick_hand",
+   "brief": "A USB stick in a hand. In the style of The Fire Rises: small desaturated photograph in a round dark vignette with a black rim, red and cyan colour split.",
+   "build": "0.3.6",
+   "size": [
+    59,
+    58
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/operation_icon/usb_stick_hand.webp",
+   "enlarged": "tfr/operation_icon/usb_stick_hand@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "tfr",
+   "family": "report_event",
+   "asset": "cargo_plane_unloading_pallets",
+   "brief": "A cargo plane unloading pallets at night",
+   "build": "0.3.6",
+   "size": [
+    500,
+    250
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/report_event/cargo_plane_unloading_pallets.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "report_event",
+   "asset": "city_square_full_protesters",
+   "brief": "A city square full of protesters with flags and smoke",
+   "build": "0.3.6",
+   "size": [
+    500,
+    250
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/report_event/city_square_full_protesters.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "report_event",
+   "asset": "convoy_military_trucks_highway",
+   "brief": "A convoy of military trucks on a highway",
+   "build": "0.3.6",
+   "size": [
+    500,
+    250
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/report_event/convoy_military_trucks_highway.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "report_event",
+   "asset": "delegates_seated_summit_table",
+   "brief": "Delegates seated around a summit table under bright lights",
+   "build": "0.3.6",
+   "size": [
+    500,
+    250
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/report_event/delegates_seated_summit_table.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "report_event",
+   "asset": "emergency_workers_searching_collapsed",
+   "brief": "Emergency workers searching a collapsed apartment block",
+   "build": "0.3.6",
+   "size": [
+    500,
+    250
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/report_event/emergency_workers_searching_collapsed.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "report_event",
+   "asset": "firefighters_fighting_refinery_fire",
+   "brief": "Firefighters fighting a refinery fire",
+   "build": "0.3.6",
+   "size": [
+    500,
+    250
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/report_event/firefighters_fighting_refinery_fire.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "report_event",
+   "asset": "flooded_town_street_rescue",
+   "brief": "A flooded town street with rescue boats",
+   "build": "0.3.6",
+   "size": [
+    500,
+    250
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/report_event/flooded_town_street_rescue.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "report_event",
+   "asset": "journalists_crowding_press_podium",
+   "brief": "Journalists crowding a press podium",
+   "build": "0.3.6",
+   "size": [
+    500,
+    250
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/report_event/journalists_crowding_press_podium.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "report_event",
+   "asset": "naval_task_force_sailing",
+   "brief": "A naval task force sailing in formation",
+   "build": "0.3.6",
+   "size": [
+    500,
+    250
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/report_event/naval_task_force_sailing.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "report_event",
+   "asset": "soldiers_checking_cars_border",
+   "brief": "Soldiers checking cars at a border crossing",
+   "build": "0.3.6",
+   "size": [
+    500,
+    250
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/report_event/soldiers_checking_cars_border.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "report_event",
+   "asset": "workers_car_factory_assembly",
+   "brief": "Workers at a car factory assembly line",
+   "build": "0.3.6",
+   "size": [
+    500,
+    250
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/report_event/workers_car_factory_assembly.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "decision_category_picture",
+   "asset": "armoured_vehicles_parked_muddy",
+   "brief": "Armoured vehicles parked in a muddy field",
+   "build": "0.3.6",
+   "size": [
+    102,
+    101
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/decision_category_picture/armoured_vehicles_parked_muddy.webp",
+   "enlarged": "tfr/decision_category_picture/armoured_vehicles_parked_muddy@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "tfr",
+   "family": "decision_category_picture",
+   "asset": "container_port_dusk",
+   "brief": "A container port at dusk",
+   "build": "0.3.6",
+   "size": [
+    102,
+    101
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/decision_category_picture/container_port_dusk.webp",
+   "enlarged": "tfr/decision_category_picture/container_port_dusk@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "tfr",
+   "family": "decision_category_picture",
+   "asset": "crowd_waving_flags_rally",
+   "brief": "A crowd waving flags at a rally",
+   "build": "0.3.6",
+   "size": [
+    102,
+    101
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/decision_category_picture/crowd_waving_flags_rally.webp",
+   "enlarged": "tfr/decision_category_picture/crowd_waving_flags_rally@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "tfr",
+   "family": "decision_category_picture",
+   "asset": "gas_power_plant_smoking",
+   "brief": "A gas power plant with smoking chimneys",
+   "build": "0.3.6",
+   "size": [
+    102,
+    101
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/decision_category_picture/gas_power_plant_smoking.webp",
+   "enlarged": "tfr/decision_category_picture/gas_power_plant_smoking@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "tfr",
+   "family": "decision_category_picture",
+   "asset": "riot_police_lined_city",
+   "brief": "Riot police lined up on a city street at night",
+   "build": "0.3.6",
+   "size": [
+    102,
+    101
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/decision_category_picture/riot_police_lined_city.webp",
+   "enlarged": "tfr/decision_category_picture/riot_police_lined_city@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "tfr",
+   "family": "decision_category_picture",
+   "asset": "soldiers_loading_supplies_transport",
+   "brief": "Soldiers loading supplies into a transport plane",
+   "build": "0.3.6",
+   "size": [
+    102,
+    101
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/decision_category_picture/soldiers_loading_supplies_transport.webp",
+   "enlarged": "tfr/decision_category_picture/soldiers_loading_supplies_transport@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "tfr",
+   "family": "operation_picture",
+   "asset": "briefcase_handed_parking_garage",
+   "brief": "A briefcase handed over in a parking garage. In the style of The Fire Rises: desaturated cool blue-grey surveillance photograph with a red and cyan colour split and faint scanlines.",
+   "build": "0.3.6",
+   "size": [
+    210,
+    176
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/operation_picture/briefcase_handed_parking_garage.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "operation_picture",
+   "asset": "drone_hovering_prison_wall",
+   "brief": "A drone hovering above a prison wall. In the style of The Fire Rises: desaturated cool blue-grey surveillance photograph with a red and cyan colour split and faint scanlines.",
+   "build": "0.3.6",
+   "size": [
+    210,
+    176
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/operation_picture/drone_hovering_prison_wall.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "operation_picture",
+   "asset": "laptop_lines_code_dark",
+   "brief": "A laptop showing lines of code in a dark room. In the style of The Fire Rises: desaturated cool blue-grey surveillance photograph with a red and cyan colour split and faint scanlines.",
+   "build": "0.3.6",
+   "size": [
+    210,
+    176
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/operation_picture/laptop_lines_code_dark.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "operation_picture",
+   "asset": "man_hooded_jacket_photographing",
+   "brief": "A man in a hooded jacket photographing a building. In the style of The Fire Rises: desaturated cool blue-grey surveillance photograph with a red and cyan colour split and faint scanlines.",
+   "build": "0.3.6",
+   "size": [
+    210,
+    176
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/operation_picture/man_hooded_jacket_photographing.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "operation_picture",
+   "asset": "night_vision_view_soldiers",
+   "brief": "Night vision view of soldiers at a fence. In the style of The Fire Rises: desaturated cool blue-grey surveillance photograph with a red and cyan colour split and faint scanlines.",
+   "build": "0.3.6",
+   "size": [
+    210,
+    176
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/operation_picture/night_vision_view_soldiers.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "operation_picture",
+   "asset": "radar_dome_cold_hillside",
+   "brief": "A radar dome on a cold hillside. In the style of The Fire Rises: desaturated cool blue-grey surveillance photograph with a red and cyan colour split and faint scanlines.",
+   "build": "0.3.6",
+   "size": [
+    210,
+    176
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/operation_picture/radar_dome_cold_hillside.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "technology",
+   "asset": "attack_submarine_surface",
+   "brief": "An attack submarine at the surface. In the style of The Fire Rises: unframed full-colour photograph of modern military equipment in side view, plain daylight setting.",
+   "build": "0.3.6",
+   "size": [
+    146,
+    54
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/technology/attack_submarine_surface.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "technology",
+   "asset": "guided_missile_frigate",
+   "brief": "A guided-missile frigate. In the style of The Fire Rises: unframed full-colour photograph of modern military equipment in side view, plain daylight setting.",
+   "build": "0.3.6",
+   "size": [
+    146,
+    54
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/technology/guided_missile_frigate.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "technology",
+   "asset": "modern_main_battle_tank",
+   "brief": "A modern main battle tank. In the style of The Fire Rises: unframed full-colour photograph of modern military equipment in side view, plain daylight setting.",
+   "build": "0.3.6",
+   "size": [
+    146,
+    54
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/technology/modern_main_battle_tank.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "technology",
+   "asset": "self_propelled_howitzer",
+   "brief": "A self-propelled howitzer. In the style of The Fire Rises: unframed full-colour photograph of modern military equipment in side view, plain daylight setting.",
+   "build": "0.3.6",
+   "size": [
+    146,
+    54
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/technology/self_propelled_howitzer.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "technology",
+   "asset": "surveillance_drone",
+   "brief": "A surveillance drone. In the style of The Fire Rises: unframed full-colour photograph of modern military equipment in side view, plain daylight setting.",
+   "build": "0.3.6",
+   "size": [
+    146,
+    54
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/technology/surveillance_drone.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "technology",
+   "asset": "transport_helicopter",
+   "brief": "A transport helicopter. In the style of The Fire Rises: unframed full-colour photograph of modern military equipment in side view, plain daylight setting.",
+   "build": "0.3.6",
+   "size": [
+    146,
+    54
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/technology/transport_helicopter.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "technology",
+   "asset": "wheeled_infantry_fighting_vehicle",
+   "brief": "A wheeled infantry fighting vehicle. In the style of The Fire Rises: unframed full-colour photograph of modern military equipment in side view, plain daylight setting.",
+   "build": "0.3.6",
+   "size": [
+    146,
+    54
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/technology/wheeled_infantry_fighting_vehicle.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "super_event",
+   "asset": "burning_parliament_building_crowds",
+   "brief": "A burning parliament building with crowds below. In the style of The Fire Rises: wide full-colour news photograph of a dramatic modern scene, crowds, fire or a skyline, muted grade.",
+   "build": "0.3.6",
+   "size": [
+    982,
+    594
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "tfr/super_event/burning_parliament_building_crowds.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "super_event",
+   "asset": "capital_city_skyline_night",
+   "brief": "A capital city skyline at night with fires and smoke. In the style of The Fire Rises: wide full-colour news photograph of a dramatic modern scene, crowds, fire or a skyline, muted grade.",
+   "build": "0.3.6",
+   "size": [
+    982,
+    594
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "tfr/super_event/capital_city_skyline_night.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "super_event",
+   "asset": "crowd_tearing_down_border",
+   "brief": "A crowd tearing down a border wall. In the style of The Fire Rises: wide full-colour news photograph of a dramatic modern scene, crowds, fire or a skyline, muted grade.",
+   "build": "0.3.6",
+   "size": [
+    982,
+    594
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "tfr/super_event/crowd_tearing_down_border.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "super_event",
+   "asset": "fleet_warships_dawn",
+   "brief": "A fleet of warships at dawn. In the style of The Fire Rises: wide full-colour news photograph of a dramatic modern scene, crowds, fire or a skyline, muted grade.",
+   "build": "0.3.6",
+   "size": [
+    982,
+    594
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "tfr/super_event/fleet_warships_dawn.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "super_event",
+   "asset": "huge_military_parade_tanks",
+   "brief": "A huge military parade with tanks and flags. In the style of The Fire Rises: wide full-colour news photograph of a dramatic modern scene, crowds, fire or a skyline, muted grade.",
+   "build": "0.3.6",
+   "size": [
+    982,
+    594
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "tfr/super_event/huge_military_parade_tanks.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "super_event",
+   "asset": "mushroom_cloud_distant_desert",
+   "brief": "A mushroom cloud over a distant desert. In the style of The Fire Rises: wide full-colour news photograph of a dramatic modern scene, crowds, fire or a skyline, muted grade.",
+   "build": "0.3.6",
+   "size": [
+    982,
+    594
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "tfr/super_event/mushroom_cloud_distant_desert.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "leader_portrait",
+   "asset": "bearded_rebel_commander_black",
+   "brief": "A bearded rebel commander in a black beret",
+   "build": "0.3.6",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/leader_portrait/bearded_rebel_commander_black.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "leader_portrait",
+   "asset": "general_modern_olive_dress",
+   "brief": "A general in a modern olive dress uniform with ribbons",
+   "build": "0.3.6",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/leader_portrait/general_modern_olive_dress.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "leader_portrait",
+   "asset": "grey_haired_head_state",
+   "brief": "A grey-haired head of state in a dark suit and tie",
+   "build": "0.3.6",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/leader_portrait/grey_haired_head_state.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "leader_portrait",
+   "asset": "naval_admiral_white_uniform",
+   "brief": "A naval admiral in a white uniform",
+   "build": "0.3.6",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/leader_portrait/naval_admiral_white_uniform.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "leader_portrait",
+   "asset": "populist_leader_broad_smile",
+   "brief": "A populist leader with a broad smile and loosened tie",
+   "build": "0.3.6",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/leader_portrait/populist_leader_broad_smile.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "leader_portrait",
+   "asset": "stern_woman_minister_short",
+   "brief": "A stern woman minister with short hair and a dark blazer",
+   "build": "0.3.6",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/leader_portrait/stern_woman_minister_short.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "leader_portrait",
+   "asset": "young_reformist_politician_open",
+   "brief": "A young reformist politician with an open collar",
+   "build": "0.3.6",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "tfr/leader_portrait/young_reformist_politician_open.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "gui_texture",
+   "asset": "city_skyline_dusk",
+   "brief": "A city skyline at dusk. In the style of The Fire Rises: dim photographic backdrop, a city skyline or warship, graded in one colour and fading into near-black at the edges.",
+   "build": "0.3.6",
+   "size": [
+    300,
+    200
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "tfr/gui_texture/city_skyline_dusk.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "gui_texture",
+   "asset": "fighter_jet_formation",
+   "brief": "A fighter jet formation. In the style of The Fire Rises: dim photographic backdrop, a city skyline or warship, graded in one colour and fading into near-black at the edges.",
+   "build": "0.3.6",
+   "size": [
+    300,
+    200
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "tfr/gui_texture/fighter_jet_formation.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "gui_texture",
+   "asset": "harbour_cranes",
+   "brief": "A harbour with container cranes, the picture fading into a transparent background at every edge. In the style of The Fire Rises: dim photographic backdrop, a city skyline or warship, graded in one colour and fading into near-black at the edges.",
+   "build": "0.3.6",
+   "size": [
+    300,
+    200
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "tfr/gui_texture/harbour_cranes.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "gui_texture",
+   "asset": "mountain_border_post_snow",
+   "brief": "A mountain border post in snow, the picture fading into a transparent background at every edge. In the style of The Fire Rises: dim photographic backdrop, a city skyline or warship, graded in one colour and fading into near-black at the edges.",
+   "build": "0.3.6",
+   "size": [
+    300,
+    200
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "tfr/gui_texture/mountain_border_post_snow.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "gui_texture",
+   "asset": "row_server_racks",
+   "brief": "A row of server racks. In the style of The Fire Rises: dim photographic backdrop, a city skyline or warship, graded in one colour and fading into near-black at the edges.",
+   "build": "0.3.6",
+   "size": [
+    300,
+    200
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "tfr/gui_texture/row_server_racks.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "tfr",
+   "family": "gui_texture",
+   "asset": "warship_sea",
+   "brief": "A warship at sea. In the style of The Fire Rises: dim photographic backdrop, a city skyline or warship, graded in one colour and fading into near-black at the edges.",
+   "build": "0.3.6",
+   "size": [
+    300,
+    200
+   ],
+   "vanilla_check": "unavailable",
+   "subfamily": null,
+   "native": "tfr/gui_texture/warship_sea.webp",
+   "enlarged": null,
+   "scale": 1
   }
  ]
 }

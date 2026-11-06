@@ -2,6 +2,8 @@
  "about": "Mod style sections of the public gallery, after the vanilla section. Add one entry per style. mod_env and res_env name the environment variables that hold that style's scratch mod and result folder. Only generated images are shown for a style: the mod's own art is not reproduced.",
  "styles": [
   {"key": "tno", "title": "TNO style", "mod_env": "TNO_MOD", "res_env": "TNO_RES",
-   "intro": "The families with their own look in *The New Order: Last Days of Europe*, made from references of that mod's art, which is not reproduced here. Families TNO draws in the vanilla style are only in the vanilla section."}
+   "intro": "The families with their own look in *The New Order: Last Days of Europe*, made from references of that mod's art, which is not reproduced here. Families TNO draws in the vanilla style are only in the vanilla section."},
+  {"key": "tfr", "title": "TFR style", "mod_env": "TFR_MOD", "res_env": "TFR_RES",
+   "intro": "The families with their own look in *The Fire Rises*, made from references of that mod's art, which is not reproduced here. Families TFR draws in the vanilla style are only in the vanilla section."}
  ]
 }
