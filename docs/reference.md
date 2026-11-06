@@ -34,8 +34,17 @@ status -> families -> icon | picture | portrait | flag | unit | interface   (fre
 | `hoi4.image_cancel` | Cancels a running job, reconciles one that a crashed run left behind, or retires an uncertain idempotency key (`abandon: true`) |
 | `hoi4.image_login` | Opens the ChatGPT sign-in page in the user's browser and returns at once. The sign-in finishes in the background, and `hoi4.image_status` reports it. Signing in accepts the risk note, which the result includes. Local only |
 | `hoi4.image_audit` | Audits the whole mod on the shared engine (hoi4-agent-tools): which families use each sprite and texture, cross-family reuse (`GFX-FAMILY-REUSE`, a warning, with a per-mod allowlist), missing textures, undefined sprites, missing focus shine (an error: the game then draws a `?`), wrong canvas sizes and report cards without transparent corners. Read only |
+| `hoi4.image_set` | Set mode: plans (and with `generate` makes) every icon of one focus tree file as one set. See [set mode](#set-mode) |
 
-That is 21 tools.
+That is 22 tools.
+
+### Set mode
+
+`hoi4.image_set` (`hoi4-imagegen call hoi4.image_set '{"focus_tree": "common/national_focus/GER.txt"}'`) reads one focus tree file with the shared HOI4 engine, the same index and trace as the audit. It keeps the `icon` of every focus in that file and gives every distinct sprite one `focus` asset, so focuses that share a sprite share one asset and nothing is made twice. Each brief names the focus by its English name and description from the mod's localisation, and says the icon is one of a set with distinct subjects.
+
+Every icon gets the same `style_pack`, style anchors (`references`), `provider`, `model` and `quality`, so the set shares one look. The surest way is to generate one icon first, approve it, and pass it as a `style_anchor` for the rest. By default only icons the game cannot show yet (an undefined sprite or a missing texture) are planned, and `only_missing: false` plans every one. Plans are free. With `generate: true` and an `idempotency_key`, each icon is generated under `<idempotency_key>-<asset>`, so a rerun after an interruption repeats nothing that finished. A failed icon is reported and the rest go on.
+
+The reply lists every icon: the sprite the tree names, the asset, its focuses and their names, the plan id, the cost estimate and the sprite name its install registers (`installs_as`). The install names focus sprites `GFX_focus_<asset>`, so where `tree_names_it` is false, point the focus's `icon` at `installs_as`. `shared_sprites` lists the sprites several focuses share, and `dynamic` the icons built at run time, which cannot be planned.
 
 ## Families
 

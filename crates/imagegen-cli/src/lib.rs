@@ -300,6 +300,7 @@ pub fn dispatch(engine: &Engine, tool: &str, params: Value) -> Result<Value, Eng
         "hoi4.image_review" => engine.review(serde_json::from_value(params).map_err(bad)?),
         "hoi4.image_install" => engine.install(serde_json::from_value(params).map_err(bad)?),
         "hoi4.image_audit" => engine.audit(serde_json::from_value(params).map_err(bad)?),
+        "hoi4.image_set" => engine.set(serde_json::from_value(params).map_err(bad)?),
         "hoi4.image_ledger" => engine.ledger_query(serde_json::from_value(params).map_err(bad)?),
         "hoi4.image_cancel" => engine.cancel(serde_json::from_value(params).map_err(bad)?),
         "hoi4.image_login" => engine.login(),

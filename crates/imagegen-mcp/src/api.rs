@@ -523,6 +523,44 @@ pub struct CancelParams {
     pub abandon: Option<bool>,
 }
 
+/// `hoi4.image_set`
+#[derive(Debug, Clone, Default, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SetParams {
+    /// The focus tree file, relative to the mod (for example `common/national_focus/GER.txt`).
+    pub focus_tree: String,
+    /// Feature folder of the set's assets (default: the file's name as snake_case).
+    #[serde(default)]
+    pub feature_slug: Option<String>,
+    /// Only the icons the game cannot show yet: an undefined sprite or a missing texture (default true).
+    #[serde(default)]
+    pub only_missing: Option<bool>,
+    /// Style pack every icon of the set uses.
+    #[serde(default)]
+    pub style_pack: Option<String>,
+    /// Style anchors every icon of the set sends, for one shared look (for example the set's first approved icon).
+    #[serde(default)]
+    pub references: Option<Vec<ReferenceInput>>,
+    /// Provider for every icon.
+    #[serde(default)]
+    pub provider: Option<String>,
+    /// Model for every icon.
+    #[serde(default)]
+    pub model: Option<String>,
+    /// Quality for every icon.
+    #[serde(default)]
+    pub quality: Option<String>,
+    /// Generate every planned icon (one paid call each). Needs `idempotency_key`.
+    #[serde(default)]
+    pub generate: Option<bool>,
+    /// Key prefix: each icon is generated under `<idempotency_key>-<asset>`, so a rerun repeats nothing that finished.
+    #[serde(default)]
+    pub idempotency_key: Option<String>,
+    /// Confirm that calls above the project's per-call cost limit are intended.
+    #[serde(default)]
+    pub approve_cost: Option<bool>,
+}
+
 /// `hoi4.image_audit`
 #[derive(Debug, Clone, Default, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]

@@ -30,6 +30,7 @@ pub mod plan;
 pub mod preview;
 pub mod process;
 pub mod review;
+pub mod set;
 pub mod validate;
 pub mod vanilla;
 

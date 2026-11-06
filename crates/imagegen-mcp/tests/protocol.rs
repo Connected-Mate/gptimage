@@ -235,7 +235,7 @@ fn golden_path() -> std::path::PathBuf {
 }
 
 #[test]
-fn handshake_lists_exactly_twenty_one_tools_with_stable_schemas() {
+fn handshake_lists_exactly_twenty_two_tools_with_stable_schemas() {
     let mock = MockOpenAi::start(Duration::from_millis(0));
     let dir = project(mock.port);
     let mut c = Client::start(dir.path(), mock.port);
@@ -251,7 +251,7 @@ fn handshake_lists_exactly_twenty_one_tools_with_stable_schemas() {
     let mut want: Vec<&str> = imagegen_mcp::server::TOOL_NAMES.to_vec();
     want.sort_unstable();
     assert_eq!(names, want);
-    assert_eq!(tools.len(), 21);
+    assert_eq!(tools.len(), 22);
 
     // each generation tool's schema lists exactly the families of its group, and nothing else
     let mut seen: Vec<String> = Vec::new();

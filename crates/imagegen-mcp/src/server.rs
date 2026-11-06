@@ -17,7 +17,7 @@ use crate::api::*;
 use crate::engine::{EResult, Engine};
 
 /// Instructions shown to the client at start-up.
-pub const INSTRUCTIONS: &str = "HOI4 graphical assets. Work one asset at a time: hoi4.image_status (what is configured; when the ChatGPT login is not signed in, hoi4.image_login opens the sign-in page in the browser), hoi4.image_families (every family's measured canvas, naming, checks and rubric), then the generation tool of the asset's group with a required family: hoi4.image_icon, hoi4.image_picture, hoi4.image_portrait, hoi4.image_flag, hoi4.image_unit, hoi4.image_interface or hoi4.image_animation. Called without approve it returns a free plan; with approve and an idempotency_key it plans and generates (one paid call per variant). The family is fixed from the plan on: hoi4.image_process (the family's own processing always runs and cannot be skipped or replaced: callers may add only the pre-steps chroma_key, crop_to_aspect, defringe and trim_to_subject; import needs a family and refuses another family's size or pixels), hoi4.image_validate (the family's full check set), hoi4.image_preview (contact sheet; look at the native-size panels), hoi4.image_review (rubric answers; an approval returns an approval_id) and hoi4.image_install (writes the DDS or TGA and a sprite handoff) all use the artifact's own family and take no family argument for it. Install refuses unless validation ran the full check set and passed, a review approved this exact file and the hashes are unchanged. Transparency must be proven by pixels, never by the prompt. Outputs are versioned and never overwritten; hoi4.image_ledger shows which references, settings and outputs belong together. hoi4.image_audit (read only) traces which sprites and textures the mod already uses for which family and reports reuse, missing and mis-sized art. Keys are read from environment variables only.";
+pub const INSTRUCTIONS: &str = "HOI4 graphical assets. Work one asset at a time: hoi4.image_status (what is configured; when the ChatGPT login is not signed in, hoi4.image_login opens the sign-in page in the browser), hoi4.image_families (every family's measured canvas, naming, checks and rubric), then the generation tool of the asset's group with a required family: hoi4.image_icon, hoi4.image_picture, hoi4.image_portrait, hoi4.image_flag, hoi4.image_unit, hoi4.image_interface or hoi4.image_animation. Called without approve it returns a free plan; with approve and an idempotency_key it plans and generates (one paid call per variant). The family is fixed from the plan on: hoi4.image_process (the family's own processing always runs and cannot be skipped or replaced: callers may add only the pre-steps chroma_key, crop_to_aspect, defringe and trim_to_subject; import needs a family and refuses another family's size or pixels), hoi4.image_validate (the family's full check set), hoi4.image_preview (contact sheet; look at the native-size panels), hoi4.image_review (rubric answers; an approval returns an approval_id) and hoi4.image_install (writes the DDS or TGA and a sprite handoff) all use the artifact's own family and take no family argument for it. Install refuses unless validation ran the full check set and passed, a review approved this exact file and the hashes are unchanged. Transparency must be proven by pixels, never by the prompt. Outputs are versioned and never overwritten; hoi4.image_ledger shows which references, settings and outputs belong together. hoi4.image_audit (read only) traces which sprites and textures the mod already uses for which family and reports reuse, missing and mis-sized art. hoi4.image_set plans (and can generate) every icon of one focus tree file as one set with one shared style and no duplicate assets. Keys are read from environment variables only.";
 
 /// The server.
 #[derive(Clone)]
@@ -259,6 +259,15 @@ impl ImageServer {
     }
 
     #[tool(
+        name = "hoi4.image_set",
+        description = "Plan, and optionally generate, every icon of one focus tree file as one set. Reads the tree with the shared HOI4 engine, keeps each focus's icon, and gives every distinct sprite one focus asset, so focuses that share a sprite share one asset and nothing is made twice. Each brief names the focus from the mod's English localisation (name and description). Every icon gets the same style pack, style anchors, provider, model and quality, for one shared look. By default only icons the game cannot show yet (an undefined sprite or a missing texture) are planned. Plans are free; generate: true with an idempotency_key makes each one under <key>-<asset>. The reply lists each icon's plan, cost estimate and the sprite name its install will register (installs_as).",
+        annotations(read_only_hint = false, destructive_hint = false, idempotent_hint = true, open_world_hint = true)
+    )]
+    async fn set(&self, Parameters(p): Parameters<SetParams>) -> Result<CallToolResult, ErrorData> {
+        self.run(move |e| e.set(p)).await
+    }
+
+    #[tool(
         name = "hoi4.image_cancel",
         description = "Cancel a running generation by idempotency key (providers with job ids are asked to stop), or settle a job a crashed run left behind: reconcile = true asks the provider what became of it and stores the image if it finished. Synchronous providers cannot be interrupted once the request is sent. abandon = true retires an idempotency key whose first attempt was cut off (the process was killed) so the key can be used again: the ledger records the abandonment and the warning that the first attempt may have been charged, and it is refused for a key whose attempt completed.",
         annotations(read_only_hint = false, destructive_hint = false, idempotent_hint = true, open_world_hint = true)
@@ -286,8 +295,8 @@ impl ServerHandler for ImageServer {
     }
 }
 
-/// Names of the twenty-one tools, in documentation order.
-pub const TOOL_NAMES: [&str; 21] = [
+/// Names of the twenty-two tools, in documentation order.
+pub const TOOL_NAMES: [&str; 22] = [
     "hoi4.image_status",
     "hoi4.image_families",
     "hoi4.image_references",
@@ -307,6 +316,7 @@ pub const TOOL_NAMES: [&str; 21] = [
     "hoi4.image_install",
     "hoi4.image_ledger",
     "hoi4.image_audit",
+    "hoi4.image_set",
     "hoi4.image_cancel",
     "hoi4.image_login",
 ];

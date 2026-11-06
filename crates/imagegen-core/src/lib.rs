@@ -40,6 +40,7 @@ pub mod refselect;
 pub mod resize;
 pub mod reuse;
 pub mod rubric;
+pub mod set;
 pub mod sprite;
 pub mod style;
 pub mod styledesc;
