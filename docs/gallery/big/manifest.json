@@ -6,7 +6,7 @@
    "family": "focus",
    "asset": "armoured_column_parade",
    "brief": "A column of Brazilian light tanks rolling through a dusty avenue in the 1940s, hatches open, crowds waving from balconies, triumphant mood.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     100,
     88
@@ -22,7 +22,7 @@
    "family": "focus",
    "asset": "assembly_ballot_vote",
    "brief": "A Swedish voter in a wool coat dropping a folded ballot into a wooden box before a columned assembly hall, calm and quiet civic mood.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     100,
     88
@@ -54,7 +54,7 @@
    "family": "focus",
    "asset": "atlantic_convoy",
    "brief": "An American merchant convoy crossing a grey Atlantic with escort destroyers on the flanks and smoke on the horizon, grim resolve.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     100,
     88
@@ -86,7 +86,7 @@
    "family": "focus",
    "asset": "blast_furnace_dawn",
    "brief": "A Finnish steelworks blast furnace glowing orange at dawn above snowy pines, small silhouettes of workers at the gate, hopeful mood of rebuilding after a hard winter.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     100,
     88
@@ -118,7 +118,7 @@
    "family": "focus",
    "asset": "coastal_radar_mast",
    "brief": "A British coastal radar mast on white chalk cliffs scanning above a calm grey sea in 1940, tense watchful mood. Bold two-colour carved print.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     100,
     88
@@ -134,7 +134,7 @@
    "family": "focus",
    "asset": "cruiser_launch_slipway",
    "brief": "A new Italian light cruiser sliding down the slipway into a Genoa harbour, bunting overhead and dockworkers cheering, festive and proud.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     100,
     88
@@ -150,7 +150,7 @@
    "family": "focus",
    "asset": "cyclotron_laboratory",
    "brief": "A young researcher beside a brass-coiled cyclotron magnet in a university laboratory, dials and glass tubes glowing, hopeful 1940s scientific mood.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     100,
     88
@@ -182,7 +182,7 @@
    "family": "focus",
    "asset": "fighter_dawn_scramble",
    "brief": "Polish single-seat fighters taking off from a grass airfield at first light, ground crew running clear, tense and determined mood.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     100,
     88
@@ -214,7 +214,7 @@
    "family": "focus",
    "asset": "frontier_fortress_turret",
    "brief": "A French frontier fortress with an armoured gun turret rising from a green hillside, barbed wire in front, grim and steady mood.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     100,
     88
@@ -230,7 +230,7 @@
    "family": "focus",
    "asset": "highland_road_builders",
    "brief": "Ethiopian highland workers breaking rock with picks and hauling carts to build a mountain road, steep green valley behind them, 1930s hopeful effort.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     100,
     88
@@ -246,7 +246,7 @@
    "family": "focus",
    "asset": "howitzer_hillside",
    "brief": "A heavy Soviet howitzer on a snowy hillside with its crew in dark silhouette, barrel raised against a pale sky, grim determination.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     100,
     88
@@ -278,7 +278,7 @@
    "family": "focus",
    "asset": "irrigation_canal_gates",
    "brief": "Thai farmers opening wooden irrigation sluice gates so water flows into green rice terraces, hopeful early-morning mood.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     100,
     88
@@ -310,7 +310,7 @@
    "family": "focus",
    "asset": "land_reform_plough",
    "brief": "A southern Italian peasant family marking out their own field with boundary stakes beside a plough and oxen, hopeful early 1950s mood. Bold two-colour carved print.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     100,
     88
@@ -326,7 +326,7 @@
    "family": "focus",
    "asset": "oil_gusher_celebration",
    "brief": "A Mexican oil derrick erupting in a black gusher while oilfield workers throw their hats in the air, a festive mood of national pride in the late 1930s.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     100,
     88
@@ -342,7 +342,7 @@
    "family": "focus",
    "asset": "opera_mask_scroll",
    "brief": "A Chinese opera mask on a lacquered stand beside an unrolled scroll of mountain scenery and a lute, calm 1930s cultural mood.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     100,
     88
@@ -358,7 +358,7 @@
    "family": "focus",
    "asset": "orange_quay_trade",
    "brief": "Crates of Valencia oranges stacked on a quay beside a steamship, dockers loading by hand, festive early 1950s trade mood.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     100,
     88
@@ -374,7 +374,7 @@
    "family": "focus",
    "asset": "paratrooper_drop",
    "brief": "A wing of transport aircraft over red Australian desert releasing a cloud of white parachutes, long shadows on the sand, tense 1940s mood.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     100,
     88
@@ -406,7 +406,7 @@
    "family": "focus",
    "asset": "railway_viaduct_opening",
    "brief": "A Turkish steam locomotive crossing a new stone viaduct high in the Anatolian mountains, villagers watching from the ridge, triumphant mood. Soft flat gouache look.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     100,
     88
@@ -454,7 +454,7 @@
    "family": "focus",
    "asset": "steam_locomotive_power",
    "brief": "A Yugoslav steam locomotive thundering along a river gorge with timber wagons behind it, smoke streaming, confident mood of national infrastructure.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     100,
     88
@@ -486,7 +486,7 @@
    "family": "focus",
    "asset": "submarine_leaving_pen",
    "brief": "A sleek Japanese submarine gliding out of a concrete pen at dusk with its crew on deck, water dark and still, tense and quiet.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     100,
     88
@@ -518,7 +518,7 @@
    "family": "focus",
    "asset": "torch_over_square",
    "brief": "A burning torch raised high over a crowd of silhouetted citizens in a night city square under fictional striped banners, tense yet defiant.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     100,
     88
@@ -534,7 +534,7 @@
    "family": "focus",
    "asset": "treaty_handshake",
    "brief": "A Persian envoy and a British diplomat in 1930s suits shake hands across a green felt table with a brass globe between them, quiet and hopeful mood.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     100,
     88
@@ -550,7 +550,7 @@
    "family": "focus",
    "asset": "village_radio_tower",
    "brief": "A tall radio mast above a Chinese village square where families gather around a loudspeaker, radio waves rippling outward, 1940s. Grainy ink and sepia sketch look.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     100,
     88
@@ -566,7 +566,7 @@
    "family": "focus",
    "asset": "wheat_and_gold_vault",
    "brief": "An open bank vault in Buenos Aires with stacked gold bars beside heaped wheat sheaves, a promise of economic recovery in the 1930s.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     100,
     88
@@ -966,7 +966,7 @@
    "family": "idea_concern",
    "asset": "aircraft_plant_fuselages",
    "brief": "An American aircraft plant with silver fuselages hanging in a long line from the ceiling, wings stacked below and morning light through high windows.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     64,
     64
@@ -1014,7 +1014,7 @@
    "family": "idea_concern",
    "asset": "bored_barrel_aa_gun",
    "brief": "A Swedish ordnance works where a long anti-aircraft gun barrel is bored on a huge lathe, curls of bright steel on the floor, snowy yard outside.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     64,
     64
@@ -1030,7 +1030,7 @@
    "family": "idea_concern",
    "asset": "brass_cartridge_mill",
    "brief": "A brass rolling mill with coils of golden metal, stamping presses and trays of shining cartridge cases, American small town works.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     64,
     64
@@ -1046,7 +1046,7 @@
    "family": "idea_concern",
    "asset": "cable_drum_yard",
    "brief": "A cable works yard stacked with huge wooden drums of telegraph cable and coils of copper wire beside a railway siding, Spanish setting.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     64,
     64
@@ -1078,7 +1078,7 @@
    "family": "idea_concern",
    "asset": "diesel_engine_hall",
    "brief": "A Swiss diesel engine works with a massive marine engine block under assembly, polished pistons and gauges, quiet precise craft. Soft flat gouache look.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     64,
     64
@@ -1094,7 +1094,7 @@
    "family": "idea_concern",
    "asset": "flying_boat_hangar",
    "brief": "A giant hangar with a four-engined flying boat on a slipway, ground crew on its wing, bay water glittering outside, Australian works.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     64,
     64
@@ -1110,7 +1110,7 @@
    "family": "idea_concern",
    "asset": "gun_foundry_pour",
    "brief": "A gun foundry where a glowing ladle pours molten steel into a mould for a long barrel, workers in leather aprons shielding their faces. Bold two-colour carved print.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     64,
     64
@@ -1126,7 +1126,7 @@
    "family": "idea_concern",
    "asset": "locomotive_erecting_shop",
    "brief": "A Hungarian locomotive works erecting shop with a steam engine boiler lifted by a crane above its wheels, steam drifting through iron rafters.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     64,
     64
@@ -1142,7 +1142,7 @@
    "family": "idea_concern",
    "asset": "motorcycle_sidecar_row",
    "brief": "A Polish factory floor with motorcycles and sidecar combinations lined up in a row, headlamps shining, workers wiping tanks with rags.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     64,
     64
@@ -1158,7 +1158,7 @@
    "family": "idea_concern",
    "asset": "optics_workshop_lenses",
    "brief": "A Japanese optics workshop bench with binoculars, a rangefinder, polished lenses and brass tools under a single lamp, careful quiet craft. Grainy ink and sepia sketch look.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     64,
     64
@@ -1174,7 +1174,7 @@
    "family": "idea_concern",
    "asset": "pontoon_bridge_sections",
    "brief": "Stacks of steel pontoon bridge sections and girders in an Austrian engineering yard, a crane lifting one over a flowing river.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     64,
     64
@@ -1190,7 +1190,7 @@
    "family": "idea_concern",
    "asset": "radial_engine_test_stand",
    "brief": "A British engine works with a radial aircraft engine on a test stand, propeller blurred, fitters in overalls watching gauges.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     64,
     64
@@ -1206,7 +1206,7 @@
    "family": "idea_concern",
    "asset": "radio_valve_works",
    "brief": "A Dutch radio works bench covered with glowing valves, copper coils, dials and field radio sets in leather cases.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     64,
     64
@@ -1222,7 +1222,7 @@
    "family": "idea_concern",
    "asset": "rifle_armoury_racks",
    "brief": "A Belgian arms factory proof room with rows of bolt-action rifles in racks and a bench of gleaming machined parts and gauges.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     64,
     64
@@ -1238,7 +1238,7 @@
    "family": "idea_concern",
    "asset": "searchlight_signal_works",
    "brief": "A signals works with big searchlight drums, signal lamps and field telephones lined along a workbench, a Turkish factory in warm evening light.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     64,
     64
@@ -1270,7 +1270,7 @@
    "family": "idea_concern",
    "asset": "shipyard_gantry_hulls",
    "brief": "A Scottish shipyard with a great gantry crane over two half-built hulls on slipways, riveters' scaffolding and grey river beyond.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     64,
     64
@@ -1286,7 +1286,7 @@
    "family": "idea_concern",
    "asset": "tank_assembly_hall",
    "brief": "A Czech tank works interior with armoured hulls on rails beneath overhead cranes, welders' sparks and turrets waiting in rows.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     64,
     64
@@ -1302,7 +1302,7 @@
    "family": "idea_concern",
    "asset": "torpedo_shop_cradles",
    "brief": "A naval torpedo workshop with gleaming torpedoes resting in wooden cradles beside a chain hoist, German shipyard interior, damp and bluish light.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     64,
     64
@@ -1318,7 +1318,7 @@
    "family": "idea_concern",
    "asset": "tractor_tank_works",
    "brief": "A Ukrainian tractor works where crawler tractors and early tanks sit side by side on the same assembly line, vast hall and misty light.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     64,
     64
@@ -1334,7 +1334,7 @@
    "family": "idea_concern",
    "asset": "truck_assembly_line",
    "brief": "A line of half-built army lorries on an assembly floor, cabs waiting for engines, tyres stacked against the wall, Italian factory.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     64,
     64
@@ -1926,7 +1926,7 @@
    "family": "decision_category_icon",
    "asset": "anchor_ship_wheel",
    "brief": "A heavy ship's anchor crossed with a wooden helm wheel, emblem of the naval programme.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     52,
     40
@@ -1942,7 +1942,7 @@
    "family": "decision_category_icon",
    "asset": "border_post_barrier",
    "brief": "A striped border post and a lowered barrier gate with coils of barbed wire, grim emblem of border conflicts. Bold two-colour carved print.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     52,
     40
@@ -1958,7 +1958,7 @@
    "family": "decision_category_icon",
    "asset": "colonial_steamship_palm",
    "brief": "A steamship at a tropical jetty with a palm tree and a rolled map, emblem of colonial affairs.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     52,
     40
@@ -1974,7 +1974,7 @@
    "family": "decision_category_icon",
    "asset": "espionage_window_figure",
    "brief": "A silhouette of a trench-coated figure behind a lamp-lit frosted window, a blank cipher disc in the foreground, emblem of espionage.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     52,
     40
@@ -1990,7 +1990,7 @@
    "family": "decision_category_icon",
    "asset": "industrial_gear_chimney",
    "brief": "A large cogwheel in front of a tall smoking factory chimney and a girder frame, emblem of an industrial programme.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     52,
     40
@@ -2006,7 +2006,7 @@
    "family": "decision_category_icon",
    "asset": "propeller_wings",
    "brief": "A two-bladed aircraft propeller flanked by a pair of simple spread wings, emblem of the air programme.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     52,
     40
@@ -2022,7 +2022,7 @@
    "family": "decision_category_icon",
    "asset": "reconstruction_crane",
    "brief": "A tower crane lifting a girder above a half-rebuilt street, rubble at its base, emblem of reconstruction.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     52,
     40
@@ -2038,7 +2038,7 @@
    "family": "decision_category_icon",
    "asset": "relief_bread_soup",
    "brief": "A large soup kettle with a ladle beside loaves of bread and a stack of tin bowls, emblem of relief efforts. Soft flat gouache look.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     52,
     40
@@ -2054,7 +2054,7 @@
    "family": "decision_category_icon",
    "asset": "science_flask_rocket",
    "brief": "A glass laboratory flask with bubbling liquid, an orbiting atom and a small finned rocket, emblem of scientific research.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     52,
     40
@@ -2070,7 +2070,7 @@
    "family": "decision_category_icon",
    "asset": "trade_scales_crates",
    "brief": "A pair of market scales balanced over crates and sacks with a coin on one pan, emblem of trade agreements.",
-   "build": "0.3.3",
+   "build": "0.3.4",
    "size": [
     52,
     40
@@ -2723,6 +2723,198 @@
   },
   {
    "section": "vanilla",
+   "family": "mio_trait",
+   "asset": "field_radio_pack",
+   "brief": "A portable field radio set with dials and a coiled cable and whip antenna, resting on a map case in a Chinese army camp.",
+   "build": "0.3.4",
+   "size": [
+    48,
+    48
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "war",
+   "native": "vanilla/mio_trait/field_radio_pack.webp",
+   "enlarged": "vanilla/mio_trait/field_radio_pack@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "mio_trait",
+   "asset": "gear_cluster",
+   "brief": "A cluster of interlocking steel gears of different sizes with a drip of fresh oil, a reliable transmission built in a Polish workshop.",
+   "build": "0.3.4",
+   "size": [
+    48,
+    48
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "economy",
+   "native": "vanilla/mio_trait/gear_cluster.webp",
+   "enlarged": "vanilla/mio_trait/gear_cluster@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "mio_trait",
+   "asset": "gunsight_reticle",
+   "brief": "A brass telescopic gunsight with a fine crosshair lens glinting, sitting on a green cloth, calm mood.",
+   "build": "0.3.4",
+   "size": [
+    48,
+    48
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/mio_trait/gunsight_reticle.webp",
+   "enlarged": "vanilla/mio_trait/gunsight_reticle@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "mio_trait",
+   "asset": "half_built_prototype",
+   "brief": "A half-assembled prototype vehicle on a workshop bench, tools scattered around it, skeleton frame without panels.",
+   "build": "0.3.4",
+   "size": [
+    48,
+    48
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/mio_trait/half_built_prototype.webp",
+   "enlarged": "vanilla/mio_trait/half_built_prototype@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "mio_trait",
+   "asset": "micrometer_on_shaft",
+   "brief": "A brass micrometer gripping a polished steel shaft, fine shavings curled beside it, precision machining.",
+   "build": "0.3.4",
+   "size": [
+    48,
+    48
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "economy",
+   "native": "vanilla/mio_trait/micrometer_on_shaft.webp",
+   "enlarged": "vanilla/mio_trait/micrometer_on_shaft@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "mio_trait",
+   "asset": "pilot_helmet_goggles",
+   "brief": "A worn leather flying helmet with big goggles resting on a wooden crate beside a propeller blade, warm morning light at a test airfield.",
+   "build": "0.3.4",
+   "size": [
+    48,
+    48
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/mio_trait/pilot_helmet_goggles.webp",
+   "enlarged": "vanilla/mio_trait/pilot_helmet_goggles@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "mio_trait",
+   "asset": "sealed_export_crate",
+   "brief": "A wooden crate tied with ribbon and a red wax seal ready to be loaded on a ship, an export order leaving a Swiss harbour.",
+   "build": "0.3.4",
+   "size": [
+    48,
+    48
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "naval",
+   "native": "vanilla/mio_trait/sealed_export_crate.webp",
+   "enlarged": "vanilla/mio_trait/sealed_export_crate@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "mio_trait",
+   "asset": "smoke_flow_wing",
+   "brief": "A wing section in a wind tunnel with ribbons of smoke flowing smoothly along it, hopeful scientific mood at a French research institute.",
+   "build": "0.3.4",
+   "size": [
+    48,
+    48
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/mio_trait/smoke_flow_wing.webp",
+   "enlarged": "vanilla/mio_trait/smoke_flow_wing@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "mio_trait",
+   "asset": "stamped_parts_line",
+   "brief": "Rows of identical stamped metal parts moving along a factory conveyor belt, cheap quick manufacture in a busy American plant.",
+   "build": "0.3.4",
+   "size": [
+    48,
+    48
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "economy",
+   "native": "vanilla/mio_trait/stamped_parts_line.webp",
+   "enlarged": "vanilla/mio_trait/stamped_parts_line@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "mio_trait",
+   "asset": "thick_sloped_plate",
+   "brief": "A thick sloped armour plate with neat rows of rivets, a bright dent from a test shell in its surface, solid and reassuring mood.",
+   "build": "0.3.4",
+   "size": [
+    48,
+    48
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "war",
+   "native": "vanilla/mio_trait/thick_sloped_plate.webp",
+   "enlarged": "vanilla/mio_trait/thick_sloped_plate@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "mio_trait",
+   "asset": "turbocharged_engine",
+   "brief": "A compact engine block with shining pistons and a snail-shaped turbocharger glowing hot, set on a bench in a Swedish workshop.",
+   "build": "0.3.4",
+   "size": [
+    48,
+    48
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/mio_trait/turbocharged_engine.webp",
+   "enlarged": "vanilla/mio_trait/turbocharged_engine@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "mio_trait",
+   "asset": "welding_torch_sparks",
+   "brief": "A welder's torch throwing a fountain of bright sparks along a hull seam, protective mask hanging nearby, shipyard in Finland.",
+   "build": "0.3.4",
+   "size": [
+    48,
+    48
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "naval",
+   "native": "vanilla/mio_trait/welding_torch_sparks.webp",
+   "enlarged": "vanilla/mio_trait/welding_torch_sparks@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
    "family": "mio_policy",
    "asset": "blueprints_exchanged",
    "brief": "Two pairs of hands passing rolled blueprints to each other across a table in front of two different factory windows, patent sharing, friendly mood.",
@@ -2960,6 +3152,182 @@
    "native": "vanilla/bop_side/wheat_sheaf_scythe.webp",
    "enlarged": "vanilla/bop_side/wheat_sheaf_scythe@2x.webp",
    "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "agency_upgrade",
+   "asset": "chemistry_bench_flasks",
+   "brief": "A lab bench with glass flasks, a dropper and a vial of colourless liquid beside a sheet being warmed, secret writing chemistry.",
+   "build": "0.3.4",
+   "size": [
+    68,
+    68
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/agency_upgrade/chemistry_bench_flasks.webp",
+   "enlarged": "vanilla/agency_upgrade/chemistry_bench_flasks@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "agency_upgrade",
+   "asset": "disguise_wardrobe_rack",
+   "brief": "A dressing room rack of hats, wigs, spectacles and coats of different trades hanging beside a lit mirror, playful mood.",
+   "build": "0.3.4",
+   "size": [
+    68,
+    68
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/agency_upgrade/disguise_wardrobe_rack.webp",
+   "enlarged": "vanilla/agency_upgrade/disguise_wardrobe_rack@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "agency_upgrade",
+   "asset": "engraving_press_workshop",
+   "brief": "An engraver's plate and small press with ink-stained rollers and a magnifying lens, a forgery workshop hidden in a Parisian attic.",
+   "build": "0.3.4",
+   "size": [
+    68,
+    68
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/agency_upgrade/engraving_press_workshop.webp",
+   "enlarged": "vanilla/agency_upgrade/engraving_press_workshop@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "agency_upgrade",
+   "asset": "intercept_operator_antennas",
+   "brief": "A radio operator with headphones at a bank of receivers, a wire antenna array outside the window in a Swedish forest, listening intently.",
+   "build": "0.3.4",
+   "size": [
+    68,
+    68
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/agency_upgrade/intercept_operator_antennas.webp",
+   "enlarged": "vanilla/agency_upgrade/intercept_operator_antennas@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "agency_upgrade",
+   "asset": "microfilm_light_table",
+   "brief": "A tiny roll of microfilm and a magnifying glass over a glowing light table, careful tense mood in a spy lab.",
+   "build": "0.3.4",
+   "size": [
+    68,
+    68
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/agency_upgrade/microfilm_light_table.webp",
+   "enlarged": "vanilla/agency_upgrade/microfilm_light_table@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "agency_upgrade",
+   "asset": "parachute_training_tower",
+   "brief": "A tall wooden parachute training tower with a billowing canopy descending, recruits watching below in a Polish training field.",
+   "build": "0.3.4",
+   "size": [
+    68,
+    68
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/agency_upgrade/parachute_training_tower.webp",
+   "enlarged": "vanilla/agency_upgrade/parachute_training_tower@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "agency_upgrade",
+   "asset": "pocket_watch_camera",
+   "brief": "A miniature camera hidden inside an open pocket watch case on a polished table, clever small gadget, warm mood.",
+   "build": "0.3.4",
+   "size": [
+    68,
+    68
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/agency_upgrade/pocket_watch_camera.webp",
+   "enlarged": "vanilla/agency_upgrade/pocket_watch_camera@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "agency_upgrade",
+   "asset": "rooftop_pigeon_loft",
+   "brief": "A rooftop pigeon loft with carrier pigeons perched at open doors over British chimneys at sunrise.",
+   "build": "0.3.4",
+   "size": [
+    68,
+    68
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/agency_upgrade/rooftop_pigeon_loft.webp",
+   "enlarged": "vanilla/agency_upgrade/rooftop_pigeon_loft@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "agency_upgrade",
+   "asset": "rotor_cipher_desk",
+   "brief": "A rotor cipher machine with lit keys on a desk beside a stack of coded sheets and a banker lamp, quiet intense office mood.",
+   "build": "0.3.4",
+   "size": [
+    68,
+    68
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/agency_upgrade/rotor_cipher_desk.webp",
+   "enlarged": "vanilla/agency_upgrade/rotor_cipher_desk@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "agency_upgrade",
+   "asset": "steel_filing_vault",
+   "brief": "A heavy steel filing cabinet with a large combination lock and thick folders spilling from the top drawer, counterintelligence records room.",
+   "build": "0.3.4",
+   "size": [
+    68,
+    68
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/agency_upgrade/steel_filing_vault.webp",
+   "enlarged": "vanilla/agency_upgrade/steel_filing_vault@3x.webp",
+   "scale": 3
+  },
+  {
+   "section": "vanilla",
+   "family": "agency_upgrade",
+   "asset": "telescope_behind_curtain",
+   "brief": "A brass telescope on a tripod peeking from behind a heavy curtain, overlooking a busy foreign embassy street, watchful mood.",
+   "build": "0.3.4",
+   "size": [
+    68,
+    68
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/agency_upgrade/telescope_behind_curtain.webp",
+   "enlarged": "vanilla/agency_upgrade/telescope_behind_curtain@3x.webp",
+   "scale": 3
   },
   {
    "section": "vanilla",
@@ -5950,6 +6318,358 @@
    "vanilla_check": "pass",
    "subfamily": "all",
    "native": "vanilla/commander_portrait/yugoslav_partisan_commander.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "operative_portrait",
+   "asset": "attic_radio_operator",
+   "brief": "A young woman radio operator with headphones around her neck, hair pinned back, alert and secretive expression.",
+   "build": "0.3.4",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/operative_portrait/attic_radio_operator.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "operative_portrait",
+   "asset": "bicycle_courier_girl",
+   "brief": "A teenage French courier girl in a beret and cardigan, sly innocent smile.",
+   "build": "0.3.4",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/operative_portrait/bicycle_courier_girl.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "operative_portrait",
+   "asset": "bowler_hat_umbrella_officer",
+   "brief": "A British intelligence officer disguised as a city clerk in a bowler hat and dark overcoat, neat moustache, mild expression.",
+   "build": "0.3.4",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/operative_portrait/bowler_hat_umbrella_officer.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "operative_portrait",
+   "asset": "istanbul_cafe_informant",
+   "brief": "A Turkish informant in a fez and rumpled suit, watchful eyes over a thin moustache.",
+   "build": "0.3.4",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/operative_portrait/istanbul_cafe_informant.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "operative_portrait",
+   "asset": "priest_disguise_smuggler",
+   "brief": "A Polish resistance courier disguised as a country priest in a black cassock and wide-brimmed hat, a sharp glance hiding purpose.",
+   "build": "0.3.4",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/operative_portrait/priest_disguise_smuggler.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "operative_portrait",
+   "asset": "shanghai_fedora_agent",
+   "brief": "A Japanese agent in a fedora and tailored western suit, a cigarette at his lips, cool level gaze.",
+   "build": "0.3.4",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/operative_portrait/shanghai_fedora_agent.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "operative_portrait",
+   "asset": "swiss_diplomat_attache",
+   "brief": "A neutral diplomat in a morning coat and wing collar, polished and unreadable expression.",
+   "build": "0.3.4",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/operative_portrait/swiss_diplomat_attache.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "operative_portrait",
+   "asset": "tango_hall_informant",
+   "brief": "An Argentine informant in a white dinner jacket and slicked-back hair, charming smirk with a watchful eye.",
+   "build": "0.3.4",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/operative_portrait/tango_hall_informant.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "operative_portrait",
+   "asset": "thai_fisherman_scout",
+   "brief": "A Thai scout disguised as a fisherman in a conical straw hat and plain collarless shirt, quiet watchful smile.",
+   "build": "0.3.4",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/operative_portrait/thai_fisherman_scout.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "operative_portrait",
+   "asset": "trench_coat_watcher",
+   "brief": "A lean man in a turned-up trench coat and low fedora, face half in shadow, glancing sideways, tense mood.",
+   "build": "0.3.4",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/operative_portrait/trench_coat_watcher.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "scientist_portrait",
+   "asset": "aircraft_designer_drafting",
+   "brief": "An Italian aircraft designer in his forties in a waistcoat and bow tie, pencil tucked behind his ear, confident look.",
+   "build": "0.3.4",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/scientist_portrait/aircraft_designer_drafting.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "scientist_portrait",
+   "asset": "chemist_flask_goggles",
+   "brief": "A British chemist in a white lab coat with safety goggles pushed up on his forehead, curious half smile.",
+   "build": "0.3.4",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/scientist_portrait/chemist_flask_goggles.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "scientist_portrait",
+   "asset": "codebreaker_mathematician",
+   "brief": "A shy British mathematician in a rumpled sweater and wire glasses, intense distracted gaze.",
+   "build": "0.3.4",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/scientist_portrait/codebreaker_mathematician.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "scientist_portrait",
+   "asset": "indian_astronomer_dome",
+   "brief": "An Indian astronomer in a pressed white shirt and waistcoat, gentle composed expression.",
+   "build": "0.3.4",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/scientist_portrait/indian_astronomer_dome.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "scientist_portrait",
+   "asset": "japanese_radio_physicist",
+   "brief": "A Japanese physicist in round glasses and a dark high-collar jacket, quiet concentration.",
+   "build": "0.3.4",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/scientist_portrait/japanese_radio_physicist.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "scientist_portrait",
+   "asset": "nuclear_physicist_blackboard",
+   "brief": "A pensive Danish physicist in a tweed jacket with tousled hair and a pipe, chalk dust on his lapel.",
+   "build": "0.3.4",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/scientist_portrait/nuclear_physicist_blackboard.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "scientist_portrait",
+   "asset": "penicillin_doctor_microscope",
+   "brief": "An Australian woman medical researcher in a white coat, calm hopeful expression.",
+   "build": "0.3.4",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/scientist_portrait/penicillin_doctor_microscope.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "scientist_portrait",
+   "asset": "radar_engineer_antenna",
+   "brief": "An American radar engineer in shirt sleeves and horn-rimmed glasses, windblown hair and an eager look.",
+   "build": "0.3.4",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/scientist_portrait/radar_engineer_antenna.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "scientist_portrait",
+   "asset": "rocket_engineer_blueprints",
+   "brief": "A German-speaking rocket engineer in his thirties, rolled sleeves and a loosened tie, pencil behind his ear, intent expression.",
+   "build": "0.3.4",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/scientist_portrait/rocket_engineer_blueprints.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "scientist_portrait",
+   "asset": "soviet_metallurgist_foundry",
+   "brief": "A broad-shouldered Soviet metallurgist in a leather apron over a work shirt and a cloth cap, stern proud face.",
+   "build": "0.3.4",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/scientist_portrait/soviet_metallurgist_foundry.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "scientist_portrait",
+   "asset": "swedish_geologist_tweed",
+   "brief": "A Swedish geologist in a heavy wool jacket and spectacles, weathered cheeks and a calm gaze.",
+   "build": "0.3.4",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/scientist_portrait/swedish_geologist_tweed.webp",
+   "enlarged": null,
+   "scale": 1
+  },
+  {
+   "section": "vanilla",
+   "family": "scientist_portrait",
+   "asset": "woman_physicist_chamber",
+   "brief": "A French woman physicist in a white lab coat with her hair tied back, thoughtful and radiant.",
+   "build": "0.3.4",
+   "size": [
+    156,
+    210
+   ],
+   "vanilla_check": "pass",
+   "subfamily": "all",
+   "native": "vanilla/scientist_portrait/woman_physicist_chamber.webp",
    "enlarged": null,
    "scale": 1
   },

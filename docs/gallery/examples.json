@@ -14,6 +14,11 @@
   "build": "0.3.1",
   "brief": "A round emblem of a single open eye with a radiating gold iris inside a pyramid-free triangle, on a black disc with a thin gold rim."
  },
+ "agency_upgrade": {
+  "asset": "chemistry_bench_flasks",
+  "build": "0.3.4",
+  "brief": "A lab bench with glass flasks, a dropper and a vial of colourless liquid beside a sheet being warmed, secret writing chemistry."
+ },
  "bop_side": {
   "asset": "anchor_and_rope_standard",
   "build": "0.3.3",
@@ -51,7 +56,7 @@
  },
  "decision_category_icon": {
   "asset": "border_post_barrier",
-  "build": "0.3.3",
+  "build": "0.3.4",
   "brief": "A striped border post and a lowered barrier gate with coils of barbed wire, grim emblem of border conflicts. Bold two-colour carved print."
  },
  "division_emblem": {
@@ -109,6 +114,11 @@
   "build": "0.3.3",
   "brief": "Two pairs of hands passing rolled blueprints to each other across a table in front of two different factory windows, patent sharing, friendly mood."
  },
+ "mio_trait": {
+  "asset": "field_radio_pack",
+  "build": "0.3.4",
+  "brief": "A portable field radio set with dials and a coiled cable and whip antenna, resting on a map case in a Chinese army camp."
+ },
  "modifier_stat_icon": {
   "asset": "air_superiority_fighter",
   "build": "0.3.3",
@@ -134,6 +144,11 @@
   "build": "0.3.3",
   "brief": "A technician in an attic drills into plaster to place a hidden microphone wire, tools laid neatly on a cloth, a single bare bulb overhead."
  },
+ "operative_portrait": {
+  "asset": "attic_radio_operator",
+  "build": "0.3.4",
+  "brief": "A young woman radio operator with headphones around her neck, hair pinned back, alert and secretive expression."
+ },
  "personal_trait": {
   "asset": "bulging_coin_purse",
   "build": "0.3.3",
@@ -148,6 +163,11 @@
   "asset": "brazil_coffee_harvest",
   "build": "0.3.1",
   "brief": "Pickers in straw hats strip coffee cherries on a steep Brazilian hillside plantation, sacks piled beside mule carts, an overseer on horseback watching, warm hazy afternoon."
+ },
+ "scientist_portrait": {
+  "asset": "aircraft_designer_drafting",
+  "build": "0.3.4",
+  "brief": "An Italian aircraft designer in his forties in a waistcoat and bow tie, pencil tucked behind his ear, confident look."
  },
  "special_project_icon": {
   "asset": "carrier_on_slipway",

@@ -29,7 +29,7 @@ Planned with `hoi4.image_icon`.
 
 ### agency_upgrade
 
-*An example follows when hoi4-imagegen 0.3.4 lands. The 0.2.x example was removed.*
+<img src="gallery/agency_upgrade.webp" alt="Example agency_upgrade asset made by hoi4-imagegen" width="204">
 
 **Vanilla form (since 0.3.2, palette since 0.3.4).** Measured on the 15 vanilla upgrades (`agency_cryptology_1`, `agency_invisible_ink`, `agency_portable_radios`): a round disc whose whole face is one simple painted close-up, a semi-realistic 1930s or 1940s illustration. The disc is 52 px across on the 68 px canvas with a one-pixel soft edge, and its edge is darkened to about half the inner value. There is no ring or frame around it. The palette is pale and muted: mean saturation 0.249 and mean value 0.423 in the median file, gold and bronze tones on 11 percent of the disc. The 0.3.2 gallery's upgrades were darker, more saturated and warmer, busy rooms full of small objects. Since 0.3.4 the `vignette` recipe cuts any subject to vanilla's disc, brings its saturation, value and gold tones into vanilla's range and darkens its edge, the rule asks for a light, simple close-up, and the vanilla-match check refuses a saturated, warm medallion. The example above predates these rules and shows a loose object instead.
 
@@ -354,7 +354,7 @@ common/military_industrial_organization/policies/_general_policies.txt:77 icon =
 
 ### mio_trait
 
-*An example follows when hoi4-imagegen 0.3.4 lands. The 0.2.x example was removed.*
+<img src="gallery/mio_trait.webp" alt="Example mio_trait asset made by hoi4-imagegen" width="144">
 
 **Vanilla form (since 0.3.2, flat glyph since 0.3.4).** Measured on the 44 vanilla trait icons (`generic_mio_trait_icon_armor_value`, `generic_mio_trait_icon_detection`, `generic_mio_trait_icon_build_cost_ic`): one small, simple glyph of one object or symbol, often with a small accent sign such as a green plus or a red target ring. Inside the glyph the tones are light and flat: mean value 0.50 in the median file, 6 percent dark and 15 percent light pixels, about 14 colours for most of the glyph. Every file has a dark outline and a soft dark shadow, which is about half of the visible pixels, and about 29 percent of the canvas is covered. There is no badge or disc behind the object. The 0.3.2 gallery's traits had as few colours but were dark painted objects with little light area, so since 0.3.4 the rule asks for a flat, light glyph without texture or small parts. The colour count already matches vanilla, so no posterising step is added. The rule before 0.3.2 asked for a round badge, which vanilla does not use.
 
@@ -796,7 +796,7 @@ common/characters/*.txt: 2,045 of 2,047 large values are full GFX_ names (interf
 
 ### operative_portrait
 
-*An example follows when hoi4-imagegen 0.3.4 lands. The 0.2.x example was removed.*
+<img src="gallery/operative_portrait.webp" alt="Example operative_portrait asset made by hoi4-imagegen" width="156">
 
 **Vanilla backdrop (since 0.3.4).** Vanilla's operative portraits are La Resistance's 163 `portrait_*_operative_*` files at 156x210 (`dlc/dlc028_la_resistance/gfx/leaders/<region>/`). All of them share one backdrop: a dark warm charcoal studio background (about RGB 34, 31, 24 in the top corners, L*a*b* 11.9, -0.1, 5.3) with a soft lighter spotlight behind the figure. The glow is centred behind the head and shoulders and is lightest beside the shoulders (about RGB 95, 92, 85 at two thirds of the height, 17.1 to 29.2 lighter in L* than the corners). The family's vanilla references and its vanilla-match check use these files and a mod's own operatives folder. The base game's grey `operative_unknown` silhouette is a placeholder and is not used. The rule asks for this backdrop. The `backdrop` check warns when the top corners are more than 15 away from it, or when the side band is less than 15 lighter than the corners, as on the gallery's two operatives (0.2 and 11.4): dark but evenly lit.
 
@@ -824,7 +824,7 @@ common/characters/*.txt: 2,045 of 2,047 large values are full GFX_ names (interf
 
 ### scientist_portrait
 
-*An example follows when hoi4-imagegen 0.3.4 lands. The 0.2.x example was removed.*
+<img src="gallery/scientist_portrait.webp" alt="Example scientist_portrait asset made by hoi4-imagegen" width="156">
 
 **Vanilla backdrop (since 0.3.4).** All 217 vanilla scientist portraits (`gfx/leaders/scientists`) share one backdrop: a plain pale blue-grey studio background lit from the upper left (about RGB 135, 171, 193 at the top left, L*a*b* 66.0, -7.2, -14.4 in the top corners) and darker toward the lower right (about 93, 129, 151). It is not the leaders' cream. The family's vanilla references and its vanilla-match check now use only this folder, the rule names the backdrop, and the `backdrop` check warns when the top corners are more than 15 away from it.
 
