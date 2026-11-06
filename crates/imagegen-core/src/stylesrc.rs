@@ -638,6 +638,11 @@ pub fn vanilla_files(game: &Path, family: Family, sizes: &[[u32; 2]]) -> Vec<Pat
     scan_game(game, &texture_dirs(family, None), sizes, &RASTER)
 }
 
+/// The vanilla GUI texture files of one texture kind, as [`vanilla_files`] (any size).
+pub fn vanilla_kind_files(game: &Path, kind: GuiTextureKind) -> Vec<PathBuf> {
+    scan_game(game, &texture_dirs(Family::GuiTexture, Some(kind)), &[], &RASTER)
+}
+
 fn unify(p: &str) -> String {
     p.replace('\\', "/")
 }

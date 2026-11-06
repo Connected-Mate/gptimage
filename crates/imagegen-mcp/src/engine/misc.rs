@@ -296,6 +296,17 @@ impl Engine {
                 self.save_pack(pack, p.replace.unwrap_or(false))
             }
             ReferencesAction::PackValidate => self.pack_validate(&need(&p.name, "name")?),
+            ReferencesAction::PackDerive => {
+                let o = super::derive::DeriveOptions {
+                    from_mod: p.from_mod.as_deref().map(std::path::PathBuf::from),
+                    families: p.families.clone().unwrap_or_default(),
+                    picks: p.picks,
+                    swap: p.swap.clone().unwrap_or_default(),
+                    drop: p.drop.clone().unwrap_or_default(),
+                    replace: p.replace.unwrap_or(false),
+                };
+                self.derive_pack(&need(&p.name, "name")?, &o)
+            }
         }
     }
 

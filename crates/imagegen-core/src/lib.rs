@@ -15,6 +15,7 @@ pub mod calibrate;
 pub mod chain;
 pub mod config;
 pub mod dds;
+pub mod derive;
 pub mod diversity;
 pub mod error;
 pub mod export;

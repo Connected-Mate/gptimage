@@ -19,6 +19,7 @@ use serde_json::Value;
 
 pub mod audit;
 pub mod autostyle;
+pub mod derive;
 pub mod diversity;
 pub mod finish;
 pub mod generate;

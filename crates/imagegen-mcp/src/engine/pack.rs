@@ -349,6 +349,7 @@ impl Engine {
                 (sw.keep_colours, "keep_colours", "the vanilla counter rules ask for a black silhouette that the tool recolours"),
                 (sw.upright_print, "upright_print", "the vanilla report rules say the tool adds the tilt and frame"),
                 (sw.fill_canvas, "fill_canvas", "the vanilla rules ask for a transparent background"),
+                (sw.in_colour, "in_colour", "the vanilla rules ask for a black and white picture"),
             ];
             for (on, what, why) in needs_form {
                 if on && e.form.is_empty() {

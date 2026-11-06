@@ -107,6 +107,31 @@ pub enum PackCommand {
         #[arg(long)]
         replace: bool,
     },
+    /// Make a pack from a mod's own art in one step: per family, drop near-copies of vanilla and placeholders, rank
+    /// by distance from vanilla's style, pick a diverse set, detect the canvas, draft the look, form and switches, and
+    /// write a contact sheet per family for review. Swap picks after review and run it again with --replace.
+    Derive {
+        /// Pack name (snake_case).
+        name: String,
+        /// The mod folder to read (the one holding gfx/); the project itself when left out.
+        #[arg(long)]
+        from_mod: Option<PathBuf>,
+        /// Only these families, comma-separated (for example focus,decision). Other families of a replaced pack are kept.
+        #[arg(long, value_delimiter = ',')]
+        families: Vec<String>,
+        /// References per family (1 to 16, default 8).
+        #[arg(long)]
+        picks: Option<usize>,
+        /// Put an alternate (or a file of the mod) in place of a pick: focus:3=a2, or focus:3=gfx/interface/goals/x.dds. Repeatable.
+        #[arg(long)]
+        swap: Vec<String>,
+        /// Leave a pick out: focus:3. Repeatable.
+        #[arg(long)]
+        drop: Vec<String>,
+        /// Derive over an existing pack (its file is backed up).
+        #[arg(long)]
+        replace: bool,
+    },
     /// List the saved packs and the project's default.
     List,
     /// Print one pack.
@@ -346,6 +371,21 @@ pub fn execute(engine: &Engine, cli: &Cli, out: &mut dyn Write) -> i32 {
             PackCommand::Import { name, from, top_family, replace } => {
                 let top = top_family.as_deref().map(str::parse::<imagegen_core::Family>).transpose().map_err(EngineError::from)?;
                 let v = engine.import_pack_folder(name, from, top, *replace)?;
+                let ok = v["validation"]["ok"] == json!(true);
+                Ok((v, i32::from(!ok), None))
+            }
+            PackCommand::Derive { name, from_mod, families, picks, swap, drop, replace } => {
+                let families =
+                    families.iter().map(|f| f.trim().parse::<imagegen_core::Family>()).collect::<Result<Vec<_>, _>>().map_err(EngineError::from)?;
+                let o = imagegen_mcp::engine::derive::DeriveOptions {
+                    from_mod: from_mod.clone(),
+                    families,
+                    picks: *picks,
+                    swap: swap.clone(),
+                    drop: drop.clone(),
+                    replace: *replace,
+                };
+                let v = engine.derive_pack(name, &o)?;
                 let ok = v["validation"]["ok"] == json!(true);
                 Ok((v, i32::from(!ok), None))
             }

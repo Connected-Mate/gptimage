@@ -223,6 +223,10 @@ pub enum ReferencesAction {
     /// Check a saved style pack: pinned hashes, switches, and per family the references' sizes and how well they agree
     /// with each other (the review's pack-match check, left one out).
     PackValidate,
+    /// Make a style pack from a mod's own art in one step: scan its `gfx/` folders per family, drop near-copies of
+    /// vanilla and placeholders, rank by distance from vanilla's style, pick a diverse set, detect the canvas, draft
+    /// the look, form and processing switches, write contact sheets for review and save the pack.
+    PackDerive,
 }
 
 /// `hoi4.image_references`
@@ -255,6 +259,24 @@ pub struct ReferencesParams {
     /// Style pack to save (`pack_save`). Reference hashes are filled in for you.
     #[serde(default)]
     pub pack: Option<imagegen_core::pack::StylePack>,
+    /// Folder of the mod whose art the pack is derived from (`pack_derive`); the project itself when absent. Only
+    /// image files under its `gfx/` folder are read.
+    #[serde(default)]
+    pub from_mod: Option<String>,
+    /// Families to derive (`pack_derive`); every family it covers when absent. Other families of a replaced pack
+    /// are kept.
+    #[serde(default)]
+    pub families: Option<Vec<imagegen_core::family::Family>>,
+    /// References per family (`pack_derive`), 1 to 16, default 8.
+    #[serde(default)]
+    pub picks: Option<usize>,
+    /// Swaps after review (`pack_derive`): `focus:3=a2` puts alternate 2 in place of pick 3, `focus:3=<path in the
+    /// mod>` a file of the family.
+    #[serde(default)]
+    pub swap: Option<Vec<String>>,
+    /// Picks to leave out after review (`pack_derive`): `focus:3`.
+    #[serde(default)]
+    pub drop: Option<Vec<String>>,
 }
 
 /// `hoi4.image_generate`

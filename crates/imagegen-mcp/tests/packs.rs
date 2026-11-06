@@ -394,6 +394,28 @@ fn a_pack_canvas_makes_a_tall_news_strip() {
 }
 
 #[test]
+fn in_colour_keeps_a_colour_news_strip_in_colour() {
+    let h = openai_harness();
+    let form = "A full-colour photograph that fills the whole frame, composed for a {w}x{h} crop.";
+    save_pack(
+        &h,
+        json!({"name": "house", "families": {"news_event": {"look": "colour press photo", "canvas": [400, 150], "form": [form], "processing": {"in_colour": true}}}}),
+    );
+    let plan = h.engine.plan(request("news_event", json!({"style_pack": "house"}))).unwrap();
+    assert!(plan.prompt.text.contains("full-colour photograph") && !plan.prompt.text.contains("black and white press photograph"));
+    let made = import(&h, "news_event", &gradient(800, 300), json!({"style_pack": "house"})).unwrap();
+    let out = pixels(&h, made["path"].as_str().unwrap());
+    assert_eq!((out.width, out.height), (400, 150));
+    assert!(out.data.chunks_exact(4).any(|p| p[0] != p[2]), "no grayscale step: the colour stays");
+    assert_eq!(validated(&h, made["artifact_id"].as_str().unwrap())["status"], "pass");
+    let err = references(
+        &h,
+        json!({"action": "pack_save", "replace": true, "pack": {"name": "house", "families": {"decision": {"processing": {"in_colour": true}}}}}),
+    );
+    assert!(err.unwrap_err().message.contains("in_colour does not apply to decision"));
+}
+
+#[test]
 fn fill_canvas_and_a_form_override_replace_the_technology_side_view() {
     let h = openai_harness();
     let panel = Rgba::filled(1000, 490, [10, 20, 24, 255]);

@@ -159,7 +159,65 @@ The family's rules already describe vanilla's form, so the brief only names the 
 
 ## 5. Make a style pack for a mod with its own look
 
-A style pack gives every family the mod restyles its own references, look line, form, canvas and processing (see [style packs](reference.md#style-packs)). The example is a mod like The New Order (TNO), whose interface is a teal terminal and whose events are upright prints and tall press strips.
+A style pack gives every family the mod restyles its own references, look line, form, canvas and processing (see [style packs](reference.md#style-packs)). One command builds it from the mod's own art. The examples use The Fire Rises (TFR), whose interface is built from modern news photography, and The New Order (TNO), whose interface is a teal terminal.
+
+### The quick way: derive the pack from the mod
+
+1. **Derive it.** Point the command at the mod folder (the one that holds `gfx/`). Leave out `--from-mod` to use the mod you are working in.
+
+   ```
+   hoi4-imagegen --project-root path/to/your-mod pack derive tfr --from-mod "path/to/The Fire Rises"
+   ```
+
+   An agent calls `hoi4.image_references` with `{"action": "pack_derive", "name": "tfr", "from_mod": "path/to/The Fire Rises"}`.
+
+   For each family it covers, the command:
+
+   * reads the family's folder in the mod (`gfx/interface/goals` for focus icons and so on), leaving out files named as placeholders, interface parts (backgrounds, frames, progress bars) and other families (advisor portraits in the ideas folder),
+   * finds the mod's own canvas, the most common size among its files (TFR's focus icons are 170x150, vanilla's 100x88),
+   * drops near-copies of vanilla (within 12 dHash bits of any vanilla file of the family), exact duplicates and blank files,
+   * ranks the rest by how far they are from vanilla's style and how typical they are of the mod,
+   * picks 8 that differ from each other (one from each style cluster first, at most two from one country folder),
+   * writes a draft look line and the processing switches the measurements call for, with a draft form line where a switch needs one,
+   * and skips a family with too few files, or whose art is mostly vanilla's, saying why.
+
+   The references are copied into your mod as PNG under `.hoi4-imagegen/packs/<name>/` and pinned. `derive.json` beside `pack.toml` records every figure, pick and alternate. The first run reads the game's art and the mod's, and can take ten minutes or more. Later runs reuse the measurements kept in your cache folder and take seconds.
+
+2. **Review the contact sheets.** The reply names a sheet per family (`families.<family>.sheet`). They show vanilla art, so they are written to your cache folder, never into the mod. The grey row is vanilla, the yellow row the picks (numbered from 1) and the blue rows the alternates (numbered from 1, written `a1`, `a2` and so on).
+
+   This step needs a person or an agent looking at the pictures, because a measurement cannot see what they show. Swap out any pick that shows:
+
+   * an extremist symbol or flag (swastikas, SS insignia, jihadist flags),
+   * a recognisable real person,
+   * a placeholder, or a near-duplicate of another pick,
+   * art that belongs to another family.
+
+3. **Swap and rebuild.** Name the swaps and run the command again with `--replace`. The run repeats exactly, so the numbers on the sheet stay the same.
+
+   ```
+   hoi4-imagegen --project-root path/to/your-mod pack derive tfr --from-mod "path/to/The Fire Rises" --replace --swap focus:3=a2 --swap decision:5=a1 --drop leader_portrait:4
+   ```
+
+   `focus:3=a2` puts alternate 2 in place of pick 3. `focus:3=gfx/interface/goals/GER/x.dds` takes a file by its path in the mod. `--drop` leaves a pick out. `--families focus,decision` derives only those families and keeps the rest of the pack. `--picks 12` takes more references per family (at most 16). Agents pass `swap`, `drop`, `families`, `picks` and `replace` to `pack_derive`.
+
+4. **Read the look lines.** Each family's `look` is a draft from the measurements, for example `saturated colour led by red and azure, a cut-out subject on a transparent background, square 170x150 shape`. It names colour, brightness, coverage, texture and shape, but not the subject matter. Add what the sheet shows in `pack.toml`, for TFR's focus icons "cut-out modern news photo collage with flags, red and electric blue glow".
+
+5. **Check and use it.** `hoi4-imagegen pack validate tfr` checks the hashes and switches and how well each family's references agree. Then name the pack in a plan (`"style_pack": "tfr"`, or `--style-pack tfr`), or make it the project default:
+
+   ```toml
+   [defaults]
+   style_pack = "tfr"
+   ```
+
+   Read `style_pack` in the plan: the entry that applied, the references sent and the switches. Families the pack does not cover keep the vanilla look. `"style_pack": "none"` plans one asset without the default.
+
+6. **Review against the pack.** The preview shows the pack's references beside the candidate, and the review measures the file against them (`reference_set` in the reply). Flat references get a range at least one shade wide in each colour feature, and unit art is not failed on its middle-value share (see [the review with a pack](reference.md#the-review-with-a-pack)).
+
+If you change a reference file, save the pack again to pin it: a plan refuses a changed file. Pack references are another mod's art when you derive from another mod: keep them in your mod's working folder, and do not publish them beyond what that mod's own terms allow.
+
+### The manual way: pick the references yourself
+
+Use this when the mod keeps its art in folders the command does not read, or when you want full control.
 
 1. **Pick the references.** Gather about 8 images per family from the mod's own files, the ones that show its look best and are not near-copies of vanilla. Put them in a folder with one sub-folder per family id:
 
@@ -212,24 +270,11 @@ A style pack gives every family the mod restyles its own references, look line, 
    processing = { crisp = true }
    ```
 
-   Keep the keys that are already in each family's table (`look` and the `references` list) and add these to it.
+   Keep the keys that are already in each family's table (`look` and the `references` list) and add these to it. A mod whose news strips are colour photographs, such as TFR, adds `processing = { in_colour = true }` and a form line to `news_event`, because the vanilla chain greys news pictures.
 
    With `keep_colours` and the family's references in the pack, counters and division emblems also get the references' look by default (since 0.3.6): the glyph is scaled to the references' glyph size, its colours are snapped to the palette measured on them (`snap_palette`) and their soft edge glow is drawn (`edge_glow`). A colour the references do not have, such as TNO's salmon for naval units, is kept. Set `snap_palette = false` or `edge_glow = false` in `processing` to turn either off, for example when the references mix several house colours you do not want a glyph pulled to. The process reply lists the `palette_snap` and `edge_glow` steps with the palette, the glow and the reference hashes.
 
-4. **Check it.** `hoi4-imagegen pack validate tno` checks the hashes and the switches, warns about a switch without a form, and shows each family's checks, recipe and self-check (how many references pass ranges fitted on the others).
-
-5. **Use it.** Name it in a plan (`"style_pack": "tno"`, or `--style-pack tno` with `hoi4-imagegen plan`), or make it the project default in `.hoi4-imagegen/config.toml`:
-
-   ```toml
-   [defaults]
-   style_pack = "tno"
-   ```
-
-   Read `style_pack` in the plan: the entry that applied, the references sent and the switches. Families the pack does not cover keep the vanilla look. `"style_pack": "none"` plans one asset without the default.
-
-6. **Review against the pack.** The preview shows the pack's references beside the candidate, and the review measures the file against them (`reference_set` in the reply). A TNO-style image no longer needs an override for differing from vanilla. Flat references get a range at least one shade wide in each colour feature, and unit art is not failed on its middle-value share (see [the review with a pack](reference.md#the-review-with-a-pack)). Counters processed with 0.3.5 have recipe `kept_unit_art` v1: process their source candidate again to get the palette and the glow, since validation asks for v2.
-
-If you change a reference file, save the pack again to pin it: a plan refuses a changed file. Pack references are the mod's own art: keep them in the mod and do not share them beyond what the mod's own terms allow.
+4. **Check and use it** as in steps 5 and 6 of the quick way. Counters processed with 0.3.5 have recipe `kept_unit_art` v1: process their source candidate again to get the palette and the glow, since validation asks for v2.
 
 ## 6. Before you publish a mod
 

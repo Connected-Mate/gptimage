@@ -122,7 +122,19 @@ impl Engine {
 
     /// Where vanilla comparison sheets go: outside the mod, in the user's cache folder.
     fn vanilla_sheet_dir(&self) -> Option<PathBuf> {
-        let base = if let Some(d) = self.env.get("HOI4_IMAGEGEN_CACHE_DIR") {
+        self.project_cache_dir("vanilla-compare")
+    }
+
+    /// A folder of this project's in the user's cache folder (`HOI4_IMAGEGEN_CACHE_DIR`, else the platform cache
+    /// folder), for files that may hold vanilla pixels and so never go into the mod.
+    pub(crate) fn project_cache_dir(&self, what: &str) -> Option<PathBuf> {
+        let project = sha256_hex(display_path(self.fs.root()).as_bytes());
+        Some(self.user_cache_dir()?.join(what).join(&project[..12]))
+    }
+
+    /// The user's cache folder (`HOI4_IMAGEGEN_CACHE_DIR`, else the platform cache folder).
+    pub(crate) fn user_cache_dir(&self) -> Option<PathBuf> {
+        Some(if let Some(d) = self.env.get("HOI4_IMAGEGEN_CACHE_DIR") {
             PathBuf::from(d)
         } else if let Some(d) = self.env.get("LOCALAPPDATA") {
             PathBuf::from(d).join("hoi4-imagegen").join("cache")
@@ -130,9 +142,7 @@ impl Engine {
             PathBuf::from(d).join("hoi4-imagegen")
         } else {
             PathBuf::from(self.env.get("HOME")?).join(".cache").join("hoi4-imagegen")
-        };
-        let project = sha256_hex(display_path(self.fs.root()).as_bytes());
-        Some(base.join("vanilla-compare").join(&project[..12]))
+        })
     }
 
     /// The side-by-side sheet: the candidate at native size and enlarged, beside the family's most typical vanilla

@@ -96,6 +96,11 @@ pub struct ProcessingSwitches {
     /// left out because thin green lines are the style, not a key colour.
     #[serde(default, skip_serializing_if = "is_false")]
     pub crisp: bool,
+    /// Families the vanilla chain turns grey (`news_event`, `special_project_icon`): keep the art in colour, with no
+    /// `grayscale` step. TFR draws its 400x150 news strips as colour photographs (median saturation 0.32 over the
+    /// mod's strips, vanilla's 0.00).
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub in_colour: bool,
     /// With `keep_colours`: snap each glyph pixel to the palette measured on the pack's references for the family
     /// (fill, outline and accent colours), alpha kept. On by default with `keep_colours` (`None`), `false` turns it
     /// off, and it cannot be set without `keep_colours`. Needs the family's references; it never runs without a pack.
@@ -143,6 +148,9 @@ impl ProcessingSwitches {
         }
         if self.crisp {
             out.push("crisp");
+        }
+        if self.in_colour {
+            out.push("in_colour");
         }
         out
     }
@@ -256,6 +264,7 @@ pub fn switch_applies(switch: &str, profile: &Profile) -> bool {
         "fill_canvas" => recipe == Recipe::Icon,
         "crisp" => matches!(recipe, Recipe::Icon | Recipe::UnitCounter | Recipe::DivisionSymbol),
         "snap_palette" | "edge_glow" => matches!(recipe, Recipe::UnitCounter | Recipe::DivisionSymbol),
+        "in_colour" => base_of(profile).imagegen.grayscale,
         _ => false,
     }
 }
@@ -439,6 +448,9 @@ pub fn apply_profile(base: &Profile, pack: &str, entry: &PackEntry) -> Profile {
     }
     if sw.crisp {
         drop.push("fringe");
+    }
+    if sw.in_colour {
+        p.imagegen.grayscale = false;
     }
     if !entry.form.is_empty() {
         // the side-view check measures vanilla's technology form, which the pack's form replaces
