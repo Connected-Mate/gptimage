@@ -23,7 +23,8 @@ jobs:
       matrix:
         include:
           - { target: x86_64-pc-windows-msvc, os: windows-latest, ext: zip }
-          - { target: aarch64-apple-darwin, os: macos-15, ext: tar.gz }
+          # cross-compiled on the Intel runner: arm64 macOS runners stopped starting for this repository on 2026-11-06
+          - { target: aarch64-apple-darwin, os: macos-15-intel, ext: tar.gz, cross: true }
           - { target: x86_64-apple-darwin, os: macos-15-intel, ext: tar.gz }
           - { target: x86_64-unknown-linux-gnu, os: ubuntu-22.04, ext: tar.gz }
           - { target: aarch64-unknown-linux-gnu, os: ubuntu-22.04-arm, ext: tar.gz }
@@ -54,6 +55,8 @@ jobs:
             tar -czf "$name.tar.gz" "$name"
           fi
       - name: Smoke test
+        # a cross-compiled binary cannot run on the build machine
+        if: ${{ !matrix.cross }}
         shell: bash
         run: |
           set -eu
