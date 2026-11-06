@@ -406,7 +406,7 @@ The check is a gate, not a verdict. Art that looks wrong in a way these features
 
 **Override.** A deliberate mod style can be approved past a failing or unavailable check with `"override_vanilla_check": true` and an `"override_reason"` of 10 to 1000 characters. Both are recorded in the ledger and the reply (`vanilla_override`, with the status it overrode). Every review, approving or not, records the check it ran (`vanilla_check`).
 
-**Rubric v3.** Every group's questions are asked against the vanilla references in the preview: same form, same medium and palette, same framing (icons), same composition and angle (pictures), and so on. `hoi4.image_families` lists them. Reviews recorded under v1 and v2 stay readable.
+**Rubric v3.** Every group's questions are asked against the vanilla references in the preview: same form, same medium and palette, same framing (icons), same composition and angle (pictures), and so on. `hoi4.image_families` lists them. Every v3 rubric also starts with `shows_brief_subject`: does the image show the subject the brief asks for, with nothing that contradicts it? No measured check can judge the subject, so an approval needs this answer `true` like the others. The review reply quotes the brief under `subject` (for imported art, which has no brief, the asset's name). Reviews recorded under v1 and v2 stay readable.
 
 ## Providers
 

@@ -122,6 +122,13 @@ fn install_refuses_until_validation_review_and_hashes_are_in_order() {
     let e = review("approved", json!(partial)).unwrap_err();
     assert_eq!(e.code, "review_incomplete");
     assert!(e.message.contains("vanilla_form") && e.message.contains("no_text_or_watermark"));
+    // the subject question is required, and the refusal and the reply quote the brief it is answered against
+    let mut no_subject = answers.clone();
+    no_subject.remove("shows_brief_subject");
+    let e = review("approved", json!(no_subject)).unwrap_err();
+    assert_eq!(e.code, "review_incomplete");
+    assert!(e.message.contains("shows_brief_subject"), "{e}");
+    assert_eq!(e.details.as_ref().unwrap()["subject"]["brief"], "a riveted steel gate under a red banner");
     // a rejection issues no approval
     let rej = review("rejected", json!(partial)).unwrap();
     assert!(rej["approval_id"].is_null());
@@ -130,6 +137,7 @@ fn install_refuses_until_validation_review_and_hashes_are_in_order() {
 
     // a real approval opens the gate...
     let approved = review("approved", json!(answers)).unwrap();
+    assert_eq!(approved["subject"]["answer"], true);
     // the override and its reason are in the reply and the ledger
     assert_eq!(approved["vanilla_override"]["reason"], "synthetic test art, no installed game");
     assert_eq!(approved["vanilla_override"]["status_overridden"], "unavailable");

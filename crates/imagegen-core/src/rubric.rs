@@ -8,6 +8,10 @@
 //! the candidate, because the 0.3.1 questions ("does the style match the approved references?") let a reviewer
 //! approve art that looked nothing like vanilla. The answers are no longer enough on their own: the review also runs
 //! the measured vanilla-match check (`crate::vanillamatch`). v1 and v2 stay readable for reviews recorded earlier.
+//!
+//! Every v3 rubric starts with [`SUBJECT`]: does the image show what the brief asks for? The measured checks compare
+//! form, medium and framing with vanilla, and none of them can tell a tank from a tractor, so subject fidelity is a
+//! reviewer's answer that an approval needs. The review reply quotes the brief beside the question.
 
 use serde_json::Value;
 
@@ -108,11 +112,17 @@ const NO_TEXT: Question = (
 const READABLE: Question =
     ("readable_at_native_size", "Is the subject recognizable at the native game size (the 1x panels), as the vanilla references are?");
 const PERIOD: Question = ("period_and_theme_fit", "Does it fit the period and the theme of the feature?");
+/// The subject question of every v3 rubric.
+pub const SUBJECT: Question = (
+    "shows_brief_subject",
+    "Does the image show the subject the brief asks for (the review reply quotes the brief), with nothing that contradicts it? The measured checks cannot judge this.",
+);
 
 /// icon_v3: form, medium and framing against the vanilla references beside the candidate.
-const ICON_V3: &[Question] = &[VANILLA_FORM, VANILLA_MEDIUM, VANILLA_FRAMING, READABLE, NO_TEXT, PERIOD];
+const ICON_V3: &[Question] = &[SUBJECT, VANILLA_FORM, VANILLA_MEDIUM, VANILLA_FRAMING, READABLE, NO_TEXT, PERIOD];
 
 const PICTURE_V3: &[Question] = &[
+    SUBJECT,
     (
         "vanilla_composition",
         "Next to the vanilla references in the preview, does it use the same composition, crop and viewing angle (for example technology pictures at vanilla's fixed side angle), filling the frame the way they do?",
@@ -127,6 +137,7 @@ const PICTURE_V3: &[Question] = &[
 ];
 
 const PORTRAIT_V3: &[Question] = &[
+    SUBJECT,
     ("vanilla_framing", "Next to the vanilla references in the preview, are the head and shoulders framed at the same size and position?"),
     ("vanilla_medium", "Next to the vanilla references, is it painted in the same style, palette and lighting?"),
     ("face_natural", "Does the face look natural, without generation artifacts?"),
@@ -135,6 +146,7 @@ const PORTRAIT_V3: &[Question] = &[
 ];
 
 const FLAG_V3: &[Question] = &[
+    SUBJECT,
     (
         "vanilla_style",
         "Next to the vanilla references in the preview, is it a flat flag design in the same style (simple fields and emblems, no photo texture, no folds or pole)?",
@@ -146,6 +158,7 @@ const FLAG_V3: &[Question] = &[
 ];
 
 const UNIT_V3: &[Question] = &[
+    SUBJECT,
     VANILLA_FORM,
     ("vanilla_medium", "Next to the vanilla references, does it have the same colouring and processing (for example vanilla's green unit counters)?"),
     ("frames_consistent", "Do all frames share the same size, position and style, and does the strip read correctly frame by frame?"),
@@ -154,6 +167,7 @@ const UNIT_V3: &[Question] = &[
 ];
 
 const INTERFACE_V3: &[Question] = &[
+    SUBJECT,
     (
         "vanilla_style",
         "Next to the vanilla interface references in the preview (buttons, frames, panels, backgrounds), is it in the same style and material?",
@@ -163,6 +177,7 @@ const INTERFACE_V3: &[Question] = &[
 ];
 
 const ANIMATION_V3: &[Question] = &[
+    SUBJECT,
     ("vanilla_style", "Next to the vanilla references or the surrounding interface, is it in the same style, palette and brightness?"),
     ("readable_at_native_size", "Is the subject recognizable at the native game size in every frame (look at the 1x contact sheet)?"),
     (
@@ -175,6 +190,7 @@ const ANIMATION_V3: &[Question] = &[
 ];
 
 const GENERIC_V3: &[Question] = &[
+    SUBJECT,
     ("vanilla_style", "Next to the vanilla references in the preview, is it in the same form, medium and framing?"),
     ("looks_correct", "Does the art look right for its surface at the native size?"),
     ("no_text_or_watermark", "Is it free of text and watermarks?"),
@@ -246,6 +262,21 @@ pub fn check_answers(rubric: &str, answers: &Value) -> AnswerCheck {
 mod tests {
     use super::*;
     use serde_json::json;
+
+    #[test]
+    fn every_v3_rubric_asks_for_the_brief_subject_and_an_approval_needs_it() {
+        for g in ["icon", "picture", "portrait", "flag", "unit", "interface", "animation", "other"] {
+            let id = format!("{g}_v3");
+            assert_eq!(questions(&id)[0], SUBJECT, "{id}");
+            let mut answers: serde_json::Map<String, Value> = questions(&id).iter().map(|(k, _)| (k.to_string(), json!(true))).collect();
+            assert!(check_answers(&id, &Value::Object(answers.clone())).all_true());
+            answers.remove(SUBJECT.0);
+            assert_eq!(check_answers(&id, &Value::Object(answers.clone())).missing, vec![SUBJECT.0], "{id}");
+            answers.insert(SUBJECT.0.into(), json!(false));
+            assert_eq!(check_answers(&id, &Value::Object(answers)).failed, vec![SUBJECT.0], "{id}");
+        }
+        assert!(!questions("icon_v2").contains(&SUBJECT), "reviews recorded under v2 keep their questions");
+    }
 
     #[test]
     fn every_group_has_its_rubric_and_every_family_resolves_to_a_real_one() {

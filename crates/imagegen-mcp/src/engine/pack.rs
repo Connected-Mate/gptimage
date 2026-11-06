@@ -143,6 +143,11 @@ impl Engine {
         if a.family != Family::GuiTexture {
             return None;
         }
+        self.artifact_plan(a)?.request.texture_kind
+    }
+
+    /// The plan an artifact was made from, following edits back to the planned candidate. `None` for imported art.
+    pub(crate) fn artifact_plan(&self, a: &Artifact) -> Option<imagegen_core::plan::Plan> {
         let entries = self.ledger.entries().ok()?;
         let mut id = a.root_id.clone();
         for _ in 0..16 {
@@ -152,7 +157,7 @@ impl Engine {
                 .find(|e| e.artifact_id.as_deref() == Some(id.as_str()))
                 .and_then(|e| serde_json::from_value(e.data.clone()).ok())?;
             if let Some(plan_id) = &rec.plan_id {
-                return self.load_plan(plan_id).ok()?.request.texture_kind;
+                return self.load_plan(plan_id).ok();
             }
             id = imagegen_core::naming::ArtifactId::parse(rec.parent.as_deref()?).ok()?.raw_id();
         }

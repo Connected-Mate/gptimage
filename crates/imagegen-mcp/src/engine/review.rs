@@ -56,6 +56,15 @@ impl Engine {
             return Err(EngineError::invalid("answers must be an object of {question: true|false}"));
         }
         let questions: Vec<Value> = rubric::questions(&rubric_id).iter().map(|(k, q)| json!({"key": k, "question": q})).collect();
+        // the brief the subject question is answered against: the plan's, or for imported art the asset's name
+        let subject = match self.artifact_plan(&artifact) {
+            Some(plan) => {
+                json!({"key": rubric::SUBJECT.0, "brief": plan.request.brief, "asset": artifact.asset, "answer": answers.get(rubric::SUBJECT.0)})
+            }
+            None => {
+                json!({"key": rubric::SUBJECT.0, "brief": null, "asset": artifact.asset, "answer": answers.get(rubric::SUBJECT.0), "note": "imported art has no brief: judge it against the asset's name and the feature it is for"})
+            }
+        };
 
         let mut approval_id = None;
         if p.verdict == Verdict::Approved {
@@ -171,7 +180,7 @@ impl Engine {
                     ),
                     RetryClass::RefreshPreconditions,
                 )
-                .with_details(json!({"rubric": rubric_id, "questions": questions})));
+                .with_details(json!({"rubric": rubric_id, "questions": questions, "subject": subject})));
             }
             let next_seq = entries.len() + 1;
             approval_id =
@@ -200,6 +209,7 @@ impl Engine {
             "approval_id": approval_id,
             "rubric": rubric_id,
             "questions": questions,
+            "subject": subject,
             "vanilla_check": vanilla_check,
             "vanilla_override": vanilla_override,
             "note": if approval_id.is_some() {
