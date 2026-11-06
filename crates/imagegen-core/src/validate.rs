@@ -200,7 +200,7 @@ const OPERATIVE_MIN_GLOW: f64 = 15.0;
 /// (4-neighbours; outside the canvas counts as clear). A shape of thick, solid parts has a low share; thin lines, wires,
 /// lattices and scattered small parts have a high one. At a small native size it separates what reads from what
 /// does not better than edge density, which is high for every small icon (vanilla raid icons 0.61 to 1.00, median
-/// 0.89, the 0.3.2 gallery's raid icons 0.72 to 0.92, the unreadable ones among them). `None` with fewer than 8
+/// 0.89, the 0.3.2 gallery's raid icons 0.72 to 0.92). `None` with fewer than 8
 /// opaque pixels.
 pub fn edge_share(img: &Rgba) -> Option<f64> {
     let (w, h) = (i64::from(img.width), i64::from(img.height));

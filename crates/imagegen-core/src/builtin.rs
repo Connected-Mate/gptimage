@@ -74,8 +74,8 @@ const ICON_RULES: &[&str] = &[
 /// the `small_detail` check: decision, decision category icon, state modifier, raid and the two trait families.
 pub const SMALL_CANVAS_MAX: u32 = 40;
 
-/// Readability on a small canvas. On the 0.3.2 gallery three raid icons did not read at 32x32: a dinghy with figures,
-/// a broken arch bridge and twisted rails, all thin lines and small parts.
+/// Readability on a small canvas: at 32x32 thin lines and small parts do not read, such as a dinghy with figures, a
+/// broken arch bridge or twisted rails.
 const SMALL_CANVAS_RULE: &str = "Small canvas: at {w}x{h} pixels only one bold object reads. Draw it with a few large, solid shapes and thick parts, nothing smaller than a tenth of the canvas: no thin parallel lines (rails, wires, ropes, cables, railings), no lattices or open frameworks, no groups of small figures, no scene, ground or water line.";
 const SMALL_CANVAS_NEGATIVE: &[&str] = &["thin parallel lines, wires or lattices", "several small objects or figures"];
 
@@ -1417,8 +1417,8 @@ mod tests {
         }
     }
 
-    /// The 0.3.2 gallery's agency upgrades were dark, warm and busy, its MIO traits dark painted objects, and three
-    /// raid icons did not read at 32x32. The negatives name those, and every icon family with a side of 40 px or less
+    /// The 0.3.2 gallery's agency upgrades measured dark, warm and busy, and its MIO traits were dark painted objects,
+    /// and thin parts do not read at 32x32. The negatives name those, and every icon family with a side of 40 px or less
     /// gets the small-canvas rule, its negatives and the `small_detail` check, and no other family does.
     #[test]
     fn small_icons_get_the_readability_rule_and_the_0_3_2_drift_is_named() {

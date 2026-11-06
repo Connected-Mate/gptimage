@@ -1,9 +1,9 @@
 //! The vanilla-match check of the review: does a candidate measure like its family's vanilla art?
 //!
-//! The 0.3.1 review approved whatever the caller answered `true` to, and a check of the gallery against vanilla
-//! found approved images that were wrong (a loose tank where vanilla commander traits are
-//! ribbon medals, a grey-filled rocket where vanilla special project icons are pale line drawings, a medal far larger
-//! on its canvas than any vanilla medal). The review now runs this check itself, and an approval needs it to pass.
+//! The 0.3.1 review approved whatever the caller answered `true` to, so caller answers alone could approve art of
+//! the wrong form: a loose tank where vanilla commander traits are ribbon medals, a grey-filled rocket where vanilla
+//! special project icons are pale line drawings, a medal far larger on its canvas than any vanilla medal. The review
+//! now runs this check itself, and an approval needs it to pass.
 //!
 //! [`measure`] turns an image into named features (see [`NAMES`] and [`MEANINGS`]): palette (lightness,
 //! saturation, value and their spread, dark, bright and middle shares, the colours needed for most pixels, gold and
@@ -15,10 +15,10 @@
 //! widened on each side by half of that width, and never narrower than the feature's floor. Every feature is
 //! measured and reported, but only the [`CHECKED`] ones can fail a candidate: the form features and the two medium
 //! features that tell painted art, line art and grey art apart. The others (contrast, edge density, soft alpha,
-//! palette size) were left out because the art labelled good differs from vanilla in them as much as the
-//! rejected art does, so checking them would refuse good art without catching bad art. The choice and the widening
-//! were measured on HOI4 1.19.4.1 against the hand-labelled cases in `tests/fixtures/vanilla_match/`; the test
-//! in `tests/vanilla_match.rs` records each family's vanilla pass rate.
+//! palette size) are only reported: art of the right form spreads as widely in them as art of the wrong form, so a
+//! range on them would refuse right art without refusing wrong art. The checked list and the widening keep at least
+//! 97 percent of every family's own vanilla files inside (measured on HOI4 1.19.4.1); `tests/vanilla_match.rs`
+//! asserts those pass rates and refuses synthetic art drawn outside each rule.
 //!
 //! A family whose vanilla art is one consistent palette can add palette features of its own, with a narrower range
 //! ([`family_checks`]): agency upgrades check their saturation, value and gold tones, so a saturated, warm painted
@@ -114,8 +114,8 @@ pub const CHECKED: [&str; 13] = [
 /// place of [`RANGE_WIDENING`]) and the percentiles of that range (in place of [`RANGE_PERCENTILES`]).
 pub type FamilyCheck = (&'static str, f64, (f64, f64));
 
-/// Palette features checked for one family only. The general palette features are left unchecked because the art
-/// labelled good differs from vanilla in them, but where a family's vanilla art is one consistent palette or backdrop,
+/// Palette features checked for one family only. The general palette features are left unchecked because art of the
+/// right form spreads widely in them, but where a family's vanilla art is one consistent palette or backdrop,
 /// a candidate far from it is the wrong medium. Measured on HOI4 1.19.4.1:
 ///
 /// * `agency_upgrade`: vanilla's 15 upgrades are muted vignettes, mean saturation 0.115 to 0.402 (median 0.249), mean
@@ -882,8 +882,8 @@ mod tests {
         img
     }
 
-    /// Calibration aid, run by hand: `VM_DUMP=<out.json> VM_LABELLED=<folder> cargo test -p imagegen-core
-    /// dump_features -- --ignored`. Writes every family's vanilla features and the labelled images' features.
+    /// Calibration aid, run by hand: `VM_DUMP=<out.json> VM_EXTRA=<folder> cargo test -p imagegen-core
+    /// dump_features -- --ignored`. Writes every family's vanilla features and the features of the PNG files in the extra folder.
     #[test]
     #[ignore]
     fn dump_features() {
@@ -901,8 +901,8 @@ mod tests {
             }
             fams.insert(f.as_str().to_string(), serde_json::json!({"sizes": p.accepted_strips(), "rows": rows}));
         }
-        let mut labelled = serde_json::Map::new();
-        if let Ok(dir) = std::env::var("VM_LABELLED") {
+        let mut extra = serde_json::Map::new();
+        if let Ok(dir) = std::env::var("VM_EXTRA") {
             for e in std::fs::read_dir(dir).unwrap().flatten() {
                 let name = e.file_name().to_string_lossy().to_string();
                 if !name.ends_with(".png") || name.ends_with("_4x.png") {
@@ -911,11 +911,11 @@ mod tests {
                 let bytes = std::fs::read(e.path()).unwrap();
                 let (img, _) = crate::pixels::decode(&bytes, Some(&name), crate::pixels::DecodeLimits::default()).unwrap();
                 if let Some(ft) = measure(&img) {
-                    labelled.insert(name, serde_json::json!({"size": [img.width, img.height], "f": ft.to_vec()}));
+                    extra.insert(name, serde_json::json!({"size": [img.width, img.height], "f": ft.to_vec()}));
                 }
             }
         }
-        std::fs::write(out, serde_json::to_vec(&serde_json::json!({"names": NAMES, "families": fams, "labelled": labelled})).unwrap()).unwrap();
+        std::fs::write(out, serde_json::to_vec(&serde_json::json!({"names": NAMES, "families": fams, "extra": extra})).unwrap()).unwrap();
     }
 
     #[test]

@@ -1246,8 +1246,8 @@ mod tests {
         assert_eq!(plan_finishing(&p, p.canvas, &finished, true, false, "").unwrap().ops, vec![Op::Conform { width: 68, height: 68 }]);
     }
 
-    /// The 0.3.1 riveted cruiser tank (judged wrong: a three-quarter view) gets the side-view hint; the side views do
-    /// not. The hint is a warning, so the review decides.
+    /// A three-quarter view (the 0.3.1 riveted cruiser tank) gets the side-view hint, and side views do not. The hint
+    /// is a warning, so the review decides.
     #[test]
     fn a_three_quarter_technology_picture_gets_the_side_view_hint() {
         let tech = prof(Family::Technology);

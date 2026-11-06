@@ -1459,11 +1459,11 @@ mod tests {
         assert!(cov.at(400, 300) < 0.1 && cov.at(300, 300) > 0.9, "a thin gold bolt is a hole");
     }
 
-    /// The 0.3.1 counters and the bear emblem were judged good: their output does not change. The bear (real alpha)
-    /// and the rifle (real alpha) are pinned by hash; on the opaque black-on-white cavalry the coloured-mark rule
+    /// The coloured-mark rule leaves art without coloured marks unchanged: the 0.3.1 counters and bear emblem. The bear
+    /// (real alpha) and the rifle (real alpha) are pinned by hash; on the opaque black-on-white cavalry the rule
     /// changes no coverage value at all.
     #[test]
-    fn the_good_031_unit_art_is_unchanged() {
+    fn the_031_unit_art_is_unchanged() {
         let bear = unit_glyph(&source("v031_bear_standing-v1.png"), UnitArtKind::DivisionEmblem).unwrap();
         assert_eq!(bear.pixels_sha256(), "97ebbf483fb30675b878691311d3362fc70d024a496608ff1577793b5c74ae33");
         let rifle = unit_glyph(&source("v031_rifle_infantry-v1.png"), UnitArtKind::CounterSmall).unwrap();
