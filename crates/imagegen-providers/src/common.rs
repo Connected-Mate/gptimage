@@ -217,11 +217,11 @@ mod tests {
         let d = descriptor_from(include_str!("../data/openai.json"));
         let e = check_model(&d, &req("gpt-image-1")).unwrap_err();
         assert_eq!(e.kind, ErrorKind::ModelRetired);
-        assert!(e.message.contains("2026-10-23") && e.message.contains("gpt-image-2.5-flare"), "{}", e.message);
+        assert!(e.message.contains("2026-10-23") && e.message.contains("gpt-image-2.6-flare"), "{}", e.message);
         let e = check_model(&d, &req("dall-e-3")).unwrap_err();
         assert_eq!(e.kind, ErrorKind::Unsupported);
         assert!(!e.message.contains("gpt-image-1,"), "retired models are not suggested: {}", e.message);
-        assert!(check_model(&d, &req("gpt-image-2.5-flare")).is_ok());
+        assert!(check_model(&d, &req("gpt-image-2.6-flare")).is_ok());
     }
 
     #[test]

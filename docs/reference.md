@@ -422,7 +422,7 @@ The check is a gate, not a verdict. Art that looks wrong in a way these features
 | Provider | Needs |
 |---|---|
 | ChatGPT login | `hoi4-imagegen login` once. Uses your own ChatGPT plan. No API key |
-| OpenAI API | `OPENAI_API_KEY` |
+| OpenAI API (default gpt-image-2.6-flare, edits gpt-image-2.6-sunburst, 2.5 as fallback) | `OPENAI_API_KEY` |
 | Google Gemini API | `GEMINI_API_KEY` or `GOOGLE_API_KEY` |
 | fal | `FAL_KEY` |
 | ComfyUI | an endpoint in the project config, and optionally `COMFYUI_API_KEY` |
@@ -552,7 +552,7 @@ Read [docs/rules-and-terms.md](rules-and-terms.md). It summarises what Paradox, 
 * Verified by tests on Windows, macOS and Linux in CI: see [docs/testing.md](testing.md). The test layers are labelled by evidence kind.
 * One signed-in ChatGPT-login probe was recorded on 2026-11-01. Its response is a recorded-real fixture, and faults are injected into it for tests. See [docs/evidence/](evidence/).
 * **Not verified:** the in-game check, including whether a focus icon without a `_shine` sprite logs an error, because it needs a user-operated game session. Runs with real OpenAI, Gemini, fal and ComfyUI keys are also unavailable, because no key with balance was available.
-* The OpenAI 2.5 per-image price is unpublished, so its estimate uses the `gpt-image-2` row as a labelled proxy.
+* The OpenAI 2.5 and 2.6 per-image prices are unpublished (the 2.6 pages list token rates only), so its estimate uses the `gpt-image-2` row as a labelled proxy.
 * `register` mode edits `.gfx` files as text. A parser-based version waits for a shared Rust HOI4 engine.
 * The binaries are unsigned.
 

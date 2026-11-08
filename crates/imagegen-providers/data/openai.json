@@ -8,7 +8,7 @@
   "terms_note": "Output ownership and permitted use are set by OpenAI's terms; the primary terms pages could not be fetched on 2026-10-31, so nothing is promised here. Check Paradox's and Steam's rules for AI-generated mod assets before publishing.",
   "models": [
     {
-      "id": "gpt-image-2.5-flare",
+      "id": "gpt-image-2.6-flare",
       "status": { "state": "current" },
       "recommended": true,
       "max_refs": 16,
@@ -17,7 +17,31 @@
       "sizes": { "kind": "arbitrary", "multiple": 16, "min_pixels": 655360, "max_pixels": 8294400, "max_edge": 3840, "max_ratio": 3.0 },
       "cost": { "kind": "unpublished_proxy", "proxy_usd_by_quality": [["low", 0.006], ["medium", 0.053], ["high", 0.211]], "proxy_of": "gpt-image-2" },
       "async_job": false,
-      "notes": "Fast, everyday model. Native transparent background is generally available. The per-image price is not published for the 2.5 models; the gpt-image-2 row is the planning proxy until a recorded call reports usage."
+      "notes": "Fast, everyday model (2.6, released 2026-11-04). Native transparent background is generally available. The per-image price is not published for the 2.5 and 2.6 models; the gpt-image-2 row is the planning proxy until a recorded call reports usage."
+    },
+    {
+      "id": "gpt-image-2.6-sunburst",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 16,
+      "mask": true,
+      "alpha": "ga",
+      "sizes": { "kind": "arbitrary", "multiple": 16, "min_pixels": 655360, "max_pixels": 8294400, "max_edge": 3840, "max_ratio": 3.0 },
+      "cost": { "kind": "unpublished_proxy", "proxy_usd_by_quality": [["low", 0.006], ["medium", 0.053], ["high", 0.211]], "proxy_of": "gpt-image-2" },
+      "async_job": false,
+      "notes": "Editing precision; the API default for edits. Same price caveat as flare."
+    },
+    {
+      "id": "gpt-image-2.5-flare",
+      "status": { "state": "current" },
+      "recommended": false,
+      "max_refs": 16,
+      "mask": true,
+      "alpha": "ga",
+      "sizes": { "kind": "arbitrary", "multiple": 16, "min_pixels": 655360, "max_pixels": 8294400, "max_edge": 3840, "max_ratio": 3.0 },
+      "cost": { "kind": "unpublished_proxy", "proxy_usd_by_quality": [["low", 0.006], ["medium", 0.053], ["high", 0.211]], "proxy_of": "gpt-image-2" },
+      "async_job": false,
+      "notes": "Previous fast model, kept as a fallback. Pass it as the model to use it."
     },
     {
       "id": "gpt-image-2.5-sunburst",
@@ -29,7 +53,7 @@
       "sizes": { "kind": "arbitrary", "multiple": 16, "min_pixels": 655360, "max_pixels": 8294400, "max_edge": 3840, "max_ratio": 3.0 },
       "cost": { "kind": "unpublished_proxy", "proxy_usd_by_quality": [["low", 0.006], ["medium", 0.053], ["high", 0.211]], "proxy_of": "gpt-image-2" },
       "async_job": false,
-      "notes": "Editing precision; the API default for edits. Same price caveat as flare."
+      "notes": "Previous editing model, kept as a fallback."
     },
     {
       "id": "gpt-image-2",

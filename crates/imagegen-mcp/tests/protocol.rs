@@ -356,7 +356,7 @@ fn the_whole_loop_runs_over_stdio() {
     let plan =
         c.ok("hoi4.image_icon", json!({"family": "focus", "feature_slug": "iron_pact", "asset": "steel_gate", "brief": "a riveted steel gate"}));
     assert_eq!(plan["generated"], false);
-    assert_eq!(plan["plan"]["model"], "gpt-image-2.5-flare");
+    assert_eq!(plan["plan"]["model"], "gpt-image-2.6-flare");
     let plan_id = plan["plan_id"].as_str().unwrap().to_string();
 
     let gen = c.ok("hoi4.image_generate", json!({"plan_id": plan_id, "idempotency_key": "proto-1"}));

@@ -235,7 +235,7 @@ dir = ".claude/skills/hoi4-feature-assets/assets/gfx_references"
 face_model = "models/yunet.onnx"
 
 [providers.openai]
-model = "gpt-image-2.5-flare"
+model = "gpt-image-2.6-flare"
 quality = "low"
 
 [providers.comfyui]
@@ -249,7 +249,7 @@ margin = 2
         let c = Config::parse(text).unwrap();
         assert_eq!(c.policy.allow_vanilla_references, Some(true), "still readable, but ignored");
         assert_eq!(c.policy.forbidden_families, vec![Family::LeaderPortrait]);
-        assert_eq!(c.provider("openai").model.as_deref(), Some("gpt-image-2.5-flare"));
+        assert_eq!(c.provider("openai").model.as_deref(), Some("gpt-image-2.6-flare"));
         assert_eq!(c.provider("comfyui").endpoint.as_deref(), Some("http://127.0.0.1:8188"));
         assert_eq!(c.profiles["focus"].canvas, Some([94, 86]));
         assert_eq!(c.defaults.provider.as_deref(), Some("comfyui"));

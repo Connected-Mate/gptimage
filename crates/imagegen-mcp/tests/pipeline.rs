@@ -23,7 +23,7 @@ fn focus_icon_goes_from_plan_to_installed_dds_with_a_shine_sprite() {
 
     // plan facts
     assert_eq!(plan["provider"], "openai");
-    assert_eq!(plan["model"], "gpt-image-2.5-flare");
+    assert_eq!(plan["model"], "gpt-image-2.6-flare");
     assert_eq!(plan["canvas"], json!([100, 88]));
     assert_eq!(plan["paths"]["final_files"], json!(["gfx/interface/goals/iron_pact/focus_steel_gate.dds"]));
     assert!(plan["estimate"]["basis"].as_str().unwrap().contains("2026-10-31"));
@@ -537,7 +537,7 @@ fn edits_create_a_child_candidate_that_keeps_the_original_plan() {
     assert_eq!(child["plan_id"], plan["plan_id"], "the edit inherits the plan so the install gate still checks it");
     let sent = h.fixture.requests().into_iter().find(|r| r.url.ends_with("/v1/images/edits")).unwrap();
     let body: Value = serde_json::from_slice(&sent.body).unwrap();
-    assert_eq!(body["model"], "gpt-image-2.5-sunburst", "edits use the editing model");
+    assert_eq!(body["model"], "gpt-image-2.6-sunburst", "edits use the editing model");
     assert!(body["prompt"].as_str().unwrap().contains("make the banner blue"));
     assert_eq!(body["images"].as_array().unwrap().len(), 1);
     let lineage = h.engine.ledger.lineage("iron_pact.steel_gate-v2").unwrap();

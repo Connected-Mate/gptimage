@@ -181,9 +181,9 @@ impl ImageProvider for OpenAiProvider {
             return m.clone();
         }
         if editing {
-            "gpt-image-2.5-sunburst".to_string()
+            "gpt-image-2.6-sunburst".to_string()
         } else {
-            self.desc.recommended().map(|m| m.id.clone()).unwrap_or_else(|| "gpt-image-2.5-flare".into())
+            self.desc.recommended().map(|m| m.id.clone()).unwrap_or_else(|| "gpt-image-2.6-flare".into())
         }
     }
 
@@ -276,9 +276,9 @@ mod tests {
     #[test]
     fn generation_body_matches_the_documented_wire_format() {
         let p = provider(Arc::new(FixtureTransport::new()), Some("sk-test-000000"));
-        let (path, body) = p.build_body(&request("gpt-image-2.5-flare")).unwrap();
+        let (path, body) = p.build_body(&request("gpt-image-2.6-flare")).unwrap();
         assert_eq!(path, "/v1/images/generations");
-        assert_eq!(body["model"], "gpt-image-2.5-flare");
+        assert_eq!(body["model"], "gpt-image-2.6-flare");
         assert_eq!(body["n"], 1);
         assert_eq!(body["background"], "transparent");
         assert_eq!(body["output_format"], "png");
@@ -293,7 +293,7 @@ mod tests {
     #[test]
     fn edit_body_puts_the_base_first_then_references_and_a_mask() {
         let p = provider(Arc::new(FixtureTransport::new()), Some("sk-test-000000"));
-        let mut r = request("gpt-image-2.5-sunburst");
+        let mut r = request("gpt-image-2.6-sunburst");
         r.edit = Some(EditSpec { base_png: png(), mask_png: Some(png()) });
         r.refs = vec![ProviderRef { role: RefRole::StyleAnchor, png: vec![1, 2, 3], sha256: "x".into() }];
         let (path, body) = p.build_body(&r).unwrap();
@@ -323,7 +323,7 @@ mod tests {
             ok_body(json!({"usage": {"input_tokens": 100, "input_tokens_details": {"text_tokens": 100, "image_tokens": 0}, "output_tokens": 1056}})),
         );
         let p = provider(fixture.clone(), Some("sk-test-000000"));
-        let out = p.generate(&request("gpt-image-2.5-flare"), &CallContext::new()).unwrap();
+        let out = p.generate(&request("gpt-image-2.6-flare"), &CallContext::new()).unwrap();
         assert_eq!(out.image, png());
         assert_eq!(out.mime, "image/png");
         assert_eq!(out.provider_request_id.as_deref(), Some("req_synthetic_1"));
@@ -340,7 +340,7 @@ mod tests {
         let fixture = Arc::new(FixtureTransport::new());
         fixture.respond(Method::Post, "/generations", 200, &[], ok_body(json!({})));
         let p = provider(fixture, Some("sk-test-000000"));
-        let out = p.generate(&request("gpt-image-2.5-flare"), &CallContext::new()).unwrap();
+        let out = p.generate(&request("gpt-image-2.6-flare"), &CallContext::new()).unwrap();
         assert!(out.usage_unknown && out.actual_usd.is_none());
         let fixture = Arc::new(FixtureTransport::new());
         fixture.respond(Method::Post, "/generations", 200, &[], ok_body(json!({})));
@@ -364,7 +364,7 @@ mod tests {
             let fixture = Arc::new(FixtureTransport::new());
             fixture.respond(Method::Post, "/generations", status, &[], body);
             let p = provider(fixture, Some(key));
-            let err = p.generate(&request("gpt-image-2.5-flare"), &CallContext::new()).unwrap_err();
+            let err = p.generate(&request("gpt-image-2.6-flare"), &CallContext::new()).unwrap_err();
             assert_eq!((err.kind, err.retry), (kind, retry), "status {status}");
             assert!(!err.message.contains(key), "key leaked: {}", err.message);
             assert_eq!(err.status, Some(status));
@@ -377,7 +377,7 @@ mod tests {
             let fixture = Arc::new(FixtureTransport::new());
             fixture.respond(Method::Post, "/generations", 200, &[], body);
             let p = provider(fixture, Some("sk-test-000000"));
-            let err = p.generate(&request("gpt-image-2.5-flare"), &CallContext::new()).unwrap_err();
+            let err = p.generate(&request("gpt-image-2.6-flare"), &CallContext::new()).unwrap_err();
             assert_eq!(err.retry, RetryClass::ReconcileFirst, "{err}");
         }
     }
@@ -387,17 +387,17 @@ mod tests {
         let fixture = Arc::new(FixtureTransport::new());
         let p = provider(fixture.clone(), None);
         assert!(!p.is_configured());
-        assert_eq!(p.generate(&request("gpt-image-2.5-flare"), &CallContext::new()).unwrap_err().kind, ErrorKind::NotConfigured);
+        assert_eq!(p.generate(&request("gpt-image-2.6-flare"), &CallContext::new()).unwrap_err().kind, ErrorKind::NotConfigured);
         let p = provider(fixture.clone(), Some("sk-test-000000"));
         assert_eq!(p.generate(&request("gpt-image-1"), &CallContext::new()).unwrap_err().kind, ErrorKind::ModelRetired);
-        assert!(p.edit(&request("gpt-image-2.5-flare"), &CallContext::new()).is_err());
+        assert!(p.edit(&request("gpt-image-2.6-flare"), &CallContext::new()).is_err());
         assert!(fixture.requests().is_empty(), "nothing may be sent for a request that cannot succeed");
     }
 
     #[test]
     fn estimates_use_the_dated_table_and_flag_the_proxy() {
         let p = provider(Arc::new(FixtureTransport::new()), Some("sk-test-000000"));
-        let e = p.estimate(&request("gpt-image-2.5-flare")).unwrap();
+        let e = p.estimate(&request("gpt-image-2.6-flare")).unwrap();
         assert!(e.usage_unknown, "2.5 has no published per-image price");
         assert!(e.basis.contains("proxy") && e.basis.contains("2026-10-31"), "{}", e.basis);
         assert!((e.usd - 0.006).abs() < 1e-9);
@@ -413,8 +413,8 @@ mod tests {
     #[test]
     fn default_models_follow_the_research() {
         let p = provider(Arc::new(FixtureTransport::new()), None);
-        assert_eq!(p.default_model(false), "gpt-image-2.5-flare");
-        assert_eq!(p.default_model(true), "gpt-image-2.5-sunburst");
+        assert_eq!(p.default_model(false), "gpt-image-2.6-flare");
+        assert_eq!(p.default_model(true), "gpt-image-2.6-sunburst");
         let cfg = ProviderConfig { model: Some("gpt-image-2".into()), ..Default::default() };
         let p = OpenAiProvider::new(cfg, None, Arc::new(FixtureTransport::new()), HostPolicy::api(&["api.openai.com"]), None);
         assert_eq!(p.default_model(true), "gpt-image-2");
@@ -425,7 +425,7 @@ mod tests {
         let cfg = ProviderConfig { base_url: Some("https://evil.example".into()), ..Default::default() };
         let fixture = Arc::new(FixtureTransport::new());
         let p = OpenAiProvider::new(cfg, Some("sk-test-000000".into()), fixture.clone(), HostPolicy::api(&["api.openai.com"]), None);
-        let err = p.generate(&request("gpt-image-2.5-flare"), &CallContext::new()).unwrap_err();
+        let err = p.generate(&request("gpt-image-2.6-flare"), &CallContext::new()).unwrap_err();
         assert_eq!(err.kind, ErrorKind::Blocked);
         assert!(fixture.requests().is_empty(), "the key must not be sent to a host outside the allowlist");
     }

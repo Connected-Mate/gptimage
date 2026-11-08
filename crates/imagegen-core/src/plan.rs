@@ -549,7 +549,7 @@ mod tests {
             source_canvas: None,
             frames: 1,
             provider: "openai".into(),
-            model: "gpt-image-2.5-flare".into(),
+            model: "gpt-image-2.6-flare".into(),
             quality: Some("low".into()),
             generation: GenerationPlan { width: 1024, height: 912, transparent: true, aspect: aspect_of([100, 88]) },
             prompt,
