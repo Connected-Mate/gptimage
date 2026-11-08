@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Build the public gallery under <repo>/docs/gallery/big/ from the gallery runs.
 
-  build_gallery_site.py <repo root>
+  build_gallery_site.py <repo root> [--pages-only]
+
+--pages-only rewrites README.md from the published manifest.json and image files, which needs no run folders.
 
 An image is published when it was processed on hoi4-imagegen 0.3.4 or later (an image generated earlier counts once
 its raw candidate was processed again on a current build, which .work/restamp.py records as `process_version`), passes
@@ -139,42 +141,113 @@ def anchor(text):
     return text.lower().replace(" ", "-").replace("_", "-")
 
 
+PAGE_W = 790  # width a table row may use; GitHub's content column is about 830 px wide at desktop size
+PAD = 12  # horizontal room per cell
+MAX_IMG = 370  # largest displayed image width, so two of the biggest fit a row
+
+
+def display_size(e):
+    """Display size of a family's images: the enlarged size for small ones, capped for big ones. One size per family."""
+    w, h = e["size"]
+    k = e.get("scale") or 1
+    w, h = w * k, h * k
+    if w > MAX_IMG:
+        w, h = MAX_IMG, round(h * MAX_IMG / w)
+    return w, h
+
+
+def columns(count, w):
+    """Columns for a family: as many as fit a row, then the count that leaves the fewest empty cells in the last row."""
+    most = max(1, PAGE_W // (w + PAD))
+    if count <= most or most < 2:
+        return min(count, most)
+    best = None
+    for c in range(most, max(2, (most + 1) // 2) - 1, -1):
+        gap = (-count) % c
+        if best is None or gap < best[0]:
+            best = (gap, c)
+    return best[1]
+
+
+def grid(cells, cols):
+    """A fixed-column HTML table: equal cells, centred images, the last row padded with empty cells."""
+    cells = list(cells) + [""] * ((-len(cells)) % cols)
+    rows = ["  <tr>" + "".join(f'<td align="center" valign="middle">{c}</td>' if c else "<td></td>" for c in cells[i:i + cols]) + "</tr>"
+            for i in range(0, len(cells), cols)]
+    return '<table align="center">\n' + "\n".join(rows) + "\n</table>"
+
+
+def label(text, note=""):
+    return f'<p align="center"><sub><b>{text}</b>' + (f" &middot; {note}" if note else "") + "</sub></p>"
+
+
+def ref_cells(out, sec, fam, names, w):
+    """Vanilla references at the family's display width, enlarged by a whole number (nearest neighbour) when that matches."""
+    cells = []
+    for r in names:
+        path = os.path.join(out, sec, fam, r)
+        rw, rh = Image.open(path).size
+        k = w // rw if rw and w % rw == 0 and w // rw > 1 else 1
+        if k > 1:
+            r = r.replace(".webp", f"@{k}x.webp")
+            if not os.path.exists(os.path.join(out, sec, fam, r)):
+                webp(path, os.path.join(out, sec, fam, r), k)
+        cells.append(f'<img src="{sec}/{fam}/{r}" alt="vanilla {fam}" title="Hearts of Iron IV (Paradox Interactive)" width="{w}" height="{round(rh * w / rw)}">')
+    return cells
+
+
 def write_pages(out, index, refs):
     by_section = {}
     for (section, fam), items in index.items():
         by_section.setdefault(section, []).append((fam, items))
     titles = {"vanilla": ("Vanilla style", "Each family in the game's own style, beside a few vanilla references from *Hearts of Iron IV* by Paradox Interactive.")}
     titles.update({st["key"]: (st["title"], st["intro"]) for st in STYLES})
-    order = ["vanilla"] + [st["key"] for st in STYLES]
-    lines = ["# Gallery", "", NOTE, "", "## Contents", ""]
+    order = [sec for sec in ["vanilla"] + [st["key"] for st in STYLES] if sec in by_section]
+    lines = ["# Gallery", "", NOTE, "", "## Family index", "",
+             "<table>", *[f'  <tr><td valign="top"><b><a href="#{anchor(titles[sec][0])}">{titles[sec][0]}</a></b></td><td>'
+                          + " &middot; ".join(f'<a href="#{anchor(sec + " " + fam)}">{fam}</a>' for fam, _ in by_section[sec]) + "</td></tr>" for sec in order],
+             "</table>"]
     for sec in order:
-        if sec not in by_section:
-            continue
-        title = titles[sec][0]
-        lines.append(f"* [{title}](#{anchor(title)}): " + ", ".join(f"[{fam}](#{anchor(sec + ' ' + fam)})" for fam, _ in by_section[sec]))
-    for sec in order:
-        if sec not in by_section:
-            continue
         title, intro = titles[sec]
-        lines += ["", f"## {title}", "", intro]
+        lines += ["", f'<a id="{anchor(title)}"></a>', "", f"## {title}", "", intro]
         for fam, items in by_section[sec]:
-            lines += ["", f'<a id="{anchor(sec + " " + fam)}"></a>', "", f"### {fam}" + ("" if sec == "vanilla" else f" ({title})"), ""]
+            w, h = display_size(items[0])
+            cols = columns(len(items), w)
+            lines += ["", f'<a id="{anchor(sec + " " + fam)}"></a>', "", f"### {fam}" + ("" if sec == "vanilla" else f" ({title})"), "",
+                      f"{items[0]['size'][0]} x {items[0]['size'][1]} px in the game, shown at {w} x {h} on a wide screen. {len(items)} generated examples. Click an image to enlarge it.", ""]
             if sec == "vanilla" and refs.get(fam):
-                lines += ["Vanilla: " + " ".join(f'<img src="vanilla/{fam}/{r}" alt="vanilla {fam}" title="Hearts of Iron IV (Paradox Interactive)">' for r in refs[fam]), ""]
+                lines += [label("Vanilla reference", "Hearts of Iron IV, Paradox Interactive"), "", grid(ref_cells(out, sec, fam, refs[fam], w), columns(len(refs[fam]), w)), ""]
             cells, prompts = [], []
             for e in items:
                 brief = e["brief"].replace("\n", " ").strip()
                 tip = brief.replace('"', "'") + f" ({stamp(e)}, {e['size'][0]}x{e['size'][1]})"
-                img = f'<img src="{e["native"]}" alt="{caption(e)}" title="{tip}">'
-                cells.append(f'<a href="{e["enlarged"] or e["native"]}">{img}</a>')
+                src = e["enlarged"] or e["native"]
+                cells.append(f'<a href="{src}"><img src="{src}" alt="{caption(e)}" title="{tip}" width="{w}" height="{h}"></a>')
                 prompts.append(f"| {caption(e)} | {stamp(e)} | {brief.replace('|', '/')} |")
-            # short captions on the images, the full prompt on hover and in a folded table under the family
-            lines += ["Generated: " + " ".join(cells), "",
-                      f"<details><summary>Prompts ({len(items)})</summary>", "", "| Image | Build | Prompt |", "|---|---|---|", *prompts, "", "</details>", ""]
+            lines += [label("Generated"), "", grid(cells, cols), "",
+                      f"<details><summary>Prompts ({len(items)})</summary>", "", "| Image | Build | Prompt |", "|---|---|---|", *prompts, "", "</details>"]
     lines += ["", "Families still waiting for a later build are not shown yet. [`manifest.json`](manifest.json) lists every image with its brief, build and check result."]
     with open(os.path.join(out, "README.md"), "w", encoding="utf-8", newline="\n") as f:
         f.write("\n".join(lines) + "\n")
 
 
+def rewrite_pages(repo):
+    """Rebuild only README.md from manifest.json and the files beside it, with no game, run folders or model access."""
+    out = os.path.join(repo, "docs", "gallery", "big")
+    index, refs = {}, {}
+    for e in json.load(open(os.path.join(out, "manifest.json"), encoding="utf-8"))["images"]:
+        index.setdefault((e["section"], e["family"]), []).append(e)
+    for sec, fam in index:
+        if sec == "vanilla":
+            names = sorted(f for f in os.listdir(os.path.join(out, sec, fam)) if f.startswith("vanilla_") and "@" not in f)
+            if names:
+                refs[fam] = names
+    write_pages(out, index, refs)
+    print(len(index), "family pages")
+
+
 if __name__ == "__main__":
-    build(sys.argv[1])
+    if "--pages-only" in sys.argv:  # README.md only, from manifest.json
+        rewrite_pages([a for a in sys.argv[1:] if not a.startswith("--")][0])
+    else:
+        build(sys.argv[1])
