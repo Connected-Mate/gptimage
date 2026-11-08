@@ -105,6 +105,21 @@ impl Engine {
                     ))
                 }
             }
+            // a portrait on another family's backdrop: the measured check cannot refuse a dark one for leaders, because
+            // vanilla has a few special dark backdrops, so the backdrop check blocks here unless the art is deliberate
+            let backdrop = imagegen_core::validate::backdrop_findings(artifact.family, &img);
+            if !backdrop.is_empty() && !override_on {
+                let what: Vec<&str> = backdrop.iter().map(|f| f.message.as_str()).collect();
+                return Err(EngineError::refused(
+                    "review_portrait_backdrop",
+                    format!(
+                        "the portrait's backdrop is not its family's vanilla backdrop, so it cannot be approved: {}. Regenerate it with the family's own backdrop, or approve a deliberate council or otherwise unusual portrait with override_vanilla_check and an override_reason",
+                        what.join(" ")
+                    ),
+                    RetryClass::RefreshPreconditions,
+                )
+                .with_details(json!({"backdrop": backdrop})));
+            }
             let previews: Vec<&Value> = entries
                 .iter()
                 .filter(|e| {

@@ -227,6 +227,44 @@ const SCIENTIST_BACKDROP: [f64; 3] = [66.0, -7.2, -14.4];
 const OPERATIVE_BACKDROP: [f64; 3] = [11.9, -0.1, 5.3];
 const BACKDROP_LIMIT: f64 = 15.0;
 
+/// The `backdrop` check of a portrait: its top corners against its family's vanilla backdrop
+/// ([`portrait_backdrop`]) and, for operatives, the light behind the figure ([`portrait_min_glow`]). Warnings in
+/// validation. The review refuses an approval while one stands (`review_portrait_backdrop`), because the measured
+/// vanilla-match check passes a dark backdrop for leaders: vanilla has a few special dark ones.
+pub fn backdrop_findings(family: crate::family::Family, img: &Rgba) -> Vec<Finding> {
+    let mut findings = Vec::new();
+    if let (Some((want, limit)), Some(got)) = (portrait_backdrop(family), crate::vanillamatch::backdrop_lab(img)) {
+        let d = ((got[0] - want[0]).powi(2) + (got[1] - want[1]).powi(2) + (got[2] - want[2]).powi(2)).sqrt();
+        if d > limit {
+            findings.push(Finding::new(
+                BACKDROP_CODE,
+                Level::Warning,
+                format!(
+                    "the backdrop at the top corners is L*a*b* ({:.0}, {:.0}, {:.0}), {d:.0} from vanilla's {} backdrop ({:.0}, {:.0}, {:.0}). Unless the brief asks for a council or otherwise unusual portrait, plan again with the family's own backdrop",
+                    got[0], got[1], got[2], family, want[0], want[1], want[2]
+                ),
+                None,
+                json!({"backdrop_lab": got, "vanilla_lab": want, "distance": d, "limit": limit}),
+            ));
+        }
+    }
+    if let (Some(min), Some(glow)) = (portrait_min_glow(family), crate::vanillamatch::backdrop_glow(img)) {
+        if glow < min {
+            findings.push(Finding::new(
+                BACKDROP_CODE,
+                Level::Warning,
+                format!(
+                    "the backdrop beside the shoulders is only {glow:.0} lighter than at the top corners (CIE L*). Vanilla's {} backdrops have a soft spotlight behind the figure, at least {min:.0} lighter. Unless the brief asks for an unusual portrait, plan again with the family's own backdrop",
+                    family
+                ),
+                None,
+                json!({"glow": glow, "vanilla_min": min}),
+            ));
+        }
+    }
+    findings
+}
+
 /// The least light behind the figure an operative portrait has before `GFX-PORTRAIT-BACKDROP` warns
 /// ([`crate::vanillamatch::backdrop_glow`], in CIE L*): vanilla's operatives sit in a soft spotlight that makes the side
 /// band at two thirds of the height 17.1 to 29.2 lighter than the top corners (median 27.6, 163 files). The 0.3.3
@@ -663,35 +701,7 @@ pub fn validate_image(img: &Rgba, profile: &Profile, checks: &[String], opts: &O
 
     if wants("backdrop") {
         run.push("backdrop".into());
-        if let (Some((want, limit)), Some(got)) = (portrait_backdrop(profile.family), crate::vanillamatch::backdrop_lab(img)) {
-            let d = ((got[0] - want[0]).powi(2) + (got[1] - want[1]).powi(2) + (got[2] - want[2]).powi(2)).sqrt();
-            if d > limit {
-                findings.push(Finding::new(
-                    BACKDROP_CODE,
-                    Level::Warning,
-                    format!(
-                        "the backdrop at the top corners is L*a*b* ({:.0}, {:.0}, {:.0}), {d:.0} from vanilla's {} backdrop ({:.0}, {:.0}, {:.0}). Unless the brief asks for a council or otherwise unusual portrait, plan again with the family's own backdrop",
-                        got[0], got[1], got[2], profile.family, want[0], want[1], want[2]
-                    ),
-                    None,
-                    json!({"backdrop_lab": got, "vanilla_lab": want, "distance": d, "limit": limit}),
-                ));
-            }
-        }
-        if let (Some(min), Some(glow)) = (portrait_min_glow(profile.family), crate::vanillamatch::backdrop_glow(img)) {
-            if glow < min {
-                findings.push(Finding::new(
-                    BACKDROP_CODE,
-                    Level::Warning,
-                    format!(
-                        "the backdrop beside the shoulders is only {glow:.0} lighter than at the top corners (CIE L*). Vanilla's {} backdrops have a soft spotlight behind the figure, at least {min:.0} lighter. Unless the brief asks for an unusual portrait, plan again with the family's own backdrop",
-                        profile.family
-                    ),
-                    None,
-                    json!({"glow": glow, "vanilla_min": min}),
-                ));
-            }
-        }
+        findings.extend(backdrop_findings(profile.family, img));
     }
 
     if wants("plain_backdrop") {

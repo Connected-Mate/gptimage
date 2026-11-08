@@ -137,7 +137,7 @@ The family's rules already describe vanilla's form, so the brief only names the 
 | A building has one frame | Frame 2 is the ruined state. Make it with `hoi4.image_edit` on the first candidate and pass it as `second_frame_candidate` to `hoi4.image_process` |
 | `review_vanilla_mismatch` on a building with `subject_aspect` above vanilla's range | The landmark is wider than any vanilla one. Plan again with a brief that shows it foreshortened, from an angle or as its central part (see [Writing the brief](#writing-the-brief)) |
 | `GFX-SMALL-DETAIL` | A warning only. The small icon is mostly thin lines or small parts and may not read at native size. Look at the native-size preview, and if it does not read, plan again with one bold object |
-| `GFX-PORTRAIT-BACKDROP` | A warning only. The portrait's backdrop is far from its family's vanilla backdrop, often another portrait family's. Unless the portrait is meant to be unusual, plan again without a background in the brief |
+| `GFX-PORTRAIT-BACKDROP` | A warning in validation, and the review refuses to approve while it stands (`review_portrait_backdrop`). The portrait's backdrop is far from its family's vanilla backdrop, often another portrait family's. Plan again without a background in the brief. A council or otherwise unusual portrait is approved with `override_vanilla_check` and an `override_reason` |
 
 ### Windows and keychain
 
