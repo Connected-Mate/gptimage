@@ -461,11 +461,11 @@ The releases are on GitHub: <https://github.com/klimPaskov/hoi4-imagegen-mcp/rel
 
 | Platform | Archive |
 |---|---|
-| Windows x64 | `hoi4-imagegen-v0.3.7-x86_64-pc-windows-msvc.zip` |
-| macOS arm64 | `hoi4-imagegen-v0.3.7-aarch64-apple-darwin.tar.gz` |
-| macOS x64 | `hoi4-imagegen-v0.3.7-x86_64-apple-darwin.tar.gz` |
-| Linux x64 | `hoi4-imagegen-v0.3.7-x86_64-unknown-linux-gnu.tar.gz` |
-| Linux arm64 | `hoi4-imagegen-v0.3.7-aarch64-unknown-linux-gnu.tar.gz` |
+| Windows x64 | `hoi4-imagegen-v0.3.8-x86_64-pc-windows-msvc.zip` |
+| macOS arm64 | `hoi4-imagegen-v0.3.8-aarch64-apple-darwin.tar.gz` |
+| macOS x64 | `hoi4-imagegen-v0.3.8-x86_64-apple-darwin.tar.gz` |
+| Linux x64 | `hoi4-imagegen-v0.3.8-x86_64-unknown-linux-gnu.tar.gz` |
+| Linux arm64 | `hoi4-imagegen-v0.3.8-aarch64-unknown-linux-gnu.tar.gz` |
 
 Each archive holds both programs, `LICENSE`, `NOTICE`, `README.md` and `UPSTREAM.md`. The release also has a `SHA256SUMS` file. The binaries are **unsigned**, so Windows SmartScreen and macOS Gatekeeper may warn. The archives and `SHA256SUMS` carry GitHub build attestations. To check a download:
 
