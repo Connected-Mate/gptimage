@@ -619,7 +619,8 @@ pub fn plan_finishing_with(
                         ops.push(Op::Conform { width: size[0], height: size[1] });
                     } else {
                         ops.push(Op::CoverResize { width: canvas[0], height: canvas[1] });
-                        ops.push(Op::ScrollFrames { frames });
+                        let direction = profile.imagegen.animation.as_ref().map(|a| a.direction).unwrap_or_default();
+                        ops.push(Op::ScrollFrames { frames, direction });
                     }
                 }
                 _ if finished => ops.push(Op::Conform { width: size[0], height: size[1] }),

@@ -417,6 +417,35 @@ pub fn build_prompt_with_form(
     build_prompt_with_look(profile, canvas, brief, style, refs, transparent, measured_style, form, automatic_refs, None)
 }
 
+/// A prompt rule with the canvas filled in. A vertical scrolling strip says top and bottom where the family's rule says
+/// left and right.
+pub fn fill_rule(profile: &Profile, canvas: [u32; 2], rule: &str) -> String {
+    let rule = rule.replace("{w}", &canvas[0].to_string()).replace("{h}", &canvas[1].to_string());
+    if is_vertical_scroll(profile) {
+        rule.replace("from left to right", "from top to bottom").replace("left and right edges", "top and bottom edges")
+    } else {
+        rule
+    }
+}
+
+fn is_vertical_scroll(profile: &Profile) -> bool {
+    profile
+        .imagegen
+        .animation
+        .as_ref()
+        .is_some_and(|a| a.motion == crate::animation::Motion::Scroll && a.direction == crate::animation::ScrollDirection::Vertical)
+}
+
+/// The extra rule of a vertical scrolling strip: a narrow bar whose picture flows downward.
+pub fn vertical_scroll_rule(profile: &Profile, canvas: [u32; 2]) -> Option<String> {
+    is_vertical_scroll(profile).then(|| {
+        format!(
+            "The picture is a tall, narrow {}x{} bar that flows downward, so draw a few bold repeats from top to bottom (three or four chevrons or marks, each pointing down and spanning most of the bar's width), with no fine detail.",
+            canvas[0], canvas[1]
+        )
+    })
+}
+
 /// [`build_prompt_with_form`] with a style pack's look line, appended to the prompt's style.
 #[allow(clippy::too_many_arguments)]
 pub fn build_prompt_with_look(
@@ -431,9 +460,12 @@ pub fn build_prompt_with_look(
     automatic_refs: bool,
     look: Option<&str>,
 ) -> PromptPlan {
-    let subst = |s: &str| s.replace("{w}", &canvas[0].to_string()).replace("{h}", &canvas[1].to_string());
+    let subst = |s: &str| fill_rule(profile, canvas, s);
     let mut text = format!("Create one Hearts of Iron IV {}: {}\n", profile.family.label(), brief.trim());
     text.push_str("\nRequirements:\n");
+    if let Some(line) = vertical_scroll_rule(profile, canvas) {
+        text.push_str(&format!("- {line}\n"));
+    }
     for rule in &profile.imagegen.prompt.rules {
         // with the caller's own style anchors, the family's single form sentence would pull the image back to the
         // vanilla form: the anchors decide the form, the other requirements stay
@@ -687,5 +719,16 @@ mod tests {
         assert_eq!(aspect_of([100, 88]), "25:22");
         assert_eq!(aspect_of([397, 153]), "397:153");
         assert_eq!(aspect_of([64, 64]), "1:1");
+    }
+
+    #[test]
+    fn a_vertical_scroll_is_asked_for_top_to_bottom() {
+        let mut profile = crate::builtin::profiles().into_iter().find(|p| p.family == crate::Family::AnimScroll).unwrap();
+        let rule = profile.imagegen.prompt.rules[0].clone();
+        assert!(fill_rule(&profile, [72, 72], &rule).contains("from left to right") && vertical_scroll_rule(&profile, [72, 72]).is_none());
+        profile.imagegen.animation.as_mut().unwrap().direction = crate::animation::ScrollDirection::Vertical;
+        let filled = fill_rule(&profile, [32, 72], &rule);
+        assert!(filled.contains("from top to bottom") && filled.contains("32x72") && !filled.contains("left"), "{filled}");
+        assert!(vertical_scroll_rule(&profile, [32, 72]).unwrap().contains("32x72 bar that flows downward"));
     }
 }

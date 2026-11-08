@@ -194,6 +194,66 @@ fn a_scroll_is_made_seamless_and_moves_one_width_per_loop() {
     assert!((0.5..1.6).contains(&seam), "{m:#}");
 }
 
+/// A mod that needs a narrow vertical scroll (the 24-frame, 32x72 doctrine mastery bars) says so in its profile: canvas,
+/// frames and the direction of the strip's animation.
+const VERTICAL_SCROLL_CONFIG: &str = r#"[defaults]
+provider = "openai"
+[profiles.anim_scroll]
+canvas = [32, 72]
+frames = 24
+[profiles.anim_scroll.imagegen.animation]
+motion = "scroll"
+fps = "24"
+looping = true
+play_on_show = true
+pause_on_loop = "0.0"
+load_type = "INGAME"
+transparence_check = true
+direction = "vertical"
+"#;
+
+/// A picture of horizontal bands, so a flow downward shows.
+fn bands() -> Vec<u8> {
+    let mut img = Rgba::new(928, 816);
+    for y in 0..816u32 {
+        for x in 0..928u32 {
+            let v = if (y / 68) % 2 == 0 { 220 } else { 60 };
+            img.set_px(x, y, [v, v / 2 + 30, 50, 255]);
+        }
+    }
+    encode_png(&img).unwrap()
+}
+
+#[test]
+fn a_vertical_scroll_of_24_frames_makes_the_mastery_bar_strip() {
+    let h = harness(VERTICAL_SCROLL_CONFIG, &[("OPENAI_API_KEY", "sk-test-synthetic-000")]);
+    let (_, cand) = generate(&h, "anim_scroll", "mastery_air", &bands(), "k-vscroll-1", None);
+    let p = process(&h, &cand, json!({})).unwrap();
+    assert_eq!(names(&p, "steps"), vec!["flatten_on", "cover_resize", "scroll_frames"]);
+    assert_eq!(p["steps"][2]["op"]["direction"], "vertical");
+    assert_eq!(p["steps"][2]["op"]["frames"], 24);
+    assert_eq!(p["size"], json!([768, 72]));
+    let id = p["artifact_id"].as_str().unwrap().to_string();
+    let strip = png_of(&h, p["path"].as_str().unwrap());
+    let frames = strip.split_frames(24).unwrap();
+    // exactly three pixels a frame, downward
+    for y in 0..72u32 {
+        assert_eq!(frames[1].px(5, (y + 3) % 72), frames[0].px(5, y), "row {y}");
+    }
+    let v = h.validate(&id);
+    assert_eq!(v["status"], "pass", "{v:#}");
+    let pv = h.preview(&id);
+    assert_eq!(pv["animation"]["loop_gif_pictures"], 24);
+    let seam = pv["animation"]["metrics"]["seam_ratio"].as_f64().unwrap();
+    assert!((0.5..1.6).contains(&seam), "{pv:#}");
+    let approval = h.approve(&id, "animation_v3")["approval_id"].as_str().unwrap().to_string();
+    h.install(&id, &approval, json!({"mode": "register"})).unwrap();
+    let gfx = String::from_utf8(h.read("interface/iron_pact_animated.gfx")).unwrap();
+    assert!(gfx.contains("noOfFrames = 24") && gfx.contains("animation_rate_fps = 24") && gfx.contains("looping = yes"), "{gfx}");
+    let info = dds::parse_header(&h.read("gfx/interface/animated/iron_pact/scroll/scroll_mastery_air.dds")).unwrap();
+    assert_eq!((info.width, info.height), (768, 72));
+}
+
 #[test]
 fn key_frames_are_edits_of_the_base_fitted_with_one_crop() {
     let h = openai_harness();

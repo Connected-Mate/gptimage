@@ -225,7 +225,7 @@ impl Engine {
             }
         }
         text.push_str("\nThe result must still meet these requirements:\n");
-        let subst = |s: &str| s.replace("{w}", &artifact.canvas[0].to_string()).replace("{h}", &artifact.canvas[1].to_string());
+        let subst = |s: &str| imagegen_core::plan::fill_rule(&profile, artifact.canvas, s);
         let (rules, negative) = self.artifact_prompt_rules(&artifact, &profile);
         for rule in &rules {
             text.push_str(&format!("- {}\n", subst(rule)));

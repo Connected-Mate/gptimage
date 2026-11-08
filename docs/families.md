@@ -1213,6 +1213,7 @@ The examples were made on 2026-11-02 on the ChatGPT login (plan quota, no money)
 | Frames | 9 at 15 fps with `loadType = "INGAME"` and `transparencecheck = yes`, the currently-researching highlight of 38 vanilla sprites. 72x72 per frame |
 | Processing | recipe `anim_scroll` v1: `flatten_on` → `cover_resize` → `scroll_frames`. A repeating pattern is fitted to a whole number of its periods and its edges are blended with an in-phase copy, so the picture is seamless. Each frame moves it right by a ninth of the width |
 | Installed (example) | `GFX_scroll_research_progress`, `gfx/interface/animated/animated/scroll/scroll_research_progress.dds` (648x72) |
+| Vertical bars (since 0.3.9) | A mod can make the strip flow downward, with its own frame count and canvas, from its profile, for strips such as the 24-frame doctrine mastery bars (`mastery_progress_bar_strip_<air|inactive|land|navy|special_forces>`, 24 frames of 32x72, 24 fps). Set `canvas`, `frames` and `imagegen.animation.direction = "vertical"` for `anim_scroll` in `.hoi4-imagegen/config.toml` (see the reference). The picture is made seamless top to bottom and moves down by a 24th of its height (3 px) a frame. A profile applies to every `anim_scroll` of that project, so make the vertical bars in their own project folder when the mod also has horizontal research strips. |
 
 ### anim_spin
 

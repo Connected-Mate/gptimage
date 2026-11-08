@@ -938,6 +938,7 @@ pub fn animation_of(family: Family) -> Option<AnimationSpec> {
         always_transparent: true,
         load_type: None,
         transparence_check: false,
+        direction: Default::default(),
     };
     let strip = |motion, fps: &str| AnimationSpec {
         motion,
@@ -949,6 +950,7 @@ pub fn animation_of(family: Family) -> Option<AnimationSpec> {
         always_transparent: false,
         load_type: Some("INGAME".into()),
         transparence_check: true,
+        direction: Default::default(),
     };
     Some(match family {
         Family::AnimBlendGlow => blend(Motion::BlendGlow, "1"),

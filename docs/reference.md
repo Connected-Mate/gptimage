@@ -172,6 +172,26 @@ A technology picture can carry vanilla's tier numeral. Vanilla bakes the numeral
 
 **Model per family on the OpenAI API route (since 0.3.8).** `gpt-image-2.6-sunburst` makes every edit and the families that show more detail: super events, event and news pictures, operation pictures, loading screens (any canvas of 20 000 pixels or more), all portraits, the four animated families and `model_reference`. `gpt-image-2.6-flare` makes icons and small sprites. Sending reference pictures does not turn a generation into an edit. A model named in the request, a style, or the provider's `model` setting always wins. The sign-in route uses ChatGPT's current image model and has no per-family choice (see `docs/chatgpt-login.md`).
 
+**Vertical scrolling strips (since 0.3.9).** `anim_scroll` can flow downward with its own canvas and frame count, for strips such as vanilla's doctrine mastery bars (`gfx/interface/doctrines/UI/mastery_progress_bar_strip_<air|inactive|land|navy|special_forces>.dds`: `noOfFrames = 24`, 24 fps, looping, 24 frames of 32x72 in a 768x72 strip). The family's profile says how, in the project's `.hoi4-imagegen/config.toml` (or the kit's `profiles.json`):
+
+```toml
+[profiles.anim_scroll]
+canvas = [32, 72]
+frames = 24
+
+[profiles.anim_scroll.imagegen.animation]
+motion = "scroll"
+fps = "24"
+looping = true
+play_on_show = true
+pause_on_loop = "0.0"
+load_type = "INGAME"
+transparence_check = true
+direction = "vertical"
+```
+
+The model draws one tall tile (ask for a narrow column with a set number of chevrons per height). The tool makes it seamless top to bottom and moves it down by `height / frames` per frame, so 24 frames of a 72 px bar move exactly 3 px each. The frames are derived from that one tile, never drawn one by one. The strip is one row of `frames` columns, validated like every scroll (`GFX-ANIM-SEAM`, `GFX-ANIM-JUMP`, `GFX-ANIM-STATIC`; the ratios do not depend on the frame count or the direction), with the looping GIF preview. The limit is 48 frames. A profile applies to every `anim_scroll` of that project, so keep the vertical bars in their own project folder when the mod also has horizontal research strips.
+
 **Operation icons (since 0.3.8).** `operation_icon` is vanilla's operation card: `icon = GFX_operations_<name>`, the 85x85 close-up picture in `gfx/interface/operations/`, slightly tilted with a one pixel outline and a soft shadow on transparent corners (a dim picture is lifted to vanilla's brightness). The 48x48 map icon, `map_icon = GFX_operations_<name>_map`, is made from the finished card as a companion in `gfx/interface/operations/<feature>/map/<name>_map.dds`: the card's centre in vanilla's round gold ring. Both are installed and registered together. The 59x58 phase icons (`GFX_phase_<name>_small`) are another sprite and are not generated.
 
 Some checks guard a family's look:

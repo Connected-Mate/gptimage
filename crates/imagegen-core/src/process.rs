@@ -189,10 +189,14 @@ pub enum Op {
         /// Alpha of the dim frame relative to the bright one.
         dim: f64,
     },
-    /// The picture made seamless across its width, then moved right by `width / frames` per frame.
+    /// The picture made seamless across its width (or, vertical, its height), then moved right (down) by
+    /// `width / frames` (`height / frames`) per frame.
     ScrollFrames {
         /// Frames in the strip.
         frames: u32,
+        /// The way it flows; horizontal when absent (records made before 0.3.9).
+        #[serde(default, skip_serializing_if = "crate::animation::ScrollDirection::is_horizontal")]
+        direction: crate::animation::ScrollDirection,
     },
     /// The subject fitted by its radius into `width` x `height` frames and turned clockwise by `degrees` over the
     /// loop, each frame turned at the source resolution before it is reduced.
@@ -389,7 +393,7 @@ pub fn apply(img: &Rgba, op: &Op) -> Result<Rgba> {
         }
         Op::BlackToAlpha => Ok(crate::animation::black_to_alpha(img)),
         Op::GlowFrames { frames, dim } => crate::animation::glow_strip(img, *frames, *dim),
-        Op::ScrollFrames { frames } => crate::animation::scroll_strip(img, *frames),
+        Op::ScrollFrames { frames, direction } => crate::animation::scroll_strip(img, *frames, *direction),
         Op::SpinFrames { width, height, margin, frames, degrees } => {
             crate::animation::spin_strip(img, *width, *height, *margin, *frames, *degrees, default_min_alpha())
         }

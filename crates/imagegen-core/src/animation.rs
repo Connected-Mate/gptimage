@@ -70,6 +70,32 @@ impl Motion {
     }
 }
 
+/// Which way a scrolling strip flows.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum ScrollDirection {
+    /// The picture is seamless left to right and moves right by one width per loop (vanilla's research strips).
+    #[default]
+    Horizontal,
+    /// The picture is seamless top to bottom and moves down by one height per loop (the doctrine mastery bars).
+    Vertical,
+}
+
+impl ScrollDirection {
+    /// True for the default, which records leave out.
+    pub fn is_horizontal(&self) -> bool {
+        *self == ScrollDirection::Horizontal
+    }
+
+    /// Stable id.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            ScrollDirection::Horizontal => "horizontal",
+            ScrollDirection::Vertical => "vertical",
+        }
+    }
+}
+
 /// The animation fields of a `frameAnimatedSpriteType`, plus how the frames are made.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct AnimationSpec {
@@ -95,6 +121,10 @@ pub struct AnimationSpec {
     /// `transparencecheck = yes`, as vanilla's frame strips have.
     #[serde(default)]
     pub transparence_check: bool,
+    /// For a scrolling strip, the way it flows. A mod sets `vertical` (with its own canvas and frame count) in its
+    /// profile for strips such as the 24-frame, 32x72 doctrine mastery bars.
+    #[serde(default)]
+    pub direction: ScrollDirection,
 }
 
 impl AnimationSpec {
@@ -300,17 +330,47 @@ fn shift_wrap(pre: &Rgba, dx: f64) -> Rgba {
     out
 }
 
-/// A scrolling strip: the image made seamless, then moved right by one frame's share of its width per frame, so the
-/// frame after the last is the first again.
-pub fn scroll_strip(img: &Rgba, frames: u32) -> Result<Rgba> {
+/// The image turned over its diagonal: pixel (x, y) goes to (y, x).
+fn transpose(img: &Rgba) -> Rgba {
+    let mut out = Rgba::new(img.height, img.width);
+    for y in 0..img.height {
+        for x in 0..img.width {
+            out.set_px(y, x, img.px(x, y));
+        }
+    }
+    out
+}
+
+/// A scrolling strip: the image made seamless, then moved by one frame's share of its width (horizontal, to the right)
+/// or height (vertical, downward) per frame, so the frame after the last is the first again. A vertical scroll is
+/// the horizontal one on the transposed picture, so both use the same seamless pass and the same exact steps (a 72 px
+/// tall picture in 24 frames moves 3 px a frame).
+pub fn scroll_strip(img: &Rgba, frames: u32, direction: ScrollDirection) -> Result<Rgba> {
     if frames < 2 {
         return Err(Error::Invalid("a scrolling strip needs at least two frames".into()));
     }
-    let pre = premultiply(&tileable_x(img)?);
-    let step = f64::from(img.width) / f64::from(frames);
-    let out: Vec<Rgba> = (0..frames).map(|k| unpremultiply(&shift_wrap(&pre, step * f64::from(k)))).collect();
+    if frames > MAX_SCROLL_FRAMES {
+        return Err(Error::Invalid(format!("a scrolling strip has at most {MAX_SCROLL_FRAMES} frames, not {frames}")));
+    }
+    let vertical = direction == ScrollDirection::Vertical;
+    let src = if vertical { transpose(img) } else { img.clone() };
+    let pre = premultiply(&tileable_x(&src)?);
+    let step = f64::from(src.width) / f64::from(frames);
+    let out: Vec<Rgba> = (0..frames)
+        .map(|k| {
+            let frame = unpremultiply(&shift_wrap(&pre, step * f64::from(k)));
+            if vertical {
+                transpose(&frame)
+            } else {
+                frame
+            }
+        })
+        .collect();
     build_strip(&out, (img.width, img.height))
 }
+
+/// The most frames a scrolling strip may have.
+pub const MAX_SCROLL_FRAMES: u32 = 48;
 
 /// Centre and farthest visible distance of the subject (pixels with alpha at least `min_alpha`), measured from the
 /// centre of its bounding box.
@@ -690,6 +750,7 @@ mod tests {
             always_transparent: matches!(motion, Motion::BlendGlow | Motion::BlendKeyframes),
             load_type: (!matches!(motion, Motion::BlendGlow | Motion::BlendKeyframes)).then(|| "INGAME".to_string()),
             transparence_check: !matches!(motion, Motion::BlendGlow | Motion::BlendKeyframes),
+            direction: ScrollDirection::Horizontal,
         }
     }
 
@@ -738,6 +799,48 @@ mod tests {
     }
 
     #[test]
+    fn a_vertical_scroll_moves_down_by_a_whole_number_of_pixels_and_loops() {
+        // a narrow bar like the doctrine mastery strips: 32x72, 24 frames, 3 px a frame; chevron-ish rows of period 12
+        let mut img = Rgba::new(32, 72);
+        for y in 0..72u32 {
+            for x in 0..32u32 {
+                let phase = (y + if x < 16 { x } else { 31 - x }) % 12;
+                let v = if phase < 5 { 230 } else { 50 };
+                img.set_px(x, y, [v, v / 2 + 20, 40, 255]);
+            }
+        }
+        let strip = scroll_strip(&img, 24, ScrollDirection::Vertical).unwrap();
+        assert_eq!((strip.width, strip.height), (768, 72));
+        let frames = strip.split_frames(24).unwrap();
+        assert_eq!(frames[0], img, "a picture of whole periods is already seamless");
+        // frame k is the picture moved down by 3 k rows, wrapping
+        for k in [1usize, 2, 7, 23] {
+            for y in 0..72usize {
+                for x in 0..32u32 {
+                    assert_eq!(frames[k].px(x, ((y + 3 * k) % 72) as u32), img.px(x, y as u32), "frame {k} row {y}");
+                }
+            }
+        }
+        // the last frame is one step short of the first again: no seam, no jump
+        let m = frame_metrics(&frames);
+        assert!((0.8..1.3).contains(&m.seam_ratio.unwrap()), "{m:?}");
+        assert!(m.jump_ratio.unwrap() < 1.5, "{m:?}");
+        // a picture that is not seamless is made so before it moves, and the horizontal strip is unchanged
+        let mut plain = Rgba::new(32, 72);
+        for y in 0..72u32 {
+            for x in 0..32u32 {
+                plain.set_px(x, y, [(y * 3) as u8, 90, 40, 255]);
+            }
+        }
+        let v = scroll_strip(&plain, 24, ScrollDirection::Vertical).unwrap();
+        let fr = v.split_frames(24).unwrap();
+        let vm = frame_metrics(&fr);
+        assert!(vm.seam_ratio.unwrap() < 1.6 && vm.jump_ratio.unwrap() < 2.0, "{vm:?}");
+        assert!(scroll_strip(&plain, 49, ScrollDirection::Vertical).is_err());
+        assert!(scroll_strip(&plain, 1, ScrollDirection::Vertical).is_err());
+    }
+
+    #[test]
     fn a_scroll_loops_without_a_seam_and_keeps_its_palette() {
         let mut img = Rgba::new(36, 12);
         for y in 0..12 {
@@ -750,7 +853,7 @@ mod tests {
         for y in 0..12 {
             img.set_px(35, y, [255, 255, 255, 255]);
         }
-        let strip = scroll_strip(&img, 9).unwrap();
+        let strip = scroll_strip(&img, 9, ScrollDirection::Horizontal).unwrap();
         assert_eq!((strip.width, strip.height), (36 * 9, 12));
         let frames = strip.split_frames(9).unwrap();
         let m = frame_metrics(&frames);
