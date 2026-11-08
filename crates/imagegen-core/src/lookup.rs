@@ -86,7 +86,7 @@ pub fn lookup_of(family: Family) -> Lookup {
         BopSide => l(FullName, "balance of power side: icon = {sprite} (the standard stage). The improved stage is the same name with _improved before _side, set where the side is strengthened: gfx = GFX_bop_<name>_improved_side", "common/bop/DEN.txt:275 icon = GFX_bop_DEN_annexation_side, and :361 gfx = GFX_bop_DEN_annexation_improved_side; interface/powerbalanceview.gfx:283 registers both", None),
         Medal => l(FullName, "unit medal: icon = GFX_medal_icon_{asset} with frame = 1 (the game also loads GFX_medal_icon_{asset}_large)", "common/unit_medals/00_default.txt:41 icon = \"GFX_medal_icon_nor\" with frame = 1; interface/medals.gfx:247 GFX_medal_icon_eng and :253 GFX_medal_icon_eng_large: each of the 21 GFX_medal_icon_* sprites has a _large twin, and no .gui names one", Some("eng")),
         AgencyUpgrade => l(FullName, "intelligence agency upgrade: picture = {sprite}", "common/intelligence_agency_upgrades/intelligence_agency_upgrades.txt:73 picture = GFX_agency_airforce_department", None),
-        OperationIcon => l(FullName, "operation phase: icon = {sprite}", "common/operation_phases/00_operation_phases.txt icon values (73, full names) -> interface/lar_operations.gfx:546 GFX_phase_infiltrate_military_bribe_small (59x58)", Some("infiltrate_military_bribe")),
+        OperationIcon => l(FullName, "operation: icon = {sprite} and map_icon = {sprite}_map (the 48x48 map icon is written with the card)", "common/operations/00_operations.txt:1915 icon = GFX_operations_steal_blueprints and :1916 map_icon = GFX_operations_steal_blueprints_map -> interface/lar_operations.gfx:52 and :163 (85x85 and 48x48)", Some("steal_blueprints")),
         OperationPicture => l(FullName, "operation phase: picture = {sprite}", "common/operation_phases/lar_historical_operations.txt:47 picture = GFX_phase_bruneval_attack -> interface/lar_operations.gfx:187 GFX_phase_infiltrate_military_bribe (210x176)", Some("infiltrate_military_bribe")),
         CommanderTrait | PersonalTrait => l(EngineKey, "name the unit leader trait {asset} in common/unit_leader (its icon is GFX_trait_<trait key>)", "common/unit_leader/*.txt: 189 of 196 leader traits have GFX_trait_<key>; traits have no icon field; hoi4.exe has GFX_trait_; interface/aat_traits.gfx:10 GFX_trait_jaeger", Some("jaeger")),
         Doctrine => l(FullName, "doctrine: icon = {sprite}", "common/doctrines/subdoctrines/land/combat_support_subdoctrines.txt:282 icon = GFX_doctrine_air_cavalry_medium", None),
@@ -281,6 +281,16 @@ pub fn derived_companions(family: Family, canvas: [u32; 2]) -> Vec<DerivedCompan
             vec![c("small", DeriveKind::LandmarkSmall, [32, 32], 2, 0, None, "{prefix}{asset}_small", "GFX_{asset}_icon_small")]
         }
         Family::Medal => vec![c("small", DeriveKind::HalfSize, [28, 42], 1, 1, None, "{prefix}{asset}_small", "GFX_medal_icon_{asset}")],
+        Family::OperationIcon => vec![c(
+            "map",
+            DeriveKind::MapMedallion,
+            [48, 48],
+            1,
+            0,
+            Some("gfx/interface/operations/{feature_slug}/map"),
+            "{asset}_map",
+            "GFX_operations_{asset}_map",
+        )],
         _ => Vec::new(),
     }
 }
@@ -349,6 +359,7 @@ mod tests {
         assert_eq!(derived_companions(Family::Building, [64, 64])[0].strip(), [64, 32]);
         assert!(derived_companions(Family::Building, [32, 32]).is_empty(), "the small landmark is itself the small sprite");
         assert_eq!(derived_companions(Family::Medal, [56, 84])[0].strip(), [28, 42]);
+        assert_eq!(derived_companions(Family::OperationIcon, [85, 85])[0].strip(), [48, 48]);
         assert!(derived_companions(Family::Focus, [100, 88]).is_empty());
         assert_eq!(derived_companion(Family::Building, "small").map(|d| d.frames), Some(2));
         assert!(derived_companion(Family::Focus, "small").is_none());

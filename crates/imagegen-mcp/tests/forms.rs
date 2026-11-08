@@ -51,7 +51,12 @@ fn each_reviewed_family_prompt_states_its_vanilla_form() {
         ("mio_trait", &["trait icon form: one small, simple glyph", "round badge, disc or plate behind the object"], &["small round coloured badge"]),
         (
             "operation_icon",
-            &["operation phase icon form: a round period photograph", "monochrome sepia", "This family has only this form", "operation_picture"],
+            &[
+                "operation icon form: one square picture",
+                "warm, muted colour",
+                "This family has only this form",
+                "isolated object on a blank background",
+            ],
             &["One centred subject"],
         ),
         (
@@ -141,7 +146,7 @@ fn tier4_references_are_vanilla_files_of_the_family_form() {
         ("commander_trait", "/gfx/interface/traits/", |n| n.starts_with("trait_") && !n.starts_with("trait_operative_"), [23, 33]),
         ("division_emblem", "/gfx/interface/counters/division_templates_large/", |_| true, [76, 42]),
         ("mio_trait", "/gfx/interface/military_industrial_organization/trait_icons/", |_| true, [48, 48]),
-        ("operation_icon", "/gfx/interface/operations/phases_small/", |n| n.starts_with("phase_") && n.ends_with("_small.dds"), [59, 58]),
+        ("operation_icon", "/gfx/interface/operations/", |n| !n.starts_with("phase_") && !n.contains("_map"), [85, 85]),
         ("operation_picture", "/gfx/interface/operations/images/", |n| n.starts_with("phase_") && !n.contains("_small"), [210, 176]),
     ];
     for (family, folder, name_ok, size) in cases {

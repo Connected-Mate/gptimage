@@ -224,22 +224,20 @@ const AGENCY_UPGRADE_NEGATIVE: &[&str] = &[
     "a busy scene with many small objects",
 ];
 const OPERATION_ICON_RULES: &[&str] = &[
-    "The Hearts of Iron IV operation phase icon form: a round period photograph, a disc whose whole face is one documentary scene of the phase (people, vehicles, a place or an object), in monochrome sepia: warm brown-grey tones only, no other colour.",
-    "An old photograph look with soft grain. The edge of the disc is worn and slightly darkened, with no ring, rim or frame around it. Readable at {w}x{h} pixels.",
-    "Real transparent background outside the disc.",
-    "Leave a small empty margin around the disc.",
-    "This family has only this form. It is not the operation's square colour illustration or its round colour painting in a gold ring (other vanilla sprites), not the tilted photo card of the phase picture (operation_picture), and not a loose object on transparency.",
+    "The Hearts of Iron IV operation icon form: one square picture, a painted or photographic close-up of the operation's act, such as hands on a document, a bundle of dynamite, a handshake, soldiers in a line, a podium with guards or a tool on a table, filling the whole frame and composed for a {w}x{h} crop.",
+    "A warm, muted colour palette (browns, tans, warm greys, with a few colour accents), soft dramatic light and a slightly aged, painterly or photographic look. The subject is cropped tightly and reaches the edges of the picture. Keep the picture light and high-key: pale paper, bright lit hands or faces and a light, softly blurred surround; never a dark, black or night scene.",
+    "This family has only this form. It is not an isolated object on a blank background, not a round vignette (the phase icon), and not a tilted card: the card tilt, the outline and the shadow are added afterwards.",
+    "Do not draw a border, a frame, a ring, a tilt or a shadow.",
 ];
-/// Operation phase icon negatives: the other operation forms vanilla keeps in the same folder.
+/// Operation icon negatives: an isolated object, a ring or frame, text.
 const OPERATION_ICON_NEGATIVE: &[&str] = &[
-    "text",
-    "letters or numbers",
+    "text, captions or numbers",
     "watermark or signature",
-    "a drawn checkerboard pattern",
-    "colour other than sepia",
-    "a gold or metal ring around the disc",
-    "a square or tilted card",
-    "a painted illustration",
+    "a frame, border or ring",
+    "an isolated object on a blank or transparent background",
+    "an icon, emblem or symbol",
+    "a round vignette",
+    "a tilted card or a drop shadow",
 ];
 const OPERATION_PICTURE_RULES: &[&str] = &[
     "The Hearts of Iron IV operation phase picture form: one period photograph of the phase's scene that fills the whole frame, composed for a {w}x{h} crop, in monochrome sepia or warm black and white with natural film grain, a documentary press-photo look.",
@@ -689,12 +687,14 @@ fn rows() -> Vec<Row> {
             ..base(AgencyUpgrade, [68, 68], &[[68, 68]], "gfx/interface/operatives/icons/{feature_slug}", "agency_", "interface/{feature_slug}_agency_upgrades.gfx")
         },
         Row {
-            sprite: Some(("interface/{feature_slug}_operations.gfx", "GFX_phase_{asset}_small", &[])),
-            margin: 6,
+            sprite: Some(("interface/{feature_slug}_operations.gfx", "GFX_operations_{asset}", &[])),
+            background: Background::Opaque,
+            margin: 0,
+            checks: CARD_CHECKS,
             rules: OPERATION_ICON_RULES,
             negative: OPERATION_ICON_NEGATIVE,
-            note: "The 59x58 operation phase icon: an operation phase's icon names it in full, and all 73 vanilla ones are GFX_phase_<x>_small at 59x58, beside the phase's 210x176 picture GFX_phase_<x> (operation_picture). The folder also holds the 85x85 square and 48x48 ringed operation icons, a different coloured form that is not accepted here. All 71 vanilla phase icons keep exactly 6 px clear (the vignette spans 46 of 58 px), where the in-game frame likely overlaps, so the fit margin is 6 px.",
-            ..base(OperationIcon, [59, 58], &[[59, 58]], "gfx/interface/operations/{feature_slug}/icons", "phase_", "interface/{feature_slug}_operations.gfx")
+            note: "The 85x85 operation icon: an operation's icon = GFX_operations_<x> and its map_icon = GFX_operations_<x>_map (vanilla common/operations/00_operations.txt, 17 pairs). The model draws an opaque square close-up and the operation_card step turns it into vanilla's slightly tilted, outlined card with transparent corners and a soft shadow, so the art is checked for the corners, never for opacity. The 48x48 map icon (the same picture in a round gold ring) is derived from the finished card as a companion file map/<x>_map and sprite GFX_operations_<x>_map. The 59x58 phase icons (GFX_phase_<x>_small) beside the phase pictures are another sprite and are not generated.",
+            ..base(OperationIcon, [85, 85], &[[85, 85]], "gfx/interface/operations/{feature_slug}", "", "interface/{feature_slug}_operations.gfx")
         },
         Row {
             rules: COMMANDER_TRAIT_RULES,
@@ -1101,7 +1101,8 @@ mod tests {
     ///   dominant size of `idea_categories.industrial_concern` (checked below).
     /// * `mio_policy`: the combined trait and policy measurement is dominated by 48x48 traits; policies are the
     ///   60x60 files.
-    /// * `operation_icon`: the operation folder ties 210x176 (pictures) with 59x58 (phase icons, 71 files each).
+    /// * `operation_icon`: the operation folder is dominated by the 210x176 pictures and the 59x58 phase icons (71 files
+    ///   each); the operation icons are the 20 files of 85x85.
     /// * `counter_large`, `counter_small`: the strips (152x42 and 60x12) are not the most common image of the
     ///   shared counters folder, which also holds single-frame sprites (30x12 and 76x42).
     /// * `medal`: the dominant 16x28 files are older sprites no vanilla script or GUI names. Unit medals are
@@ -1142,7 +1143,7 @@ mod tests {
                 }
                 assert!(n >= 20, "{f}: only {n} files at {}x{}", s[0], s[1]);
                 if f == Family::OperationIcon {
-                    assert_eq!(n, dom_n, "operation_icon must tie the dominant size (59x58 vs 210x176)");
+                    assert!(n < dom_n, "operation_icon is the 85x85 minority of its folder");
                 }
             } else {
                 assert_eq!(s, dom, "{f}: strip {}x{} differs from the measured dominant {}x{} of {id}", s[0], s[1], dom[0], dom[1]);
@@ -1193,7 +1194,7 @@ mod tests {
             // documented exceptions: `background` says what the model is asked to draw. The report card and the
             // advisor card are made from an opaque picture and end with transparent corners; the achievement is
             // drawn as a transparent subject and ends on an opaque template.
-            if matches!(f, Family::ReportEvent | Family::OperationPicture | Family::AdvisorCard) {
+            if matches!(f, Family::ReportEvent | Family::OperationPicture | Family::OperationIcon | Family::AdvisorCard) {
                 assert_eq!(p.imagegen.background, Background::Opaque, "{f}");
                 continue;
             }
@@ -1337,7 +1338,7 @@ mod tests {
             assert!(p.imagegen.rubric.starts_with(f.group().as_str()), "{f}");
             if p.imagegen.background == Background::Opaque {
                 // cards keep transparent corners on purpose: they are checked for the corners instead of for opacity
-                let card = matches!(f, Family::ReportEvent | Family::OperationPicture | Family::AdvisorCard);
+                let card = matches!(f, Family::ReportEvent | Family::OperationPicture | Family::OperationIcon | Family::AdvisorCard);
                 let want = if card { "card_corners" } else { "opaque" };
                 assert!(p.imagegen.checks.iter().any(|c| c == want), "{f} must check {want}");
                 assert_eq!(p.imagegen.checks.iter().any(|c| c == "opaque"), !card, "{f}");
@@ -1416,8 +1417,8 @@ mod tests {
             ),
             (
                 Family::OperationIcon,
-                "operation phase icon form: a round period photograph",
-                &["monochrome sepia", "only this form", "operation_picture"],
+                "operation icon form: one square picture",
+                &["warm, muted colour", "only this form", "isolated object on a blank background"],
             ),
             (Family::OperationPicture, "operation phase picture form: one period photograph", &["only this form", "operation_icon"]),
             (Family::GuiTexture, "GUI texture form: flat interface material", &["straight on"]),
@@ -1438,15 +1439,15 @@ mod tests {
         }
         let neg = |f: Family| set[&f].imagegen.prompt.negative.join("; ");
         assert!(!neg(Family::MioTrait).contains("a frame or border") && neg(Family::MioTrait).contains("round badge"));
-        assert!(neg(Family::OperationIcon).contains("colour other than sepia") && neg(Family::OperationIcon).contains("square or tilted card"));
+        assert!(neg(Family::OperationIcon).contains("isolated object") && neg(Family::OperationIcon).contains("round vignette"));
         assert!(neg(Family::OperationPicture).contains("round vignette") && neg(Family::OperationPicture).contains("painted illustration"));
         assert!(neg(Family::CommanderTrait).contains("natural colours"));
         assert!(!neg(Family::GuiTexture).contains("frame"), "a frame texture is a frame");
         assert!(neg(Family::Building).contains("hill, landscape") && neg(Family::Building).contains("diorama base"));
         assert!(neg(Family::BopSide).contains("cracks") && neg(Family::MioPolicy).contains("view into the distance"));
         assert!(neg(Family::StateModifier).contains("small details") && neg(Family::MioDepartment).contains("grey or metallic"));
-        // one form, one size: the 85x85 and 48x48 operation icons are another form
-        assert_eq!(set[&Family::OperationIcon].accepted, vec![[59, 58]]);
+        // one form, one size: the 59x58 phase icons are another sprite
+        assert_eq!(set[&Family::OperationIcon].accepted, vec![[85, 85]]);
         // the form rule of each GUI texture kind
         for k in crate::family::GuiTextureKind::ALL {
             assert!(k.form_rule().contains(&format!("{} form", k.as_str().replace("background", "window background"))), "{k}");
@@ -1528,12 +1529,12 @@ mod tests {
     /// the width and height shares of the visible box) is compared with vanilla's median. The first five are never
     /// smaller than vanilla's by more than one pixel; the last five, fitted to vanilla's margins, are within one pixel
     /// either way. Measured on HOI4 1.19.4.1: focus 0.966, decision category icon 0.950, MIO department 0.979,
-    /// doctrine 0.953, commander trait 0.909, MIO trait 0.667, agency upgrade 0.765, operation icon 0.793, raid
+    /// doctrine 0.953, commander trait 0.909, MIO trait 0.667, agency upgrade 0.765, raid
     /// 0.719, idea concern 0.906.
     #[test]
     fn plaque_and_disc_emblems_are_fitted_at_vanillas_size() {
         // (family, folder, file prefix, also not larger than vanilla)
-        let cases: [(Family, &str, &str, bool); 11] = [
+        let cases: [(Family, &str, &str, bool); 10] = [
             (Family::Focus, "gfx/interface/goals", "goal", false),
             (Family::DecisionCategoryIcon, "gfx/interface/decisions", "decision_category", false),
             (Family::MioDepartment, "gfx/interface/military_industrial_organization/department_icons", "", false),
@@ -1541,7 +1542,6 @@ mod tests {
             (Family::CommanderTrait, "gfx/interface/traits", "trait_", false),
             (Family::MioTrait, "gfx/interface/military_industrial_organization/trait_icons", "", true),
             (Family::AgencyUpgrade, "gfx/interface/operatives/icons", "", true),
-            (Family::OperationIcon, "gfx/interface/operations", "", true),
             (Family::Raid, "gfx/interface/military_raids", "", true),
             (Family::IdeaConcern, "gfx/interface/ideas", "idea_", true),
             (Family::Medal, "gfx/interface/medals", "", true),

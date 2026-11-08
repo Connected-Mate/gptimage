@@ -39,6 +39,7 @@ pub mod flatten;
 pub mod focus_shine;
 pub mod frames;
 pub mod line_art;
+pub mod operation_card;
 pub mod pack_look;
 pub mod pillow;
 pub mod portrait;

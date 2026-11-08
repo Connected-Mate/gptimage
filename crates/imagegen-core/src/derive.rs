@@ -111,6 +111,8 @@ pub enum Class {
     MaxSide(u32),
     /// Files with no side shorter than this.
     MinSide(u32),
+    /// Square files of exactly this side (the 85x85 operation icons, not their 48x48 map icons).
+    Square(u32),
     /// Files at least this wide.
     MinWidth(u32),
     /// The largest size cluster of an event folder: report pictures.
@@ -165,9 +167,10 @@ pub fn specs() -> Vec<Spec> {
         spec(Technology, "gfx/interface/technologies", true, Class::MinWidth(120), &[]),
         spec(CounterLarge, "gfx/interface/counters/divisions_large", true, Class::Any, &[]),
         spec(CommanderTrait, "gfx/interface/traits", false, Class::Any, &["operative"]),
-        // vanilla's operation art is the phase art (phase_*); the folder also holds map markers and interface parts
+        // vanilla's operation pictures are the phase art (phase_*); the operation icons are the 85x85 cards (their 48x48
+        // map icons and the 59x58 phase icons are other sprites); the folder also holds interface parts
         Spec { require: &["phase"], ..spec(OperationPicture, "gfx/interface/operations", true, Class::MinSide(100), &[]) },
-        Spec { require: &["phase"], ..spec(OperationIcon, "gfx/interface/operations", true, Class::MaxSide(99), &[]) },
+        spec(OperationIcon, "gfx/interface/operations", true, Class::Square(85), &[]),
         spec(Achievement, "gfx/achievements", false, Class::Any, &["grey", "eligible"]),
         spec(SuperEvent, "gfx/super_events", true, Class::MinSide(300), &[]),
         spec(GuiTexture, "gfx/interface", false, Class::MinSide(150), &[]),
@@ -307,6 +310,7 @@ pub fn family_files(spec: &Spec, all: &[FileInfo]) -> (Vec<FileInfo>, Option<[u3
             Class::Any | Class::EventReport | Class::EventNews => true,
             Class::MaxSide(m) => w.max(h) <= m,
             Class::MinSide(m) => w.min(h) >= m,
+            Class::Square(m) => w == m && h == m,
             Class::MinWidth(m) => w >= m,
         };
         if !ok {

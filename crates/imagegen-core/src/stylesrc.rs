@@ -463,8 +463,9 @@ fn texture_dirs(f: Family, gui_kind: Option<GuiTextureKind>) -> Vec<Dir> {
         Medal => vec![dir("gfx/interface/medals", true)],
         AgencyUpgrade => vec![dir("gfx/interface/operatives/icons", true)],
         AgencyLogo => vec![dir("gfx/interface/operatives/agencies", true)],
-        // the 59x58 phase icons (phases_small); the 85x85 and 48x48 operation icons are a different, coloured form
-        OperationIcon => vec![dir("gfx/interface/operations", true).pre(&["phase_"])],
+        // the 85x85 operation cards beside the folder's interface parts (the size filter keeps only the 85x85 ones); the
+        // 48x48 map icons (map/) and the phase pictures and icons (images/, phases_small/) are other sprites
+        OperationIcon => vec![dir("gfx/interface/operations", false)],
         CommanderTrait => {
             vec![dir("gfx/interface/traits", false).pre(&["trait_"]).not_pre(&["trait_operative_", "trait_add_new", "trait_unknown"])]
         }
@@ -1375,8 +1376,8 @@ spriteTypes = {
         for stem in ["trait_operative_seducer", "trait_add_new", "trait_unknown"] {
             assert!(!accepts(Family::CommanderTrait, None, stem), "{stem}");
         }
-        assert!(accepts(Family::OperationIcon, None, "phase_bruneval_attack_small"));
-        assert!(!accepts(Family::OperationIcon, None, "infiltrate_naval_forces"), "the 85x85 operation icons are another form");
+        assert!(accepts(Family::OperationIcon, None, "infiltrate_naval_forces"));
+        assert!(accepts(Family::OperationIcon, None, "steal_blueprints"));
         assert!(!accepts(Family::OperationPicture, None, "phase_bruneval_attack_small"));
         assert!(accepts(Family::OperationPicture, None, "phase_bruneval_attack"));
         assert!(accepts(Family::BopSide, None, "bop_fin_mannerheim_good_side"));

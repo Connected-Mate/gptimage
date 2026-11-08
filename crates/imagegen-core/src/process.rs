@@ -116,6 +116,12 @@ pub enum Op {
         /// Grain seed.
         seed: i64,
     },
+    /// The operation card: the picture toned toward vanilla's warm muted palette, a one pixel outline, a small tilt and a
+    /// soft drop shadow on a transparent 85x85 canvas (see `recipes::operation_card`).
+    OperationCard {
+        /// Seed of the grain and the tilt.
+        seed: i64,
+    },
     /// Two-frame strip: the fitted icon, then the same icon with the selected-state stroke and glow
     /// (faction and agency logos).
     SelectedFrame {
@@ -277,6 +283,7 @@ impl Op {
             Op::Conform { .. } => "conform",
             Op::ReportCard { .. } => "report_card",
             Op::PhaseCard { .. } => "phase_card",
+            Op::OperationCard { .. } => "operation_card",
             Op::SelectedFrame { .. } => "selected_frame",
             Op::DisabledFrame { .. } => "disabled_frame",
             Op::UnitGlyph { .. } => "unit_glyph",
@@ -363,6 +370,7 @@ pub fn apply(img: &Rgba, op: &Op) -> Result<Rgba> {
             img,
             &crate::recipes::report_card::ReportCardParams { seed: *seed, ..crate::recipes::report_card::ReportCardParams::phase() },
         ),
+        Op::OperationCard { seed } => crate::recipes::operation_card::operation_card(img, *seed),
         Op::SelectedFrame { frames } => crate::recipes::frames::selected_strip(img, *frames),
         Op::DisabledFrame { frames } => crate::recipes::frames::disabled_strip(img, *frames),
         Op::UnitGlyph { kind } => crate::recipes::unit_art::unit_glyph(img, *kind),

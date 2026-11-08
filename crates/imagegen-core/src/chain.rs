@@ -20,6 +20,7 @@
 //! | `picture` v1 | opaque pictures, news, super event | `flatten_on`, `cover_resize` or `conform`, `grayscale` for news |
 //! | `report_card` v2 | report event | `report_card` or `conform` (an imported finished card) |
 //! | `phase_card` v1 | operation picture | `phase_card` (the report card on vanilla's phase picture mask) or `conform` (an imported finished card) |
+//! | `operation_card` v1 | operation icon | `operation_card` (the picture as vanilla's tilted, outlined 85x85 card with a soft shadow) or `conform` (an imported finished card); the 48x48 map medallion is a derived companion |
 //! | `selected_strip` v1 | faction logo, agency logo | `fit_subject`, `selected_frame` (or one `conform` for an imported finished strip) |
 //! | `landmark_strip` v1 | building | `fit_subject`, `second_frame`: the ruined state, a second candidate of the same asset (or one `conform`) |
 //! | `unit_counter` v1 | battalion and on-map counters | `unit_glyph` (silhouette to vanilla's material), `nato_frame` (the NATO box as frame 2), or one `conform` for an imported finished strip that is already in vanilla's material; any other strip is drawn again from its frame 1 (`frame_of`, `unit_glyph`, `nato_frame`) |
@@ -104,6 +105,8 @@ pub enum Recipe {
     ReportCard,
     /// Operation phase picture: the report card on vanilla's phase mask.
     PhaseCard,
+    /// Operation icon: the picture as vanilla's tilted, outlined 85x85 card (its 48x48 map medallion is a derived companion).
+    OperationCard,
     /// Two frames, the second selected.
     SelectedStrip,
     /// Two frames: the landmark, then its ruined state (a second candidate of the same asset), as vanilla does.
@@ -156,6 +159,7 @@ impl Recipe {
             Recipe::Picture => "picture",
             Recipe::ReportCard => "report_card",
             Recipe::PhaseCard => "phase_card",
+            Recipe::OperationCard => "operation_card",
             Recipe::SelectedStrip => "selected_strip",
             Recipe::LandmarkStrip => "landmark_strip",
             Recipe::UnitCounter => "unit_counter",
@@ -183,6 +187,7 @@ impl Recipe {
     pub fn version(self) -> u32 {
         match self {
             Recipe::ReportCard => crate::recipes::report_card::RECIPE_VERSION,
+            Recipe::OperationCard => crate::recipes::operation_card::RECIPE_VERSION,
             Recipe::UnitCounter | Recipe::DivisionSymbol => crate::recipes::unit_art::RECIPE_VERSION,
             Recipe::LineArt => crate::recipes::line_art::RECIPE_VERSION,
             Recipe::Raid => crate::recipes::raid::RECIPE_VERSION,
@@ -215,6 +220,7 @@ pub fn recipe_of(profile: &Profile) -> Recipe {
         Family::CounterLarge | Family::CounterSmall | Family::DivisionEmblem if sw.keep_colours => Recipe::KeptUnitArt,
         Family::ReportEvent => Recipe::ReportCard,
         Family::OperationPicture => Recipe::PhaseCard,
+        Family::OperationIcon => Recipe::OperationCard,
         Family::FactionLogo | Family::AgencyLogo => Recipe::SelectedStrip,
         Family::Building => Recipe::LandmarkStrip,
         Family::CounterLarge | Family::CounterSmall => Recipe::UnitCounter,
@@ -486,6 +492,22 @@ pub fn plan_finishing_with(
                 ops.push(Op::FlattenOn { background: FLATTEN_BACKGROUND });
                 let seed = seed_from_sha(candidate_sha256);
                 ops.push(if recipe == Recipe::ReportCard { Op::ReportCard { seed } } else { Op::PhaseCard { seed } });
+            }
+        }
+        Recipe::OperationCard => {
+            let clear_corners = [
+                (0, 0),
+                (img.width.saturating_sub(1), 0),
+                (0, img.height.saturating_sub(1)),
+                (img.width.saturating_sub(1), img.height.saturating_sub(1)),
+            ]
+            .iter()
+            .all(|(x, y)| img.alpha(*x, *y) == 0);
+            if imported && size == [85, 85] && clear_corners {
+                ops.push(Op::Conform { width: 85, height: 85 });
+            } else {
+                ops.push(Op::FlattenOn { background: FLATTEN_BACKGROUND });
+                ops.push(Op::OperationCard { seed: seed_from_sha(candidate_sha256) });
             }
         }
         Recipe::SelectedStrip | Recipe::LandmarkStrip => {
@@ -763,6 +785,7 @@ pub fn required_stages(profile: &Profile) -> Vec<Vec<&'static str>> {
         Recipe::Picture => vec![vec!["flatten_on"], vec!["cover_resize", "conform"]],
         Recipe::ReportCard => vec![vec!["report_card", "conform"]],
         Recipe::PhaseCard => vec![vec!["phase_card", "conform"]],
+        Recipe::OperationCard => vec![vec!["operation_card", "conform"]],
         Recipe::SelectedStrip => vec![vec!["fit_subject", "conform"], vec!["selected_frame", "conform"]],
         Recipe::LandmarkStrip => vec![vec!["fit_subject", "conform"], vec!["second_frame", "conform"]],
         Recipe::UnitCounter => vec![vec!["unit_glyph", "conform"], vec!["nato_frame", "conform"]],

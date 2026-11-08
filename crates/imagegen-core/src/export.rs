@@ -421,7 +421,14 @@ mod tests {
                 ],
             ),
             AgencyUpgrade => ("codebook", None, one("GFX_agency_codebook", "gfx/interface/operatives/icons/iron_pact/agency_codebook.dds")),
-            OperationIcon => ("night_drop", None, one("GFX_phase_night_drop_small", "gfx/interface/operations/iron_pact/icons/phase_night_drop.dds")),
+            OperationIcon => (
+                "night_drop",
+                None,
+                vec![
+                    ("GFX_operations_night_drop", "gfx/interface/operations/iron_pact/night_drop.dds", 1),
+                    ("GFX_operations_night_drop_map", "gfx/interface/operations/iron_pact/map/night_drop_map.dds", 1),
+                ],
+            ),
             OperationPicture => ("night_drop", None, one("GFX_phase_night_drop", "gfx/interface/operations/iron_pact/pictures/phase_night_drop.dds")),
             CommanderTrait => ("stubborn", None, one("GFX_trait_stubborn", "gfx/interface/traits/iron_pact/trait_stubborn.dds")),
             PersonalTrait => ("gambler", None, one("GFX_trait_gambler", "gfx/interface/traits/iron_pact/personal/trait_gambler.dds")),

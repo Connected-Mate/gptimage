@@ -8,6 +8,7 @@
 //! | [`DeriveKind::SmallEmblem`] | division emblem | `division_templates_small/` 30x12: the large emblem fitted to about 0.4 scale, light grey (values 124 to 211), with a black outline | fit the subject to 28x10 at most 30/76 scale, remap its luminance to 124..211, add a black outline at 20 percent of the neighbouring alpha |
 //! | [`DeriveKind::TextIcon`] | on-map counter | `gfx/texticons/unit_*_icon_small.dds`: the on-map strip, frame 1 tinted green, frame 2 (the NATO box) unchanged in 22 of 34 pairs | frame 1 RGB multiplied by the least-squares tint (0.573, 0.735, 0.573), frame 2 copied |
 //! | [`DeriveKind::Miniature`] | faction logo | `*_miniature` 32x32: frame 1's emblem fitted edge to edge (median bounding box 32 px) | frame 1's subject fitted to 32x32 |
+//! | [`DeriveKind::MapMedallion`] | operation card | `map/<name>_map.dds` 48x48: the picture's centre at 0.6 scale in a round, bevelled gold ring | the central 64 px of the card in the ring of [`crate::recipes::operation_card`] |
 //! | [`DeriveKind::HalfSize`] | medal (`_large` to the small strip) | medals: the small strip is the large one downscaled (median MAE 2.6 against Lanczos) | Lanczos3 to half size, frame by frame |
 //! | [`DeriveKind::LandmarkSmall`] | landmark (large to `_small`) | `buildings/*_icon_small` 64x32: a flat orange pictogram, yellow-orange at the top to deep orange at the bottom, with a brown edge and a faint black rim, in a box of 26x19 inside 3 px at the sides, 6 at the top and 7 at the bottom | both frames cropped together, fitted into that box, then recoloured on vanilla's orange ramp ([`LANDMARK_SMALL`]) |
 
@@ -42,6 +43,8 @@ pub enum DeriveKind {
     HalfSize,
     /// The flat orange pictogram strip of a small landmark.
     LandmarkSmall,
+    /// The 48x48 map medallion of an operation card: the card's centre in a gold ring.
+    MapMedallion,
 }
 
 impl DeriveKind {
@@ -53,6 +56,7 @@ impl DeriveKind {
             DeriveKind::Miniature => "miniature",
             DeriveKind::HalfSize => "half_size",
             DeriveKind::LandmarkSmall => "landmark_small",
+            DeriveKind::MapMedallion => "map_medallion",
         }
     }
 }
@@ -65,6 +69,7 @@ pub fn derive(kind: DeriveKind, main: &Rgba, frames: u32) -> Result<Rgba> {
         DeriveKind::Miniature => miniature(main, frames),
         DeriveKind::HalfSize => half_size(main, frames),
         DeriveKind::LandmarkSmall => landmark_small(main, frames),
+        DeriveKind::MapMedallion => crate::recipes::operation_card::map_medallion(main),
     }
 }
 

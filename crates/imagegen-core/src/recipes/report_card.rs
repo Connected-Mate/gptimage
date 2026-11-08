@@ -104,7 +104,7 @@ pub fn cover_crop(img: &Rgba, target: (u32, u32)) -> Result<Rgba> {
     resized.crop(left, top, target.0, target.1)
 }
 
-fn add_grain(img: &mut Rgba, strength: i32, seed: i64) {
+pub(crate) fn add_grain(img: &mut Rgba, strength: i32, seed: i64) {
     if strength <= 0 {
         return;
     }
@@ -141,7 +141,7 @@ fn paper_texture(size: (u32, u32), seed: i64, strength: i32) -> Rgba {
     base
 }
 
-fn rotate_card(card: &Rgba, angle: f64, supersample: u32, edge_soften: f64) -> Result<Rgba> {
+pub(crate) fn rotate_card(card: &Rgba, angle: f64, supersample: u32, edge_soften: f64) -> Result<Rgba> {
     let ss = supersample.max(1);
     let mut rotated = if ss > 1 {
         let large = resize_lanczos3(card, card.width * ss, card.height * ss)?;
