@@ -1,5 +1,7 @@
 # Kit integration
 
+[Documentation index](../README.md#documentation)
+
 The [Agentic HOI4 Modding Kit](https://github.com/klimPaskov/Agentic-HOI4-Modding) and this repository work together. This page says what the integration is, how the pieces connect, and what is still pending. The kit is a separate repository, so check its `main` for the current state.
 
 ## What the integration is

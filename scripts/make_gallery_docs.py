@@ -310,7 +310,7 @@ def docs():
     fams = {f: cli("families", f)["family"] for f in order}
     out = []
     w = out.append
-    w("# Asset gallery: the 40 still families and 4 animated sprites\n")
+    w("# Family catalogue: the 40 still families and 4 animated sprites\n")
     w(
         "Every family below was made by the tool itself, on the [ChatGPT login](chatgpt-login.md) (your own ChatGPT plan, no API key, no money). "
         "Each image is a real output: planned, generated, processed, validated, reviewed and installed by `hoi4-imagegen`, then shown here at its native size on a dark tile. "
@@ -373,7 +373,7 @@ def docs():
             if imported:
                 w(f"| Made | {man['date'][:10]}. The tool does not generate this family, so the source art was made on the same ChatGPT login with the `gptimage` MCP ({man['source_image_size']}), cut to the exact frames and imported with `hoi4.image_process` |")
             else:
-                w(f"| Made | {man['date'][:10]} on `{man['model']}` (high reasoning effort), image tool `{man['image_tool_model']}`, quality {man['image_quality']}, source {man['source_image_size']} |")
+                w(f"| Made | {man['date'][:10]} on `{man['model']}` (high reasoning effort), ChatGPT's current image model, quality {man['image_quality']}, source {man['source_image_size']} |")
             w(f"| Image SHA-256 | `{man['sha256']}` |")
             w("")
             if imported:

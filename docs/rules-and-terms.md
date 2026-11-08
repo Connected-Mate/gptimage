@@ -1,5 +1,7 @@
 # Rules and terms for AI-generated mod assets
 
+[Documentation index](../README.md#documentation)
+
 What Paradox, Steam and the image providers say about AI-generated art in Hearts of Iron IV mods, and what this tool does about it. Researched 2026-11-01. This is a summary for modders, not legal advice. Sources that could not be read are marked **unverified**: check them yourself before you rely on them.
 
 ## Paradox Interactive

@@ -1,6 +1,17 @@
-# How to: sign in, make a first image, fix problems
+# How-to: sign in, make a first image, fix problems
+
+[Documentation index](../README.md#documentation)
 
 This is the short practical guide. The [reference](reference.md) has the full details and the [README](../README.md) is the short tour.
+
+## Contents
+
+* [1. Sign in (ChatGPT login)](#1-sign-in-chatgpt-login)
+* [2. Check the setup](#2-check-the-setup)
+* [3. Make a first image](#3-make-a-first-image)
+* [4. Fix problems](#4-fix-problems)
+* [5. Make a style pack for a mod with its own look](#5-make-a-style-pack-for-a-mod-with-its-own-look)
+* [6. Before you publish a mod](#6-before-you-publish-a-mod)
 
 ## 1. Sign in (ChatGPT login)
 

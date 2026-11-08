@@ -1,5 +1,7 @@
 # Test layers
 
+[Documentation index](../README.md#documentation)
+
 Evidence kinds stay separate. Nothing marked synthetic is provider evidence.
 
 | Layer | Where | What it proves | Evidence kind |

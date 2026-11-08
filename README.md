@@ -18,34 +18,32 @@
 </p>
 
 <p align="center">
+  <a href="#install-and-sign-in">Install</a> ·
   <a href="#quick-start">Quick start</a> ·
+  <a href="#tools-and-families">Tools</a> ·
+  <a href="#styles">Styles</a> ·
   <a href="docs/gallery/big/README.md">Gallery</a> ·
-  <a href="#tools">Tools</a> ·
-  <a href="#providers-and-the-chatgpt-login">Providers</a> ·
-  <a href="docs/how-to.md">How-to</a> ·
+  <a href="#troubleshooting">Troubleshooting</a> ·
   <a href="docs/reference.md">Reference</a> ·
   <a href="docs/rules-and-terms.md">Rules and terms</a>
 </p>
 
-Ask your coding agent for a focus icon, an event picture, a portrait, a flag or a counter. HOI4 Imagegen generates it, fits it to the exact canvas the game expects, checks it against vanilla's own art and installs a ready DDS file with its sprite entry. It covers 44 asset families: 40 still ones and 4 animated sprites.
+Ask your coding agent for a focus icon, an event picture, a portrait, a flag or a counter. HOI4 Imagegen generates it, fits it to the exact canvas the game expects, checks it against vanilla's own art and installs a ready DDS file with its sprite entry. It covers 44 asset families: 40 still ones and 4 animated sprites. The catalogue lists one more, `model_reference`, which holds model reference sheets and is not game art.
 
-**[See the gallery](docs/gallery/big/README.md)**: every family beside vanilla references, plus sections in the style of *The New Order* and *The Fire Rises*.
+## Contents
 
-[![One current example of each still family](docs/gallery/contact-sheet.webp)](docs/gallery/big/README.md)
+1. [What it is](#what-it-is): what it does, and where it fits in the Agentic HOI4 Modding workflow
+2. [Install and sign in](#install-and-sign-in): HOI4 Mod Setup or by hand, the ChatGPT login and the other providers
+3. [Quick start](#quick-start): check the setup, connect your agent, ask for an image
+4. [Tools and families](#tools-and-families): the 22 tools and the 44 families
+5. [Styles](#styles): style references, house styles and style packs
+6. [Gallery](#gallery): every family beside references, with the contact sheet and six examples
+7. [Troubleshooting](#troubleshooting): where to look when something fails
+8. [Documentation](#documentation): the how-to, the reference, the catalogue and every other page, trailer pages included
+9. [Rules and AI disclosure](#rules-and-ai-disclosure)
+10. [Upstream and license](#upstream-and-license)
 
-<p align="center">
-  <a href="https://www.youtube.com/watch?v=4ko6f-icwDc"><img src="docs/images/imagegen-trailer-thumbnail.png" alt="Watch the HOI4 Imagegen trailer"></a>
-</p>
-
-> ### Part of the Agentic HOI4 Modding workflow
->
-> HOI4 Imagegen is one piece of **[Agentic HOI4 Modding](https://github.com/klimPaskov/Agentic-HOI4-Modding)**, the full workflow for building HOI4 mods with a coding agent.
->
-> * **[HOI4 Mod Setup](https://github.com/klimPaskov/HOI4-Mod-Setup/releases/latest)** installs HOI4 Imagegen into each mod project, writes the MCP entries for your coding tools and offers the ChatGPT sign-in.
-> * **[Agentic HOI4 Modding](https://github.com/klimPaskov/Agentic-HOI4-Modding)**, the kit of skills, agents and an offline wiki, drives it: its art skills and agents plan the assets and call the `hoi4.image_*` tools.
-> * **[HOI4 Agent Tools](https://github.com/klimPaskov/hoi4-agent-tools)** works beside it: the same agent writes focus trees, events and maps there, and HOI4 Imagegen's audit uses its engine to trace every sprite.
-
-## What it does
+## What it is
 
 You ask your agent for an asset. HOI4 Imagegen plans the job, shows the cost, calls an image provider, fits the result to the exact HOI4 canvas, runs the family's own processing, checks the file, lets a reviewer approve it and installs a real DDS or TGA file with a sprite snippet and a provenance record.
 
@@ -55,21 +53,17 @@ You ask your agent for an asset. HOI4 Imagegen plans the job, shows the cost, ca
 * **Install is gated.** Validation passed, a review approved this exact file, and nothing changed since. Nothing is overwritten and nothing leaves the mod project.
 * **Style from your mod first.** A plan picks style references from your own pinned styles and assets, then the kit's shelf, then vanilla art. A [style pack](docs/reference.md#style-packs) carries a mod's own house style across every family it restyles.
 
-## Examples
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=4ko6f-icwDc"><img src="docs/images/imagegen-trailer-thumbnail.png" alt="Watch the HOI4 Imagegen trailer"></a>
+</p>
 
-Every image below was made by the tool on the ChatGPT login, then processed and validated by it and passed by its check against the game's own art. They are shown on a dark tile, enlarged by whole numbers when small, and are not retouched.
+**Part of the Agentic HOI4 Modding workflow.** HOI4 Imagegen is one piece of **[Agentic HOI4 Modding](https://github.com/klimPaskov/Agentic-HOI4-Modding)**, the full workflow for building HOI4 mods with a coding agent.
 
-| Focus icon (100x88) | Leader portrait (156x210) | Faction logo (two frames) |
-|:---:|:---:|:---:|
-| <img src="docs/gallery/focus.webp" alt="Focus icon" width="200"> | <img src="docs/gallery/leader_portrait.webp" alt="Leader portrait" width="156"> | <img src="docs/gallery/faction_logo.webp" alt="Faction logo" width="200"> |
+* **[HOI4 Mod Setup](https://github.com/klimPaskov/HOI4-Mod-Setup/releases/latest)** installs HOI4 Imagegen into each mod project, writes the MCP entries for your coding tools and offers the ChatGPT sign-in.
+* **[Agentic HOI4 Modding](https://github.com/klimPaskov/Agentic-HOI4-Modding)**, the kit of skills, agents and an offline wiki, drives it: its art skills and agents plan the assets and call the `hoi4.image_*` tools.
+* **[HOI4 Agent Tools](https://github.com/klimPaskov/hoi4-agent-tools)** works beside it: the same agent writes focus trees, events and maps there, and HOI4 Imagegen's audit uses its engine to trace every sprite.
 
-| News event picture (397x153) | Report event card (210x176) | Technology picture (146x54) |
-|:---:|:---:|:---:|
-| <img src="docs/gallery/news_event.webp" alt="News event picture" width="397"> | <img src="docs/gallery/report_event.webp" alt="Report event card" width="210"> | <img src="docs/gallery/technology.webp" alt="Technology picture" width="292"> |
-
-See many more in the [gallery](docs/gallery/big/README.md): every family beside vanilla references from the game, plus sections in the style of *The New Order* and *The Fire Rises*. It grows as more runs finish. The [documentation](docs/families.md) covers the 40 still families, each with its canvas, the names the game looks up, the processing chain, the checks, an example call and a current example, and the 4 animated sprites.
-
-## Quick start
+## Install and sign in
 
 1. **Install it.** The easy way is [HOI4 Mod Setup](https://github.com/klimPaskov/HOI4-Mod-Setup/releases/latest) 0.9.2 or later: tick **Install hoi4-imagegen** on the image step. Setup downloads the [latest release](https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/latest) (<!-- latest-release -->v0.3.8<!-- /latest-release -->) for your computer, checks its SHA-256, installs it in your mod and then opens the ChatGPT sign-in in your browser by itself. Other backends are under **Use another backend**. To install by hand, download the archive for your platform from the [releases](https://github.com/klimPaskov/hoi4-imagegen-mcp/releases) (Windows, macOS and Linux, `SHA256SUMS` included) and unpack it somewhere on your `PATH`.
 2. **Sign in once** with your ChatGPT account, and no API key is needed. Setup does this step for you. By hand it is one command, which opens the browser, with nothing to type or confirm:
@@ -78,13 +72,33 @@ See many more in the [gallery](docs/gallery/big/README.md): every family beside 
    hoi4-imagegen login
    ```
 
-3. **Check the setup** from your mod folder:
+The binaries are unsigned, so Windows SmartScreen and macOS Gatekeeper may warn. Check a download with `SHA256SUMS` and `gh attestation verify`, as the [reference](docs/reference.md#install) describes.
+
+### Providers and the ChatGPT login
+
+| Provider | Needs |
+|---|---|
+| **ChatGPT login (the default)** | `hoi4-imagegen login` once. Uses your own ChatGPT plan, no API key |
+| OpenAI API | `OPENAI_API_KEY` |
+| Google Gemini API | `GEMINI_API_KEY` or `GOOGLE_API_KEY` |
+| fal | `FAL_KEY` |
+| ComfyUI | an endpoint in the project config |
+
+Once you have signed in, the ChatGPT login is the default provider on your machine. A provider named in a plan, a style profile or the project config wins. Keys come from the environment, or from the credential store where HOI4 Mod Setup saved them, and are never written into a project file.
+
+**Which image model.** The ChatGPT sign-in route uses ChatGPT's current image model, which is the latest one, and the backend picks it. The OpenAI API route defaults to GPT-Image 2.6 Flare for icons and small sprites and GPT-Image 2.6 Sunburst for edits, larger images, portraits, animations and model references; a model you name always wins.
+
+Before you use the login, know that it calls a ChatGPT backend that OpenAI does not document for other tools, so it can change or be blocked without notice. Heavy use counts against your plan, and the consequences are yours. The risk note is shown as information at sign-in, and signing in accepts it. How the route picks the reasoning effort, how many requests it sends at once and when it slows down are in [docs/chatgpt-login.md](docs/chatgpt-login.md).
+
+## Quick start
+
+1. **Check the setup** from your mod folder:
 
    ```sh
    hoi4-imagegen --project-root . doctor
    ```
 
-4. **Connect your agent.** Setup writes this for you. By hand, put it in `.mcp.json` for Claude Code (Codex uses `.codex/config.toml`, see [the reference](docs/reference.md#by-hand)):
+2. **Connect your agent.** Setup writes this for you. By hand, put it in `.mcp.json` for Claude Code (Codex uses `.codex/config.toml`, see [the reference](docs/reference.md#by-hand)):
 
    ```json
    {
@@ -97,11 +111,9 @@ See many more in the [gallery](docs/gallery/big/README.md): every family beside 
    }
    ```
 
-5. **Ask for an image**, for example "make a 156x210 portrait for the Atlantis focus". The tools are named `hoi4.image_*`. The [how-to](docs/how-to.md) walks through one asset from the plan to the install, and the [recipes](examples/recipes.md) cover sets, flags, report pictures and buildings with a ruined frame.
+3. **Ask for an image**, for example "make a 156x210 portrait for the Atlantis focus". The tools are named `hoi4.image_*`. The [how-to](docs/how-to.md) walks through one asset from the plan to the install, and the [recipes](examples/recipes.md) cover sets, flags, report pictures and buildings with a ruined frame.
 
-The binaries are unsigned, so Windows SmartScreen and macOS Gatekeeper may warn. Check a download with `SHA256SUMS` and `gh attestation verify`, as the [reference](docs/reference.md#install) describes.
-
-## Tools
+## Tools and families
 
 There are 22 tools. Seven plan families by group, and each takes a required `family` whose schema lists only that group's families.
 
@@ -122,28 +134,49 @@ There are 22 tools. Seven plan families by group, and each takes a required `fam
 | `hoi4.image_audit` | A read-only audit of the whole mod: sprite reuse across families, missing textures, undefined sprites, wrong canvas sizes |
 | `hoi4.image_set` | Every icon of one focus tree file as one set: one shared style, one asset per distinct sprite, briefs from the focus names |
 
-Every tool is also on the command line: `hoi4-imagegen call <tool> '<json>'`. The [reference](docs/reference.md#tools) has the full table.
+Every tool is also on the command line: `hoi4-imagegen call <tool> '<json>'`. The [reference](docs/reference.md#tools) has the full table. The [family catalogue](docs/families.md) covers the 40 still families, each with its canvas, the names the game looks up, the processing chain, the checks, an example call and a current example, and the [4 animated sprites](docs/families.md#animated-sprites).
 
-## Providers and the ChatGPT login
+## Styles
 
-| Provider | Needs |
-|---|---|
-| **ChatGPT login (the default)** | `hoi4-imagegen login` once. Uses your own ChatGPT plan, no API key |
-| OpenAI API | `OPENAI_API_KEY` |
-| Google Gemini API | `GEMINI_API_KEY` or `GOOGLE_API_KEY` |
-| fal | `FAL_KEY` |
-| ComfyUI | an endpoint in the project config |
+A plan takes its style from your own pinned styles and assets first, then the kit's shelf, then vanilla art. A [style pack](docs/reference.md#style-packs) carries a mod's own house style across every family it restyles, and [the how-to](docs/how-to.md#5-make-a-style-pack-for-a-mod-with-its-own-look) shows how to derive one from the mod. The [reference](docs/reference.md#style-references) explains style references and profiles. The gallery has sections in the style of *The New Order* and *The Fire Rises*.
 
-Once you have signed in, the ChatGPT login is the default provider on your machine. A provider named in a plan, a style profile or the project config wins. Keys come from the environment, or from the credential store where HOI4 Mod Setup saved them, and are never written into a project file.
+## Gallery
 
-Before you use the login, know that it calls a ChatGPT backend that OpenAI does not document for other tools, so it can change or be blocked without notice. Heavy use counts against your plan, and the consequences are yours. The risk note is shown as information at sign-in, and signing in accepts it. How the route picks the reasoning effort, how many requests it sends at once and when it slows down are in [docs/chatgpt-login.md](docs/chatgpt-login.md).
+**[See the gallery](docs/gallery/big/README.md)**: every family beside vanilla references, plus sections in the style of *The New Order* and *The Fire Rises*, each with a few credited reference images from the mod. It grows as more runs finish.
 
-## More
+[![One current example of each still family](docs/gallery/contact-sheet.webp)](docs/gallery/big/README.md)
 
-* [How-to](docs/how-to.md): sign in, make a first image, fix problems
-* [Asset gallery](docs/families.md): the still families with real examples, and the [animated sprites](docs/families.md#animated-sprites)
+Every image below was made by the tool on the ChatGPT login, then processed and validated by it and passed by its check against the game's own art. They are shown on a dark tile, enlarged by whole numbers when small, and are not retouched.
+
+| Focus icon (100x88) | Leader portrait (156x210) | Faction logo (two frames) |
+|:---:|:---:|:---:|
+| <img src="docs/gallery/focus.webp" alt="Focus icon" width="200"> | <img src="docs/gallery/leader_portrait.webp" alt="Leader portrait" width="156"> | <img src="docs/gallery/faction_logo.webp" alt="Faction logo" width="200"> |
+
+| News event picture (397x153) | Report event card (210x176) | Technology picture (146x54) |
+|:---:|:---:|:---:|
+| <img src="docs/gallery/news_event.webp" alt="News event picture" width="397"> | <img src="docs/gallery/report_event.webp" alt="Report event card" width="210"> | <img src="docs/gallery/technology.webp" alt="Technology picture" width="292"> |
+
+## Troubleshooting
+
+* Run `hoi4-imagegen --project-root . doctor` first. It checks the providers and keys, the game folder, the profiles and the ledger.
+* [How-to, section 4](docs/how-to.md#4-fix-problems): sign-in and provider problems, processing and validation messages, Windows and the keychain, and where things are.
+* [ChatGPT login](docs/chatgpt-login.md): the sign-in steps, the request limits and what the backend controls.
+* Questions, bugs and ideas go to the [issues](https://github.com/klimPaskov/hoi4-imagegen-mcp/issues) or the [Discord](https://discord.gg/rAXesGcT2t).
+
+## Documentation
+
+* [How-to](docs/how-to.md): sign in, make a first image, fix problems, make a style pack, publish a mod
+* [Family catalogue](docs/families.md): the still families with real examples, and the [animated sprites](docs/families.md#animated-sprites)
 * [Reference](docs/reference.md): families, processing chains, names the game looks up, style references, validation, install and project config
-* [ChatGPT login](docs/chatgpt-login.md), [rules and terms](docs/rules-and-terms.md), [kit integration](docs/kit-integration.md), [test layers](docs/testing.md), [recipes](examples/recipes.md)
+* [Recipes](examples/recipes.md): sets, flags, report pictures and buildings with a ruined frame
+* [ChatGPT login](docs/chatgpt-login.md): the sign-in route in detail
+* [Rules and terms](docs/rules-and-terms.md): Paradox, Steam and the image providers
+* [Kit integration](docs/kit-integration.md): how the Agentic HOI4 Modding kit calls the tools
+* [Test layers](docs/testing.md): what each test proves and what could not run
+* [Agent skill](skill/hoi4-imagegen/SKILL.md): the loop and the facts an agent needs
+* [Gallery](docs/gallery/big/README.md), and the trailer: [sources](docs/trailer/SOURCES.md), [storyboard](docs/trailer/STORYBOARD.md), [YouTube text](docs/trailer/YOUTUBE.md) and [Reddit text](docs/trailer/REDDIT.md)
+
+## Rules and AI disclosure
 
 AI-generated art in a mod: disclosing it is recommended, the ledger records provider, model, date and prompt for every asset, and portraits of real people raise personal-rights questions. Read [rules and terms](docs/rules-and-terms.md).
 

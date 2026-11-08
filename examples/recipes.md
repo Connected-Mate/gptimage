@@ -1,5 +1,7 @@
 # Recipes
 
+[Documentation index](../README.md#documentation)
+
 Each recipe is the sequence of tool calls (or `hoi4-imagegen call <tool> '<json>'`). Replace the names. The provider is the first ready one (the ChatGPT login once you have signed in), unless a call names `provider`. Ids look like `feature.asset-v1` for a candidate and `feature.asset-v1-p1` for a processed artifact. [docs/how-to.md](../docs/how-to.md) walks through one asset with the full arguments.
 
 ## 1. Five focus icons with shine sprites from one style

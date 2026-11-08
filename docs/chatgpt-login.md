@@ -1,5 +1,7 @@
 # ChatGPT login
 
+[Documentation index](../README.md#documentation)
+
 The ChatGPT-login provider makes images on your own ChatGPT plan, with no API key. Decision D-12a (HOI4 Factory, 2026-11-01) makes it a first-class local route:
 - It ships in every local build, with no feature flag, config entry or environment variable.
 - You sign in once in the browser. The risk note is shown as information, and signing in accepts it. There is nothing to type.
@@ -30,6 +32,8 @@ Other commands:
 - The MCP tool `hoi4.image_status` reports `chatgpt_login.signed_in`.
 
 ## The model is fixed
+
+The sign-in route uses ChatGPT's current image model, which is the latest one, and the backend picks it. Model choice such as GPT-Image 2.6 applies to the OpenAI API route, not to this one. The outer model and effort below are what the route fixes and checks.
 
 Every image runs on **gpt-6-luna**. This is the maintainer's decision of 2026-11-01, and there is no other model and no model fallback.
 
@@ -112,7 +116,7 @@ Set `HOI4_IMAGEGEN_RECORD_RESPONSES=<folder>` to save each raw backend response.
 
 The first signed-in probe was on Windows on 2026-11-01. Its fixture is `crates/provider-chatgpt-login/tests/fixtures/recorded-real/focus-luna-high-2026-11-01.sse`, and the evidence is `docs/evidence/2026-11-01-luna-probe.json`.
 - The backend ran the request on `gpt-6-luna` with `reasoning.effort = high`, as both `response.created` and `response.completed` report.
-- The pixels come from the backend's hosted image tool, which the response names `gpt-image-2-codex`.
+- The pixels come from the backend's hosted image tool, which is ChatGPT's current image model, the latest one.
 - The backend replaces the tool settings we send with `quality = auto` and `size = auto`. The probe image came back at quality `medium`, 1337x1176, with a transparent background.
 
 So the route forces and verifies the outer model and effort, but it cannot choose the image tool's model, quality or size. The ledger records what the backend reported for every image.

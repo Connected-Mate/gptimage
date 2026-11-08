@@ -1,4 +1,6 @@
-# Asset gallery: the still families and 4 animated sprites
+# Family catalogue: the still families and 4 animated sprites
+
+[Documentation index](../README.md#documentation)
 
 Every example below was made by the tool itself on the [ChatGPT login](chatgpt-login.md) with version 0.3 or later: planned, generated, processed and validated by `hoi4-imagegen`, and passed by its check against the game's own art. Each is shown at its native size on a dark tile, enlarged by a whole number when small so the pixels stay crisp. Nothing is retouched. They are files the tool made, not in-game captures. The [big gallery](gallery/big/README.md) has many more per family beside vanilla references, and [`gallery/examples.json`](gallery/examples.json) lists the brief and build of each example here.
 
@@ -42,7 +44,7 @@ Planned with `hoi4.image_icon`.
 | Installed files (example) | `gfx/interface/operatives/icons/gallery/agency_cipher_bureau.dds` |
 | Processing | recipe `icon` v1: trim, fit to the canvas with the profile margin, grayscale where the family needs it. Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 68, margin 2, width 68) |
 | Checks | `size`, `alpha`, `opaque_canvas`, `fringe`, `margin`, `fill`, `checker`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1254x1254 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1254x1254 |
 | Image SHA-256 | `a97b981f58597238d63aa5ebaf8406f59ebf6532c4877baa13ec3dafd528fe7d` |
 
 ```sh
@@ -70,7 +72,7 @@ common/intelligence_agency_upgrades/intelligence_agency_upgrades.txt:73 picture 
 | Installed files (example) | `gfx/interface/bop/gallery/bop_defenders_of_order.dds` |
 | Processing | recipe `icon` v1: trim, fit to the canvas with the profile margin, grayscale where the family needs it. Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 88, margin 2, width 72) |
 | Checks | `size`, `alpha`, `opaque_canvas`, `fringe`, `margin`, `fill`, `checker`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1254x1254 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1254x1254 |
 | Image SHA-256 | `01e54213b1beb429ad433c4c1528a65df160bbd8f373720e940c5878a593d741` |
 
 ```sh
@@ -98,7 +100,7 @@ common/bop/PRC.txt:10 icon = GFX_PRC_bop_left_side
 | Installed files (example) | `gfx/interface/traits/gallery/trait_armour_expert.dds` |
 | Processing | recipe `icon` v1: trim, fit to the canvas with the profile margin, grayscale where the family needs it. Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 33, margin 1, width 23) |
 | Checks | `size`, `alpha`, `opaque_canvas`, `fringe`, `margin`, `fill`, `checker`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1047x1502 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1047x1502 |
 | Image SHA-256 | `0c11a7aebad3f8f38d7d13922d63e9ec799a7c65b8bbfe60005445e86d492dff` |
 
 ```sh
@@ -125,7 +127,7 @@ common/unit_leader/*.txt: 189 of 196 leader traits have GFX_trait_<key>; traits 
 | Installed files (example) | `gfx/interface/decisions/gallery/decision_mobilise_reserves.dds` |
 | Processing | recipe `icon` v1: trim, fit to the canvas with the profile margin, grayscale where the family needs it. Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 32, margin 1, width 33) |
 | Checks | `size`, `alpha`, `opaque_canvas`, `fringe`, `margin`, `fill`, `checker`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1254x1254 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1254x1254 |
 | Image SHA-256 | `35202affd784404d0cd652b722dea356747b304328d847cf8cd1073c88c8decc` |
 
 ```sh
@@ -151,7 +153,7 @@ common/decisions/ARG.txt:764 icon = oil -> interface/decisions.gfx:723 GFX_decis
 | Installed files (example) | `gfx/interface/decisions/gallery/category_icons/decision_category_military_reforms.dds` |
 | Processing | recipe `icon` v1: trim, fit to the canvas with the profile margin, grayscale where the family needs it. Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 40, margin 3, width 52) |
 | Checks | `size`, `alpha`, `opaque_canvas`, `fringe`, `margin`, `fill`, `checker`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1254x1254 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1254x1254 |
 | Image SHA-256 | `66b25d76ad95ab811dca0c26caa4dce0c1a2d28a49585031b41d1e373b75f108` |
 
 ```sh
@@ -177,7 +179,7 @@ common/decisions/categories/00_decision_categories.txt:16 icon = generic_propaga
 | Installed files (example) | `gfx/interface/doctrines/gallery/doctrine_mobile_warfare.dds` |
 | Processing | recipe `icon` v1: trim, fit to the canvas with the profile margin, grayscale where the family needs it. Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 64, margin 2, width 64) |
 | Checks | `size`, `alpha`, `opaque_canvas`, `fringe`, `margin`, `fill`, `checker`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1254x1254 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1254x1254 |
 | Image SHA-256 | `a84508c636bc1b02582729cd50bf2a1d0be60c30b620eff7028f9433910bcdbf` |
 
 ```sh
@@ -204,7 +206,7 @@ common/doctrines/subdoctrines/land/combat_support_subdoctrines.txt:282 icon = GF
 | Installed files (example) | `gfx/interface/goals/gallery/focus_steel_gate.dds` |
 | Processing | recipe `icon` v1: trim, fit to the canvas with the profile margin, grayscale where the family needs it. Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 88, margin 2, width 100) |
 | Checks | `size`, `alpha`, `opaque_canvas`, `fringe`, `margin`, `fill`, `checker`, `ghost`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1337x1176 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1337x1176 |
 | Image SHA-256 | `42cd960afb33b1ebc8eb20ebc2b3830b94aa0c78e6eea211485e5a45a1ae8580` |
 
 ```sh
@@ -230,7 +232,7 @@ common/national_focus/*.txt: all 3,007 icon values are full GFX_ names (interfac
 | Installed files (example) | `gfx/interface/ideas/gallery/concerns/idea_ration_crisis.dds` |
 | Processing | recipe `icon` v1: trim, fit to the canvas with the profile margin, grayscale where the family needs it. Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 64, margin 1, width 64) |
 | Checks | `size`, `alpha`, `opaque_canvas`, `fringe`, `margin`, `fill`, `checker`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1254x1254 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1254x1254 |
 | Image SHA-256 | `4b7e5819f5e67a4fac8b55c8682f4ea0ac98d3704c0deaa4bcef58c940f59391` |
 
 ```sh
@@ -257,7 +259,7 @@ common/ideas/CSA.txt:8 picture = generic_air_manufacturer_2 -> interface/ideas.g
 | Installed files (example) | `gfx/interface/ideas/gallery/idea_war_economy.dds` |
 | Processing | recipe `icon` v1: trim, fit to the canvas with the profile margin, grayscale where the family needs it. Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 68, margin 1, width 60) |
 | Checks | `size`, `alpha`, `opaque_canvas`, `fringe`, `margin`, `fill`, `checker`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1254x1254 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1254x1254 |
 | Image SHA-256 | `91553bc9284c86cc04bd1ad6e738904827f3a88559efcf63afe558b6d4e73499` |
 
 ```sh
@@ -283,7 +285,7 @@ common/ideas/CSA.txt:8 picture = generic_air_manufacturer_2 -> interface/ideas.g
 | Installed files (example) | `gfx/interface/medals/gallery/medal_icon_star_of_valor.dds`<br>`gfx/interface/medals/gallery/medal_icon_star_of_valor_small.dds` |
 | Processing | recipe `icon` v1: trim, fit to the canvas with the profile margin, grayscale where the family needs it. Ran: `trim_to_subject` → `fit_subject` (height 84, margin 2, width 56), then finishing `derived_companions` |
 | Checks | `size`, `alpha`, `opaque_canvas`, `fringe`, `margin`, `fill`, `checker`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1024x1536 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1024x1536 |
 | Image SHA-256 | `c52bd6e0f99b79d2154836626e55558877751a4b8123e6a50b1e3c7c22a03b73` |
 
 ```sh
@@ -311,7 +313,7 @@ common/unit_medals/00_default.txt:41 icon = "GFX_medal_icon_nor" with frame = 1;
 | Installed files (example) | `gfx/interface/military_industrial_organization/department_icons/gallery/mio_department_tank_design_bureau.dds` |
 | Processing | recipe `icon` v1: trim, fit to the canvas with the profile margin, grayscale where the family needs it. Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 48, margin 2, width 48) |
 | Checks | `size`, `alpha`, `opaque_canvas`, `fringe`, `margin`, `fill`, `checker`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1254x1254 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1254x1254 |
 | Image SHA-256 | `5230e3bf8a5ec3bf8810dbe3403ac86688469ce6d59fd4d96f1159b4d7596ae3` |
 
 ```sh
@@ -339,7 +341,7 @@ common/military_industrial_organization/organizations/00_generic_organization.tx
 | Installed files (example) | `gfx/interface/military_industrial_organization/policy_icons/gallery/mio_policy_mass_production.dds` |
 | Processing | recipe `icon` v1: trim, fit to the canvas with the profile margin, grayscale where the family needs it. Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 60, margin 2, width 60) |
 | Checks | `size`, `alpha`, `opaque_canvas`, `fringe`, `margin`, `fill`, `checker`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1254x1254 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1254x1254 |
 | Image SHA-256 | `20fe3e36c09a762ae217c907b42f50b4986124c68abf7c03533854b37b34a863` |
 
 ```sh
@@ -367,7 +369,7 @@ common/military_industrial_organization/policies/_general_policies.txt:77 icon =
 | Installed files (example) | `gfx/interface/military_industrial_organization/trait_icons/gallery/mio_trait_improved_armour.dds` |
 | Processing | recipe `icon` v1: trim, fit to the canvas with the profile margin, grayscale where the family needs it. Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 48, margin 2, width 48) |
 | Checks | `size`, `alpha`, `opaque_canvas`, `fringe`, `margin`, `fill`, `checker`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1254x1254 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1254x1254 |
 | Image SHA-256 | `1e7571824ff43e2e3fb124734a10d398b0293eceea35d921cf8fce99abe76214` |
 
 ```sh
@@ -393,7 +395,7 @@ interface/military_industrial_organization/industrial_organization_policies_and_
 | Installed files (example) | `gfx/interface/officer_corp/spirits/gallery/spirit_professional_officers.dds` |
 | Processing | recipe `icon` v1: trim, fit to the canvas with the profile margin, grayscale where the family needs it. Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 45, margin 1, width 45) |
 | Checks | `size`, `alpha`, `opaque_canvas`, `fringe`, `margin`, `fill`, `checker`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1254x1254 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1254x1254 |
 | Image SHA-256 | `1282237d73c7a0d9849ce75282efb7021b5d806f6c51178ed712ed2fb6860018` |
 
 ```sh
@@ -422,7 +424,7 @@ common/ideas/army_spirits.txt:4 bold_attack_spirit has no picture -> interface/o
 | Installed files (example) | `gfx/interface/operations/gallery/icons/phase_infiltrate_ministry.dds` |
 | Processing | recipe `icon` v1: trim, fit to the canvas with the profile margin, grayscale where the family needs it. Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 58, margin 2, width 59) |
 | Checks | `size`, `alpha`, `opaque_canvas`, `fringe`, `margin`, `fill`, `checker`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1254x1254 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1254x1254 |
 | Image SHA-256 | `3ae1e940ed673968c6c71a1858050cf20abc69cd43ce70b05992a86fbf57e165` |
 
 ```sh
@@ -448,7 +450,7 @@ common/operation_phases/00_operation_phases.txt icon values (73, full names) -> 
 | Installed files (example) | `gfx/interface/traits/gallery/personal/trait_iron_will.dds` |
 | Processing | recipe `icon` v1: trim, fit to the canvas with the profile margin, grayscale where the family needs it. Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 33, margin 1, width 23) |
 | Checks | `size`, `alpha`, `opaque_canvas`, `fringe`, `margin`, `fill`, `checker`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1254x1254 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1254x1254 |
 | Image SHA-256 | `d8536ed0eee78d0e8c64d3a2dbde6d0b716e73e7c9fbad3fb45bef7859f9ebee` |
 
 ```sh
@@ -476,7 +478,7 @@ common/unit_leader/*.txt: 189 of 196 leader traits have GFX_trait_<key>; traits 
 | Installed files (example) | `gfx/interface/military_raids/gallery/raid_type_icon_sabotage.dds` |
 | Processing | recipe `icon` v1: trim, fit to the canvas with the profile margin, grayscale where the family needs it. Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 32, margin 1, width 32) |
 | Checks | `size`, `alpha`, `opaque_canvas`, `fringe`, `margin`, `fill`, `checker`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1254x1254 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1254x1254 |
 | Image SHA-256 | `e894087cc0cb9a6a69ae7590678a63102b3252caed27ec910a725d1a58cd76da` |
 
 ```sh
@@ -502,7 +504,7 @@ common/raids/_documentation.md:22 and :232 (automatic lookup GFX_raid_type_icon_
 | Installed files (example) | `gfx/interface/special_project/project_icons/gallery/sp_rocket_programme.dds` |
 | Processing | recipe `icon` v1: trim, fit to the canvas with the profile margin, grayscale where the family needs it. Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 98, margin 3, width 161) → `grayscale` |
 | Checks | `size`, `alpha`, `opaque_canvas`, `fringe`, `margin`, `fill`, `checker`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1608x978 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1608x978 |
 | Image SHA-256 | `9cab582a691a83190615a0dc50405453a1f3a52b1c9553eae4eb7a6ab4fb33c6` |
 
 ```sh
@@ -530,7 +532,7 @@ common/special_projects/projects/air_projects.txt:1071 icon = GFX_sp_air_axial_j
 | Installed files (example) | `gfx/interface/state_modifiers/gallery/modifiers_fortified_region.dds` |
 | Processing | recipe `icon` v1: trim, fit to the canvas with the profile margin, grayscale where the family needs it. Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 32, margin 1, width 32) |
 | Checks | `size`, `alpha`, `opaque_canvas`, `fringe`, `margin`, `fill`, `checker`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1254x1254 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1254x1254 |
 | Image SHA-256 | `426a8f55572e29b993d513365eacdb32c1be158c478e6517e78f9b98f4b0e87b` |
 
 ```sh
@@ -560,7 +562,7 @@ Planned with `hoi4.image_picture`.
 | Installed files (example) | `gfx/achievements/hold_the_line.dds`<br>`gfx/achievements/hold_the_line_grey.dds`<br>`gfx/achievements/hold_the_line_not_eligible.dds` |
 | Processing | recipe `achievement` v1: fit the subject, then the grey and not-eligible states on the mod's template backgrounds (three DDS). Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 64, margin 2, width 64), then finishing `achievement_triplet` |
 | Checks | `size`, `checker`, `near_opaque`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1254x1254 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1254x1254 |
 | Image SHA-256 | `bf60a8e2ca10ee2d797fc051df0707934d72f02ff7ef73399ca6ba5f979f2d96` |
 
 ```sh
@@ -586,7 +588,7 @@ gfx/achievements: 292 achievement keys have <key>.dds, <key>_grey.dds and (291) 
 | Installed files (example) | `gfx/interface/decisions/gallery/category_pictures/decision_cat_picture_war_industry.dds` |
 | Processing | recipe `picture` v1: flatten on black, cover-resize, grayscale for news. Ran: `flatten_on` (background [0, 0, 0]) → `cover_resize` (height 101, width 114) |
 | Checks | `size`, `checker`, `opaque`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1333x1180 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1333x1180 |
 | Image SHA-256 | `c62c1a437ca3bb801a77793539171e9b4beca1ac55f35befe72330faa0d2e169` |
 
 ```sh
@@ -613,7 +615,7 @@ common/decisions/categories/CHI_decision_categories.txt:166 picture = generic_bo
 | Installed files (example) | `gfx/event_pictures/gallery/news_event_peace_conference.dds` |
 | Processing | recipe `picture` v1: flatten on black, cover-resize, grayscale for news. Ran: `flatten_on` (background [0, 0, 0]) → `cover_resize` (height 153, width 397) → `grayscale` |
 | Checks | `size`, `checker`, `opaque`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 2020x779 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 2020x779 |
 | Image SHA-256 | `7e8133683872362d424ee3f40eb7270b768c50470436d3643ec4d218bb48bfd4` |
 
 ```sh
@@ -641,7 +643,7 @@ events/*.txt: 830 of 833 picture values are full GFX_ names (interface/eventpict
 | Installed files (example) | `gfx/interface/operations/gallery/pictures/phase_night_infiltration.dds` |
 | Processing | recipe `picture` v1: flatten on black, cover-resize, grayscale for news. Ran: `flatten_on` (background [0, 0, 0]) → `cover_resize` (height 176, width 210) |
 | Checks | `size`, `checker`, `opaque`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality low, source 1369x1149 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality low, source 1369x1149 |
 | Image SHA-256 | `3cfae2e3c893cb4f8fee0a1ff91ed6b05b218b7c0eca2a14ea1ece8e65551261` |
 
 ```sh
@@ -668,7 +670,7 @@ common/operation_phases/lar_historical_operations.txt:47 picture = GFX_phase_bru
 | Installed files (example) | `gfx/event_pictures/gallery/report_event_winter_border.dds` |
 | Processing | recipe `report_card` v2: flatten, then the report card: sepia, grain, tilt and a soft shadow fitted to vanilla, with transparent corners. Ran: `flatten_on` (background [0, 0, 0]) → `report_card` (seed 2171901083) |
 | Checks | `size`, `checker`, `card_corners`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality low, source 1369x1149 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality low, source 1369x1149 |
 | Image SHA-256 | `ac56596dd99e1cb31b8a8648046adb77b60b33cfc883e1a435dba4d2d46e1f28` |
 
 ```sh
@@ -699,7 +701,7 @@ events/*.txt: 830 of 833 picture values are full GFX_ names (interface/eventpict
 | Installed files (example) | `gfx/interface/technologies/gallery/heavy_tank.dds` |
 | Processing | recipe `icon` v1: trim, fit to the canvas with the profile margin, grayscale where the family needs it. Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 54, margin 2, width 146) |
 | Checks | `size`, `alpha`, `opaque_canvas`, `fringe`, `margin`, `fill`, `checker`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 2062x763 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 2062x763 |
 | Image SHA-256 | `b26d66320ab1d7ce19452e8f7092f133cfba7ec18f280bae99b7c46518236e81` |
 
 ```sh
@@ -729,7 +731,7 @@ Planned with `hoi4.image_portrait`.
 | Installed files (example) | `gfx/interface/ideas/gallery/advisors/idea_minister.dds` |
 | Processing | recipe `advisor_card` v1: flatten, then the portrait composited into the mod's advisor template, with an alpha-coverage audit that fails closed. Ran: `flatten_on` (background [0, 0, 0]), then finishing `advisor_card` |
 | Checks | `size`, `alpha`, `checker`, `card_corners`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality low, source 1024x1536 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality low, source 1024x1536 |
 | Image SHA-256 | `63ab4b0eb0979f3e52ba5d5936668985c24f41ba5c74807fe8d36448cd3cfe2e` |
 
 ```sh
@@ -757,7 +759,7 @@ common/characters/*.txt: all 2,887 small values are full GFX_ names (interface/i
 | Installed files (example) | `gfx/leaders/gallery/commanders/portrait_general.dds` |
 | Processing | recipe `portrait` v1: flatten, then a head-and-shoulders crop found with YuNet face detection. Ran: `flatten_on` (background [0, 0, 0]), then finishing `extract_portrait` |
 | Checks | `size`, `checker`, `opaque`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality low, source 1081x1455 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality low, source 1081x1455 |
 | Image SHA-256 | `66ee237772221ecb0ae01815f930038f59bbafdc71fec6c3970d989590a0aeea` |
 
 ```sh
@@ -785,7 +787,7 @@ common/characters/*.txt: 2,045 of 2,047 large values are full GFX_ names (interf
 | Installed files (example) | `gfx/leaders/gallery/portrait_statesman.dds` |
 | Processing | recipe `portrait` v1: flatten, then a head-and-shoulders crop found with YuNet face detection. Ran: `flatten_on` (background [0, 0, 0]), then finishing `extract_portrait` |
 | Checks | `size`, `checker`, `opaque`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality low, source 1081x1455 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality low, source 1081x1455 |
 | Image SHA-256 | `48bb1b8e3cefb95a54ecf2e534543aff8be2e6556ccc4a67f62988ad9cf3afa1` |
 
 ```sh
@@ -813,7 +815,7 @@ common/characters/*.txt: 2,045 of 2,047 large values are full GFX_ names (interf
 | Installed files (example) | `gfx/leaders/gallery/operatives/portrait_agent.dds` |
 | Processing | recipe `portrait` v1: flatten, then a head-and-shoulders crop found with YuNet face detection. Ran: `flatten_on` (background [0, 0, 0]), then finishing `extract_portrait` |
 | Checks | `size`, `checker`, `opaque`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1081x1455 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1081x1455 |
 | Image SHA-256 | `8dd94ed960638e22888d233cce17ded5bcb3794ad1eba157b51fce40f89990b6` |
 
 ```sh
@@ -841,7 +843,7 @@ common/characters/*.txt: 2,045 of 2,047 large values are full GFX_ names (interf
 | Installed files (example) | `gfx/leaders/gallery/scientists/portrait_physicist.dds` |
 | Processing | recipe `portrait` v1: flatten, then a head-and-shoulders crop found with YuNet face detection. Ran: `flatten_on` (background [0, 0, 0]), then finishing `extract_portrait` |
 | Checks | `size`, `checker`, `opaque`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1080x1456 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1080x1456 |
 | Image SHA-256 | `bc45e7d8ad4ab3c2e9023eb997e687df87a2bfb67da927b10ad666913965ebb1` |
 
 ```sh
@@ -871,7 +873,7 @@ Planned with `hoi4.image_flag`.
 | Installed files (example) | `gfx/flags/IRP_fascism.tga`<br>`gfx/flags/medium/IRP_fascism.tga`<br>`gfx/flags/small/IRP_fascism.tga` |
 | Processing | recipe `flag` v1: flatten, then the 82x52, 41x26 and 10x7 ladder (three bottom-left TGA). Ran: `flatten_on` (background [0, 0, 0]), then finishing `flag_ladder` |
 | Checks | `size`, `opaque`, `style`, `tga` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality low, source 1536x1024 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality low, source 1536x1024 |
 | Image SHA-256 | `1e19bb6d9cbeaba443d6aa7a1ea8c36c0f4e353977be428499218e1bc1b1201e` |
 
 ```sh
@@ -901,7 +903,7 @@ Planned with `hoi4.image_unit`.
 | Installed files (example) | `gfx/interface/operatives/agencies/gallery/agency_logo_state_security.dds` |
 | Processing | recipe `selected_strip` v1: fit with a margin, then frame 2 as the selected state. Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 119, margin 14, width 117) → `selected_frame` (frames 2) |
 | Checks | `size`, `alpha`, `frames`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1254x1254 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1254x1254 |
 | Image SHA-256 | `a626d96d3bb1474d850fd4bb1e495faeedcae3a3fafbf40b9d77c17bca897afd` |
 
 ```sh
@@ -932,7 +934,7 @@ common/intelligence_agencies/00_intelligence_agencies.txt:719 picture = GFX_inte
 | Installed files (example) | `gfx/interface/buildings/gallery/building_citadel.dds`<br>`gfx/interface/buildings/gallery/building_citadel_small.dds` |
 | Processing | recipe `landmark_strip` v1: fit, then frame 2 as the ruined landmark from a second candidate. Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 64, margin 2, width 64), then finishing `second_frame`, `derived_companions` |
 | Checks | `size`, `alpha`, `frames`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1254x1254 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1254x1254 |
 | Image SHA-256 | `0b9ecf6eadef8a403a3851a6681cb54ab9de0d905aaf93fa43d4610afa06f872` |
 
 ```sh
@@ -1056,7 +1058,7 @@ interface/subuniticons.gfx:318 GFX_div_templ_0_large to :418 GFX_div_templ_121_l
 | Installed files (example) | `gfx/interface/factions/faction_logos/gallery/faction_logo_iron_pact.dds`<br>`gfx/interface/factions/faction_logos/gallery/faction_logo_iron_pact_miniature.dds` |
 | Processing | recipe `selected_strip` v1: fit with a margin, then frame 2 as the selected state. Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 100, margin 10, width 100) → `selected_frame` (frames 2), then finishing `derived_companions` |
 | Checks | `size`, `alpha`, `frames`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1254x1254 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1254x1254 |
 | Image SHA-256 | `0e3f931d1d6374ac6ced405f669ecf3e04c5c323b3bd16439dcc87b75dda89c6` |
 
 ```sh
@@ -1088,7 +1090,7 @@ Planned with `hoi4.image_interface`.
 | Installed files (example) | `gfx/interface/gallery/gui_panel_leather.dds` |
 | Processing | recipe `icon` v1: trim, fit to the canvas with the profile margin, grayscale where the family needs it. Ran: `trim_to_subject` → `fit_subject` (height 200, margin 1, width 300) |
 | Checks | `size`, `alpha`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1536x1024 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1536x1024 |
 | Image SHA-256 | `9a6f50e0af8383ae10b83ec5ee773ebcb2ce7be1117cd684319739079b5cb6be` |
 
 ```sh
@@ -1114,7 +1116,7 @@ interface/*.gui name sprites in full
 | Installed files (example) | `gfx/interface/modifiers/gallery/modifier_supply_bonus.dds` |
 | Processing | recipe `icon` v1: trim, fit to the canvas with the profile margin, grayscale where the family needs it. Ran: `trim_to_subject` → `fit_subject` (height 20, margin 0, width 30) |
 | Checks | `size`, `alpha`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1536x1024 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1536x1024 |
 | Image SHA-256 | `288ecc4ac784c4990e39c5e275e9ce645d6facf69f9590d30fcb8914d9c9d54e` |
 
 ```sh
@@ -1140,7 +1142,7 @@ interface/unitleaderwindow.gui:468 spriteType = "GFX_MODIFIER_SUPPLY_CONSUMPTION
 | Installed files (example) | `gfx/super_events/gallery/super_event_armistice.dds` |
 | Processing | recipe `picture` v1: flatten on black, cover-resize, grayscale for news. Ran: `flatten_on` (background [0, 0, 0]) → `cover_resize` (height 328, width 457) |
 | Checks | `size`, `checker`, `opaque`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), image tool `gpt-image-2-codex`, quality medium, source 1480x1062 |
+| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1480x1062 |
 | Image SHA-256 | `c0a192a2853eaad3a69a2db6ca29cb37a6ed1afcb7708cf12628d59dd005584d` |
 
 ```sh
