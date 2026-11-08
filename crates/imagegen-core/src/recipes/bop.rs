@@ -47,7 +47,9 @@ pub const CONTRAST: f64 = 1.2;
 /// Brightness factor of the cracked stage.
 pub const CRACKED_DARKEN: f64 = 0.9;
 /// Cracks drawn.
-pub const CRACKS: usize = 11;
+pub const CRACKS: usize = 10;
+/// Bites taken out of the silhouette.
+pub const CHIPS: usize = 6;
 /// Share of its value a crack pixel keeps: the crack darkens what is under it, so it follows the shading.
 pub const CRACK_KEEP: f64 = 0.3;
 /// Share of its value the emblem's outermost edge pixel keeps, and the next one in: vanilla's dark rim (edge luminance 7 in a median 88).
@@ -171,11 +173,24 @@ fn draw_crack(out: &mut Rgba, solid: &Rgba, rng: &mut Rng, from: (f64, f64), to:
         let a = out.px(px, py)[3];
         let q = out.px(px, py);
         out.set_px(px, py, [(f64::from(q[0]) * CRACK_KEEP) as u8, (f64::from(q[1]) * CRACK_KEEP) as u8, (f64::from(q[2]) * CRACK_KEEP) as u8, a]);
-        let (lx, ly) = (px + 1, py + 1);
+        // a main crack is two pixels wide, so it still shows on dark cloth
+        if depth == 0 {
+            let (wx, wy) = if ang.cos().abs() > ang.sin().abs() { (px, py + 1) } else { (px + 1, py) };
+            if wx < out.width && wy < out.height && solid.alpha(wx, wy) >= SOLID {
+                let q = out.px(wx, wy);
+                out.set_px(
+                    wx,
+                    wy,
+                    [(f64::from(q[0]) * CRACK_KEEP) as u8, (f64::from(q[1]) * CRACK_KEEP) as u8, (f64::from(q[2]) * CRACK_KEEP) as u8, q[3]],
+                );
+            }
+        }
+        // the pale lip below and right of the crack, always visible: dark cloth gets a light edge
+        let (lx, ly) = (px + 1, py + 2);
         if lx < out.width && ly < out.height && solid.alpha(lx, ly) >= SOLID {
             let q = out.px(lx, ly);
-            if q[0] > 40 || q[1] > 40 || q[2] > 40 {
-                let l = |c: u8| (u32::from(c) + 60).min(240) as u8;
+            let l = |c: u8| (u32::from(c) + 70).min(235) as u8;
+            if q[0] > 70 || q[1] > 70 || q[2] > 70 || depth == 0 {
                 out.set_px(lx, ly, [l(q[0]), l(q[1]), l(q[2]), q[3]]);
             }
         }
@@ -230,8 +245,25 @@ fn crack(mut out: Rgba, img: &Rgba, seed: u64) -> Result<Rgba> {
         used.push(pick);
         let from = (f64::from(pick.0), f64::from(pick.1));
         let (dx, dy) = (centre.0 - from.0, centre.1 - from.1);
-        let reach = 0.6 + (rng.next_u64() % 35) as f64 / 100.0;
+        let reach = 0.7 + (rng.next_u64() % 30) as f64 / 100.0;
         draw_crack(&mut out, img, &mut rng, from, (from.0 + dx * reach, from.1 + dy * reach), 0);
+    }
+    // chips: small bites out of the silhouette, as vanilla's damaged sides have
+    for _ in 0..CHIPS {
+        let (cx, cy) = edge[(rng.next_u64() % edge.len() as u64) as usize];
+        let r = 1 + (rng.next_u64() % 2) as i64;
+        for dy in -r..=r {
+            for dx in -r..=r {
+                if dx.abs() + dy.abs() > r {
+                    continue;
+                }
+                let (nx, ny) = (i64::from(cx) + dx, i64::from(cy) + dy);
+                if nx < 0 || ny < 0 || nx >= i64::from(out.width) || ny >= i64::from(out.height) {
+                    continue;
+                }
+                out.set_px(nx as u32, ny as u32, [0, 0, 0, 0]);
+            }
+        }
     }
     Ok(out)
 }
@@ -340,8 +372,6 @@ mod tests {
             for x in 0..72 {
                 if e.alpha(x, y) == 255 {
                     assert_eq!(s.improved.alpha(x, y), 255);
-                    assert_eq!(s.cracked.as_ref().unwrap().alpha(x, y), 255);
-                    assert_eq!(s.cracked_improved.as_ref().unwrap().alpha(x, y), 255);
                 } else if e.alpha(x, y) == 0 {
                     // glow reaches GLOW_WIDTH pixels and no more
                     let near = (-4i64..=4).any(|dy| {
@@ -392,6 +422,18 @@ mod tests {
             }
         }
         assert!(cracks >= 10 && apart * 5 <= cracks, "cracks in both stages: {apart} of {cracks} differ");
+    }
+
+    #[test]
+    fn the_cracked_stages_have_a_few_chips_and_otherwise_keep_the_emblem() {
+        let e = emblem();
+        let s = stages(&e, true, 7).unwrap();
+        let solid = |img: &Rgba| img.data.chunks_exact(4).filter(|p| p[3] == 255).count();
+        for c in [s.cracked.as_ref().unwrap(), s.cracked_improved.as_ref().unwrap()] {
+            let (before, after) = (solid(&s.standard), solid(c));
+            assert!(after < before, "chips take pixels out of the silhouette");
+            assert!(after * 100 >= before * 90, "but only a few ({after} of {before})");
+        }
     }
 
     #[test]
