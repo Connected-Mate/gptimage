@@ -1,9 +1,23 @@
 {
- "about": "Mod style sections of the public gallery, after the vanilla section. Add one entry per style. mod_env and res_env name the environment variables that hold that style's scratch mod and result folder. Only generated images are shown for a style: the mod's own art is not reproduced.",
+ "about": "Mod style sections of the public gallery, after the vanilla section. Add one entry per style. mod_env and res_env name the environment variables that hold that style's scratch mod and result folder. Generated images are shown for a style, with a few credited reference images from the mod (W5-9, widened 2026-11-08): refs_env names the folder of reference PNGs, one sub-folder per family.",
  "styles": [
-  {"key": "tno", "title": "TNO style", "mod_env": "TNO_MOD", "res_env": "TNO_RES",
-   "intro": "The families with their own look in *The New Order: Last Days of Europe*, made from references of that mod's art, which is not reproduced here. Families TNO draws in the vanilla style are only in the vanilla section."},
-  {"key": "tfr", "title": "TFR style", "mod_env": "TFR_MOD", "res_env": "TFR_RES",
-   "intro": "The families with their own look in *The Fire Rises*, made from references of that mod's art, which is not reproduced here. Families TFR draws in the vanilla style are only in the vanilla section."}
+  {
+   "key": "tno",
+   "title": "TNO style",
+   "mod_env": "TNO_MOD",
+   "res_env": "TNO_RES",
+   "refs_env": "TNO_REFS",
+   "credit": "The New Order: Last Days of Europe, by the TNO Team",
+   "intro": "The families with their own look in *The New Order: Last Days of Europe*. Each has the generated examples and, above them, a few reference images from the mod itself, credited to it and its team and shown only so readers can compare. The art belongs to its authors. Families the mod draws in the vanilla style are only in the vanilla section."
+  },
+  {
+   "key": "tfr",
+   "title": "TFR style",
+   "mod_env": "TFR_MOD",
+   "res_env": "TFR_RES",
+   "refs_env": "TFR_REFS",
+   "credit": "The Fire Rises, by its mod team",
+   "intro": "The families with their own look in *The Fire Rises*. Each has the generated examples and, above them, a few reference images from the mod itself, credited to it and its team and shown only so readers can compare. The art belongs to its authors. Families the mod draws in the vanilla style are only in the vanilla section."
+  }
  ]
 }

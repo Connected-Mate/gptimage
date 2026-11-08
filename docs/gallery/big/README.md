@@ -1,6 +1,6 @@
 # Gallery
 
-Every image here was made by `hoi4-imagegen` on the ChatGPT login, then processed, validated and passed by the tool's own check against the game's art. Nothing is retouched. Only images processed on version 0.3.4 or later that pass both checks are shown: an image generated on an older build was processed again from its raw candidate. The gallery grows as more runs finish. Hover over an image for its prompt, or open the prompts under each family. Click an image to open it enlarged.
+Every generated image here was made by `hoi4-imagegen` on the ChatGPT login, then processed, validated and passed by the tool's own check against the game's art. Nothing is retouched. Only images processed on version 0.3.4 or later that pass both checks are shown: an image generated on an older build was processed again from its raw candidate. The gallery grows as more runs finish. Hover over an image for its prompt, or open the prompts under each family. Click an image to open it enlarged. The images labelled as references are the game's and the mods' own art, shown for comparison and credited to their makers.
 
 ## Family index
 
@@ -25,8 +25,7 @@ Each family in the game's own style, beside a few vanilla references from *Heart
 <p align="center"><sub><b>Vanilla reference</b> &middot; Hearts of Iron IV, Paradox Interactive</sub></p>
 
 <table align="center">
-  <tr><td align="center" valign="middle"><img src="vanilla/focus/vanilla_1@2x.webp" alt="vanilla focus" title="Hearts of Iron IV (Paradox Interactive)" width="200" height="176"></td><td align="center" valign="middle"><img src="vanilla/focus/vanilla_2@2x.webp" alt="vanilla focus" title="Hearts of Iron IV (Paradox Interactive)" width="200" height="176"></td></tr>
-  <tr><td align="center" valign="middle"><img src="vanilla/focus/vanilla_3@2x.webp" alt="vanilla focus" title="Hearts of Iron IV (Paradox Interactive)" width="200" height="176"></td><td align="center" valign="middle"><img src="vanilla/focus/vanilla_4@2x.webp" alt="vanilla focus" title="Hearts of Iron IV (Paradox Interactive)" width="200" height="176"></td></tr>
+  <tr><td align="center" valign="middle"><img src="vanilla/focus/vanilla_1@2x.webp" alt="vanilla focus" title="Hearts of Iron IV (Paradox Interactive)" width="200" height="176"></td><td align="center" valign="middle"><img src="vanilla/focus/vanilla_2@2x.webp" alt="vanilla focus" title="Hearts of Iron IV (Paradox Interactive)" width="200" height="176"></td><td align="center" valign="middle"><img src="vanilla/focus/vanilla_3@2x.webp" alt="vanilla focus" title="Hearts of Iron IV (Paradox Interactive)" width="200" height="176"></td></tr>
 </table>
 
 <p align="center"><sub><b>Generated</b></sub></p>
@@ -152,8 +151,7 @@ Each family in the game's own style, beside a few vanilla references from *Heart
 <p align="center"><sub><b>Vanilla reference</b> &middot; Hearts of Iron IV, Paradox Interactive</sub></p>
 
 <table align="center">
-  <tr><td align="center" valign="middle"><img src="vanilla/idea_concern/vanilla_1@3x.webp" alt="vanilla idea_concern" title="Hearts of Iron IV (Paradox Interactive)" width="192" height="192"></td><td align="center" valign="middle"><img src="vanilla/idea_concern/vanilla_2@3x.webp" alt="vanilla idea_concern" title="Hearts of Iron IV (Paradox Interactive)" width="192" height="192"></td></tr>
-  <tr><td align="center" valign="middle"><img src="vanilla/idea_concern/vanilla_3@3x.webp" alt="vanilla idea_concern" title="Hearts of Iron IV (Paradox Interactive)" width="192" height="192"></td><td align="center" valign="middle"><img src="vanilla/idea_concern/vanilla_4.webp" alt="vanilla idea_concern" title="Hearts of Iron IV (Paradox Interactive)" width="192" height="218"></td></tr>
+  <tr><td align="center" valign="middle"><img src="vanilla/idea_concern/vanilla_1@3x.webp" alt="vanilla idea_concern" title="Hearts of Iron IV (Paradox Interactive)" width="192" height="192"></td><td align="center" valign="middle"><img src="vanilla/idea_concern/vanilla_2@3x.webp" alt="vanilla idea_concern" title="Hearts of Iron IV (Paradox Interactive)" width="192" height="192"></td><td align="center" valign="middle"><img src="vanilla/idea_concern/vanilla_3@3x.webp" alt="vanilla idea_concern" title="Hearts of Iron IV (Paradox Interactive)" width="192" height="192"></td></tr>
 </table>
 
 <p align="center"><sub><b>Generated</b></sub></p>
@@ -561,7 +559,7 @@ Each family in the game's own style, beside a few vanilla references from *Heart
 <p align="center"><sub><b>Vanilla reference</b> &middot; Hearts of Iron IV, Paradox Interactive</sub></p>
 
 <table align="center">
-  <tr><td align="center" valign="middle"><img src="vanilla/bop_side/vanilla_1@2x.webp" alt="vanilla bop_side" title="Hearts of Iron IV (Paradox Interactive)" width="144" height="176"></td><td align="center" valign="middle"><img src="vanilla/bop_side/vanilla_2@2x.webp" alt="vanilla bop_side" title="Hearts of Iron IV (Paradox Interactive)" width="144" height="176"></td><td align="center" valign="middle"><img src="vanilla/bop_side/vanilla_3@2x.webp" alt="vanilla bop_side" title="Hearts of Iron IV (Paradox Interactive)" width="144" height="176"></td><td align="center" valign="middle"><img src="vanilla/bop_side/vanilla_4@2x.webp" alt="vanilla bop_side" title="Hearts of Iron IV (Paradox Interactive)" width="144" height="176"></td></tr>
+  <tr><td align="center" valign="middle"><img src="vanilla/bop_side/vanilla_1@2x.webp" alt="vanilla bop_side" title="Hearts of Iron IV (Paradox Interactive)" width="144" height="176"></td><td align="center" valign="middle"><img src="vanilla/bop_side/vanilla_2@2x.webp" alt="vanilla bop_side" title="Hearts of Iron IV (Paradox Interactive)" width="144" height="176"></td><td align="center" valign="middle"><img src="vanilla/bop_side/vanilla_3@2x.webp" alt="vanilla bop_side" title="Hearts of Iron IV (Paradox Interactive)" width="144" height="176"></td></tr>
 </table>
 
 <p align="center"><sub><b>Generated</b></sub></p>
@@ -626,8 +624,7 @@ Each family in the game's own style, beside a few vanilla references from *Heart
 <p align="center"><sub><b>Vanilla reference</b> &middot; Hearts of Iron IV, Paradox Interactive</sub></p>
 
 <table align="center">
-  <tr><td align="center" valign="middle"><img src="vanilla/agency_upgrade/vanilla_1@3x.webp" alt="vanilla agency_upgrade" title="Hearts of Iron IV (Paradox Interactive)" width="204" height="204"></td><td align="center" valign="middle"><img src="vanilla/agency_upgrade/vanilla_2@3x.webp" alt="vanilla agency_upgrade" title="Hearts of Iron IV (Paradox Interactive)" width="204" height="204"></td></tr>
-  <tr><td align="center" valign="middle"><img src="vanilla/agency_upgrade/vanilla_3@3x.webp" alt="vanilla agency_upgrade" title="Hearts of Iron IV (Paradox Interactive)" width="204" height="204"></td><td align="center" valign="middle"><img src="vanilla/agency_upgrade/vanilla_4@3x.webp" alt="vanilla agency_upgrade" title="Hearts of Iron IV (Paradox Interactive)" width="204" height="204"></td></tr>
+  <tr><td align="center" valign="middle"><img src="vanilla/agency_upgrade/vanilla_1@3x.webp" alt="vanilla agency_upgrade" title="Hearts of Iron IV (Paradox Interactive)" width="204" height="204"></td><td align="center" valign="middle"><img src="vanilla/agency_upgrade/vanilla_2@3x.webp" alt="vanilla agency_upgrade" title="Hearts of Iron IV (Paradox Interactive)" width="204" height="204"></td><td align="center" valign="middle"><img src="vanilla/agency_upgrade/vanilla_3@3x.webp" alt="vanilla agency_upgrade" title="Hearts of Iron IV (Paradox Interactive)" width="204" height="204"></td></tr>
 </table>
 
 <p align="center"><sub><b>Generated</b></sub></p>
@@ -779,7 +776,7 @@ Each family in the game's own style, beside a few vanilla references from *Heart
 <p align="center"><sub><b>Vanilla reference</b> &middot; Hearts of Iron IV, Paradox Interactive</sub></p>
 
 <table align="center">
-  <tr><td align="center" valign="middle"><img src="vanilla/doctrine/vanilla_1@3x.webp" alt="vanilla doctrine" title="Hearts of Iron IV (Paradox Interactive)" width="192" height="192"></td><td align="center" valign="middle"><img src="vanilla/doctrine/vanilla_2@3x.webp" alt="vanilla doctrine" title="Hearts of Iron IV (Paradox Interactive)" width="192" height="192"></td><td align="center" valign="middle"><img src="vanilla/doctrine/vanilla_3@3x.webp" alt="vanilla doctrine" title="Hearts of Iron IV (Paradox Interactive)" width="192" height="192"></td></tr>
+  <tr><td align="center" valign="middle"><img src="vanilla/doctrine/vanilla_1@3x.webp" alt="vanilla doctrine" title="Hearts of Iron IV (Paradox Interactive)" width="192" height="192"></td><td align="center" valign="middle"><img src="vanilla/doctrine/vanilla_2@3x.webp" alt="vanilla doctrine" title="Hearts of Iron IV (Paradox Interactive)" width="192" height="192"></td></tr>
 </table>
 
 <p align="center"><sub><b>Generated</b></sub></p>
@@ -818,8 +815,7 @@ Each family in the game's own style, beside a few vanilla references from *Heart
 <p align="center"><sub><b>Vanilla reference</b> &middot; Hearts of Iron IV, Paradox Interactive</sub></p>
 
 <table align="center">
-  <tr><td align="center" valign="middle"><img src="vanilla/report_event/vanilla_1.webp" alt="vanilla report_event" title="Hearts of Iron IV (Paradox Interactive)" width="210" height="176"></td><td align="center" valign="middle"><img src="vanilla/report_event/vanilla_2.webp" alt="vanilla report_event" title="Hearts of Iron IV (Paradox Interactive)" width="210" height="176"></td></tr>
-  <tr><td align="center" valign="middle"><img src="vanilla/report_event/vanilla_3.webp" alt="vanilla report_event" title="Hearts of Iron IV (Paradox Interactive)" width="210" height="176"></td><td align="center" valign="middle"><img src="vanilla/report_event/vanilla_4.webp" alt="vanilla report_event" title="Hearts of Iron IV (Paradox Interactive)" width="210" height="176"></td></tr>
+  <tr><td align="center" valign="middle"><img src="vanilla/report_event/vanilla_1.webp" alt="vanilla report_event" title="Hearts of Iron IV (Paradox Interactive)" width="210" height="176"></td><td align="center" valign="middle"><img src="vanilla/report_event/vanilla_2.webp" alt="vanilla report_event" title="Hearts of Iron IV (Paradox Interactive)" width="210" height="176"></td><td align="center" valign="middle"><img src="vanilla/report_event/vanilla_3.webp" alt="vanilla report_event" title="Hearts of Iron IV (Paradox Interactive)" width="210" height="176"></td></tr>
 </table>
 
 <p align="center"><sub><b>Generated</b></sub></p>
@@ -1030,8 +1026,7 @@ Each family in the game's own style, beside a few vanilla references from *Heart
 <p align="center"><sub><b>Vanilla reference</b> &middot; Hearts of Iron IV, Paradox Interactive</sub></p>
 
 <table align="center">
-  <tr><td align="center" valign="middle"><img src="vanilla/achievement/vanilla_1@3x.webp" alt="vanilla achievement" title="Hearts of Iron IV (Paradox Interactive)" width="192" height="192"></td><td align="center" valign="middle"><img src="vanilla/achievement/vanilla_2@3x.webp" alt="vanilla achievement" title="Hearts of Iron IV (Paradox Interactive)" width="192" height="192"></td></tr>
-  <tr><td align="center" valign="middle"><img src="vanilla/achievement/vanilla_3@3x.webp" alt="vanilla achievement" title="Hearts of Iron IV (Paradox Interactive)" width="192" height="192"></td><td align="center" valign="middle"><img src="vanilla/achievement/vanilla_4@3x.webp" alt="vanilla achievement" title="Hearts of Iron IV (Paradox Interactive)" width="192" height="192"></td></tr>
+  <tr><td align="center" valign="middle"><img src="vanilla/achievement/vanilla_1@3x.webp" alt="vanilla achievement" title="Hearts of Iron IV (Paradox Interactive)" width="192" height="192"></td><td align="center" valign="middle"><img src="vanilla/achievement/vanilla_2@3x.webp" alt="vanilla achievement" title="Hearts of Iron IV (Paradox Interactive)" width="192" height="192"></td><td align="center" valign="middle"><img src="vanilla/achievement/vanilla_3@3x.webp" alt="vanilla achievement" title="Hearts of Iron IV (Paradox Interactive)" width="192" height="192"></td></tr>
 </table>
 
 <p align="center"><sub><b>Generated</b></sub></p>
@@ -1146,7 +1141,7 @@ Each family in the game's own style, beside a few vanilla references from *Heart
 <p align="center"><sub><b>Vanilla reference</b> &middot; Hearts of Iron IV, Paradox Interactive</sub></p>
 
 <table align="center">
-  <tr><td align="center" valign="middle"><img src="vanilla/commander_portrait/vanilla_1.webp" alt="vanilla commander_portrait" title="Hearts of Iron IV (Paradox Interactive)" width="156" height="210"></td><td align="center" valign="middle"><img src="vanilla/commander_portrait/vanilla_2.webp" alt="vanilla commander_portrait" title="Hearts of Iron IV (Paradox Interactive)" width="156" height="210"></td><td align="center" valign="middle"><img src="vanilla/commander_portrait/vanilla_3.webp" alt="vanilla commander_portrait" title="Hearts of Iron IV (Paradox Interactive)" width="156" height="210"></td><td align="center" valign="middle"><img src="vanilla/commander_portrait/vanilla_4.webp" alt="vanilla commander_portrait" title="Hearts of Iron IV (Paradox Interactive)" width="156" height="210"></td></tr>
+  <tr><td align="center" valign="middle"><img src="vanilla/commander_portrait/vanilla_1.webp" alt="vanilla commander_portrait" title="Hearts of Iron IV (Paradox Interactive)" width="156" height="210"></td><td align="center" valign="middle"><img src="vanilla/commander_portrait/vanilla_2.webp" alt="vanilla commander_portrait" title="Hearts of Iron IV (Paradox Interactive)" width="156" height="210"></td><td align="center" valign="middle"><img src="vanilla/commander_portrait/vanilla_3.webp" alt="vanilla commander_portrait" title="Hearts of Iron IV (Paradox Interactive)" width="156" height="210"></td></tr>
 </table>
 
 <p align="center"><sub><b>Generated</b></sub></p>
@@ -1255,8 +1250,7 @@ Each family in the game's own style, beside a few vanilla references from *Heart
 <p align="center"><sub><b>Vanilla reference</b> &middot; Hearts of Iron IV, Paradox Interactive</sub></p>
 
 <table align="center">
-  <tr><td align="center" valign="middle"><img src="vanilla/advisor_card/vanilla_1@3x.webp" alt="vanilla advisor_card" title="Hearts of Iron IV (Paradox Interactive)" width="195" height="201"></td><td align="center" valign="middle"><img src="vanilla/advisor_card/vanilla_2@3x.webp" alt="vanilla advisor_card" title="Hearts of Iron IV (Paradox Interactive)" width="195" height="201"></td></tr>
-  <tr><td align="center" valign="middle"><img src="vanilla/advisor_card/vanilla_3@3x.webp" alt="vanilla advisor_card" title="Hearts of Iron IV (Paradox Interactive)" width="195" height="201"></td><td align="center" valign="middle"><img src="vanilla/advisor_card/vanilla_4@3x.webp" alt="vanilla advisor_card" title="Hearts of Iron IV (Paradox Interactive)" width="195" height="201"></td></tr>
+  <tr><td align="center" valign="middle"><img src="vanilla/advisor_card/vanilla_1@3x.webp" alt="vanilla advisor_card" title="Hearts of Iron IV (Paradox Interactive)" width="195" height="201"></td><td align="center" valign="middle"><img src="vanilla/advisor_card/vanilla_2@3x.webp" alt="vanilla advisor_card" title="Hearts of Iron IV (Paradox Interactive)" width="195" height="201"></td><td align="center" valign="middle"><img src="vanilla/advisor_card/vanilla_3@3x.webp" alt="vanilla advisor_card" title="Hearts of Iron IV (Paradox Interactive)" width="195" height="201"></td></tr>
 </table>
 
 <p align="center"><sub><b>Generated</b></sub></p>
@@ -1351,7 +1345,6 @@ Each family in the game's own style, beside a few vanilla references from *Heart
 
 <table align="center">
   <tr><td align="center" valign="middle"><img src="vanilla/building/vanilla_1@2x.webp" alt="vanilla building" title="Hearts of Iron IV (Paradox Interactive)" width="256" height="128"></td><td align="center" valign="middle"><img src="vanilla/building/vanilla_2@2x.webp" alt="vanilla building" title="Hearts of Iron IV (Paradox Interactive)" width="256" height="128"></td></tr>
-  <tr><td align="center" valign="middle"><img src="vanilla/building/vanilla_3@2x.webp" alt="vanilla building" title="Hearts of Iron IV (Paradox Interactive)" width="256" height="128"></td><td></td></tr>
 </table>
 
 <p align="center"><sub><b>Generated</b></sub></p>
@@ -1383,8 +1376,7 @@ Each family in the game's own style, beside a few vanilla references from *Heart
 <p align="center"><sub><b>Vanilla reference</b> &middot; Hearts of Iron IV, Paradox Interactive</sub></p>
 
 <table align="center">
-  <tr><td align="center" valign="middle"><img src="vanilla/faction_logo/vanilla_1.webp" alt="vanilla faction_logo" title="Hearts of Iron IV (Paradox Interactive)" width="200" height="100"></td><td align="center" valign="middle"><img src="vanilla/faction_logo/vanilla_2.webp" alt="vanilla faction_logo" title="Hearts of Iron IV (Paradox Interactive)" width="200" height="100"></td></tr>
-  <tr><td align="center" valign="middle"><img src="vanilla/faction_logo/vanilla_3.webp" alt="vanilla faction_logo" title="Hearts of Iron IV (Paradox Interactive)" width="200" height="100"></td><td align="center" valign="middle"><img src="vanilla/faction_logo/vanilla_4.webp" alt="vanilla faction_logo" title="Hearts of Iron IV (Paradox Interactive)" width="200" height="200"></td></tr>
+  <tr><td align="center" valign="middle"><img src="vanilla/faction_logo/vanilla_1.webp" alt="vanilla faction_logo" title="Hearts of Iron IV (Paradox Interactive)" width="200" height="100"></td><td align="center" valign="middle"><img src="vanilla/faction_logo/vanilla_2.webp" alt="vanilla faction_logo" title="Hearts of Iron IV (Paradox Interactive)" width="200" height="100"></td><td align="center" valign="middle"><img src="vanilla/faction_logo/vanilla_3.webp" alt="vanilla faction_logo" title="Hearts of Iron IV (Paradox Interactive)" width="200" height="100"></td></tr>
 </table>
 
 <p align="center"><sub><b>Generated</b></sub></p>
@@ -1424,8 +1416,7 @@ Each family in the game's own style, beside a few vanilla references from *Heart
 <p align="center"><sub><b>Vanilla reference</b> &middot; Hearts of Iron IV, Paradox Interactive</sub></p>
 
 <table align="center">
-  <tr><td align="center" valign="middle"><img src="vanilla/agency_logo/vanilla_1.webp" alt="vanilla agency_logo" title="Hearts of Iron IV (Paradox Interactive)" width="234" height="119"></td><td align="center" valign="middle"><img src="vanilla/agency_logo/vanilla_2.webp" alt="vanilla agency_logo" title="Hearts of Iron IV (Paradox Interactive)" width="234" height="119"></td></tr>
-  <tr><td align="center" valign="middle"><img src="vanilla/agency_logo/vanilla_3.webp" alt="vanilla agency_logo" title="Hearts of Iron IV (Paradox Interactive)" width="234" height="119"></td><td align="center" valign="middle"><img src="vanilla/agency_logo/vanilla_4.webp" alt="vanilla agency_logo" title="Hearts of Iron IV (Paradox Interactive)" width="234" height="119"></td></tr>
+  <tr><td align="center" valign="middle"><img src="vanilla/agency_logo/vanilla_1.webp" alt="vanilla agency_logo" title="Hearts of Iron IV (Paradox Interactive)" width="234" height="119"></td><td align="center" valign="middle"><img src="vanilla/agency_logo/vanilla_2.webp" alt="vanilla agency_logo" title="Hearts of Iron IV (Paradox Interactive)" width="234" height="119"></td><td align="center" valign="middle"><img src="vanilla/agency_logo/vanilla_3.webp" alt="vanilla agency_logo" title="Hearts of Iron IV (Paradox Interactive)" width="234" height="119"></td></tr>
 </table>
 
 <p align="center"><sub><b>Generated</b></sub></p>
@@ -1649,7 +1640,6 @@ Each family in the game's own style, beside a few vanilla references from *Heart
 
 <table align="center">
   <tr><td align="center" valign="middle"><img src="vanilla/gui_texture/vanilla_1.webp" alt="vanilla gui_texture" title="Hearts of Iron IV (Paradox Interactive)" width="300" height="184"></td><td align="center" valign="middle"><img src="vanilla/gui_texture/vanilla_2.webp" alt="vanilla gui_texture" title="Hearts of Iron IV (Paradox Interactive)" width="300" height="228"></td></tr>
-  <tr><td align="center" valign="middle"><img src="vanilla/gui_texture/vanilla_3.webp" alt="vanilla gui_texture" title="Hearts of Iron IV (Paradox Interactive)" width="300" height="82"></td><td></td></tr>
 </table>
 
 <p align="center"><sub><b>Generated</b></sub></p>
@@ -1686,13 +1676,19 @@ Each family in the game's own style, beside a few vanilla references from *Heart
 
 ## TNO style
 
-The families with their own look in *The New Order: Last Days of Europe*, made from references of that mod's art, which is not reproduced here. Families TNO draws in the vanilla style are only in the vanilla section.
+The families with their own look in *The New Order: Last Days of Europe*. Each has the generated examples and, above them, a few reference images from the mod itself, credited to it and its team and shown only so readers can compare. The art belongs to its authors. Families the mod draws in the vanilla style are only in the vanilla section.
 
 <a id="tno-focus"></a>
 
 ### focus (TNO style)
 
 100 x 88 px in the game, shown at 200 x 176 on a wide screen. 12 generated examples. Click an image to enlarge it.
+
+<p align="center"><sub><b>TNO reference</b> &middot; The New Order: Last Days of Europe, by the TNO Team</sub></p>
+
+<table align="center">
+  <tr><td align="center" valign="middle"><img src="tno/focus/reference_1.webp" alt="TNO reference focus" title="Reference from the mod, credited above" width="130" height="130"></td><td align="center" valign="middle"><img src="tno/focus/reference_2.webp" alt="TNO reference focus" title="Reference from the mod, credited above" width="106" height="116"></td><td align="center" valign="middle"><img src="tno/focus/reference_3.webp" alt="TNO reference focus" title="Reference from the mod, credited above" width="106" height="116"></td></tr>
+</table>
 
 <p align="center"><sub><b>Generated</b></sub></p>
 
@@ -1728,6 +1724,12 @@ The families with their own look in *The New Order: Last Days of Europe*, made f
 
 60 x 68 px in the game, shown at 180 x 204 on a wide screen. 12 generated examples. Click an image to enlarge it.
 
+<p align="center"><sub><b>TNO reference</b> &middot; The New Order: Last Days of Europe, by the TNO Team</sub></p>
+
+<table align="center">
+  <tr><td align="center" valign="middle"><img src="tno/idea_spirit/reference_1.webp" alt="TNO reference idea_spirit" title="Reference from the mod, credited above" width="180" height="192"></td><td align="center" valign="middle"><img src="tno/idea_spirit/reference_2.webp" alt="TNO reference idea_spirit" title="Reference from the mod, credited above" width="124" height="124"></td><td align="center" valign="middle"><img src="tno/idea_spirit/reference_3.webp" alt="TNO reference idea_spirit" title="Reference from the mod, credited above" width="136" height="128"></td><td align="center" valign="middle"><img src="tno/idea_spirit/reference_4.webp" alt="TNO reference idea_spirit" title="Reference from the mod, credited above" width="132" height="124"></td></tr>
+</table>
+
 <p align="center"><sub><b>Generated</b></sub></p>
 
 <table align="center">
@@ -1761,6 +1763,12 @@ The families with their own look in *The New Order: Last Days of Europe*, made f
 
 33 x 32 px in the game, shown at 132 x 128 on a wide screen. 5 generated examples. Click an image to enlarge it.
 
+<p align="center"><sub><b>TNO reference</b> &middot; The New Order: Last Days of Europe, by the TNO Team</sub></p>
+
+<table align="center">
+  <tr><td align="center" valign="middle"><img src="tno/decision/reference_1.webp" alt="TNO reference decision" title="Reference from the mod, credited above" width="128" height="128"></td><td align="center" valign="middle"><img src="tno/decision/reference_2.webp" alt="TNO reference decision" title="Reference from the mod, credited above" width="117" height="117"></td><td align="center" valign="middle"><img src="tno/decision/reference_3.webp" alt="TNO reference decision" title="Reference from the mod, credited above" width="117" height="114"></td><td align="center" valign="middle"><img src="tno/decision/reference_4.webp" alt="TNO reference decision" title="Reference from the mod, credited above" width="90" height="114"></td></tr>
+</table>
+
 <p align="center"><sub><b>Generated</b></sub></p>
 
 <table align="center">
@@ -1784,6 +1792,12 @@ The families with their own look in *The New Order: Last Days of Europe*, made f
 ### operation_icon (TNO style)
 
 59 x 58 px in the game, shown at 177 x 174 on a wide screen. 6 generated examples. Click an image to enlarge it.
+
+<p align="center"><sub><b>TNO reference</b> &middot; The New Order: Last Days of Europe, by the TNO Team</sub></p>
+
+<table align="center">
+  <tr><td align="center" valign="middle"><img src="tno/operation_icon/reference_1.webp" alt="TNO reference operation_icon" title="Reference from the mod, credited above" width="150" height="150"></td><td align="center" valign="middle"><img src="tno/operation_icon/reference_2.webp" alt="TNO reference operation_icon" title="Reference from the mod, credited above" width="150" height="150"></td><td align="center" valign="middle"><img src="tno/operation_icon/reference_3.webp" alt="TNO reference operation_icon" title="Reference from the mod, credited above" width="150" height="150"></td></tr>
+</table>
 
 <p align="center"><sub><b>Generated</b></sub></p>
 
@@ -1811,6 +1825,12 @@ The families with their own look in *The New Order: Last Days of Europe*, made f
 
 23 x 33 px in the game, shown at 92 x 132 on a wide screen. 5 generated examples. Click an image to enlarge it.
 
+<p align="center"><sub><b>TNO reference</b> &middot; The New Order: Last Days of Europe, by the TNO Team</sub></p>
+
+<table align="center">
+  <tr><td align="center" valign="middle"><img src="tno/commander_trait/reference_1.webp" alt="TNO reference commander_trait" title="Reference from the mod, credited above" width="72" height="99"></td><td align="center" valign="middle"><img src="tno/commander_trait/reference_2.webp" alt="TNO reference commander_trait" title="Reference from the mod, credited above" width="72" height="99"></td><td align="center" valign="middle"><img src="tno/commander_trait/reference_3.webp" alt="TNO reference commander_trait" title="Reference from the mod, credited above" width="72" height="99"></td><td align="center" valign="middle"><img src="tno/commander_trait/reference_4.webp" alt="TNO reference commander_trait" title="Reference from the mod, credited above" width="92" height="132"></td></tr>
+</table>
+
 <p align="center"><sub><b>Generated</b></sub></p>
 
 <table align="center">
@@ -1834,6 +1854,12 @@ The families with their own look in *The New Order: Last Days of Europe*, made f
 ### report_event (TNO style)
 
 210 x 176 px in the game, shown at 210 x 176 on a wide screen. 12 generated examples. Click an image to enlarge it.
+
+<p align="center"><sub><b>TNO reference</b> &middot; The New Order: Last Days of Europe, by the TNO Team</sub></p>
+
+<table align="center">
+  <tr><td align="center" valign="middle"><img src="tno/report_event/reference_1.webp" alt="TNO reference report_event" title="Reference from the mod, credited above" width="146" height="176"></td><td align="center" valign="middle"><img src="tno/report_event/reference_2.webp" alt="TNO reference report_event" title="Reference from the mod, credited above" width="151" height="176"></td><td align="center" valign="middle"><img src="tno/report_event/reference_3.webp" alt="TNO reference report_event" title="Reference from the mod, credited above" width="151" height="176"></td></tr>
+</table>
 
 <p align="center"><sub><b>Generated</b></sub></p>
 
@@ -1869,6 +1895,12 @@ The families with their own look in *The New Order: Last Days of Europe*, made f
 
 210 x 176 px in the game, shown at 210 x 176 on a wide screen. 6 generated examples. Click an image to enlarge it.
 
+<p align="center"><sub><b>TNO reference</b> &middot; The New Order: Last Days of Europe, by the TNO Team</sub></p>
+
+<table align="center">
+  <tr><td align="center" valign="middle"><img src="tno/operation_picture/reference_1.webp" alt="TNO reference operation_picture" title="Reference from the mod, credited above" width="150" height="150"></td><td align="center" valign="middle"><img src="tno/operation_picture/reference_2.webp" alt="TNO reference operation_picture" title="Reference from the mod, credited above" width="150" height="150"></td><td align="center" valign="middle"><img src="tno/operation_picture/reference_3.webp" alt="TNO reference operation_picture" title="Reference from the mod, credited above" width="150" height="150"></td></tr>
+</table>
+
 <p align="center"><sub><b>Generated</b></sub></p>
 
 <table align="center">
@@ -1895,6 +1927,12 @@ The families with their own look in *The New Order: Last Days of Europe*, made f
 
 146 x 54 px in the game, shown at 146 x 54 on a wide screen. 5 generated examples. Click an image to enlarge it.
 
+<p align="center"><sub><b>TNO reference</b> &middot; The New Order: Last Days of Europe, by the TNO Team</sub></p>
+
+<table align="center">
+  <tr><td align="center" valign="middle"><img src="tno/technology/reference_1.webp" alt="TNO reference technology" title="Reference from the mod, credited above" width="110" height="54"></td><td align="center" valign="middle"><img src="tno/technology/reference_2.webp" alt="TNO reference technology" title="Reference from the mod, credited above" width="110" height="54"></td><td align="center" valign="middle"><img src="tno/technology/reference_3.webp" alt="TNO reference technology" title="Reference from the mod, credited above" width="110" height="54"></td><td align="center" valign="middle"><img src="tno/technology/reference_4.webp" alt="TNO reference technology" title="Reference from the mod, credited above" width="110" height="54"></td></tr>
+</table>
+
 <p align="center"><sub><b>Generated</b></sub></p>
 
 <table align="center">
@@ -1918,6 +1956,12 @@ The families with their own look in *The New Order: Last Days of Europe*, made f
 ### achievement (TNO style)
 
 64 x 64 px in the game, shown at 192 x 192 on a wide screen. 6 generated examples. Click an image to enlarge it.
+
+<p align="center"><sub><b>TNO reference</b> &middot; The New Order: Last Days of Europe, by the TNO Team</sub></p>
+
+<table align="center">
+  <tr><td align="center" valign="middle"><img src="tno/achievement/reference_1.webp" alt="TNO reference achievement" title="Reference from the mod, credited above" width="192" height="192"></td><td align="center" valign="middle"><img src="tno/achievement/reference_2.webp" alt="TNO reference achievement" title="Reference from the mod, credited above" width="192" height="192"></td><td align="center" valign="middle"><img src="tno/achievement/reference_3.webp" alt="TNO reference achievement" title="Reference from the mod, credited above" width="192" height="192"></td></tr>
+</table>
 
 <p align="center"><sub><b>Generated</b></sub></p>
 
@@ -1944,6 +1988,12 @@ The families with their own look in *The New Order: Last Days of Europe*, made f
 ### super_event (TNO style)
 
 457 x 328 px in the game, shown at 370 x 266 on a wide screen. 8 generated examples. Click an image to enlarge it.
+
+<p align="center"><sub><b>TNO reference</b> &middot; The New Order: Last Days of Europe, by the TNO Team</sub></p>
+
+<table align="center">
+  <tr><td align="center" valign="middle"><img src="tno/super_event/reference_1.webp" alt="TNO reference super_event" title="Reference from the mod, credited above" width="335" height="266"></td><td align="center" valign="middle"><img src="tno/super_event/reference_2.webp" alt="TNO reference super_event" title="Reference from the mod, credited above" width="335" height="266"></td></tr>
+</table>
 
 <p align="center"><sub><b>Generated</b></sub></p>
 
@@ -1975,6 +2025,12 @@ The families with their own look in *The New Order: Last Days of Europe*, made f
 
 156 x 210 px in the game, shown at 156 x 210 on a wide screen. 8 generated examples. Click an image to enlarge it.
 
+<p align="center"><sub><b>TNO reference</b> &middot; The New Order: Last Days of Europe, by the TNO Team</sub></p>
+
+<table align="center">
+  <tr><td align="center" valign="middle"><img src="tno/leader_portrait/reference_1.webp" alt="TNO reference leader_portrait" title="Reference from the mod, credited above" width="156" height="210"></td><td align="center" valign="middle"><img src="tno/leader_portrait/reference_2.webp" alt="TNO reference leader_portrait" title="Reference from the mod, credited above" width="156" height="210"></td><td align="center" valign="middle"><img src="tno/leader_portrait/reference_3.webp" alt="TNO reference leader_portrait" title="Reference from the mod, credited above" width="156" height="210"></td><td align="center" valign="middle"><img src="tno/leader_portrait/reference_4.webp" alt="TNO reference leader_portrait" title="Reference from the mod, credited above" width="156" height="210"></td></tr>
+</table>
+
 <p align="center"><sub><b>Generated</b></sub></p>
 
 <table align="center">
@@ -2002,6 +2058,12 @@ The families with their own look in *The New Order: Last Days of Europe*, made f
 ### counter_large (TNO style)
 
 152 x 42 px in the game, shown at 152 x 42 on a wide screen. 8 generated examples. Click an image to enlarge it.
+
+<p align="center"><sub><b>TNO reference</b> &middot; The New Order: Last Days of Europe, by the TNO Team</sub></p>
+
+<table align="center">
+  <tr><td align="center" valign="middle"><img src="tno/counter_large/reference_1.webp" alt="TNO reference counter_large" title="Reference from the mod, credited above" width="152" height="42"></td><td align="center" valign="middle"><img src="tno/counter_large/reference_2.webp" alt="TNO reference counter_large" title="Reference from the mod, credited above" width="152" height="42"></td><td align="center" valign="middle"><img src="tno/counter_large/reference_3.webp" alt="TNO reference counter_large" title="Reference from the mod, credited above" width="152" height="42"></td><td align="center" valign="middle"><img src="tno/counter_large/reference_4.webp" alt="TNO reference counter_large" title="Reference from the mod, credited above" width="152" height="42"></td></tr>
+</table>
 
 <p align="center"><sub><b>Generated</b></sub></p>
 
@@ -2031,6 +2093,12 @@ The families with their own look in *The New Order: Last Days of Europe*, made f
 
 300 x 200 px in the game, shown at 300 x 200 on a wide screen. 8 generated examples. Click an image to enlarge it.
 
+<p align="center"><sub><b>TNO reference</b> &middot; The New Order: Last Days of Europe, by the TNO Team</sub></p>
+
+<table align="center">
+  <tr><td align="center" valign="middle"><img src="tno/gui_texture/reference_1.webp" alt="TNO reference gui_texture" title="Reference from the mod, credited above" width="300" height="105"></td><td align="center" valign="middle"><img src="tno/gui_texture/reference_2.webp" alt="TNO reference gui_texture" title="Reference from the mod, credited above" width="188" height="200"></td></tr>
+</table>
+
 <p align="center"><sub><b>Generated</b></sub></p>
 
 <table align="center">
@@ -2059,13 +2127,19 @@ The families with their own look in *The New Order: Last Days of Europe*, made f
 
 ## TFR style
 
-The families with their own look in *The Fire Rises*, made from references of that mod's art, which is not reproduced here. Families TFR draws in the vanilla style are only in the vanilla section.
+The families with their own look in *The Fire Rises*. Each has the generated examples and, above them, a few reference images from the mod itself, credited to it and its team and shown only so readers can compare. The art belongs to its authors. Families the mod draws in the vanilla style are only in the vanilla section.
 
 <a id="tfr-focus"></a>
 
 ### focus (TFR style)
 
 170 x 150 px in the game, shown at 170 x 150 on a wide screen. 12 generated examples. Click an image to enlarge it.
+
+<p align="center"><sub><b>TFR reference</b> &middot; The Fire Rises, by its mod team</sub></p>
+
+<table align="center">
+  <tr><td align="center" valign="middle"><img src="tfr/focus/reference_1.webp" alt="TFR reference focus" title="Reference from the mod, credited above" width="170" height="150"></td><td align="center" valign="middle"><img src="tfr/focus/reference_2.webp" alt="TFR reference focus" title="Reference from the mod, credited above" width="170" height="146"></td><td align="center" valign="middle"><img src="tfr/focus/reference_3.webp" alt="TFR reference focus" title="Reference from the mod, credited above" width="170" height="150"></td><td align="center" valign="middle"><img src="tfr/focus/reference_4.webp" alt="TFR reference focus" title="Reference from the mod, credited above" width="170" height="146"></td></tr>
+</table>
 
 <p align="center"><sub><b>Generated</b></sub></p>
 
@@ -2100,6 +2174,12 @@ The families with their own look in *The Fire Rises*, made from references of th
 
 60 x 68 px in the game, shown at 180 x 204 on a wide screen. 9 generated examples. Click an image to enlarge it.
 
+<p align="center"><sub><b>TFR reference</b> &middot; The Fire Rises, by its mod team</sub></p>
+
+<table align="center">
+  <tr><td align="center" valign="middle"><img src="tfr/idea_spirit/reference_1.webp" alt="TFR reference idea_spirit" title="Reference from the mod, credited above" width="180" height="204"></td><td align="center" valign="middle"><img src="tfr/idea_spirit/reference_2.webp" alt="TFR reference idea_spirit" title="Reference from the mod, credited above" width="136" height="136"></td><td align="center" valign="middle"><img src="tfr/idea_spirit/reference_3.webp" alt="TFR reference idea_spirit" title="Reference from the mod, credited above" width="136" height="136"></td></tr>
+</table>
+
 <p align="center"><sub><b>Generated</b></sub></p>
 
 <table align="center">
@@ -2130,6 +2210,12 @@ The families with their own look in *The Fire Rises*, made from references of th
 
 33 x 32 px in the game, shown at 132 x 128 on a wide screen. 8 generated examples. Click an image to enlarge it.
 
+<p align="center"><sub><b>TFR reference</b> &middot; The Fire Rises, by its mod team</sub></p>
+
+<table align="center">
+  <tr><td align="center" valign="middle"><img src="tfr/decision/reference_1.webp" alt="TFR reference decision" title="Reference from the mod, credited above" width="128" height="128"></td><td align="center" valign="middle"><img src="tfr/decision/reference_2.webp" alt="TFR reference decision" title="Reference from the mod, credited above" width="105" height="105"></td><td align="center" valign="middle"><img src="tfr/decision/reference_3.webp" alt="TFR reference decision" title="Reference from the mod, credited above" width="128" height="128"></td><td align="center" valign="middle"><img src="tfr/decision/reference_4.webp" alt="TFR reference decision" title="Reference from the mod, credited above" width="128" height="128"></td></tr>
+</table>
+
 <p align="center"><sub><b>Generated</b></sub></p>
 
 <table align="center">
@@ -2158,6 +2244,12 @@ The families with their own look in *The Fire Rises*, made from references of th
 
 59 x 58 px in the game, shown at 177 x 174 on a wide screen. 5 generated examples. Click an image to enlarge it.
 
+<p align="center"><sub><b>TFR reference</b> &middot; The Fire Rises, by its mod team</sub></p>
+
+<table align="center">
+  <tr><td align="center" valign="middle"><img src="tfr/operation_icon/reference_1.webp" alt="TFR reference operation_icon" title="Reference from the mod, credited above" width="177" height="174"></td><td align="center" valign="middle"><img src="tfr/operation_icon/reference_2.webp" alt="TFR reference operation_icon" title="Reference from the mod, credited above" width="177" height="174"></td><td align="center" valign="middle"><img src="tfr/operation_icon/reference_3.webp" alt="TFR reference operation_icon" title="Reference from the mod, credited above" width="177" height="174"></td></tr>
+</table>
+
 <p align="center"><sub><b>Generated</b></sub></p>
 
 <table align="center">
@@ -2182,6 +2274,12 @@ The families with their own look in *The Fire Rises*, made from references of th
 ### report_event (TFR style)
 
 500 x 250 px in the game, shown at 370 x 185 on a wide screen. 11 generated examples. Click an image to enlarge it.
+
+<p align="center"><sub><b>TFR reference</b> &middot; The Fire Rises, by its mod team</sub></p>
+
+<table align="center">
+  <tr><td align="center" valign="middle"><img src="tfr/report_event/reference_1.webp" alt="TFR reference report_event" title="Reference from the mod, credited above" width="370" height="185"></td><td align="center" valign="middle"><img src="tfr/report_event/reference_2.webp" alt="TFR reference report_event" title="Reference from the mod, credited above" width="370" height="185"></td></tr>
+</table>
 
 <p align="center"><sub><b>Generated</b></sub></p>
 
@@ -2218,6 +2316,12 @@ The families with their own look in *The Fire Rises*, made from references of th
 
 102 x 101 px in the game, shown at 204 x 202 on a wide screen. 6 generated examples. Click an image to enlarge it.
 
+<p align="center"><sub><b>TFR reference</b> &middot; The Fire Rises, by its mod team</sub></p>
+
+<table align="center">
+  <tr><td align="center" valign="middle"><img src="tfr/decision_category_picture/reference_1.webp" alt="TFR reference decision_category_picture" title="Reference from the mod, credited above" width="204" height="202"></td><td align="center" valign="middle"><img src="tfr/decision_category_picture/reference_2.webp" alt="TFR reference decision_category_picture" title="Reference from the mod, credited above" width="204" height="202"></td><td align="center" valign="middle"><img src="tfr/decision_category_picture/reference_3.webp" alt="TFR reference decision_category_picture" title="Reference from the mod, credited above" width="204" height="202"></td></tr>
+</table>
+
 <p align="center"><sub><b>Generated</b></sub></p>
 
 <table align="center">
@@ -2244,6 +2348,12 @@ The families with their own look in *The Fire Rises*, made from references of th
 
 210 x 176 px in the game, shown at 210 x 176 on a wide screen. 6 generated examples. Click an image to enlarge it.
 
+<p align="center"><sub><b>TFR reference</b> &middot; The Fire Rises, by its mod team</sub></p>
+
+<table align="center">
+  <tr><td align="center" valign="middle"><img src="tfr/operation_picture/reference_1.webp" alt="TFR reference operation_picture" title="Reference from the mod, credited above" width="210" height="176"></td><td align="center" valign="middle"><img src="tfr/operation_picture/reference_2.webp" alt="TFR reference operation_picture" title="Reference from the mod, credited above" width="210" height="176"></td><td align="center" valign="middle"><img src="tfr/operation_picture/reference_3.webp" alt="TFR reference operation_picture" title="Reference from the mod, credited above" width="210" height="176"></td></tr>
+</table>
+
 <p align="center"><sub><b>Generated</b></sub></p>
 
 <table align="center">
@@ -2269,6 +2379,12 @@ The families with their own look in *The Fire Rises*, made from references of th
 ### technology (TFR style)
 
 146 x 54 px in the game, shown at 146 x 54 on a wide screen. 7 generated examples. Click an image to enlarge it.
+
+<p align="center"><sub><b>TFR reference</b> &middot; The Fire Rises, by its mod team</sub></p>
+
+<table align="center">
+  <tr><td align="center" valign="middle"><img src="tfr/technology/reference_1.webp" alt="TFR reference technology" title="Reference from the mod, credited above" width="146" height="39"></td><td align="center" valign="middle"><img src="tfr/technology/reference_2.webp" alt="TFR reference technology" title="Reference from the mod, credited above" width="146" height="52"></td><td align="center" valign="middle"><img src="tfr/technology/reference_3.webp" alt="TFR reference technology" title="Reference from the mod, credited above" width="146" height="52"></td><td align="center" valign="middle"><img src="tfr/technology/reference_4.webp" alt="TFR reference technology" title="Reference from the mod, credited above" width="146" height="52"></td></tr>
+</table>
 
 <p align="center"><sub><b>Generated</b></sub></p>
 
@@ -2297,6 +2413,12 @@ The families with their own look in *The Fire Rises*, made from references of th
 
 982 x 594 px in the game, shown at 370 x 224 on a wide screen. 6 generated examples. Click an image to enlarge it.
 
+<p align="center"><sub><b>TFR reference</b> &middot; The Fire Rises, by its mod team</sub></p>
+
+<table align="center">
+  <tr><td align="center" valign="middle"><img src="tfr/super_event/reference_1.webp" alt="TFR reference super_event" title="Reference from the mod, credited above" width="370" height="224"></td><td align="center" valign="middle"><img src="tfr/super_event/reference_2.webp" alt="TFR reference super_event" title="Reference from the mod, credited above" width="370" height="220"></td></tr>
+</table>
+
 <p align="center"><sub><b>Generated</b></sub></p>
 
 <table align="center">
@@ -2324,6 +2446,12 @@ The families with their own look in *The Fire Rises*, made from references of th
 
 156 x 210 px in the game, shown at 156 x 210 on a wide screen. 7 generated examples. Click an image to enlarge it.
 
+<p align="center"><sub><b>TFR reference</b> &middot; The Fire Rises, by its mod team</sub></p>
+
+<table align="center">
+  <tr><td align="center" valign="middle"><img src="tfr/leader_portrait/reference_1.webp" alt="TFR reference leader_portrait" title="Reference from the mod, credited above" width="156" height="210"></td><td align="center" valign="middle"><img src="tfr/leader_portrait/reference_2.webp" alt="TFR reference leader_portrait" title="Reference from the mod, credited above" width="156" height="210"></td><td align="center" valign="middle"><img src="tfr/leader_portrait/reference_3.webp" alt="TFR reference leader_portrait" title="Reference from the mod, credited above" width="156" height="210"></td><td align="center" valign="middle"><img src="tfr/leader_portrait/reference_4.webp" alt="TFR reference leader_portrait" title="Reference from the mod, credited above" width="156" height="210"></td></tr>
+</table>
+
 <p align="center"><sub><b>Generated</b></sub></p>
 
 <table align="center">
@@ -2350,6 +2478,12 @@ The families with their own look in *The Fire Rises*, made from references of th
 ### gui_texture (TFR style)
 
 300 x 200 px in the game, shown at 300 x 200 on a wide screen. 6 generated examples. Click an image to enlarge it.
+
+<p align="center"><sub><b>TFR reference</b> &middot; The Fire Rises, by its mod team</sub></p>
+
+<table align="center">
+  <tr><td align="center" valign="middle"><img src="tfr/gui_texture/reference_1.webp" alt="TFR reference gui_texture" title="Reference from the mod, credited above" width="300" height="121"></td><td align="center" valign="middle"><img src="tfr/gui_texture/reference_2.webp" alt="TFR reference gui_texture" title="Reference from the mod, credited above" width="105" height="200"></td></tr>
+</table>
 
 <p align="center"><sub><b>Generated</b></sub></p>
 

@@ -9,12 +9,15 @@ An image is published when it was processed on hoi4-imagegen 0.3.4 or later (an 
 its raw candidate was processed again on a current build, which .work/restamp.py records as `process_version`), passes
 validation, and passes the tool's own vanilla-match check (hoi4.image_preview's vanilla_check; families the check cannot measure are marked so). Families
 that wait for a later build are left out. Each family page shows a few vanilla references from the installed game
-beside the generated examples, at native size and enlarged by a whole number when small. The TNO section shows only
-generated images: TNO's own art is not reproduced. Environment as for make_gallery_big.py; TNO_MOD and TNO_RES point
-at the TNO run.
+beside the generated examples, at native size and enlarged by a whole number when small. A mod style section (TNO, TFR) shows
+a few reference images from that mod, the same sprite type as the generated examples and credited to the mod and its team
+(maintainer decision W5-9, widened 2026-11-08): they come from the folder named by the style's refs_env in
+scripts/gallery_styles.json, one sub-folder per family (the TNO focus picks may sit beside them as *_ref_N.png), and are
+stored as small web images. Environment as for make_gallery_big.py; TNO_MOD and TNO_RES point at the TNO run.
 """
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -115,17 +118,18 @@ def build(repo):
             for n, f in enumerate(picks, 1):
                 folder = os.path.join(out, "vanilla", fam)
                 webp(os.path.join(COMPARE, f), os.path.join(folder, f"vanilla_{n}.webp"))
-                refs.setdefault(fam, []).append(f"vanilla_{n}.webp")
+                refs.setdefault(("vanilla", fam), []).append(f"vanilla_{n}.webp")
+    refs.update(make_mod_refs(out, index))
     write_pages(out, index, refs)
     json.dump({"about": "Published gallery images: generated on hoi4-imagegen 0.3 or later and processed on 0.3.4 or later, validation passed, the tool's vanilla-match check passed (or not measurable for the family). build is the generation build, processed_on the processing build.",
                "images": manifest}, open(os.path.join(out, "manifest.json"), "w", encoding="utf-8", newline="\n"), indent=1, ensure_ascii=False)
     print(len(manifest), "images,", len(index), "family pages")
 
 
-NOTE = ("Every image here was made by `hoi4-imagegen` on the ChatGPT login, then processed, validated and passed by the tool's own check"
+NOTE = ("Every generated image here was made by `hoi4-imagegen` on the ChatGPT login, then processed, validated and passed by the tool's own check"
         " against the game's art. Nothing is retouched. Only images processed on version 0.3.4 or later that pass both checks are shown:"
         " an image generated on an older build was processed again from its raw candidate. The gallery grows as more runs finish."
-        " Hover over an image for its prompt, or open the prompts under each family. Click an image to open it enlarged.")
+        " Hover over an image for its prompt, or open the prompts under each family. Click an image to open it enlarged. The images labelled as references are the game's and the mods' own art, shown for comparison and credited to their makers.")
 
 
 def caption(e):
@@ -139,6 +143,49 @@ def stamp(e):
 
 def anchor(text):
     return text.lower().replace(" ", "-").replace("_", "-")
+
+
+def mod_ref_files(src, fam):
+    """The reference PNGs of one family in a mod's reference folder (TNO's focus picks sit at the top as *_ref_N.png)."""
+    d = os.path.join(src, fam)
+    if os.path.isdir(d):
+        files = [f for f in os.listdir(d) if f.endswith(".png") and "contact" not in f]
+    else:
+        d, files = src, [f for f in os.listdir(src) if fam == "focus" and f.endswith(".png") and "_ref_" in f]
+    return [os.path.join(d, f) for f in sorted(files, key=lambda f: [int(x) if x.isdigit() else x for x in re.split(r"(\d+)", f)])]
+
+
+def make_mod_refs(out, index):
+    """A few reference images from each mod style (W5-9), as small web images that fit the family's display box.
+
+    Whole-number enlargement (nearest neighbour) keeps small pixel art crisp, anything bigger than the box is reduced.
+    Returns {(section, family): [file names]} for the families that got references."""
+    made = {}
+    for st in STYLES:
+        src = os.environ.get(st.get("refs_env", ""), "")
+        if not src or not os.path.isdir(src):
+            continue
+        for (sec, fam), items in index.items():
+            if sec != st["key"]:
+                continue
+            bw, bh = display_size(items[0])
+            files = mod_ref_files(src, fam)[: 4 if bw <= 260 else 2]
+            names = []
+            for n, f in enumerate(files, 1):
+                img = Image.open(f).convert("RGBA")
+                k = min(bw // img.width, bh // img.height)
+                if k >= 2:
+                    img = img.resize((img.width * k, img.height * k), Image.NEAREST)
+                elif img.width > bw or img.height > bh:
+                    r = min(bw / img.width, bh / img.height)
+                    img = img.resize((max(1, round(img.width * r)), max(1, round(img.height * r))), Image.LANCZOS)
+                folder = os.path.join(out, sec, fam)
+                os.makedirs(folder, exist_ok=True)
+                img.save(os.path.join(folder, f"reference_{n}.webp"), "WEBP", lossless=max(img.size) <= 256, quality=85)
+                names.append(f"reference_{n}.webp")
+            if names:
+                made[(sec, fam)] = names
+    return made
 
 
 PAGE_W = 790  # width a table row may use; GitHub's content column is about 830 px wide at desktop size
@@ -181,12 +228,22 @@ def label(text, note=""):
     return f'<p align="center"><sub><b>{text}</b>' + (f" &middot; {note}" if note else "") + "</sub></p>"
 
 
+def REF_LABEL(sec):
+    if sec == "vanilla":
+        return "Vanilla reference", "Hearts of Iron IV, Paradox Interactive"
+    st = next(x for x in STYLES if x["key"] == sec)
+    return f"{st['title'].split()[0]} reference", st["credit"]
+
+
 def ref_cells(out, sec, fam, names, w):
     """Vanilla references at the family's display width, enlarged by a whole number (nearest neighbour) when that matches."""
     cells = []
     for r in names:
         path = os.path.join(out, sec, fam, r)
         rw, rh = Image.open(path).size
+        if r.startswith("reference_"):  # a mod reference is already stored at its display size
+            cells.append(f'<img src="{sec}/{fam}/{r}" alt="{sec.upper()} reference {fam}" title="Reference from the mod, credited above" width="{rw}" height="{rh}">')
+            continue
         k = w // rw if rw and w % rw == 0 and w // rw > 1 else 1
         if k > 1:
             r = r.replace(".webp", f"@{k}x.webp")
@@ -215,8 +272,10 @@ def write_pages(out, index, refs):
             cols = columns(len(items), w)
             lines += ["", f'<a id="{anchor(sec + " " + fam)}"></a>', "", f"### {fam}" + ("" if sec == "vanilla" else f" ({title})"), "",
                       f"{items[0]['size'][0]} x {items[0]['size'][1]} px in the game, shown at {w} x {h} on a wide screen. {len(items)} generated examples. Click an image to enlarge it.", ""]
-            if sec == "vanilla" and refs.get(fam):
-                lines += [label("Vanilla reference", "Hearts of Iron IV, Paradox Interactive"), "", grid(ref_cells(out, sec, fam, refs[fam], w), columns(len(refs[fam]), w)), ""]
+            names = refs.get((sec, fam))
+            if names:
+                names = names[: max(cols, len(names) // cols * cols)]  # whole rows only, so the block has the generated grid's columns
+                lines += [label(*REF_LABEL(sec)), "", grid(ref_cells(out, sec, fam, names, w), min(cols, len(names))), ""]
             cells, prompts = [], []
             for e in items:
                 brief = e["brief"].replace("\n", " ").strip()
@@ -237,11 +296,11 @@ def rewrite_pages(repo):
     index, refs = {}, {}
     for e in json.load(open(os.path.join(out, "manifest.json"), encoding="utf-8"))["images"]:
         index.setdefault((e["section"], e["family"]), []).append(e)
+    refs.update(make_mod_refs(out, index))  # only when a style's refs_env folder is set
     for sec, fam in index:
-        if sec == "vanilla":
-            names = sorted(f for f in os.listdir(os.path.join(out, sec, fam)) if f.startswith("vanilla_") and "@" not in f)
-            if names:
-                refs[fam] = names
+        names = sorted(f for f in os.listdir(os.path.join(out, sec, fam)) if re.match(r"(vanilla|reference)_\d+\.webp$", f))
+        if names:
+            refs[(sec, fam)] = names
     write_pages(out, index, refs)
     print(len(index), "family pages")
 
