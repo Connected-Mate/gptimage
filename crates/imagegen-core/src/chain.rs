@@ -13,6 +13,7 @@
 //! | Recipe | Families | Required stages, in order |
 //! |---|---|---|
 //! | `icon` v1 | transparent icons, technology, modifier icon, GUI texture | `fit_subject` (`conform` when finished art was imported at an accepted size), `grayscale` for grayscale families; technology adds `tech_overlay` when the caller asks for a tier numeral |
+//! | `bop_side` v1 | balance of power side | `fit_subject` (the emblem in colour), `bop_stages`: the grey standard (the main image), the `_improved` companion and, when asked for, the `_bad` and `_bad_improved` companions |
 //! | `raid` v1 | raid | `fit_subject`, `gold_gradient` (vanilla's gold ramp and black outline), or one `conform` for imported finished art |
 //! | `doctrine` v2 | doctrine | `fit_subject`, `doctrine_look` (black units, pale outline and glow), or one `conform` for imported finished art |
 //! | `vignette` v1 | agency upgrade | `round_vignette` (the disc in vanilla's muted palette with its darkened edge), `fit_subject`, or one `conform` for imported finished art |
@@ -143,6 +144,8 @@ pub enum Recipe {
     KeptUnitArt,
     /// A style pack's panel (`fill_canvas`): a transparent icon family whose art fills the whole canvas.
     FilledIcon,
+    /// A balance of power side: the fitted emblem in colour, then its stages (standard grey, improved, optionally the cracked bad pair).
+    BopSide,
 }
 
 impl Recipe {
@@ -172,6 +175,7 @@ impl Recipe {
             Recipe::UprightPrint => "upright_print",
             Recipe::KeptUnitArt => "kept_unit_art",
             Recipe::FilledIcon => "filled_icon",
+            Recipe::BopSide => "bop_side",
         }
     }
 
@@ -187,6 +191,7 @@ impl Recipe {
             Recipe::AnimGlow | Recipe::AnimKeyframes | Recipe::AnimScroll | Recipe::AnimSpin => crate::animation::RECIPE_VERSION,
             // v2 (0.3.6): the pack's palette snap and edge glow
             Recipe::KeptUnitArt => 2,
+            Recipe::BopSide => crate::recipes::bop::RECIPE_VERSION,
             _ => 1,
         }
     }
@@ -196,6 +201,7 @@ impl Recipe {
         match self {
             Recipe::Achievement => &["_grey", "_not_eligible"],
             Recipe::Flag => &["medium", "small"],
+            Recipe::BopSide => &["_improved"],
             _ => &[],
         }
     }
@@ -225,6 +231,7 @@ pub fn recipe_of(profile: &Profile) -> Recipe {
         Family::AnimBlendKeyframes => Recipe::AnimKeyframes,
         Family::AnimScroll => Recipe::AnimScroll,
         Family::AnimSpin => Recipe::AnimSpin,
+        Family::BopSide => Recipe::BopSide,
         _ if sw.fill_canvas => Recipe::FilledIcon,
         _ if profile.imagegen.background == Background::Opaque => Recipe::Picture,
         _ => Recipe::Icon,
@@ -248,6 +255,9 @@ pub enum Finisher {
     DerivedCompanions,
     /// The frames of a blend key-frame strip: the base and its edits, fitted with one shared crop and scale.
     KeyFrames,
+    /// The stages of a balance of power side made from the fitted colour emblem: the grey standard (the main image),
+    /// the improved companion and, when asked for, the cracked `_bad` and `_bad_improved` companions.
+    BopStages,
 }
 
 impl Finisher {
@@ -261,6 +271,7 @@ impl Finisher {
             Finisher::SecondFrame => "second_frame",
             Finisher::DerivedCompanions => "derived_companions",
             Finisher::KeyFrames => "key_frames",
+            Finisher::BopStages => "bop_stages",
         }
     }
 }
@@ -410,7 +421,7 @@ pub fn plan_finishing_with(
         return Err(Error::Invalid(format!("overlay (a tier numeral) is for technology pictures, not {}", profile.family)));
     }
     match recipe {
-        Recipe::Icon => {
+        Recipe::Icon | Recipe::BopSide => {
             if imported && accepted_single(size) {
                 ops.push(Op::Conform { width: size[0], height: size[1] });
             } else if crisp {
@@ -719,6 +730,9 @@ pub fn plan_finishing_with(
             }
         }
     }
+    if recipe == Recipe::BopSide {
+        finishers.push(Finisher::BopStages);
+    }
     if !crate::lookup::derived_companions(profile.family, canvas).is_empty() {
         finishers.push(Finisher::DerivedCompanions);
     }
@@ -740,6 +754,8 @@ pub fn required_stages(profile: &Profile) -> Vec<Vec<&'static str>> {
     let mut stages: Vec<Vec<&'static str>> = match recipe_of(profile) {
         Recipe::Icon if profile.processing().crisp => vec![vec!["area_fit", "conform"]],
         Recipe::Icon => vec![vec!["fit_subject", "fit_in_box", "conform"]],
+        Recipe::BopSide if profile.processing().crisp => vec![vec!["area_fit", "conform"], vec!["bop_stages"]],
+        Recipe::BopSide => vec![vec!["fit_subject", "fit_in_box", "conform"], vec!["bop_stages"]],
         Recipe::UprightPrint => vec![vec!["fit_subject", "cover_resize", "area_cover", "conform"]],
         Recipe::KeptUnitArt if counter => vec![vec!["fit_in_box", "area_fit", "conform"], vec!["nato_outline", "conform"]],
         Recipe::KeptUnitArt => vec![vec!["fit_in_box", "area_fit", "conform"]],

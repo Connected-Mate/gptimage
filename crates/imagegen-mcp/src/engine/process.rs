@@ -75,6 +75,9 @@ impl Engine {
         if p.counter_symbol.is_some() && !counter_recipe {
             return Err(EngineError::invalid(format!("counter_symbol is for counter_large and counter_small, not {}", profile.family)));
         }
+        if p.cracked_stage == Some(true) && recipe != Recipe::BopSide {
+            return Err(EngineError::invalid(format!("cracked_stage is for bop_side, not {}", profile.family)));
+        }
         let pack_look = if recipe == Recipe::KeptUnitArt { self.pack_finish(&profile)? } else { None };
         let opts = chain::FinishOptions {
             counter_symbol: p.counter_symbol.clone(),
@@ -118,6 +121,7 @@ impl Engine {
                 &keyframes,
                 &profile,
                 artifact.canvas,
+                p.cracked_stage == Some(true),
             )?;
             finishers.push(FinisherRecord {
                 name: f.name().to_string(),

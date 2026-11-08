@@ -123,7 +123,9 @@ impl Engine {
             let (ci, _) = decode(&data, Some(&c.path), DecodeLimits::default())?;
             companion_imgs.insert(c.key.clone(), ci);
         }
-        let files = export::final_files(&profile, artifact.canvas, &artifact.feature_slug, &artifact.asset)?;
+        let mut files = export::final_files(&profile, artifact.canvas, &artifact.feature_slug, &artifact.asset)?;
+        // an optional stage (a side's bad pair) is installed only when the processed record made it
+        files.retain(|f| !export::is_optional_companion(artifact.family, f) || f.variant.as_ref().is_some_and(|k| companion_imgs.contains_key(k)));
         let mut encoded: Vec<(FinalFile, Vec<u8>)> = Vec::new();
         let mut written: Vec<InstalledFile> = Vec::new();
         for f in &files {

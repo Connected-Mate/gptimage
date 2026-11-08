@@ -34,7 +34,7 @@ fn each_reviewed_family_prompt_states_its_vanilla_form() {
     let cases: [(&str, &[&str], &[&str]); 11] = [
         ("mio_department", &["department icon form: ONE piece of equipment", "never grey, metallic"], &["Simple flat shading only"]),
         ("mio_policy", &["policy icon form: one object", "view into the distance"], &["One centred subject"]),
-        ("bop_side", &["balance of power side form: one person", "greyscale head-and-shoulders portrait"], &["One centred subject"]),
+        ("bop_side", &["balance of power side form: one person", "head-and-shoulders portrait"], &["One centred subject"]),
         ("state_modifier", &["state modifier icon form: one bold, simple object", "no small details"], &["One centred subject"]),
         (
             "agency_upgrade",

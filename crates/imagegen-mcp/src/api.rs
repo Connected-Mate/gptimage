@@ -385,6 +385,12 @@ pub struct ProcessParams {
     /// glyphs, gold and shadow, in vanilla's place (top right) unless `position` gives the badge's top-left corner.
     #[serde(default)]
     pub overlay: Option<imagegen_core::recipes::tech_overlay::TechOverlay>,
+    /// `bop_side` only: also make the weakened pair vanilla draws for a bad side: the same emblem cracked, grey with no glow and
+    /// in colour with a dull red glow. The standard and improved stages are always made. Installed as
+    /// `bop_<name>_bad_side` and `bop_<name>_bad_improved_side` with the sprites `GFX_bop_<name>_bad_side` and
+    /// `GFX_bop_<name>_bad_improved_side`.
+    #[serde(default)]
+    pub cracked_stage: Option<bool>,
     /// `anim_blend_keyframes` only: the candidates of frames 2 onward, in order. Make each with `hoi4.image_edit` on the
     /// base candidate (the one being processed), so it keeps the base's framing; all frames are then fitted with one
     /// shared crop and scale.

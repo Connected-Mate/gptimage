@@ -272,8 +272,9 @@ const MIO_POLICY_NEGATIVE: &[&str] = &[
     "a row of many repeated objects or a view into the distance",
 ];
 const BOP_SIDE_RULES: &[&str] = &[
-    "The Hearts of Iron IV balance of power side form: one person who leads or stands for the side, as a greyscale head-and-shoulders portrait cut out with no backdrop, or as a silver bust on a small plinth. A side that is not a person is one silver symbol in a laurel wreath.",
-    "Black and white or silver grey only, a painted, photo-like 1930s portrait or polished metal, with a soft dark outline. The figure faces the viewer or three quarters, readable at {w}x{h} pixels.",
+    "The Hearts of Iron IV balance of power side form: one person who leads or stands for the side, as a head-and-shoulders portrait cut out with no backdrop, or as a bust on a small plinth. A side that is not a person is one symbol in a laurel wreath.",
+    "Painted in muted natural colours, a photo-like 1930s portrait or polished metal with gold or bronze details, with a soft dark outline. The tool makes the grey standard stage and the colour improved stage from this one picture, so the emblem must read as well in grey as in colour: strong light and dark, no detail that exists only as a colour. The figure faces the viewer or three quarters, readable at {w}x{h} pixels.",
+    "The references show the shape and the finish. They are the grey standard stage: keep their form and draw this subject in muted colour anyway.",
     "Real transparent background: no room, no scene and no plate behind the figure.",
     "Leave a small empty margin around it.",
 ];
@@ -283,7 +284,8 @@ const BOP_SIDE_NEGATIVE: &[&str] = &[
     "letters or numbers",
     "watermark or signature",
     "a drawn checkerboard pattern",
-    "colour",
+    "a glow, halo or aura around the figure",
+    "cracks, damage or a split emblem",
     "a banner, flag or loose object instead of a person",
     "a scene or backdrop",
 ];
@@ -667,9 +669,11 @@ fn rows() -> Vec<Row> {
             ..base(MioPolicy, [60, 60], &[[60, 60]], "gfx/interface/military_industrial_organization/policy_icons/{feature_slug}", "mio_policy_", "interface/military_industrial_organization/{feature_slug}_mio.gfx")
         },
         Row {
-            note: "Only the 72x88 side icons are generated; the multi-frame strips in the folder need separate frame art.",
+            note: "Only the 72x88 side icons are generated; the multi-frame strips in the folder need separate frame art. One request makes the emblem's stages the way vanilla's pairs do (`bop_<TAG>_<name>_side` and `bop_<TAG>_<name>_improved_side`): the model draws one emblem in muted colour, the standard stage is its grey, the improved stage is the same emblem in its own colours with a pale gold glow, and the weakened stages (the same emblem cracked, as vanilla's `_bad_side` grey with no glow and `_bad_improved_side` in colour with a red glow) are made when processing is asked for them with cracked_stage. The sprites are GFX_bop_<name>_side, GFX_bop_<name>_improved_side, and with cracked_stage GFX_bop_<name>_bad_side and GFX_bop_<name>_bad_improved_side.",
             rules: BOP_SIDE_RULES,
             negative: BOP_SIDE_NEGATIVE,
+            sprite: Some(("interface/{feature_slug}_bop.gfx", "GFX_{prefix}{asset}_side", &[])),
+            margin: 7,
             ..base(BopSide, [72, 88], &[[72, 88]], "gfx/interface/bop/{feature_slug}", "bop_", "interface/{feature_slug}_bop.gfx")
         },
         Row {
@@ -1419,7 +1423,7 @@ mod tests {
             (Family::GuiTexture, "GUI texture form: flat interface material", &["straight on"]),
             (Family::MioDepartment, "department icon form: ONE piece of equipment", &["one bold, saturated colour", "never grey, metallic"]),
             (Family::MioPolicy, "policy icon form: one object", &["No perspective depth"]),
-            (Family::BopSide, "balance of power side form: one person", &["greyscale head-and-shoulders portrait", "silver bust"]),
+            (Family::BopSide, "balance of power side form: one person", &["head-and-shoulders portrait", "muted natural colours"]),
             (Family::StateModifier, "state modifier icon form: one bold, simple object", &["at most two elements", "no small details"]),
         ];
         for (f, form, more) in cases {
@@ -1439,7 +1443,7 @@ mod tests {
         assert!(neg(Family::CommanderTrait).contains("natural colours"));
         assert!(!neg(Family::GuiTexture).contains("frame"), "a frame texture is a frame");
         assert!(neg(Family::Building).contains("hill, landscape") && neg(Family::Building).contains("diorama base"));
-        assert!(neg(Family::BopSide).contains("colour") && neg(Family::MioPolicy).contains("view into the distance"));
+        assert!(neg(Family::BopSide).contains("cracks") && neg(Family::MioPolicy).contains("view into the distance"));
         assert!(neg(Family::StateModifier).contains("small details") && neg(Family::MioDepartment).contains("grey or metallic"));
         // one form, one size: the 85x85 and 48x48 operation icons are another form
         assert_eq!(set[&Family::OperationIcon].accepted, vec![[59, 58]]);

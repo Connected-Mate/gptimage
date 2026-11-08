@@ -10,6 +10,16 @@ use crate::resize::resize_lanczos3;
 use crate::sprite::{animated_sprite, framed_sprite, framed_sprite_eager, plain_sprite, shine_sprite, SpriteEntry};
 use crate::{dds, tga};
 
+/// Name ending of a balance of power side and of every stage of it.
+pub const BOP_SIDE_SUFFIX: &str = "_side";
+/// Keys of the optional weakened stages of a balance of power side: vanilla's `<name>_bad_side` and `<name>_bad_improved_side`.
+pub const BOP_BAD_KEYS: [&str; 2] = ["_bad", "_bad_improved"];
+
+/// True for a file an install writes only when the processed record has its image: the weakened stages.
+pub fn is_optional_companion(family: Family, file: &FinalFile) -> bool {
+    family == Family::BopSide && file.variant.as_deref().is_some_and(|k| BOP_BAD_KEYS.contains(&k))
+}
+
 /// One file an install writes.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FinalFile {
@@ -62,13 +72,25 @@ pub fn final_files(profile: &Profile, canvas: [u32; 2], feature_slug: &str, asse
     }
     let folder = expand(&profile.imagegen.folder, feature_slug, asset, &prefix)?;
     let folder = folder.trim_end_matches('/');
-    let mut files =
-        vec![FinalFile { rel: format!("{folder}/{prefix}{asset}.{ext}"), variant: None, canvas: strip, container: profile.imagegen.container }];
+    // a balance of power side is named `<name>_side`, its improved stage `<name>_improved_side` (vanilla's names)
+    let bop = profile.family == Family::BopSide;
+    let main_suffix = if bop { BOP_SIDE_SUFFIX } else { "" };
+    let mut files = vec![FinalFile {
+        rel: format!("{folder}/{prefix}{asset}{main_suffix}.{ext}"),
+        variant: None,
+        canvas: strip,
+        container: profile.imagegen.container,
+    }];
     // companions the recipe makes next to the main file (the achievement states): same folder, suffixed name
-    for key in crate::chain::recipe_of(profile).companion_keys().iter().filter(|k| k.starts_with('_')) {
+    // (a side's optional weakened stages are listed too: install writes it only when the processed record has it)
+    let mut keys: Vec<&str> = crate::chain::recipe_of(profile).companion_keys().iter().copied().filter(|k| k.starts_with('_')).collect();
+    if bop {
+        keys.extend(BOP_BAD_KEYS);
+    }
+    for key in keys {
         files.push(FinalFile {
-            rel: format!("{folder}/{prefix}{asset}{key}.{ext}"),
-            variant: Some((*key).to_string()),
+            rel: format!("{folder}/{prefix}{asset}{key}{main_suffix}.{ext}"),
+            variant: Some(key.to_string()),
             canvas: strip,
             container: profile.imagegen.container,
         });
@@ -152,6 +174,13 @@ pub fn sprite_entries(
         match companion.as_str() {
             "shine" => entries.push(shine_sprite(&name, &main.rel)?),
             other => return Err(Error::Config(format!("unknown sprite companion '{other}'"))),
+        }
+    }
+    if profile.family == Family::BopSide {
+        // `GFX_bop_<name>_side` has the stages `GFX_bop_<name>_improved_side`, `GFX_bop_<name>_bad_side` and `GFX_bop_<name>_bad_improved_side`
+        for f in files.iter().filter(|f| f.variant.is_some()) {
+            let key = f.variant.as_deref().unwrap_or_default();
+            entries.push(plain_sprite(&format!("GFX_{prefix}{asset}{key}{BOP_SIDE_SUFFIX}"), &f.rel));
         }
     }
     for d in derived_companions(profile.family, canvas) {
@@ -373,7 +402,16 @@ mod tests {
                 None,
                 one("GFX_mio_policy_quotas", "gfx/interface/military_industrial_organization/policy_icons/iron_pact/mio_policy_quotas.dds"),
             ),
-            BopSide => ("hawks", None, one("GFX_bop_hawks", "gfx/interface/bop/iron_pact/bop_hawks.dds")),
+            BopSide => (
+                "hawks",
+                None,
+                vec![
+                    ("GFX_bop_hawks_side", "gfx/interface/bop/iron_pact/bop_hawks_side.dds", 1),
+                    ("GFX_bop_hawks_improved_side", "gfx/interface/bop/iron_pact/bop_hawks_improved_side.dds", 1),
+                    ("GFX_bop_hawks_bad_side", "gfx/interface/bop/iron_pact/bop_hawks_bad_side.dds", 1),
+                    ("GFX_bop_hawks_bad_improved_side", "gfx/interface/bop/iron_pact/bop_hawks_bad_improved_side.dds", 1),
+                ],
+            ),
             Medal => (
                 "valour",
                 None,

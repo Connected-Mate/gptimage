@@ -1137,3 +1137,74 @@ fn a_technology_can_be_made_for_the_small_or_the_wide_box() {
     let tex = dds::decode(&h.read("gfx/interface/technologies/iron_pact/small_tech.dds")).unwrap();
     assert_eq!((tex.width, tex.height), (64, 64));
 }
+
+// ------------------------------------------------------------------ (f) balance of power side: the stages of one emblem
+
+#[test]
+fn a_bop_side_makes_the_standard_and_improved_stages_and_the_bad_pair_when_asked() {
+    let h = chain_harness();
+    // two stages by default
+    let cand = generate(&h, "bop_side", "defenders", &synthetic_icon_png(), "k-bop-1");
+    let p = process(&h, &cand, json!({})).unwrap();
+    let rec = processed_record(&h, p["artifact_id"].as_str().unwrap());
+    assert_eq!(rec.size, [72, 88]);
+    assert_eq!(rec.companions.iter().map(|c| (c.key.as_str(), c.size)).collect::<Vec<_>>(), vec![("_improved", [72, 88])]);
+    assert_eq!(names(&p, "finishers"), vec!["bop_stages"]);
+    // the standard stage is grey, the improved one keeps the colour, and both have the same silhouette
+    let standard = png_of(&h, &rec.path);
+    let improved = png_of(&h, &rec.companions[0].path);
+    assert!(standard.data.chunks_exact(4).all(|p| p[0] == p[1] && p[1] == p[2]), "the standard stage is grey");
+    assert!(improved.data.chunks_exact(4).any(|p| p[3] == 255 && p[0] > p[2] + 20), "the improved stage keeps the emblem's colours");
+    for y in 0..88 {
+        for x in 0..72 {
+            if standard.alpha(x, y) >= 200 {
+                assert_eq!(improved.alpha(x, y), standard.alpha(x, y), "the emblem is the same pixel for pixel ({x},{y})");
+            }
+        }
+    }
+
+    // the bad pair only when asked, and only for this family
+    let cand2 = generate(&h, "bop_side", "defenders_b", &synthetic_icon_png(), "k-bop-2");
+    let p2 = process(&h, &cand2, json!({"cracked_stage": true})).unwrap();
+    let id = p2["artifact_id"].as_str().unwrap().to_string();
+    let rec2 = processed_record(&h, &id);
+    assert_eq!(rec2.companions.iter().map(|c| c.key.as_str()).collect::<Vec<_>>(), vec!["_improved", "_bad", "_bad_improved"]);
+    assert!(rec2.companions.iter().all(|c| c.size == [72, 88] && h.exists(&c.path)));
+    let e = process(&h, &generate_for(&h, "focus", "wall", "k-bop-3"), json!({"cracked_stage": true})).unwrap_err();
+    assert!(e.message.contains("cracked_stage is for bop_side"), "{}", e.message);
+
+    // the install writes vanilla's names and registers a sprite for each stage
+    let approval = approve(&h, &id, "bop_side");
+    let out = h.install(&id, &approval, json!({})).unwrap();
+    let files: Vec<&str> = out["final_files"].as_array().unwrap().iter().map(|f| f["path"].as_str().unwrap()).collect();
+    assert_eq!(
+        files,
+        vec![
+            "gfx/interface/bop/iron_pact/bop_defenders_b_side.dds",
+            "gfx/interface/bop/iron_pact/bop_defenders_b_improved_side.dds",
+            "gfx/interface/bop/iron_pact/bop_defenders_b_bad_side.dds",
+            "gfx/interface/bop/iron_pact/bop_defenders_b_bad_improved_side.dds",
+        ]
+    );
+    assert_eq!(
+        out["sprite"]["names"],
+        json!([
+            "GFX_bop_defenders_b_side",
+            "GFX_bop_defenders_b_improved_side",
+            "GFX_bop_defenders_b_bad_side",
+            "GFX_bop_defenders_b_bad_improved_side"
+        ])
+    );
+
+    // without the bad pair the install writes two files and registers two sprites
+    let id1 = p["artifact_id"].as_str().unwrap().to_string();
+    let approval1 = approve(&h, &id1, "bop_side");
+    let out1 = h.install(&id1, &approval1, json!({})).unwrap();
+    assert_eq!(out1["final_files"].as_array().unwrap().len(), 2);
+    assert_eq!(out1["sprite"]["names"], json!(["GFX_bop_defenders_side", "GFX_bop_defenders_improved_side"]));
+    assert!(!h.exists("gfx/interface/bop/iron_pact/bop_defenders_bad_side.dds"));
+}
+
+fn generate_for(h: &Harness, family: &str, asset: &str, key: &str) -> String {
+    generate(h, family, asset, &synthetic_icon_png(), key)
+}

@@ -148,6 +148,8 @@ On an opaque source, the unit recipe reads light coloured marks inside a dark sh
 
 A technology picture can carry vanilla's tier numeral. Vanilla bakes the numeral into the texture: no `.gui` layer or sprite draws it (the tech tree item in `interface/countrytechtreeview.gui` shows one `GFX_technology_medium` icon). Pass `overlay` to `hoi4.image_process`, for example `{"tier": 2}`, or `{"tier": 3, "gem": true}` for the blue gem that battleship, cruiser and carrier pictures have before the numeral. The tool stamps vanilla's serif numeral in its gold and shadow, in vanilla's place at the top right (`position` moves it). The stamp is a recorded `tech_overlay` step.
 
+**Balance of power sides (since 0.3.8).** One `bop_side` request makes the emblem's stages the way vanilla's pairs do. The model draws one emblem in muted colour. The tool saves vanilla's `bop_<TAG>_<name>_side` (the emblem in grey) and `bop_<TAG>_<name>_improved_side` (the same emblem in its own colours, with a pale gold glow), both 72x88 in `gfx/interface/bop/`, and registers `GFX_bop_<name>_side` and `GFX_bop_<name>_improved_side`. Pass `cracked_stage: true` to `hoi4.image_process` for the weakened pair that vanilla draws for its bad sides: `bop_<name>_bad_side` (the grey emblem cracked, no glow) and `bop_<name>_bad_improved_side` (the colour emblem with the same cracks and a red glow). Every stage is an edit of the one fitted emblem, so the emblem is identical in all of them.
+
 Some checks guard a family's look:
 
 * `line_art` (special_project_icon) refuses a filled area larger than 250 px, `GFX-FILLED-INTERIOR`. Vanilla's largest is 171 px and its median 4.

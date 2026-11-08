@@ -162,6 +162,12 @@ impl Engine {
                         p2.accepted = vec![d.frame];
                         (p2, d.frame)
                     }
+                    None if profile.family == imagegen_core::family::Family::BopSide => {
+                        // the glow of the improved and bad stages sits in the margin the fit leaves
+                        let mut p2 = profile.clone();
+                        p2.margin = p2.margin.saturating_sub(imagegen_core::recipes::bop::GLOW_WIDTH);
+                        (p2, c.size)
+                    }
                     None => (profile.clone(), c.size),
                 };
                 // the style model describes the main image only: companion states (grey, smaller sizes) skip it

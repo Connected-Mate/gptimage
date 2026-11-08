@@ -147,8 +147,30 @@ impl Engine {
         keyframes: &[(String, Rgba)],
         profile: &Profile,
         canvas: [u32; 2],
+        cracked_stage: bool,
     ) -> EResult<FinishOutput> {
         match finisher {
+            Finisher::BopStages => {
+                // the fitted colour emblem is the input: every stage is an edit of it, and the cracks follow its pixels
+                let seed = imagegen_core::chain::seed_from_sha(&img.pixels_sha256()) as u64;
+                let s = imagegen_core::recipes::bop::stages(img, cracked_stage, seed).map_err(|e| {
+                    EngineError::refused("bop_stages_failed", format!("the stages of this side could not be made: {e}"), RetryClass::Terminal)
+                })?;
+                let mut companions = vec![("_improved".to_string(), s.improved)];
+                if let (Some(c), Some(ci)) = (s.cracked, s.cracked_improved) {
+                    companions.push(("_bad".to_string(), c));
+                    companions.push(("_bad_improved".to_string(), ci));
+                }
+                Ok(FinishOutput {
+                    main: s.standard,
+                    detail: json!({
+                        "stages": companions.iter().map(|(k, _)| k.trim_start_matches('_')).collect::<Vec<_>>(),
+                        "cracked_stage": cracked_stage,
+                        "note": "standard = the emblem in grey, improved = the same emblem in its colours with a pale gold glow, bad = the grey emblem cracked, bad improved = the colour emblem cracked in a dull red glow; each is an edit of one fitted emblem, so the emblem is identical in all of them",
+                    }),
+                    companions,
+                })
+            }
             Finisher::KeyFrames => {
                 let frames = profile.frames.max(1) as usize;
                 if keyframes.len() + 1 != frames {
