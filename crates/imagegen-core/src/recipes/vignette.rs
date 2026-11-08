@@ -29,8 +29,8 @@
 use crate::error::{Error, Result};
 use crate::pixels::Rgba;
 
-/// Version of the vignette recipe (bump when an output could change).
-pub const RECIPE_VERSION: u32 = 1;
+/// Version of the vignette recipe (bump when an output could change). 2: a dull or flat source is brought up to vanilla's saturation and contrast, not only down.
+pub const RECIPE_VERSION: u32 = 2;
 
 /// Vanilla's edge darkening: (depth inside the edge as a share of the radius, value relative to the inner 60 percent
 /// of the radius). The depths are the centres of the measured one-pixel rings on vanilla's 26.1 px radius.
@@ -47,8 +47,16 @@ pub struct VignetteStyle {
     pub edge: &'static [(f64, f64)],
     /// Colour behind clear source pixels inside the disc.
     pub backdrop: [u8; 3],
-    /// Highest mean saturation kept; a more saturated disc is scaled down to it.
-    pub saturation_max: f64,
+    /// Accepted mean saturation of the finished disc: a more saturated disc is scaled down to the upper end, a duller one
+    /// is scaled up to the lower end (at most [`VignetteStyle::saturation_gain_max`] times), so a muted source comes out
+    /// in vanilla's colour instead of grey.
+    pub saturation_range: (f64, f64),
+    /// Largest saturation gain.
+    pub saturation_gain_max: f64,
+    /// Standard deviation of the value the disc is stretched to before the edge is darkened, when it is flatter.
+    pub value_std_min: f64,
+    /// Largest contrast stretch.
+    pub contrast_max: f64,
     /// Accepted mean value of the finished disc; outside it a gamma moves it to the nearer end.
     pub value_range: (f64, f64),
     /// Highest share of gold and bronze tones; above it their saturation is lowered further.
@@ -57,8 +65,16 @@ pub struct VignetteStyle {
 
 /// Vanilla's agency upgrades: mean saturation at most vanilla's median 0.249, mean value from the median 0.423 to the
 /// 75th percentile 0.466, gold and bronze tones at most the 75th percentile 0.218.
-pub const AGENCY_UPGRADE: VignetteStyle =
-    VignetteStyle { edge: &EDGE, backdrop: BACKDROP, saturation_max: 0.249, value_range: (0.423, 0.466), warm_max: 0.218 };
+pub const AGENCY_UPGRADE: VignetteStyle = VignetteStyle {
+    edge: &EDGE,
+    backdrop: BACKDROP,
+    saturation_range: (0.249, 0.32),
+    saturation_gain_max: 3.0,
+    value_std_min: 0.30,
+    contrast_max: 1.9,
+    value_range: (0.423, 0.466),
+    warm_max: 0.218,
+};
 
 fn to_hsv(p: [u8; 4]) -> (f64, f64, f64) {
     crate::styledesc::hsv(p[0], p[1], p[2])
@@ -189,9 +205,24 @@ pub fn round_vignette_with(img: &Rgba, style: &VignetteStyle) -> Result<Rgba> {
             disc.push(DiscPx { i, depth: ((r - d) / r).max(0.0), h, s, v });
         }
     }
-    // saturation down to the style's highest mean
+    // saturation into the style's range: down to its upper end, up (by at most the gain) to its lower end
     let mean_s = disc.iter().map(|p| p.s).sum::<f64>() / disc.len() as f64;
-    let k = if mean_s > style.saturation_max { style.saturation_max / mean_s } else { 1.0 };
+    let k = if mean_s > style.saturation_range.1 {
+        style.saturation_range.1 / mean_s
+    } else if mean_s < style.saturation_range.0 {
+        (style.saturation_range.0 / mean_s.max(1e-3)).min(style.saturation_gain_max)
+    } else {
+        1.0
+    };
+    // contrast: a flat disc is stretched about its mean value, so it has real darks and highlights before the edge falls off
+    let mean_v = disc.iter().map(|p| p.v).sum::<f64>() / disc.len() as f64;
+    let std_v = (disc.iter().map(|p| (p.v - mean_v).powi(2)).sum::<f64>() / disc.len() as f64).sqrt();
+    if std_v > 1e-3 && std_v < style.value_std_min {
+        let c = (style.value_std_min / std_v).min(style.contrast_max);
+        for p in &mut disc {
+            p.v = (mean_v + (p.v - mean_v) * c).clamp(0.0, 1.0);
+        }
+    }
     // the value gamma, chosen on an even sample of the disc so the finished mean value is in the style's range
     let step = ((disc.len() as f64 / 40_000.0).sqrt().floor() as usize).max(1);
     let sample: Vec<&DiscPx> =
@@ -237,9 +268,18 @@ pub fn round_vignette_with(img: &Rgba, style: &VignetteStyle) -> Result<Rgba> {
         }
         wk = lo;
     }
+    // the warm cap above leaves a warm-lit scene grey-brown: the cool and neutral hues carry the missing saturation, up to
+    // three times, so the disc reaches vanilla's mean (and keeps clear accent colours as vanilla does)
+    let sat_of = |p: &DiscPx| p.s * k * warm_weight(p.h, wk);
+    let count = disc.len() as f64;
+    let mean_f = disc.iter().map(sat_of).sum::<f64>() / count;
+    let cool_share = disc.iter().filter(|p| warm_weight(p.h, wk) >= 1.0).map(sat_of).sum::<f64>() / count;
+    let cool_gain =
+        if mean_f < style.saturation_range.0 && cool_share > 1e-3 { (1.0 + (style.saturation_range.0 - mean_f) / cool_share).min(3.0) } else { 1.0 };
     let mut out = Rgba::new(side, side);
     for p in &disc {
-        let c = from_hsv(p.h, p.s * k * warm_weight(p.h, wk), value(p));
+        let gain = if warm_weight(p.h, wk) >= 1.0 { cool_gain } else { 1.0 };
+        let c = from_hsv(p.h, (sat_of(p) * gain).min(0.95), value(p));
         let x = p.i as u32 % side;
         let y = p.i as u32 / side;
         out.set_px(x, y, [c[0], c[1], c[2], (cover[p.i] * 255.0).round() as u8]);
@@ -469,7 +509,7 @@ mod tests {
             assert!((m - f64::from(*want)).abs() < 1.5, "backdrop channel {c}: {m}");
         }
         let f = |name: &str| median(files.iter().map(|i| feature(i, name)).collect());
-        assert!((f("saturation_mean") - AGENCY_UPGRADE.saturation_max).abs() < 0.002, "{}", f("saturation_mean"));
+        assert!((f("saturation_mean") - AGENCY_UPGRADE.saturation_range.0).abs() < 0.002, "{}", f("saturation_mean"));
         assert!((f("value_mean") - AGENCY_UPGRADE.value_range.0).abs() < 0.002, "{}", f("value_mean"));
     }
 }

@@ -197,20 +197,23 @@ const MIO_TRAIT_NEGATIVE: &[&str] = &[
     "a scene, landscape or background",
 ];
 /// Agency upgrades. Measured on the 15 vanilla upgrades (HOI4 1.19.4.1): mean saturation 0.249 and mean value 0.423
-/// in the median file, gold and bronze tones on 11 percent of the disc. The 0.3.2 gallery's upgrades were darker
-/// (mean value 0.26 to 0.47), more saturated (0.28 to 0.49) and warmer (gold and bronze tones on 8 to 36 percent),
-/// busy rooms full of small objects. The vignette recipe brings any subject into vanilla's palette and edge, and the
-/// rules ask for the light, simple close-up it cannot make.
+/// in the median file, but a wide tonal range (luminance standard deviation 0.23, the 10th to 90th percentile 0.12 to
+/// 0.72) and clear accent colours: 13 percent of the disc has a saturation above 0.5 (brass, steel blue, brick red,
+/// green), the 90th percentile of saturation is 0.56. The 0.3.2 gallery's upgrades were darker, more saturated and
+/// warmer, busy rooms full of small objects. Its 0.3.4 to 0.3.7 replacement, "pale and muted, never saturated", came out
+/// as a flat grey-green haze (saturation 0.11, luminance standard deviation 0.16, no accent at all). The vignette
+/// recipe brings any subject into vanilla's mean palette and edge and stretches a flat picture, and the rules ask for
+/// the clear colour and the real darks and highlights it cannot make up.
 const AGENCY_UPGRADE_RULES: &[&str] = &[
     "The Hearts of Iron IV intelligence agency upgrade form: a round painted vignette, a disc whose whole face is one simple close-up (one person at work, hands, one device, documents or one piece of equipment), seen at eye level or slightly from above.",
-    "Pale and muted: a light, desaturated 1930s or 1940s illustration in soft greys, grey-greens, dusty pinks and pale ochre, evenly lit with light mid-tones. Never dark, never saturated, and no warm brown, orange or sepia cast. At most one small accent is stronger.",
+    "Rich but sober colour, like a hand-painted 1940s illustration: strong contrast between deep shadow and bright clean highlights (cream, white, pale gold) with dusty mid-tones, and one or two clear accent colours on the subject, such as brass or gold, steel blue, brick red or leaf green, against a softer dusty grey-green, steel-blue or slate background. Keep the scene cool or neutral overall (slate, steel, olive grey, with only a small brass or red accent): not a warm lamp-lit or sepia scene. Never a flat grey haze, never neon or garish, and no overall orange or sepia cast.",
     "One subject large in the disc on a plain, softly painted background: a few large shapes, no crowded room, no shelves or desks full of objects and no fine detail that disappears at {w}x{h} pixels.",
     "The scene runs to the edge of the disc, which is softly darkened. There is no ring, rim, frame or border around the disc.",
     "Real transparent background outside the disc.",
     "Leave a small empty margin around the disc.",
 ];
-/// Agency upgrade negatives: the loose object and the ring the old rules produced, and the dark, warm, busy painting
-/// of 0.3.2.
+/// Agency upgrade negatives: the loose object and the ring the old rules produced, the dark, warm, busy painting of
+/// 0.3.2 and the flat grey haze of 0.3.4 to 0.3.7.
 const AGENCY_UPGRADE_NEGATIVE: &[&str] = &[
     "text",
     "letters or numbers",
@@ -220,7 +223,9 @@ const AGENCY_UPGRADE_NEGATIVE: &[&str] = &[
     "a square or rectangular picture",
     "a loose object on a transparent background without the round scene",
     "a black and white or sepia photograph",
-    "dark, saturated or warm brown and orange colours",
+    "a flat grey or grey-green haze with no real darks, highlights or accent colour",
+    "neon, garish or candy colours, or an overall warm brown and orange cast",
+    "a warm lamp-lit sepia scene",
     "a busy scene with many small objects",
 ];
 const OPERATION_ICON_RULES: &[&str] = &[
@@ -322,7 +327,8 @@ const COMMANDER_TRAIT_NEGATIVE: &[&str] = &[
 ];
 const DOCTRINE_RULES: &[&str] = &[
     "The Hearts of Iron IV doctrine icon form: flat side-view silhouettes of the units (soldiers, tanks, aircraft or ships) grouped into one compact emblem, with bright orange or yellow accents such as arrows, chevrons or bars.",
-    "Draw the units as solid flat shapes in one dark or neutral colour and the accents in bright orange or yellow: the tool fills the units black and adds vanilla's pale outline and glow around them.",
+    "Simple flat colour, as in the game: aircraft in one flat sky blue, ships and submarines in one flat teal or sea blue, the accents (arrows, chevrons, flags, bursts, fire) in bright orange or yellow. Soldiers, tanks and vehicles are solid dark shapes. One flat tone per shape, no painted texture, and no other colours (no green, red or purple). The tool adds vanilla's pale outline and dark shadow, and its soft light-to-dark fall inside the coloured shapes.",
+    "Few, large, bold shapes that fill the square: one or two big aircraft or ships (never a row of small ones), or a tank or a few soldiers, with one thick orange arrow or chevron. Each unit is a simple solid silhouette with no panel lines, rivets or window detail.",
     "No painted texture or scene, readable at {w}x{h} pixels.",
     "Real transparent background.",
     "Leave a small empty margin around the pictogram.",
@@ -1401,7 +1407,7 @@ mod tests {
             (
                 Family::AgencyUpgrade,
                 "intelligence agency upgrade form: a round painted vignette",
-                &["no ring, rim, frame or border around the disc", "Pale and muted", "no warm brown, orange or sepia cast", "no crowded room"],
+                &["no ring, rim, frame or border around the disc", "Rich but sober colour", "no overall orange or sepia cast", "no crowded room"],
             ),
             (
                 Family::Building,
@@ -1461,7 +1467,11 @@ mod tests {
     fn small_icons_get_the_readability_rule_and_the_0_3_2_drift_is_named() {
         let set = by_family();
         let neg = |f: Family| set[&f].imagegen.prompt.negative.join("; ");
-        assert!(neg(Family::AgencyUpgrade).contains("warm brown and orange") && neg(Family::AgencyUpgrade).contains("many small objects"));
+        assert!(
+            neg(Family::AgencyUpgrade).contains("warm brown and orange")
+                && neg(Family::AgencyUpgrade).contains("haze")
+                && neg(Family::AgencyUpgrade).contains("many small objects")
+        );
         assert!(neg(Family::MioTrait).contains("dark, murky") && neg(Family::MioTrait).contains("fine mechanical detail"));
         assert!(!neg(Family::MioTrait).contains("without shading"), "vanilla's glyphs are flat with light shading");
         assert!(neg(Family::Building).contains("long, thin panorama"));
