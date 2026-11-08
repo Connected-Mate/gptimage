@@ -335,6 +335,8 @@ def make_standard(job, attempt):
         return "FAILED " + json.dumps(r)[:240]
     rec["candidate_id"] = cand["candidate_id"]
     proc = {"candidate_id": cand["candidate_id"]}
+    if family == "bop_side":
+        proc["cracked_stage"] = True  # the whole stage set: standard, improved and the cracked bad pair
     if family == "building":
         e = call("hoi4.image_edit", {"candidate_id": cand["candidate_id"], "instruction": "The same building from the same angle, framing and style, now in ruins: collapsed walls, broken roof, smoke and small fires.", "idempotency_key": f"big-{family}-{asset}-{attempt}-edit"})
         rec["edit"] = e

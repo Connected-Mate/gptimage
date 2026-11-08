@@ -275,7 +275,7 @@ def write_pages(out, index, refs):
             names = refs.get((sec, fam))
             if names:
                 names = names[: max(cols, len(names) // cols * cols)]  # whole rows only, so the block has the generated grid's columns
-                lines += [label(*REF_LABEL(sec)), "", grid(ref_cells(out, sec, fam, names, w), min(cols, len(names))), ""]
+                lines += [label(*REF_LABEL(sec)), "", grid(ref_cells(out, sec, fam, names, w), cols), ""]
             cells, prompts = [], []
             for e in items:
                 brief = e["brief"].replace("\n", " ").strip()

@@ -33,22 +33,22 @@ Planned with `hoi4.image_icon`.
 
 <img src="gallery/agency_upgrade.webp" alt="Example agency_upgrade asset made by hoi4-imagegen" width="204">
 
-**Vanilla form (since 0.3.2, palette since 0.3.4).** Measured on the 15 vanilla upgrades (`agency_cryptology_1`, `agency_invisible_ink`, `agency_portable_radios`): a round disc whose whole face is one simple painted close-up, a semi-realistic 1930s or 1940s illustration. The disc is 52 px across on the 68 px canvas with a one-pixel soft edge, and its edge is darkened to about half the inner value. There is no ring or frame around it. The palette is pale and muted: mean saturation 0.249 and mean value 0.423 in the median file, gold and bronze tones on 11 percent of the disc. The 0.3.2 gallery's upgrades were darker, more saturated and warmer, busy rooms full of small objects. Since 0.3.4 the `vignette` recipe cuts any subject to vanilla's disc, brings its saturation, value and gold tones into vanilla's range and darkens its edge, the rule asks for a light, simple close-up, and the vanilla-match check refuses a saturated, warm medallion. The example above predates these rules and shows a loose object instead.
+**Vanilla form (since 0.3.2, colour since 0.3.8).** Measured on the 15 vanilla upgrades (`agency_cryptology_1`, `agency_invisible_ink`, `agency_portable_radios`): a round disc whose whole face is one simple painted close-up, a semi-realistic 1930s or 1940s illustration. The disc is 52 px across on the 68 px canvas with a one-pixel soft edge, and its edge is darkened to about half the inner value. There is no ring or frame. The colour is sober but not flat: mean saturation 0.248 and mean value 0.433, a wide tonal range (luminance spread 0.23, the 10th to 90th percentile 0.12 to 0.72) and clear accents, with 13 percent of the disc above saturation 0.5 (brass, steel blue, brick red, green) on dusty grey, slate or olive. Since 0.3.8 the tool brings a dull or flat picture up to these figures, and the prompt asks for a cool or neutral scene with one small accent.
 
 | | |
 |---|---|
 | Group and tool | icon, `hoi4.image_icon` |
 | Canvas and frames | 68x68, 1 frame; DDS |
-| Names the game looks up | the script names the sprite in full, so the name is free. The example installs `GFX_agency_cipher_bureau`. |
-| Script | intelligence agency upgrade: picture = GFX_agency_cipher_bureau |
-| Installed files (example) | `gfx/interface/operatives/icons/gallery/agency_cipher_bureau.dds` |
-| Processing | recipe `icon` v1: trim, fit to the canvas with the profile margin, grayscale where the family needs it. Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 68, margin 2, width 68) |
+| Names the game looks up | the script names the sprite in full, so the name is free. The example installs `GFX_agency_chemistry_bench_flasks`. |
+| Script | intelligence agency upgrade: picture = GFX_agency_chemistry_bench_flasks |
+| Installed files (example) | `gfx/interface/operatives/icons/gallery/agency_chemistry_bench_flasks.dds` |
+| Processing | recipe `vignette` v2: the round vignette in vanilla's palette and tonal range with its darkened edge. Ran: `defringe` → `trim_to_subject` → `round_vignette` → `fit_subject` |
 | Checks | `size`, `alpha`, `opaque_canvas`, `fringe`, `margin`, `fill`, `checker`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1254x1254 |
-| Image SHA-256 | `a97b981f58597238d63aa5ebaf8406f59ebf6532c4877baa13ec3dafd528fe7d` |
+| Made | 2026-11-08 on `gpt-6-luna`, ChatGPT's current image model, source 1254x1254 |
+| Image SHA-256 | `e90ab600e468446d0773d4d4c55b8393ce8e60a5e0f86eb711f56df5e332e90b` |
 
 ```sh
-hoi4-imagegen call hoi4.image_icon '{"family": "agency_upgrade", "feature_slug": "gallery", "asset": "cipher_bureau", "brief": "A mechanical rotor cipher machine with keys, painted in the dark, muted Hearts of Iron IV style", "approve": true, "idempotency_key": "gallery-agency_upgrade-1"}'
+hoi4-imagegen call hoi4.image_icon '{"family": "agency_upgrade", "feature_slug": "gallery", "asset": "chemistry_bench_flasks", "brief": "A lab bench with glass flasks, a dropper and a vial of colourless liquid beside a sheet being warmed, secret writing chemistry. Slate and steel-blue tones.", "approve": true, "idempotency_key": "gallery-agency_upgrade-1"}'
 ```
 
 <details><summary>Vanilla evidence for the name</summary>
@@ -61,27 +61,27 @@ common/intelligence_agency_upgrades/intelligence_agency_upgrades.txt:73 picture 
 
 <img src="gallery/bop_side.webp" alt="Example bop_side asset made by hoi4-imagegen" width="144">
 
-**Vanilla form (since 0.3.2).** Measured on the 86 vanilla 72x88 sides (`bop_FIN_mannerheim_good_side`, `bop_ITA_king_side`, `PRC_bop_left_side`): a greyscale head-and-shoulders portrait cut out with no backdrop, a silver bust on a small plinth, or for a side that is not a person a silver symbol in a laurel wreath. 61 of the 86 files are fully grey. The coloured ones are the `_improved` and `_max` state variants, which are left out of the references. Banners and loose objects are not the vanilla form.
+**Vanilla form (stages since 0.3.8).** Measured on the 36 vanilla pairs in `gfx/interface/bop/` (72x88, a cut-out with no frame or plate): `bop_<TAG>_<name>_side` is the emblem in grey with a near-black rim (a head-and-shoulders portrait, a bust, or a symbol in a laurel wreath); `bop_<TAG>_<name>_improved_side` is the same emblem in its own colours with a soft pale-gold glow. A side with a good and a bad form (`_good_side`, `_bad_side`) draws the bad one with cracks through the same emblem, `_bad_improved_side` with a red glow. One request makes the whole stage set: the model draws one emblem in muted colour, and every stage is an edit of it, so the emblem is identical in all of them. `cracked_stage` on `hoi4.image_process` adds the cracked pair. Each row of the gallery is one emblem in its four stages.
 
 | | |
 |---|---|
 | Group and tool | icon, `hoi4.image_icon` |
-| Canvas and frames | 72x88, 1 frame; DDS |
-| Names the game looks up | the script names the sprite in full, so the name is free. The example installs `GFX_bop_defenders_of_order`. |
-| Script | balance of power side: icon = GFX_bop_defenders_of_order |
-| Installed files (example) | `gfx/interface/bop/gallery/bop_defenders_of_order.dds` |
-| Processing | recipe `icon` v1: trim, fit to the canvas with the profile margin, grayscale where the family needs it. Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 88, margin 2, width 72) |
+| Canvas and frames | 72x88, 1 frame per stage; DDS. Four files with `cracked_stage`: standard, `_improved`, `_bad`, `_bad_improved` |
+| Names the game looks up | the script names the sprite in full, so the name is free. The example installs `GFX_bop_anchor_and_rope_standard_side`, `GFX_bop_anchor_and_rope_standard_improved_side`, `GFX_bop_anchor_and_rope_standard_bad_side` and `GFX_bop_anchor_and_rope_standard_bad_improved_side`. |
+| Script | balance of power side: icon = GFX_bop_anchor_and_rope_standard_side; gfx = GFX_bop_anchor_and_rope_standard_improved_side where the side is strengthened |
+| Installed files (example) | `gfx/interface/bop/gallery/bop_anchor_and_rope_standard_side.dds`, `..._improved_side.dds`, `..._bad_side.dds`, `..._bad_improved_side.dds` |
+| Processing | recipe `bop_side` v1: the fitted colour emblem, then its stages (grey standard with a dark rim, improved with a gold glow, and the cracked pair). Ran: `defringe` → `trim_to_subject` → `fit_subject` |
 | Checks | `size`, `alpha`, `opaque_canvas`, `fringe`, `margin`, `fill`, `checker`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1254x1254 |
-| Image SHA-256 | `01e54213b1beb429ad433c4c1528a65df160bbd8f373720e940c5878a593d741` |
+| Made | 2026-11-08 on `gpt-6-luna`, ChatGPT's current image model, source 1254x1254 |
+| Image SHA-256 | `eb81888aa292702ebd82f462786d6d96ed1b9933d5b90778578ad32ceb04e0b8` |
 
 ```sh
-hoi4-imagegen call hoi4.image_icon '{"family": "bop_side", "feature_slug": "gallery", "asset": "defenders_of_order", "brief": "A tall heater shield bearing a laurel wreath, upright, painted in the dark, muted Hearts of Iron IV style", "approve": true, "idempotency_key": "gallery-bop_side-1"}'
+hoi4-imagegen call hoi4.image_icon '{"family": "bop_side", "feature_slug": "gallery", "asset": "anchor_and_rope_standard", "brief": "A tall standard bearing a large anchor wrapped in thick rope, the navy side in a rivalry between navy and army for budget.", "approve": true, "idempotency_key": "gallery-bop_side-1"}'
 ```
 
 <details><summary>Vanilla evidence for the name</summary>
 
-common/bop/PRC.txt:10 icon = GFX_PRC_bop_left_side
+common/bop/DEN.txt:275 icon = GFX_bop_DEN_annexation_side, and :361 gfx = GFX_bop_DEN_annexation_improved_side; interface/powerbalanceview.gfx:283 registers both
 
 </details>
 
@@ -170,20 +170,22 @@ common/decisions/categories/00_decision_categories.txt:16 icon = generic_propaga
 
 <img src="gallery/doctrine.webp" alt="Example doctrine asset made by hoi4-imagegen" width="192">
 
+**Vanilla form (colour since 0.3.8).** Measured on the 105 vanilla 64x64 doctrine icons: flat side-view silhouettes grouped into one compact emblem. Ground units (soldiers, tanks, guns) are solid black with a pale outline; aircraft are a flat sky blue (hue 185 to 225), ships and submarines a flat teal, with bright orange or yellow accents (arrows, chevrons, bursts). 98 percent of the icons carry some colour, and green, red and purple are practically absent. The coloured shapes fall softly from light to dark and sit on a dark shadow. The tool keeps simple subject colour on planes and ships in vanilla's ranges instead of forcing the whole icon to black and orange.
+
 | | |
 |---|---|
 | Group and tool | icon, `hoi4.image_icon` |
 | Canvas and frames | 64x64, 1 frame; DDS |
-| Names the game looks up | the script names the sprite in full, so the name is free. The example installs `GFX_doctrine_mobile_warfare`. |
-| Script | doctrine: icon = GFX_doctrine_mobile_warfare |
-| Installed files (example) | `gfx/interface/doctrines/gallery/doctrine_mobile_warfare.dds` |
-| Processing | recipe `icon` v1: trim, fit to the canvas with the profile margin, grayscale where the family needs it. Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 64, margin 2, width 64) |
+| Names the game looks up | the script names the sprite in full, so the name is free. The example installs `GFX_doctrine_battleship_chevrons`. |
+| Script | doctrine: icon = GFX_doctrine_battleship_chevrons |
+| Installed files (example) | `gfx/interface/doctrines/gallery/doctrine_battleship_chevrons.dds` |
+| Processing | recipe `doctrine` v3: vanilla's black units with pale outline and glow, sky-blue and teal units in vanilla's range, orange accents. Ran: `defringe` → `trim_to_subject` → `fit_subject` → `doctrine_look` |
 | Checks | `size`, `alpha`, `opaque_canvas`, `fringe`, `margin`, `fill`, `checker`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1254x1254 |
-| Image SHA-256 | `a84508c636bc1b02582729cd50bf2a1d0be60c30b620eff7028f9433910bcdbf` |
+| Made | 2026-11-08 on `gpt-6-luna`, ChatGPT's current image model, source 1254x1254 |
+| Image SHA-256 | `2de5222740189b16b20dc9d4a510482ea93309d56b199d3ba7858db5d3cb2aea` |
 
 ```sh
-hoi4-imagegen call hoi4.image_icon '{"family": "doctrine", "feature_slug": "gallery", "asset": "mobile_warfare", "brief": "Three bold arrows driving forward over broken ground, painted in the dark, muted Hearts of Iron IV style", "approve": true, "idempotency_key": "gallery-doctrine-1"}'
+hoi4-imagegen call hoi4.image_icon '{"family": "doctrine", "feature_slug": "gallery", "asset": "battleship_chevrons", "brief": "A large battleship in side view with two thick orange chevrons rising above it.", "approve": true, "idempotency_key": "gallery-doctrine-1"}'
 ```
 
 <details><summary>Vanilla evidence for the name</summary>
@@ -412,28 +414,28 @@ common/ideas/army_spirits.txt:4 bold_attack_spirit has no picture -> interface/o
 
 <img src="gallery/operation_icon.webp" alt="Example operation_icon asset made by hoi4-imagegen" width="177">
 
-**Vanilla form (since 0.3.2).** This family is the 59x58 operation phase icon, and only that. All 71 vanilla ones (`operations/phases_small/phase_bruneval_attack_small`, `phase_capture_tito_infiltration_small`) are a round sepia photograph whose edge is worn and slightly darkened, with no ring and no colour (median saturation 0.15, under 0.1 percent of the pixels coloured). The 85x85 square colour illustrations and the 48x48 ringed colour paintings in the same folder are a different form: they are no longer accepted sizes and never references. The example above predates this rule and shows a loose object, which is not the vanilla form.
+**Vanilla form (since 0.3.8).** This family is the operation card: an operation's `icon = GFX_operations_<name>`, the 85x85 picture in `gfx/interface/operations/` (17 files, for example `steal_blueprints`, `fake_intel`, `capture_ciphers`). Each is a painted or photographic close-up of the operation's act, mostly hands and objects, in a warm muted palette (mean saturation 0.35, mean luminance 77), tilted one to four degrees with a one pixel near-black outline, a soft shadow below and clear corners. Its `map_icon = GFX_operations_<name>_map` is the 48x48 medallion in `operations/map/`: the middle of the same picture in a round bevelled gold ring. The tool makes the card from the model's close-up and derives the medallion from the finished card, so the two always show the same picture. An isolated object on a blank background, a round vignette and the 59x58 phase icons (another sprite, `GFX_phase_<name>_small`) are not this family.
 
 | | |
 |---|---|
 | Group and tool | icon, `hoi4.image_icon` |
-| Canvas and frames | 59x58, 1 frame; DDS |
-| Also accepted | 48x48, 85x85 |
-| Names the game looks up | the script names the sprite in full, so the name is free. The example installs `GFX_phase_infiltrate_ministry_small`. |
-| Script | operation phase: icon = GFX_phase_infiltrate_ministry_small |
-| Installed files (example) | `gfx/interface/operations/gallery/icons/phase_infiltrate_ministry.dds` |
-| Processing | recipe `icon` v1: trim, fit to the canvas with the profile margin, grayscale where the family needs it. Ran: `defringe` (erosion 1) → `trim_to_subject` → `fit_subject` (height 58, margin 2, width 59) |
-| Checks | `size`, `alpha`, `opaque_canvas`, `fringe`, `margin`, `fill`, `checker`, `style`, `dds` |
-| Made | 2026-11-02 on `gpt-6-luna` (high reasoning effort), ChatGPT's current image model, quality medium, source 1254x1254 |
-| Image SHA-256 | `3ae1e940ed673968c6c71a1858050cf20abc69cd43ce70b05992a86fbf57e165` |
+| Canvas and frames | 85x85, 1 frame; DDS. The 48x48 map icon is written beside it |
+| Also accepted | 85x85 only (the 59x58 phase icons are another sprite) |
+| Names the game looks up | the script names the sprite in full, so the name is free. The example installs `GFX_operations_blueprint_unrolled` and `GFX_operations_blueprint_unrolled_map`. |
+| Script | operation: icon = GFX_operations_blueprint_unrolled and map_icon = GFX_operations_blueprint_unrolled_map |
+| Installed files (example) | `gfx/interface/operations/gallery/blueprint_unrolled.dds` and `gfx/interface/operations/gallery/map/blueprint_unrolled_map.dds` |
+| Processing | recipe `operation_card` v1: the picture on vanilla's card (a dim picture is lifted to vanilla's brightness, a one pixel outline, a small tilt, a soft shadow, clear corners) and its map medallion. Ran: `flatten_on` → `operation_card` |
+| Checks | `size`, `checker`, `card_corners`, `style`, `dds` |
+| Made | 2026-11-08 on `gpt-6-luna`, ChatGPT's current image model, source 1254x1254 |
+| Image SHA-256 | `08b4245bf49fd13a7e8b6c4b84d89b846f8e5a69fe5c1b8b98076e360d0259e4` |
 
 ```sh
-hoi4-imagegen call hoi4.image_icon '{"family": "operation_icon", "feature_slug": "gallery", "asset": "infiltrate_ministry", "brief": "A leather briefcase with sealed documents and a red wax stamp, painted in the dark, muted Hearts of Iron IV style", "approve": true, "idempotency_key": "gallery-operation_icon-1"}'
+hoi4-imagegen call hoi4.image_icon '{"family": "operation_icon", "feature_slug": "gallery", "asset": "blueprint_unrolled", "brief": "Hands unrolling a large pale blueprint on a table, a pencil resting on it.", "approve": true, "idempotency_key": "gallery-operation_icon-1"}'
 ```
 
 <details><summary>Vanilla evidence for the name</summary>
 
-common/operation_phases/00_operation_phases.txt icon values (73, full names) -> interface/lar_operations.gfx:546 GFX_phase_infiltrate_military_bribe_small (59x58)
+common/operations/00_operations.txt:1915 icon = GFX_operations_steal_blueprints and :1916 map_icon = GFX_operations_steal_blueprints_map -> interface/lar_operations.gfx:52 and :163 (85x85 and 48x48)
 
 </details>
 

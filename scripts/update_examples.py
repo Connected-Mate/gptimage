@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Swap the README examples and the per-family examples in docs/families.md for current gallery images.
 
-  update_examples.py <repo root>
+  update_examples.py <repo root> [--only family,family]
 
 Each family's docs/gallery/<family>.webp becomes one image from docs/gallery/big/manifest.json (built by
 build_gallery_site.py: 0.3 or later, validation and the vanilla-match check passed), drawn on a dark tile and enlarged
@@ -41,7 +41,7 @@ def choose(fam, items):
     return sorted(items, key=rank)[0]
 
 
-def main(repo):
+def main(repo, only=None):
     big = os.path.join(repo, "docs", "gallery", "big")
     manifest = json.load(open(os.path.join(big, "manifest.json"), encoding="utf-8"))["images"]
     by_fam = {}
@@ -56,6 +56,9 @@ def main(repo):
         if not f.endswith(".webp") or f == "contact-sheet.webp":
             continue
         fam = f[:-5]
+        if only and fam not in only:  # keep the other families' examples as they are, and only redraw the contact sheet
+            examples[fam] = (Image.open(os.path.join(gallery, f)).convert("RGB"), {"asset": None, "build": None, "brief": None})
+            continue
         items = by_fam.get(fam)
         tag = re.compile(r'<img src="gallery/' + re.escape(fam) + r'\.webp"[^>]*>')
         if not items:
@@ -86,10 +89,13 @@ def main(repo):
         x, y = (n % cols) * cell + (cell - t.width) // 2, (n // cols) * cell + (cell - t.height) // 2
         sheet.paste(t, (x, y))
     sheet.save(os.path.join(gallery, "contact-sheet.webp"), "WEBP", quality=88)
-    json.dump({fam: {"asset": e["asset"], "build": e["build"], "brief": e["brief"]} for fam, (_, e) in examples.items()},
-              open(os.path.join(gallery, "examples.json"), "w", encoding="utf-8", newline="\n"), indent=1, ensure_ascii=False)
+    old_path = os.path.join(gallery, "examples.json")
+    old = json.load(open(old_path, encoding="utf-8")) if only and os.path.exists(old_path) else {}
+    json.dump({fam: ({"asset": e["asset"], "build": e["build"], "brief": e["brief"]} if e["asset"] else old.get(fam)) for fam, (_, e) in examples.items()},
+              open(old_path, "w", encoding="utf-8", newline="\n"), indent=1, ensure_ascii=False)
     print(len(examples), "examples,", len(tiles), "on the contact sheet")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    only = set(sys.argv[sys.argv.index("--only") + 1].split(",")) if "--only" in sys.argv else None
+    main(sys.argv[1], only)

@@ -1058,8 +1058,8 @@
   },
   {
    "asset": "smokestacks_gear_pillar",
-   "brief": "A towering cogwheel with factory smokestacks rising behind it, the industrial side in a struggle between industry and farmers, bold carved two-colour linocut look.",
-   "style": "linocut"
+   "brief": "A towering cogwheel with factory smokestacks rising behind it, the industrial side in a struggle between industry and farmers.",
+   "style": null
   },
   {
    "asset": "wheat_sheaf_scythe",
@@ -1093,8 +1093,8 @@
   },
   {
    "asset": "estate_gate_oak",
-   "brief": "A tall wrought-iron estate gate framing an old oak tree, the landowning aristocrats side in a struggle against land reform, soft flat gouache look.",
-   "style": "gouache"
+   "brief": "A tall wrought-iron estate gate framing an old oak tree, the landowning aristocrats side in a struggle against land reform.",
+   "style": null
   },
   {
    "asset": "anchor_and_rope_standard",
@@ -1172,124 +1172,124 @@
  "agency_upgrade": [
   {
    "asset": "rotor_cipher_desk",
-   "brief": "A rotor cipher machine with lit keys on a desk beside a stack of coded sheets and a banker lamp, quiet intense office mood.",
+   "brief": "A rotor cipher machine with lit keys on a desk beside a stack of coded sheets and a banker lamp, quiet intense office mood. Slate and steel-blue tones.",
    "style": null
   },
   {
    "asset": "engraving_press_workshop",
-   "brief": "An engraver's plate and small press with ink-stained rollers and a magnifying lens, a forgery workshop hidden in a Parisian attic, bold carved two-colour linocut look.",
-   "style": "linocut"
+   "brief": "An engraver's plate and small press with ink-stained rollers and a magnifying lens, a forgery workshop hidden in a Parisian attic. Slate and steel-blue tones.",
+   "style": null
   },
   {
    "asset": "intercept_operator_antennas",
-   "brief": "A radio operator with headphones at a bank of receivers, a wire antenna array outside the window in a Swedish forest, listening intently.",
+   "brief": "A radio operator with headphones at a bank of receivers, a wire antenna array outside the window in a Swedish forest, listening intently. Slate and steel-blue tones.",
    "style": null
   },
   {
    "asset": "microfilm_light_table",
-   "brief": "A tiny roll of microfilm and a magnifying glass over a glowing light table, careful tense mood in a spy lab.",
+   "brief": "A tiny roll of microfilm and a magnifying glass over a glowing light table, careful tense mood in a spy lab. Slate and steel-blue tones.",
    "style": null
   },
   {
    "asset": "safe_house_window",
-   "brief": "A shuttered townhouse window with a single lit lamp behind a curtain on a narrow cobbled Lisbon street at night, a safe house.",
+   "brief": "A shuttered townhouse window with a single lit lamp behind a curtain on a narrow cobbled Lisbon street at night, a safe house. Slate and steel-blue tones.",
    "style": null
   },
   {
    "asset": "telescope_behind_curtain",
-   "brief": "A brass telescope on a tripod peeking from behind a heavy curtain, overlooking a busy foreign embassy street, watchful mood.",
+   "brief": "A brass telescope on a tripod peeking from behind a heavy curtain, overlooking a busy foreign embassy street, watchful mood. Slate and steel-blue tones.",
    "style": null
   },
   {
    "asset": "parachute_training_tower",
-   "brief": "A tall wooden parachute training tower with a billowing canopy descending, recruits watching below in a Polish training field.",
+   "brief": "A tall wooden parachute training tower with a billowing canopy descending, recruits watching below in a Polish training field. Slate and steel-blue tones.",
    "style": null
   },
   {
    "asset": "chemistry_bench_flasks",
-   "brief": "A lab bench with glass flasks, a dropper and a vial of colourless liquid beside a sheet being warmed, secret writing chemistry.",
+   "brief": "A lab bench with glass flasks, a dropper and a vial of colourless liquid beside a sheet being warmed, secret writing chemistry. Slate and steel-blue tones.",
    "style": null
   },
   {
    "asset": "rooftop_pigeon_loft",
-   "brief": "A rooftop pigeon loft with carrier pigeons perched at open doors over British chimneys at sunrise, soft flat gouache look.",
-   "style": "gouache"
+   "brief": "A rooftop pigeon loft with carrier pigeons perched at open doors over British chimneys at sunrise. Slate and steel-blue tones.",
+   "style": null
   },
   {
    "asset": "pocket_watch_camera",
-   "brief": "A miniature camera hidden inside an open pocket watch case on a polished table, clever small gadget, warm mood.",
+   "brief": "A miniature camera hidden inside an open pocket watch case on a polished table, clever small gadget, warm mood. Slate and steel-blue tones.",
    "style": null
   },
   {
    "asset": "steel_filing_vault",
-   "brief": "A heavy steel filing cabinet with a large combination lock and thick folders spilling from the top drawer, counterintelligence records room.",
+   "brief": "A heavy steel filing cabinet with a large combination lock and thick folders spilling from the top drawer, counterintelligence records room. Slate and steel-blue tones.",
    "style": null
   },
   {
    "asset": "disguise_wardrobe_rack",
-   "brief": "A dressing room rack of hats, wigs, spectacles and coats of different trades hanging beside a lit mirror, playful mood.",
+   "brief": "A dressing room rack of hats, wigs, spectacles and coats of different trades hanging beside a lit mirror, playful mood. Slate and steel-blue tones.",
    "style": null
   }
  ],
  "operation_icon": [
   {
-   "asset": "ministry_door_ajar",
-   "brief": "A heavy oak ministry door standing slightly ajar with warm light spilling through the crack onto a marble floor.",
+   "asset": "envelope_handover",
+   "brief": "Close-up of two hands exchanging a thick envelope across a bright table, dark coat cuffs visible, soft daylight.",
    "style": null
   },
   {
-   "asset": "envelope_and_cap",
-   "brief": "A thick envelope sliding across a table toward an officer's peaked cap, the bribe of a Balkan officer, tense mood.",
-   "style": null
-  },
-  {
-   "asset": "blueprint_tube_safe",
-   "brief": "A rolled blueprint tube half pulled from an open wall safe, bold carved two-colour linocut look, quiet theft at night.",
-   "style": "linocut"
-  },
-  {
-   "asset": "telephone_with_bug",
-   "brief": "A black desk telephone with a tiny microphone attached under the handset, with coiled cable, planted bug in a Berlin-style office but fictional.",
-   "style": null
-  },
-  {
-   "asset": "passport_stamp",
-   "brief": "A rubber stamp pressed onto a blank travel pass, ink pad beside it, forged papers made in a back room.",
-   "style": null
-  },
-  {
-   "asset": "rifles_in_hay_cart",
-   "brief": "A farm cart loaded with hay and rifle barrels poking out the side, weapons smuggled across a Spanish mountain border.",
+   "asset": "stamp_on_travel_pass",
+   "brief": "A hand pressing a rubber stamp onto a pale travel pass, an ink pad beside it, bright desk.",
    "style": null
   },
   {
    "asset": "bolt_cutters_cable",
-   "brief": "A pair of long bolt cutters about to snip a thick cable, sabotage tool in strong lighting.",
+   "brief": "Close-up of gloved hands cutting a thick cable with long bolt cutters, light workshop wall behind.",
    "style": null
   },
   {
-   "asset": "loose_brick_note",
-   "brief": "A loose brick pulled from an old Prague wall revealing a folded paper note behind it, dead drop, grainy sepia ink sketch.",
-   "style": "ink"
-  },
-  {
-   "asset": "fedora_raised_collar",
-   "brief": "A lone fedora hat resting on top of a coat with a raised collar hung on a rack, recruiting an informant in a smoky cafe.",
+   "asset": "note_behind_brick",
+   "brief": "A hand sliding a folded paper note out from behind a loose brick in a pale plaster wall.",
    "style": null
   },
   {
-   "asset": "chained_briefcase",
-   "brief": "A leather briefcase locked with a heavy chain and padlock, secret codebook theft, dramatic shadows.",
+   "asset": "suitcase_radio_dials",
+   "brief": "A hand adjusting the dials of a compact suitcase radio, pale linen lining, soft window light.",
    "style": null
   },
   {
-   "asset": "suitcase_radio",
-   "brief": "An open suitcase containing a compact clandestine radio transmitter with dials and a short wire antenna, resistance in occupied Norway.",
+   "asset": "handshake_over_papers",
+   "brief": "Two officers shaking hands over a desk of bright papers, only the clasped hands and cuffs visible.",
    "style": null
   },
   {
-   "asset": "folded_officer_uniform",
-   "brief": "A neatly folded officer uniform tunic with a cap and polished boots on a wooden chair, disguise prepared for infiltration.",
+   "asset": "soldiers_in_line",
+   "brief": "A line of soldiers in grey greatcoats seen from the chest down with rifles at their sides, pale morning light.",
+   "style": null
+  },
+  {
+   "asset": "key_in_filing_cabinet",
+   "brief": "A hand turning a small key in the lock of a pale filing cabinet, light office background.",
+   "style": null
+  },
+  {
+   "asset": "briefcase_of_folders",
+   "brief": "Fingers lifting the lid of a leather briefcase full of pale folders on a bright table.",
+   "style": null
+  },
+  {
+   "asset": "magnifier_over_map",
+   "brief": "A hand holding a magnifying glass over a bright map covered with pins.",
+   "style": null
+  },
+  {
+   "asset": "blueprint_unrolled",
+   "brief": "Hands unrolling a large pale blueprint on a table, a pencil resting on it.",
+   "style": null
+  },
+  {
+   "asset": "receiver_with_bug",
+   "brief": "A hand placing a telephone receiver into its cradle beside a small hidden microphone, bright desk.",
    "style": null
   }
  ],
@@ -1419,63 +1419,63 @@
  ],
  "doctrine": [
   {
-   "asset": "tank_column_dust",
-   "brief": "A fast column of tanks racing across the open steppe trailing a long plume of dust under a huge sky, Soviet deep battle, mobile warfare.",
+   "asset": "fighter_sweep",
+   "brief": "A large fighter aircraft in side view with a thick orange arrow sweeping forward beneath it.",
    "style": null
   },
   {
-   "asset": "infantry_wave_mud",
-   "brief": "A dense wave of infantry silhouettes with fixed bayonets surging across a muddy field under a heavy sky, mass assault, grim mood.",
+   "asset": "bomber_target_ring",
+   "brief": "A big bomber aircraft in side view dropping one bomb toward a target ring marked in orange.",
    "style": null
   },
   {
-   "asset": "map_table_arrows",
-   "brief": "Officers' hands moving pins and arrows over a large map table lit by a hanging lamp, a French interwar methodical battle plan, grainy sepia ink sketch.",
-   "style": "ink"
-  },
-  {
-   "asset": "howitzer_battery_night",
-   "brief": "A row of massed howitzers firing together at night with bright muzzle flashes lighting crews and shell casings, superior firepower.",
+   "asset": "tank_on_arrow",
+   "brief": "A tank in side view standing on a bold orange arrow pointing right.",
    "style": null
   },
   {
-   "asset": "carrier_launch_dawn",
-   "brief": "An aircraft carrier launching a squadron of strike aircraft into an orange dawn over a flat sea, Japanese carrier strike doctrine.",
+   "asset": "battleship_chevrons",
+   "brief": "A large battleship in side view with two thick orange chevrons rising above it.",
    "style": null
   },
   {
-   "asset": "destroyer_convoy_grey",
-   "brief": "A destroyer escort steaming beside a line of merchant ships on a grey Atlantic sea with heavy swells, Canadian convoy duty.",
+   "asset": "submarine_circle_arrow",
+   "brief": "A submarine in side view beneath a thick curved orange arrow.",
    "style": null
   },
   {
-   "asset": "bomber_formation_city",
-   "brief": "A tight formation of heavy bombers flying high above a distant city skyline at dusk, vapour trails stretching behind, strategic bombing.",
+   "asset": "soldiers_behind_arrow",
+   "brief": "Three soldiers in side view advancing behind a large orange arrow.",
    "style": null
   },
   {
-   "asset": "partisan_forest_lookout",
-   "brief": "Armed partisans in a Yugoslav mountain forest, one lookout watching from a rock ridge with rifle and scarf, quiet determined mood.",
+   "asset": "carrier_and_planes",
+   "brief": "A large aircraft carrier in side view with two small aircraft above it and an orange arrow.",
    "style": null
   },
   {
-   "asset": "bunker_hedgehogs_pine",
-   "brief": "Concrete bunkers and rows of anti-tank obstacles in a Finnish pine forest line, bold carved two-colour linocut look, stubborn defence.",
-   "style": "linocut"
-  },
-  {
-   "asset": "paratroopers_over_fields",
-   "brief": "A sky full of parachutes descending over patchwork farmland and a river at dawn, airborne assault doctrine, tense hopeful mood.",
+   "asset": "paratrooper_arrow",
+   "brief": "A paratrooper descending under a canopy beside a bold orange arrow.",
    "style": null
   },
   {
-   "asset": "alpine_troops_ridge",
-   "brief": "A line of alpine troops roped together climbing a snowy ridge with packs and ice axes under a huge sky, Italian mountain doctrine.",
+   "asset": "destroyers_cycle",
+   "brief": "Two destroyers in side view inside an orange circular arrow.",
    "style": null
   },
   {
-   "asset": "battle_line_broadside",
-   "brief": "A line of battleships steaming in column and firing a broadside at dusk, orange flashes on dark water, classic fleet doctrine.",
+   "asset": "tank_and_soldier_chevron",
+   "brief": "A tank and a soldier in side view under a big orange chevron.",
+   "style": null
+  },
+  {
+   "asset": "howitzer_burst",
+   "brief": "A large howitzer in side view with a bold orange burst at its muzzle.",
+   "style": null
+  },
+  {
+   "asset": "transport_aircraft_arc",
+   "brief": "A single large transport aircraft in side view over an orange arrow curving upward.",
    "style": null
   }
  ],

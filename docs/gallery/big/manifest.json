@@ -3286,15 +3286,15 @@
    "section": "vanilla",
    "family": "bop_side",
    "asset": "anchor_and_rope_standard",
-   "brief": "A tall standard bearing a large anchor wrapped in thick rope, the navy side in a rivalry between navy and army for budget.",
-   "build": "0.3.3",
-   "processed_on": "0.3.6",
+   "brief": "A tall standard bearing a large anchor wrapped in thick rope, the navy side in a rivalry between navy and army for budget. (standard stage)",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
     72,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": "all",
+   "subfamily": null,
    "native": "vanilla/bop_side/anchor_and_rope_standard.webp",
    "enlarged": "vanilla/bop_side/anchor_and_rope_standard@2x.webp",
    "scale": 2
@@ -3302,33 +3302,203 @@
   {
    "section": "vanilla",
    "family": "bop_side",
-   "asset": "clan_mountain_standard",
-   "brief": "A hill-clan standard with stylised mountain peaks, ox horns and a spear tip, the regional autonomists side in a struggle against the central state in Persia.",
-   "build": "0.3.3",
-   "processed_on": "0.3.6",
+   "asset": "anchor_and_rope_standard_improved",
+   "brief": "A tall standard bearing a large anchor wrapped in thick rope, the navy side in a rivalry between navy and army for budget. (improved stage)",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
     72,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": "all",
-   "native": "vanilla/bop_side/clan_mountain_standard.webp",
-   "enlarged": "vanilla/bop_side/clan_mountain_standard@2x.webp",
+   "subfamily": null,
+   "native": "vanilla/bop_side/anchor_and_rope_standard_improved.webp",
+   "enlarged": "vanilla/bop_side/anchor_and_rope_standard_improved@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "bop_side",
+   "asset": "anchor_and_rope_standard_bad",
+   "brief": "A tall standard bearing a large anchor wrapped in thick rope, the navy side in a rivalry between navy and army for budget. (bad stage)",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
+   "size": [
+    72,
+    88
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/bop_side/anchor_and_rope_standard_bad.webp",
+   "enlarged": "vanilla/bop_side/anchor_and_rope_standard_bad@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "bop_side",
+   "asset": "anchor_and_rope_standard_bad_improved",
+   "brief": "A tall standard bearing a large anchor wrapped in thick rope, the navy side in a rivalry between navy and army for budget. (bad improved stage)",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
+   "size": [
+    72,
+    88
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/bop_side/anchor_and_rope_standard_bad_improved.webp",
+   "enlarged": "vanilla/bop_side/anchor_and_rope_standard_bad_improved@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "bop_side",
+   "asset": "crown_on_cushion_banner",
+   "brief": "A jewelled crown on a tall embroidered banner pole with draped velvet, the monarchist side in a struggle between monarchists and republicans, Balkan kingdom feel. (standard stage)",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
+   "size": [
+    72,
+    88
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/bop_side/crown_on_cushion_banner.webp",
+   "enlarged": "vanilla/bop_side/crown_on_cushion_banner@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "bop_side",
+   "asset": "crown_on_cushion_banner_improved",
+   "brief": "A jewelled crown on a tall embroidered banner pole with draped velvet, the monarchist side in a struggle between monarchists and republicans, Balkan kingdom feel. (improved stage)",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
+   "size": [
+    72,
+    88
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/bop_side/crown_on_cushion_banner_improved.webp",
+   "enlarged": "vanilla/bop_side/crown_on_cushion_banner_improved@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "bop_side",
+   "asset": "crown_on_cushion_banner_bad",
+   "brief": "A jewelled crown on a tall embroidered banner pole with draped velvet, the monarchist side in a struggle between monarchists and republicans, Balkan kingdom feel. (bad stage)",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
+   "size": [
+    72,
+    88
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/bop_side/crown_on_cushion_banner_bad.webp",
+   "enlarged": "vanilla/bop_side/crown_on_cushion_banner_bad@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "bop_side",
+   "asset": "crown_on_cushion_banner_bad_improved",
+   "brief": "A jewelled crown on a tall embroidered banner pole with draped velvet, the monarchist side in a struggle between monarchists and republicans, Balkan kingdom feel. (bad improved stage)",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
+   "size": [
+    72,
+    88
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/bop_side/crown_on_cushion_banner_bad_improved.webp",
+   "enlarged": "vanilla/bop_side/crown_on_cushion_banner_bad_improved@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "bop_side",
+   "asset": "open_book_torch",
+   "brief": "A large open book with blank pages and a flaming torch rising from its spine, the liberal intellectuals side in a struggle against censorship. (standard stage)",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
+   "size": [
+    72,
+    88
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/bop_side/open_book_torch.webp",
+   "enlarged": "vanilla/bop_side/open_book_torch@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "bop_side",
+   "asset": "open_book_torch_improved",
+   "brief": "A large open book with blank pages and a flaming torch rising from its spine, the liberal intellectuals side in a struggle against censorship. (improved stage)",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
+   "size": [
+    72,
+    88
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/bop_side/open_book_torch_improved.webp",
+   "enlarged": "vanilla/bop_side/open_book_torch_improved@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "bop_side",
+   "asset": "open_book_torch_bad",
+   "brief": "A large open book with blank pages and a flaming torch rising from its spine, the liberal intellectuals side in a struggle against censorship. (bad stage)",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
+   "size": [
+    72,
+    88
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/bop_side/open_book_torch_bad.webp",
+   "enlarged": "vanilla/bop_side/open_book_torch_bad@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "bop_side",
+   "asset": "open_book_torch_bad_improved",
+   "brief": "A large open book with blank pages and a flaming torch rising from its spine, the liberal intellectuals side in a struggle against censorship. (bad improved stage)",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
+   "size": [
+    72,
+    88
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/bop_side/open_book_torch_bad_improved.webp",
+   "enlarged": "vanilla/bop_side/open_book_torch_bad_improved@2x.webp",
    "scale": 2
   },
   {
    "section": "vanilla",
    "family": "bop_side",
    "asset": "parliament_columns_scales",
-   "brief": "A slim facade of white columns with a pair of balanced scales above, the parliament side in a struggle against military rule.",
-   "build": "0.3.3",
-   "processed_on": "0.3.6",
+   "brief": "A slim facade of white columns with a pair of balanced scales above, the parliament side in a struggle against military rule. (standard stage)",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
     72,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": "war",
+   "subfamily": null,
    "native": "vanilla/bop_side/parliament_columns_scales.webp",
    "enlarged": "vanilla/bop_side/parliament_columns_scales@2x.webp",
    "scale": 2
@@ -3336,16 +3506,67 @@
   {
    "section": "vanilla",
    "family": "bop_side",
-   "asset": "raised_hammer_torch",
-   "brief": "A raised sledgehammer entwined with a burning torch, the labour side in a struggle between workers and factory owners.",
-   "build": "0.3.3",
-   "processed_on": "0.3.6",
+   "asset": "parliament_columns_scales_improved",
+   "brief": "A slim facade of white columns with a pair of balanced scales above, the parliament side in a struggle against military rule. (improved stage)",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
     72,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": "all",
+   "subfamily": null,
+   "native": "vanilla/bop_side/parliament_columns_scales_improved.webp",
+   "enlarged": "vanilla/bop_side/parliament_columns_scales_improved@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "bop_side",
+   "asset": "parliament_columns_scales_bad",
+   "brief": "A slim facade of white columns with a pair of balanced scales above, the parliament side in a struggle against military rule. (bad stage)",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
+   "size": [
+    72,
+    88
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/bop_side/parliament_columns_scales_bad.webp",
+   "enlarged": "vanilla/bop_side/parliament_columns_scales_bad@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "bop_side",
+   "asset": "parliament_columns_scales_bad_improved",
+   "brief": "A slim facade of white columns with a pair of balanced scales above, the parliament side in a struggle against military rule. (bad improved stage)",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
+   "size": [
+    72,
+    88
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/bop_side/parliament_columns_scales_bad_improved.webp",
+   "enlarged": "vanilla/bop_side/parliament_columns_scales_bad_improved@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "bop_side",
+   "asset": "raised_hammer_torch",
+   "brief": "A raised sledgehammer entwined with a burning torch, the labour side in a struggle between workers and factory owners. (standard stage)",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
+   "size": [
+    72,
+    88
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
    "native": "vanilla/bop_side/raised_hammer_torch.webp",
    "enlarged": "vanilla/bop_side/raised_hammer_torch@2x.webp",
    "scale": 2
@@ -3353,35 +3574,120 @@
   {
    "section": "vanilla",
    "family": "bop_side",
-   "asset": "smokestacks_gear_pillar",
-   "brief": "A towering cogwheel with factory smokestacks rising behind it, the industrial side in a struggle between industry and farmers, bold carved two-colour linocut look.",
-   "build": "0.3.3",
-   "processed_on": "0.3.6",
+   "asset": "raised_hammer_torch_improved",
+   "brief": "A raised sledgehammer entwined with a burning torch, the labour side in a struggle between workers and factory owners. (improved stage)",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
     72,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": "all",
-   "native": "vanilla/bop_side/smokestacks_gear_pillar.webp",
-   "enlarged": "vanilla/bop_side/smokestacks_gear_pillar@2x.webp",
+   "subfamily": null,
+   "native": "vanilla/bop_side/raised_hammer_torch_improved.webp",
+   "enlarged": "vanilla/bop_side/raised_hammer_torch_improved@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "bop_side",
+   "asset": "raised_hammer_torch_bad",
+   "brief": "A raised sledgehammer entwined with a burning torch, the labour side in a struggle between workers and factory owners. (bad stage)",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
+   "size": [
+    72,
+    88
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/bop_side/raised_hammer_torch_bad.webp",
+   "enlarged": "vanilla/bop_side/raised_hammer_torch_bad@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "bop_side",
+   "asset": "raised_hammer_torch_bad_improved",
+   "brief": "A raised sledgehammer entwined with a burning torch, the labour side in a struggle between workers and factory owners. (bad improved stage)",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
+   "size": [
+    72,
+    88
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/bop_side/raised_hammer_torch_bad_improved.webp",
+   "enlarged": "vanilla/bop_side/raised_hammer_torch_bad_improved@2x.webp",
    "scale": 2
   },
   {
    "section": "vanilla",
    "family": "bop_side",
    "asset": "wheat_sheaf_scythe",
-   "brief": "A tied sheaf of golden wheat with a crossed scythe standing upright, the farmers side in a struggle between farmers and industry, Bulgarian countryside.",
-   "build": "0.3.3",
-   "processed_on": "0.3.6",
+   "brief": "A tied sheaf of golden wheat with a crossed scythe standing upright, the farmers side in a struggle between farmers and industry, Bulgarian countryside. (standard stage)",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
     72,
     88
    ],
    "vanilla_check": "pass",
-   "subfamily": "all",
+   "subfamily": null,
    "native": "vanilla/bop_side/wheat_sheaf_scythe.webp",
    "enlarged": "vanilla/bop_side/wheat_sheaf_scythe@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "bop_side",
+   "asset": "wheat_sheaf_scythe_improved",
+   "brief": "A tied sheaf of golden wheat with a crossed scythe standing upright, the farmers side in a struggle between farmers and industry, Bulgarian countryside. (improved stage)",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
+   "size": [
+    72,
+    88
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/bop_side/wheat_sheaf_scythe_improved.webp",
+   "enlarged": "vanilla/bop_side/wheat_sheaf_scythe_improved@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "bop_side",
+   "asset": "wheat_sheaf_scythe_bad",
+   "brief": "A tied sheaf of golden wheat with a crossed scythe standing upright, the farmers side in a struggle between farmers and industry, Bulgarian countryside. (bad stage)",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
+   "size": [
+    72,
+    88
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/bop_side/wheat_sheaf_scythe_bad.webp",
+   "enlarged": "vanilla/bop_side/wheat_sheaf_scythe_bad@2x.webp",
+   "scale": 2
+  },
+  {
+   "section": "vanilla",
+   "family": "bop_side",
+   "asset": "wheat_sheaf_scythe_bad_improved",
+   "brief": "A tied sheaf of golden wheat with a crossed scythe standing upright, the farmers side in a struggle between farmers and industry, Bulgarian countryside. (bad improved stage)",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
+   "size": [
+    72,
+    88
+   ],
+   "vanilla_check": "pass",
+   "subfamily": null,
+   "native": "vanilla/bop_side/wheat_sheaf_scythe_bad_improved.webp",
+   "enlarged": "vanilla/bop_side/wheat_sheaf_scythe_bad_improved@2x.webp",
    "scale": 2
   },
   {
@@ -3507,15 +3813,15 @@
    "section": "vanilla",
    "family": "agency_upgrade",
    "asset": "chemistry_bench_flasks",
-   "brief": "A lab bench with glass flasks, a dropper and a vial of colourless liquid beside a sheet being warmed, secret writing chemistry.",
-   "build": "0.3.4",
-   "processed_on": "0.3.4",
+   "brief": "A lab bench with glass flasks, a dropper and a vial of colourless liquid beside a sheet being warmed, secret writing chemistry. Slate and steel-blue tones.",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
     68,
     68
    ],
    "vanilla_check": "pass",
-   "subfamily": "all",
+   "subfamily": null,
    "native": "vanilla/agency_upgrade/chemistry_bench_flasks.webp",
    "enlarged": "vanilla/agency_upgrade/chemistry_bench_flasks@3x.webp",
    "scale": 3
@@ -3523,50 +3829,16 @@
   {
    "section": "vanilla",
    "family": "agency_upgrade",
-   "asset": "disguise_wardrobe_rack",
-   "brief": "A dressing room rack of hats, wigs, spectacles and coats of different trades hanging beside a lit mirror, playful mood.",
-   "build": "0.3.4",
-   "processed_on": "0.3.4",
-   "size": [
-    68,
-    68
-   ],
-   "vanilla_check": "pass",
-   "subfamily": "all",
-   "native": "vanilla/agency_upgrade/disguise_wardrobe_rack.webp",
-   "enlarged": "vanilla/agency_upgrade/disguise_wardrobe_rack@3x.webp",
-   "scale": 3
-  },
-  {
-   "section": "vanilla",
-   "family": "agency_upgrade",
-   "asset": "engraving_press_workshop",
-   "brief": "An engraver's plate and small press with ink-stained rollers and a magnifying lens, a forgery workshop hidden in a Parisian attic.",
-   "build": "0.3.4",
-   "processed_on": "0.3.4",
-   "size": [
-    68,
-    68
-   ],
-   "vanilla_check": "pass",
-   "subfamily": "all",
-   "native": "vanilla/agency_upgrade/engraving_press_workshop.webp",
-   "enlarged": "vanilla/agency_upgrade/engraving_press_workshop@3x.webp",
-   "scale": 3
-  },
-  {
-   "section": "vanilla",
-   "family": "agency_upgrade",
    "asset": "intercept_operator_antennas",
-   "brief": "A radio operator with headphones at a bank of receivers, a wire antenna array outside the window in a Swedish forest, listening intently.",
-   "build": "0.3.4",
-   "processed_on": "0.3.4",
+   "brief": "A radio operator with headphones at a bank of receivers, a wire antenna array outside the window in a Swedish forest, listening intently. Slate and steel-blue tones.",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
     68,
     68
    ],
    "vanilla_check": "pass",
-   "subfamily": "all",
+   "subfamily": null,
    "native": "vanilla/agency_upgrade/intercept_operator_antennas.webp",
    "enlarged": "vanilla/agency_upgrade/intercept_operator_antennas@3x.webp",
    "scale": 3
@@ -3575,15 +3847,15 @@
    "section": "vanilla",
    "family": "agency_upgrade",
    "asset": "microfilm_light_table",
-   "brief": "A tiny roll of microfilm and a magnifying glass over a glowing light table, careful tense mood in a spy lab.",
-   "build": "0.3.4",
-   "processed_on": "0.3.4",
+   "brief": "A tiny roll of microfilm and a magnifying glass over a glowing light table, careful tense mood in a spy lab. Slate and steel-blue tones.",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
     68,
     68
    ],
    "vanilla_check": "pass",
-   "subfamily": "all",
+   "subfamily": null,
    "native": "vanilla/agency_upgrade/microfilm_light_table.webp",
    "enlarged": "vanilla/agency_upgrade/microfilm_light_table@3x.webp",
    "scale": 3
@@ -3592,15 +3864,15 @@
    "section": "vanilla",
    "family": "agency_upgrade",
    "asset": "parachute_training_tower",
-   "brief": "A tall wooden parachute training tower with a billowing canopy descending, recruits watching below in a Polish training field.",
-   "build": "0.3.4",
-   "processed_on": "0.3.4",
+   "brief": "A tall wooden parachute training tower with a billowing canopy descending, recruits watching below in a Polish training field. Slate and steel-blue tones.",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
     68,
     68
    ],
    "vanilla_check": "pass",
-   "subfamily": "all",
+   "subfamily": null,
    "native": "vanilla/agency_upgrade/parachute_training_tower.webp",
    "enlarged": "vanilla/agency_upgrade/parachute_training_tower@3x.webp",
    "scale": 3
@@ -3609,15 +3881,15 @@
    "section": "vanilla",
    "family": "agency_upgrade",
    "asset": "pocket_watch_camera",
-   "brief": "A miniature camera hidden inside an open pocket watch case on a polished table, clever small gadget, warm mood.",
-   "build": "0.3.4",
-   "processed_on": "0.3.4",
+   "brief": "A miniature camera hidden inside an open pocket watch case on a polished table, clever small gadget, warm mood. Slate and steel-blue tones.",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
     68,
     68
    ],
    "vanilla_check": "pass",
-   "subfamily": "all",
+   "subfamily": null,
    "native": "vanilla/agency_upgrade/pocket_watch_camera.webp",
    "enlarged": "vanilla/agency_upgrade/pocket_watch_camera@3x.webp",
    "scale": 3
@@ -3626,15 +3898,15 @@
    "section": "vanilla",
    "family": "agency_upgrade",
    "asset": "rooftop_pigeon_loft",
-   "brief": "A rooftop pigeon loft with carrier pigeons perched at open doors over British chimneys at sunrise.",
-   "build": "0.3.4",
-   "processed_on": "0.3.4",
+   "brief": "A rooftop pigeon loft with carrier pigeons perched at open doors over British chimneys at sunrise. Slate and steel-blue tones.",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
     68,
     68
    ],
    "vanilla_check": "pass",
-   "subfamily": "all",
+   "subfamily": null,
    "native": "vanilla/agency_upgrade/rooftop_pigeon_loft.webp",
    "enlarged": "vanilla/agency_upgrade/rooftop_pigeon_loft@3x.webp",
    "scale": 3
@@ -3642,50 +3914,16 @@
   {
    "section": "vanilla",
    "family": "agency_upgrade",
-   "asset": "rotor_cipher_desk",
-   "brief": "A rotor cipher machine with lit keys on a desk beside a stack of coded sheets and a banker lamp, quiet intense office mood.",
-   "build": "0.3.4",
-   "processed_on": "0.3.4",
-   "size": [
-    68,
-    68
-   ],
-   "vanilla_check": "pass",
-   "subfamily": "all",
-   "native": "vanilla/agency_upgrade/rotor_cipher_desk.webp",
-   "enlarged": "vanilla/agency_upgrade/rotor_cipher_desk@3x.webp",
-   "scale": 3
-  },
-  {
-   "section": "vanilla",
-   "family": "agency_upgrade",
-   "asset": "safe_house_window",
-   "brief": "A shuttered townhouse window with a single lit lamp behind a curtain on a narrow cobbled Lisbon street at night, a safe house.",
-   "build": "0.3.4",
-   "processed_on": "0.3.4",
-   "size": [
-    68,
-    68
-   ],
-   "vanilla_check": "pass",
-   "subfamily": "all",
-   "native": "vanilla/agency_upgrade/safe_house_window.webp",
-   "enlarged": "vanilla/agency_upgrade/safe_house_window@3x.webp",
-   "scale": 3
-  },
-  {
-   "section": "vanilla",
-   "family": "agency_upgrade",
    "asset": "steel_filing_vault",
-   "brief": "A heavy steel filing cabinet with a large combination lock and thick folders spilling from the top drawer, counterintelligence records room.",
-   "build": "0.3.4",
-   "processed_on": "0.3.4",
+   "brief": "A heavy steel filing cabinet with a large combination lock and thick folders spilling from the top drawer, counterintelligence records room. Slate and steel-blue tones.",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
     68,
     68
    ],
    "vanilla_check": "pass",
-   "subfamily": "all",
+   "subfamily": null,
    "native": "vanilla/agency_upgrade/steel_filing_vault.webp",
    "enlarged": "vanilla/agency_upgrade/steel_filing_vault@3x.webp",
    "scale": 3
@@ -3694,15 +3932,15 @@
    "section": "vanilla",
    "family": "agency_upgrade",
    "asset": "telescope_behind_curtain",
-   "brief": "A brass telescope on a tripod peeking from behind a heavy curtain, overlooking a busy foreign embassy street, watchful mood.",
-   "build": "0.3.4",
-   "processed_on": "0.3.4",
+   "brief": "A brass telescope on a tripod peeking from behind a heavy curtain, overlooking a busy foreign embassy street, watchful mood. Slate and steel-blue tones.",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
     68,
     68
    ],
    "vanilla_check": "pass",
-   "subfamily": "all",
+   "subfamily": null,
    "native": "vanilla/agency_upgrade/telescope_behind_curtain.webp",
    "enlarged": "vanilla/agency_upgrade/telescope_behind_curtain@3x.webp",
    "scale": 3
@@ -3710,206 +3948,155 @@
   {
    "section": "vanilla",
    "family": "operation_icon",
-   "asset": "blueprint_tube_safe",
-   "brief": "A rolled blueprint tube half pulled from an open wall safe, bold carved two-colour linocut look, quiet theft at night.",
-   "build": "0.3.2",
-   "processed_on": "0.3.6",
+   "asset": "blueprint_unrolled",
+   "brief": "Hands unrolling a large pale blueprint on a table, a pencil resting on it.",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
-    59,
-    58
+    85,
+    85
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "vanilla/operation_icon/blueprint_tube_safe.webp",
-   "enlarged": "vanilla/operation_icon/blueprint_tube_safe@3x.webp",
-   "scale": 3
+   "native": "vanilla/operation_icon/blueprint_unrolled.webp",
+   "enlarged": "vanilla/operation_icon/blueprint_unrolled@2x.webp",
+   "scale": 2
   },
   {
    "section": "vanilla",
    "family": "operation_icon",
    "asset": "bolt_cutters_cable",
-   "brief": "A pair of long bolt cutters about to snip a thick cable, sabotage tool in strong lighting.",
-   "build": "0.3.2",
-   "processed_on": "0.3.6",
+   "brief": "Close-up of gloved hands cutting a thick cable with long bolt cutters, light workshop wall behind.",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
-    59,
-    58
+    85,
+    85
    ],
    "vanilla_check": "pass",
    "subfamily": null,
    "native": "vanilla/operation_icon/bolt_cutters_cable.webp",
-   "enlarged": "vanilla/operation_icon/bolt_cutters_cable@3x.webp",
-   "scale": 3
+   "enlarged": "vanilla/operation_icon/bolt_cutters_cable@2x.webp",
+   "scale": 2
   },
   {
    "section": "vanilla",
    "family": "operation_icon",
-   "asset": "chained_briefcase",
-   "brief": "A leather briefcase locked with a heavy chain and padlock, secret codebook theft, dramatic shadows.",
-   "build": "0.3.2",
-   "processed_on": "0.3.6",
+   "asset": "briefcase_of_folders",
+   "brief": "Fingers lifting the lid of a leather briefcase full of pale folders on a bright table.",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
-    59,
-    58
+    85,
+    85
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "vanilla/operation_icon/chained_briefcase.webp",
-   "enlarged": "vanilla/operation_icon/chained_briefcase@3x.webp",
-   "scale": 3
+   "native": "vanilla/operation_icon/briefcase_of_folders.webp",
+   "enlarged": "vanilla/operation_icon/briefcase_of_folders@2x.webp",
+   "scale": 2
   },
   {
    "section": "vanilla",
    "family": "operation_icon",
-   "asset": "envelope_and_cap",
-   "brief": "A thick envelope sliding across a table toward an officer's peaked cap, the bribe of a Balkan officer, tense mood.",
-   "build": "0.3.2",
-   "processed_on": "0.3.6",
+   "asset": "envelope_handover",
+   "brief": "Close-up of two hands exchanging a thick envelope across a bright table, dark coat cuffs visible, soft daylight.",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
-    59,
-    58
+    85,
+    85
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "vanilla/operation_icon/envelope_and_cap.webp",
-   "enlarged": "vanilla/operation_icon/envelope_and_cap@3x.webp",
-   "scale": 3
+   "native": "vanilla/operation_icon/envelope_handover.webp",
+   "enlarged": "vanilla/operation_icon/envelope_handover@2x.webp",
+   "scale": 2
   },
   {
    "section": "vanilla",
    "family": "operation_icon",
-   "asset": "fedora_raised_collar",
-   "brief": "A lone fedora hat resting on top of a coat with a raised collar hung on a rack, recruiting an informant in a smoky cafe.",
-   "build": "0.3.2",
-   "processed_on": "0.3.6",
+   "asset": "handshake_over_papers",
+   "brief": "Two officers shaking hands over a desk of bright papers, only the clasped hands and cuffs visible.",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
-    59,
-    58
+    85,
+    85
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "vanilla/operation_icon/fedora_raised_collar.webp",
-   "enlarged": "vanilla/operation_icon/fedora_raised_collar@3x.webp",
-   "scale": 3
+   "native": "vanilla/operation_icon/handshake_over_papers.webp",
+   "enlarged": "vanilla/operation_icon/handshake_over_papers@2x.webp",
+   "scale": 2
   },
   {
    "section": "vanilla",
    "family": "operation_icon",
-   "asset": "folded_officer_uniform",
-   "brief": "A neatly folded officer uniform tunic with a cap and polished boots on a wooden chair, disguise prepared for infiltration.",
-   "build": "0.3.3",
-   "processed_on": "0.3.6",
+   "asset": "magnifier_over_map",
+   "brief": "A hand holding a magnifying glass over a bright map covered with pins.",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
-    59,
-    58
+    85,
+    85
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "vanilla/operation_icon/folded_officer_uniform.webp",
-   "enlarged": "vanilla/operation_icon/folded_officer_uniform@3x.webp",
-   "scale": 3
+   "native": "vanilla/operation_icon/magnifier_over_map.webp",
+   "enlarged": "vanilla/operation_icon/magnifier_over_map@2x.webp",
+   "scale": 2
   },
   {
    "section": "vanilla",
    "family": "operation_icon",
-   "asset": "loose_brick_note",
-   "brief": "A loose brick pulled from an old Prague wall revealing a folded paper note behind it, dead drop, grainy sepia ink sketch.",
-   "build": "0.3.2",
-   "processed_on": "0.3.6",
+   "asset": "receiver_with_bug",
+   "brief": "A hand placing a telephone receiver into its cradle beside a small hidden microphone, bright desk.",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
-    59,
-    58
+    85,
+    85
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "vanilla/operation_icon/loose_brick_note.webp",
-   "enlarged": "vanilla/operation_icon/loose_brick_note@3x.webp",
-   "scale": 3
+   "native": "vanilla/operation_icon/receiver_with_bug.webp",
+   "enlarged": "vanilla/operation_icon/receiver_with_bug@2x.webp",
+   "scale": 2
   },
   {
    "section": "vanilla",
    "family": "operation_icon",
-   "asset": "ministry_door_ajar",
-   "brief": "A heavy oak ministry door standing slightly ajar with warm light spilling through the crack onto a marble floor.",
-   "build": "0.3.2",
-   "processed_on": "0.3.6",
+   "asset": "stamp_on_travel_pass",
+   "brief": "A hand pressing a rubber stamp onto a pale travel pass, an ink pad beside it, bright desk.",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
-    59,
-    58
+    85,
+    85
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "vanilla/operation_icon/ministry_door_ajar.webp",
-   "enlarged": "vanilla/operation_icon/ministry_door_ajar@3x.webp",
-   "scale": 3
+   "native": "vanilla/operation_icon/stamp_on_travel_pass.webp",
+   "enlarged": "vanilla/operation_icon/stamp_on_travel_pass@2x.webp",
+   "scale": 2
   },
   {
    "section": "vanilla",
    "family": "operation_icon",
-   "asset": "passport_stamp",
-   "brief": "A rubber stamp pressed onto a blank travel pass, ink pad beside it, forged papers made in a back room.",
-   "build": "0.3.2",
-   "processed_on": "0.3.6",
+   "asset": "suitcase_radio_dials",
+   "brief": "A hand adjusting the dials of a compact suitcase radio, pale linen lining, soft window light.",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
-    59,
-    58
+    85,
+    85
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "vanilla/operation_icon/passport_stamp.webp",
-   "enlarged": "vanilla/operation_icon/passport_stamp@3x.webp",
-   "scale": 3
-  },
-  {
-   "section": "vanilla",
-   "family": "operation_icon",
-   "asset": "rifles_in_hay_cart",
-   "brief": "A farm cart loaded with hay and rifle barrels poking out the side, weapons smuggled across a Spanish mountain border.",
-   "build": "0.3.2",
-   "processed_on": "0.3.6",
-   "size": [
-    59,
-    58
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "vanilla/operation_icon/rifles_in_hay_cart.webp",
-   "enlarged": "vanilla/operation_icon/rifles_in_hay_cart@3x.webp",
-   "scale": 3
-  },
-  {
-   "section": "vanilla",
-   "family": "operation_icon",
-   "asset": "suitcase_radio",
-   "brief": "An open suitcase containing a compact clandestine radio transmitter with dials and a short wire antenna, resistance in occupied Norway.",
-   "build": "0.3.2",
-   "processed_on": "0.3.6",
-   "size": [
-    59,
-    58
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "vanilla/operation_icon/suitcase_radio.webp",
-   "enlarged": "vanilla/operation_icon/suitcase_radio@3x.webp",
-   "scale": 3
-  },
-  {
-   "section": "vanilla",
-   "family": "operation_icon",
-   "asset": "telephone_with_bug",
-   "brief": "A black desk telephone with a tiny microphone attached under the handset, with coiled cable, planted bug in a Berlin-style office but fictional.",
-   "build": "0.3.2",
-   "processed_on": "0.3.6",
-   "size": [
-    59,
-    58
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "vanilla/operation_icon/telephone_with_bug.webp",
-   "enlarged": "vanilla/operation_icon/telephone_with_bug@3x.webp",
-   "scale": 3
+   "native": "vanilla/operation_icon/suitcase_radio_dials.webp",
+   "enlarged": "vanilla/operation_icon/suitcase_radio_dials@2x.webp",
+   "scale": 2
   },
   {
    "section": "vanilla",
@@ -4271,171 +4458,120 @@
   {
    "section": "vanilla",
    "family": "doctrine",
-   "asset": "alpine_troops_ridge",
-   "brief": "A line of alpine troops roped together climbing a snowy ridge with packs and ice axes under a huge sky, Italian mountain doctrine.",
-   "build": "0.3.2",
-   "processed_on": "0.3.6",
+   "asset": "battleship_chevrons",
+   "brief": "A large battleship in side view with two thick orange chevrons rising above it.",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "vanilla/doctrine/alpine_troops_ridge.webp",
-   "enlarged": "vanilla/doctrine/alpine_troops_ridge@3x.webp",
+   "native": "vanilla/doctrine/battleship_chevrons.webp",
+   "enlarged": "vanilla/doctrine/battleship_chevrons@3x.webp",
    "scale": 3
   },
   {
    "section": "vanilla",
    "family": "doctrine",
-   "asset": "bomber_formation_city",
-   "brief": "A tight formation of heavy bombers flying high above a distant city skyline at dusk, vapour trails stretching behind, strategic bombing.",
-   "build": "0.3.2",
-   "processed_on": "0.3.6",
+   "asset": "bomber_target_ring",
+   "brief": "A big bomber aircraft in side view dropping one bomb toward a target ring marked in orange.",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "vanilla/doctrine/bomber_formation_city.webp",
-   "enlarged": "vanilla/doctrine/bomber_formation_city@3x.webp",
+   "native": "vanilla/doctrine/bomber_target_ring.webp",
+   "enlarged": "vanilla/doctrine/bomber_target_ring@3x.webp",
    "scale": 3
   },
   {
    "section": "vanilla",
    "family": "doctrine",
-   "asset": "bunker_hedgehogs_pine",
-   "brief": "Concrete bunkers and rows of anti-tank obstacles in a Finnish pine forest line, bold carved two-colour linocut look, stubborn defence.",
-   "build": "0.3.2",
-   "processed_on": "0.3.6",
+   "asset": "carrier_and_planes",
+   "brief": "A large aircraft carrier in side view with two small aircraft above it and an orange arrow.",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "vanilla/doctrine/bunker_hedgehogs_pine.webp",
-   "enlarged": "vanilla/doctrine/bunker_hedgehogs_pine@3x.webp",
+   "native": "vanilla/doctrine/carrier_and_planes.webp",
+   "enlarged": "vanilla/doctrine/carrier_and_planes@3x.webp",
    "scale": 3
   },
   {
    "section": "vanilla",
    "family": "doctrine",
-   "asset": "carrier_launch_dawn",
-   "brief": "An aircraft carrier launching a squadron of strike aircraft into an orange dawn over a flat sea, Japanese carrier strike doctrine.",
-   "build": "0.3.2",
-   "processed_on": "0.3.6",
+   "asset": "destroyers_cycle",
+   "brief": "Two destroyers in side view inside an orange circular arrow.",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "vanilla/doctrine/carrier_launch_dawn.webp",
-   "enlarged": "vanilla/doctrine/carrier_launch_dawn@3x.webp",
+   "native": "vanilla/doctrine/destroyers_cycle.webp",
+   "enlarged": "vanilla/doctrine/destroyers_cycle@3x.webp",
    "scale": 3
   },
   {
    "section": "vanilla",
    "family": "doctrine",
-   "asset": "destroyer_convoy_grey",
-   "brief": "A destroyer escort steaming beside a line of merchant ships on a grey Atlantic sea with heavy swells, Canadian convoy duty.",
-   "build": "0.3.2",
-   "processed_on": "0.3.6",
+   "asset": "paratrooper_arrow",
+   "brief": "A paratrooper descending under a canopy beside a bold orange arrow.",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "vanilla/doctrine/destroyer_convoy_grey.webp",
-   "enlarged": "vanilla/doctrine/destroyer_convoy_grey@3x.webp",
+   "native": "vanilla/doctrine/paratrooper_arrow.webp",
+   "enlarged": "vanilla/doctrine/paratrooper_arrow@3x.webp",
    "scale": 3
   },
   {
    "section": "vanilla",
    "family": "doctrine",
-   "asset": "howitzer_battery_night",
-   "brief": "A row of massed howitzers firing together at night with bright muzzle flashes lighting crews and shell casings, superior firepower.",
-   "build": "0.3.2",
-   "processed_on": "0.3.6",
+   "asset": "soldiers_behind_arrow",
+   "brief": "Three soldiers in side view advancing behind a large orange arrow.",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "vanilla/doctrine/howitzer_battery_night.webp",
-   "enlarged": "vanilla/doctrine/howitzer_battery_night@3x.webp",
+   "native": "vanilla/doctrine/soldiers_behind_arrow.webp",
+   "enlarged": "vanilla/doctrine/soldiers_behind_arrow@3x.webp",
    "scale": 3
   },
   {
    "section": "vanilla",
    "family": "doctrine",
-   "asset": "infantry_wave_mud",
-   "brief": "A dense wave of infantry silhouettes with fixed bayonets surging across a muddy field under a heavy sky, mass assault, grim mood.",
-   "build": "0.3.2",
-   "processed_on": "0.3.6",
+   "asset": "transport_aircraft_arc",
+   "brief": "A single large transport aircraft in side view over an orange arrow curving upward.",
+   "build": "0.3.8",
+   "processed_on": "0.3.8",
    "size": [
     64,
     64
    ],
    "vanilla_check": "pass",
    "subfamily": null,
-   "native": "vanilla/doctrine/infantry_wave_mud.webp",
-   "enlarged": "vanilla/doctrine/infantry_wave_mud@3x.webp",
-   "scale": 3
-  },
-  {
-   "section": "vanilla",
-   "family": "doctrine",
-   "asset": "map_table_arrows",
-   "brief": "Officers' hands moving pins and arrows over a large map table lit by a hanging lamp, a French interwar methodical battle plan, grainy sepia ink sketch.",
-   "build": "0.3.2",
-   "processed_on": "0.3.6",
-   "size": [
-    64,
-    64
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "vanilla/doctrine/map_table_arrows.webp",
-   "enlarged": "vanilla/doctrine/map_table_arrows@3x.webp",
-   "scale": 3
-  },
-  {
-   "section": "vanilla",
-   "family": "doctrine",
-   "asset": "paratroopers_over_fields",
-   "brief": "A sky full of parachutes descending over patchwork farmland and a river at dawn, airborne assault doctrine, tense hopeful mood.",
-   "build": "0.3.2",
-   "processed_on": "0.3.6",
-   "size": [
-    64,
-    64
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "vanilla/doctrine/paratroopers_over_fields.webp",
-   "enlarged": "vanilla/doctrine/paratroopers_over_fields@3x.webp",
-   "scale": 3
-  },
-  {
-   "section": "vanilla",
-   "family": "doctrine",
-   "asset": "partisan_forest_lookout",
-   "brief": "Armed partisans in a Yugoslav mountain forest, one lookout watching from a rock ridge with rifle and scarf, quiet determined mood.",
-   "build": "0.3.2",
-   "processed_on": "0.3.6",
-   "size": [
-    64,
-    64
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "vanilla/doctrine/partisan_forest_lookout.webp",
-   "enlarged": "vanilla/doctrine/partisan_forest_lookout@3x.webp",
+   "native": "vanilla/doctrine/transport_aircraft_arc.webp",
+   "enlarged": "vanilla/doctrine/transport_aircraft_arc@3x.webp",
    "scale": 3
   },
   {
@@ -9965,108 +10101,6 @@
   },
   {
    "section": "tno",
-   "family": "operation_icon",
-   "asset": "camera_lens",
-   "brief": "A spy camera. In TNO's style: small archival photograph toned teal, thin teal border.",
-   "build": "0.3.3",
-   "processed_on": "0.3.6",
-   "size": [
-    59,
-    58
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tno/operation_icon/camera_lens.webp",
-   "enlarged": "tno/operation_icon/camera_lens@3x.webp",
-   "scale": 3
-  },
-  {
-   "section": "tno",
-   "family": "operation_icon",
-   "asset": "cipher_machine",
-   "brief": "A cipher machine. In TNO's style: small archival photograph toned teal, thin teal border.",
-   "build": "0.3.3",
-   "processed_on": "0.3.6",
-   "size": [
-    59,
-    58
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tno/operation_icon/cipher_machine.webp",
-   "enlarged": "tno/operation_icon/cipher_machine@3x.webp",
-   "scale": 3
-  },
-  {
-   "section": "tno",
-   "family": "operation_icon",
-   "asset": "fuse_and_charge",
-   "brief": "A demolition charge with a fuse. In TNO's style: small archival photograph toned teal, thin teal border.",
-   "build": "0.3.3",
-   "processed_on": "0.3.6",
-   "size": [
-    59,
-    58
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tno/operation_icon/fuse_and_charge.webp",
-   "enlarged": "tno/operation_icon/fuse_and_charge@3x.webp",
-   "scale": 3
-  },
-  {
-   "section": "tno",
-   "family": "operation_icon",
-   "asset": "keyring",
-   "brief": "A ring of keys. In TNO's style: small archival photograph toned teal, thin teal border.",
-   "build": "0.3.3",
-   "processed_on": "0.3.6",
-   "size": [
-    59,
-    58
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tno/operation_icon/keyring.webp",
-   "enlarged": "tno/operation_icon/keyring@3x.webp",
-   "scale": 3
-  },
-  {
-   "section": "tno",
-   "family": "operation_icon",
-   "asset": "map_with_pin",
-   "brief": "A map with a pin. In TNO's style: small archival photograph toned teal, thin teal border.",
-   "build": "0.3.3",
-   "processed_on": "0.3.6",
-   "size": [
-    59,
-    58
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tno/operation_icon/map_with_pin.webp",
-   "enlarged": "tno/operation_icon/map_with_pin@3x.webp",
-   "scale": 3
-  },
-  {
-   "section": "tno",
-   "family": "operation_icon",
-   "asset": "sealed_envelope",
-   "brief": "A sealed envelope. In TNO's style: small archival photograph toned teal, thin teal border.",
-   "build": "0.3.3",
-   "processed_on": "0.3.6",
-   "size": [
-    59,
-    58
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tno/operation_icon/sealed_envelope.webp",
-   "enlarged": "tno/operation_icon/sealed_envelope@3x.webp",
-   "scale": 3
-  },
-  {
-   "section": "tno",
    "family": "commander_trait",
    "asset": "artillery_trait",
    "brief": "An artillery shell. In TNO's style: pixel-art medal with a salmon or teal ribbon and a small teal pictogram.",
@@ -11679,91 +11713,6 @@
    "native": "tfr/decision/signed_treaty_pen.webp",
    "enlarged": "tfr/decision/signed_treaty_pen@4x.webp",
    "scale": 4
-  },
-  {
-   "section": "tfr",
-   "family": "operation_icon",
-   "asset": "burner_phone",
-   "brief": "A burner phone. In the style of The Fire Rises: small desaturated photograph in a round dark vignette with a black rim, red and cyan colour split.",
-   "build": "0.3.6",
-   "processed_on": "0.3.6",
-   "size": [
-    59,
-    58
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tfr/operation_icon/burner_phone.webp",
-   "enlarged": "tfr/operation_icon/burner_phone@3x.webp",
-   "scale": 3
-  },
-  {
-   "section": "tfr",
-   "family": "operation_icon",
-   "asset": "forged_passport",
-   "brief": "A forged passport. In the style of The Fire Rises: small desaturated photograph in a round dark vignette with a black rim, red and cyan colour split.",
-   "build": "0.3.6",
-   "processed_on": "0.3.6",
-   "size": [
-    59,
-    58
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tfr/operation_icon/forged_passport.webp",
-   "enlarged": "tfr/operation_icon/forged_passport@3x.webp",
-   "scale": 3
-  },
-  {
-   "section": "tfr",
-   "family": "operation_icon",
-   "asset": "listening_device_table",
-   "brief": "A listening device under a table. In the style of The Fire Rises: small desaturated photograph in a round dark vignette with a black rim, red and cyan colour split.",
-   "build": "0.3.6",
-   "processed_on": "0.3.6",
-   "size": [
-    59,
-    58
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tfr/operation_icon/listening_device_table.webp",
-   "enlarged": "tfr/operation_icon/listening_device_table@3x.webp",
-   "scale": 3
-  },
-  {
-   "section": "tfr",
-   "family": "operation_icon",
-   "asset": "sniper_scope_view_doorway",
-   "brief": "A pair of binoculars on a windowsill overlooking a street. In the style of The Fire Rises: small desaturated photograph in a round dark vignette with a black rim, red and cyan colour split.",
-   "build": "0.3.6",
-   "processed_on": "0.3.6",
-   "size": [
-    59,
-    58
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tfr/operation_icon/sniper_scope_view_doorway.webp",
-   "enlarged": "tfr/operation_icon/sniper_scope_view_doorway@3x.webp",
-   "scale": 3
-  },
-  {
-   "section": "tfr",
-   "family": "operation_icon",
-   "asset": "usb_stick_hand",
-   "brief": "A USB stick in a hand. In the style of The Fire Rises: small desaturated photograph in a round dark vignette with a black rim, red and cyan colour split.",
-   "build": "0.3.6",
-   "processed_on": "0.3.6",
-   "size": [
-    59,
-    58
-   ],
-   "vanilla_check": "pass",
-   "subfamily": null,
-   "native": "tfr/operation_icon/usb_stick_hand.webp",
-   "enlarged": "tfr/operation_icon/usb_stick_hand@3x.webp",
-   "scale": 3
   },
   {
    "section": "tfr",

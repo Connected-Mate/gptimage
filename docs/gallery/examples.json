@@ -16,13 +16,13 @@
  },
  "agency_upgrade": {
   "asset": "chemistry_bench_flasks",
-  "build": "0.3.4",
-  "brief": "A lab bench with glass flasks, a dropper and a vial of colourless liquid beside a sheet being warmed, secret writing chemistry."
+  "build": "0.3.8",
+  "brief": "A lab bench with glass flasks, a dropper and a vial of colourless liquid beside a sheet being warmed, secret writing chemistry. Slate and steel-blue tones."
  },
  "bop_side": {
   "asset": "anchor_and_rope_standard",
-  "build": "0.3.3",
-  "brief": "A tall standard bearing a large anchor wrapped in thick rope, the navy side in a rivalry between navy and army for budget."
+  "build": "0.3.8",
+  "brief": "A tall standard bearing a large anchor wrapped in thick rope, the navy side in a rivalry between navy and army for budget. (standard stage)"
  },
  "building": {
   "asset": "alpine_cable_car_station",
@@ -65,9 +65,9 @@
   "brief": "A brown bear rearing on its hind legs with claws raised, set on a pale green wide shield with a dark border."
  },
  "doctrine": {
-  "asset": "alpine_troops_ridge",
-  "build": "0.3.2",
-  "brief": "A line of alpine troops roped together climbing a snowy ridge with packs and ice axes under a huge sky, Italian mountain doctrine."
+  "asset": "battleship_chevrons",
+  "build": "0.3.8",
+  "brief": "A large battleship in side view with two thick orange chevrons rising above it."
  },
  "faction_logo": {
   "asset": "crossed_swords_laurel",
@@ -135,9 +135,9 @@
   "brief": "A Hungarian hussar officer in a braided jacket and plumed shako on a prancing horse, festive and proud cavalry pageantry."
  },
  "operation_icon": {
-  "asset": "folded_officer_uniform",
-  "build": "0.3.3",
-  "brief": "A neatly folded officer uniform tunic with a cap and polished boots on a wooden chair, disguise prepared for infiltration."
+  "asset": "blueprint_unrolled",
+  "build": "0.3.8",
+  "brief": "Hands unrolling a large pale blueprint on a table, a pencil resting on it."
  },
  "operation_picture": {
   "asset": "attic_wall_microphone",
