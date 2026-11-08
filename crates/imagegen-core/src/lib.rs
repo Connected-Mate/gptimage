@@ -27,6 +27,7 @@ pub mod ledger;
 pub mod lock;
 pub mod lookup;
 pub mod measurement;
+pub mod modelclass;
 pub mod naming;
 pub mod pack;
 pub mod pixels;
@@ -52,4 +53,5 @@ pub mod vanillamatch;
 
 pub use error::{Error, Result, RetryClass};
 pub use family::{Automation, Family, Group, GuiTextureKind};
+pub use modelclass::ModelClass;
 pub use pixels::Rgba;

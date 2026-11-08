@@ -150,6 +150,8 @@ A technology picture can carry vanilla's tier numeral. Vanilla bakes the numeral
 
 **Balance of power sides (since 0.3.8).** One `bop_side` request makes the emblem's stages the way vanilla's pairs do. The model draws one emblem in muted colour. The tool saves vanilla's `bop_<TAG>_<name>_side` (the emblem in grey) and `bop_<TAG>_<name>_improved_side` (the same emblem in its own colours, with a pale gold glow), both 72x88 in `gfx/interface/bop/`, and registers `GFX_bop_<name>_side` and `GFX_bop_<name>_improved_side`. Pass `cracked_stage: true` to `hoi4.image_process` for the weakened pair that vanilla draws for its bad sides: `bop_<name>_bad_side` (the grey emblem cracked, no glow) and `bop_<name>_bad_improved_side` (the colour emblem with the same cracks and a red glow). Every stage is an edit of the one fitted emblem, so the emblem is identical in all of them.
 
+**Model per family on the OpenAI API route (since 0.3.8).** `gpt-image-2.6-sunburst` makes every edit and the families that show more detail: super events, event and news pictures, operation pictures, loading screens (any canvas of 20 000 pixels or more), all portraits, the four animated families and `model_reference`. `gpt-image-2.6-flare` makes icons and small sprites. Sending reference pictures does not turn a generation into an edit. A model named in the request, a style, or the provider's `model` setting always wins. The sign-in route uses ChatGPT's current image model and has no per-family choice (see `docs/chatgpt-login.md`).
+
 **Operation icons (since 0.3.8).** `operation_icon` is vanilla's operation card: `icon = GFX_operations_<name>`, the 85x85 close-up picture in `gfx/interface/operations/`, slightly tilted with a one pixel outline and a soft shadow on transparent corners (a dim picture is lifted to vanilla's brightness). The 48x48 map icon, `map_icon = GFX_operations_<name>_map`, is made from the finished card as a companion in `gfx/interface/operations/<feature>/map/<name>_map.dds`: the card's centre in vanilla's round gold ring. Both are installed and registered together. The 59x58 phase icons (`GFX_phase_<name>_small`) are another sprite and are not generated.
 
 Some checks guard a family's look:
@@ -427,7 +429,7 @@ The check is a gate, not a verdict. Art that looks wrong in a way these features
 | Provider | Needs |
 |---|---|
 | ChatGPT login | `hoi4-imagegen login` once. Uses your own ChatGPT plan. No API key |
-| OpenAI API (default gpt-image-2.6-flare, edits gpt-image-2.6-sunburst, 2.5 as fallback) | `OPENAI_API_KEY` |
+| OpenAI API (gpt-image-2.6-flare for icons and small sprites, gpt-image-2.6-sunburst for edits, larger images, portraits, animations and model references; see "Model per family") | `OPENAI_API_KEY` |
 | Google Gemini API | `GEMINI_API_KEY` or `GOOGLE_API_KEY` |
 | fal | `FAL_KEY` |
 | ComfyUI | an endpoint in the project config, and optionally `COMFYUI_API_KEY` |

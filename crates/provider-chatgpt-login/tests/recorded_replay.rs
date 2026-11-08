@@ -517,3 +517,36 @@ fn the_message_in_an_http_error_body_is_handled_the_same_way_in_any_case() {
     assert_eq!((e.kind, e.retry), (ErrorKind::BadRequest, RetryClass::Terminal));
     assert_eq!(route_at(d.path(), T0).state().model_access, None);
 }
+
+// ------------------------------------------------------------------ the image tool's `model` field (2026-11-08 probe)
+
+/// RECORDED-REAL, two answers of the backend (2026-11-08, scrubbed by `scripts/make_replay_fixture.py`) to a gpt-6-luna
+/// request whose `image_generation` tool carried `"model": "gpt-image-2.6-sunburst"` and, in the second, `"model":
+/// "gpt-image-2.6-flare"`. The backend accepted both without an error and ignored the field: its response lists the image tool
+/// as `gpt-image-2-codex` every time, with the tool's own defaults (quality, size and background "auto"). So the
+/// ChatGPT-login route cannot choose an image model per family: the backend chooses, and the route treats it as ChatGPT's
+/// latest image model. The shipped request carries no `model` on the tool.
+const TOOL_MODEL_SUNBURST: &str = include_str!("fixtures/recorded-real/tool-model-sunburst-ignored-2026-11-08.sse");
+const TOOL_MODEL_FLARE: &str = include_str!("fixtures/recorded-real/tool-model-flare-ignored-2026-11-08.sse");
+
+#[test]
+fn the_backend_ignores_a_model_on_the_image_tool_so_the_route_leaves_it_to_the_backend() {
+    for (name, fixture) in [("sunburst", TOOL_MODEL_SUNBURST), ("flare", TOOL_MODEL_FLARE)] {
+        for needle in ["resp_0", "ig_0", "msg_0", "rs_0", "@", "access-", "refresh", "Bearer", "eyJhbGci", "acct", "org-"] {
+            assert!(!fixture.contains(needle), "{name}: {needle} must not appear in a committed fixture");
+        }
+        assert!(fixture.len() < 64 * 1024 && !fixture.contains('\r'), "{name}");
+        // the backend reports its own image tool model, whatever the probe asked for
+        let outcome = provider_chatgpt_login::provider::parse_sse(fixture).unwrap();
+        assert_eq!(outcome.image_tool_model.as_deref(), Some("gpt-image-2-codex"), "{name}");
+        assert_eq!(outcome.model.as_deref(), Some("gpt-6-luna"), "{name}");
+
+        let (d, f, p) = replay(200, fixture.to_string(), None);
+        remember_all_three_refusals(d.path());
+        let out = p.generate(&request(), &no_sleep()).unwrap_or_else(|e| panic!("{name}: {e:?}"));
+        let sent: Vec<serde_json::Value> = f.requests().iter().map(|r| serde_json::from_slice(&r.body).unwrap()).collect();
+        assert_eq!(sent.len(), 1, "{name}");
+        assert!(sent[0]["tools"][0].get("model").is_none(), "{name}: the route sends no model on the image tool: {}", sent[0]["tools"][0]);
+        assert!(out.notes.iter().any(|n| n.contains("image tool model (chosen by the backend): gpt-image-2-codex")), "{name}: {:?}", out.notes);
+    }
+}

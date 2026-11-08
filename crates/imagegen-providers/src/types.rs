@@ -10,6 +10,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use imagegen_core::error::RetryClass;
+use imagegen_core::modelclass::ModelClass;
 use imagegen_core::refs::RefRole;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -481,6 +482,12 @@ pub trait ImageProvider: Send + Sync {
 
     /// Model used when the plan names none, for generation or editing.
     fn default_model(&self, editing: bool) -> String;
+
+    /// Model used when the plan names none, for a family of the given class. A provider with a fast and a
+    /// higher-quality model overrides this; every other provider has one choice and ignores the class.
+    fn default_model_for(&self, _class: ModelClass, editing: bool) -> String {
+        self.default_model(editing)
+    }
 
     /// Check a request against the model table and choose the concrete output size. No network.
     /// Returns the size to ask for. Refuses retired models and unsupported options.

@@ -45,6 +45,10 @@ The reasoning effort is **the highest one the backend accepts**. On 2026-11-05 t
 - A plan that names another model for this provider is refused at plan time.
 - The model and effort the backend reported are recorded with every candidate in the ledger.
 
+## The image model
+
+The sign-in route asks for an image the way ChatGPT does: the request's `image_generation` tool carries no `model`, and ChatGPT draws the picture with its current image model. The route cannot choose one per family. On 2026-11-08 one request named `gpt-image-2.6-sunburst` on the tool and one named `gpt-image-2.6-flare`; the backend accepted both and ignored the field, and the response listed the same image model both times (recorded in `crates/provider-chatgpt-login/tests/fixtures/recorded-real/tool-model-*-ignored-2026-11-08.sse`). So the route keeps the backend's choice and treats it as ChatGPT's latest image model. The model each image ran on is recorded in its candidate note.
+
 ## Requests at once
 
 On 2026-11-02 the server revoked every Codex sign-in on the maintainer's account while several sessions generated at once. From then until 0.3.2 the route sent one request at a time. Since 0.3.3 it may send up to three at once on the machine (maintainer decision W5-8 of 2026-11-05, a trial).

@@ -8,6 +8,7 @@ use std::sync::Arc;
 
 use imagegen_core::config::ProviderConfig;
 use imagegen_core::error::RetryClass;
+use imagegen_core::modelclass::ModelClass;
 use serde_json::{json, Value};
 
 use crate::common::{b64_decode, basis, check_model, data_url, descriptor_from, megapixels, per_image_price, status_error, ApiKey};
@@ -187,6 +188,13 @@ impl ImageProvider for OpenAiProvider {
         }
     }
 
+    /// The quality model (sunburst) for quality-class families, the fast model (flare) for the rest. A model in the
+    /// provider config wins over both. A plan that sends reference images is still a generation, so `editing` does
+    /// not pick sunburst here: the edit tool asks `default_model(true)` and always gets it.
+    fn default_model_for(&self, class: ModelClass, _editing: bool) -> String {
+        self.default_model(class == ModelClass::Quality)
+    }
+
     fn prepare(&self, req: &ImageRequest) -> Result<(u32, u32), ProviderError> {
         let model = check_model(&self.desc, req)?;
         choose_size(&model.sizes, [req.width, req.height])
@@ -236,6 +244,7 @@ mod tests {
     use crate::common::b64;
     use crate::transport::{FixtureTransport, Method};
     use crate::types::{EditSpec, ProviderRef};
+    use imagegen_core::family::Family;
     use imagegen_core::pixels::{encode_png, Rgba};
     use imagegen_core::refs::RefRole;
 
@@ -415,9 +424,25 @@ mod tests {
         let p = provider(Arc::new(FixtureTransport::new()), None);
         assert_eq!(p.default_model(false), "gpt-image-2.6-flare");
         assert_eq!(p.default_model(true), "gpt-image-2.6-sunburst");
+        // the family class picks the model; references do not make a generation an edit
+        for (family, canvas, want) in [
+            (Family::SuperEvent, [0, 0], "gpt-image-2.6-sunburst"),
+            (Family::LeaderPortrait, [156, 210], "gpt-image-2.6-sunburst"),
+            (Family::AnimSpin, [26, 26], "gpt-image-2.6-sunburst"),
+            (Family::ModelReference, [0, 0], "gpt-image-2.6-sunburst"),
+            (Family::ReportEvent, [210, 176], "gpt-image-2.6-sunburst"),
+            (Family::Focus, [100, 88], "gpt-image-2.6-flare"),
+            (Family::Decision, [33, 32], "gpt-image-2.6-flare"),
+        ] {
+            let class = ModelClass::of(family, canvas);
+            assert_eq!(p.default_model_for(class, false), want, "{family}");
+            assert_eq!(p.default_model_for(class, true), want, "{family} with references");
+        }
         let cfg = ProviderConfig { model: Some("gpt-image-2".into()), ..Default::default() };
         let p = OpenAiProvider::new(cfg, None, Arc::new(FixtureTransport::new()), HostPolicy::api(&["api.openai.com"]), None);
         assert_eq!(p.default_model(true), "gpt-image-2");
+        assert_eq!(p.default_model_for(ModelClass::Fast, false), "gpt-image-2", "a configured model wins over the class");
+        assert_eq!(p.default_model_for(ModelClass::Quality, false), "gpt-image-2");
     }
 
     #[test]

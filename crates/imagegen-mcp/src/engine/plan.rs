@@ -150,8 +150,9 @@ impl Engine {
         let caller_style = req.references.iter().any(|r| r.role == RefRole::StyleAnchor);
         let pack_refs: Vec<imagegen_core::style::StyleRef> =
             if caller_style { Vec::new() } else { pack_resolved.as_ref().map(|r| r.references.clone()).unwrap_or_default() };
+        let model_class = imagegen_core::ModelClass::of(req.family, canvas);
         let wants_refs = explicit_refs > 0 || !pack_refs.is_empty() || !sources.send_paths().is_empty();
-        let mut model_id = explicit_model.clone().unwrap_or_else(|| provider.default_model(wants_refs));
+        let mut model_id = explicit_model.clone().unwrap_or_else(|| provider.default_model_for(model_class, wants_refs));
         let model_refs = |m: &str| provider.descriptor().model(m).map(|x| if x.supports_edit { usize::from(x.max_refs) } else { 0 }).unwrap_or(0);
         let pack_cap = model_refs(&model_id).min(refs::MAX_REFERENCES).saturating_sub(explicit_refs).min(pack::MAX_SEND);
         let pack_sent: Vec<imagegen_core::style::StyleRef> = pack_refs.iter().take(pack_cap).cloned().collect();
@@ -187,7 +188,7 @@ impl Engine {
             }
         }
         if explicit_model.is_none() && explicit_refs == 0 && pack_sent.is_empty() && sources.send_paths().is_empty() {
-            model_id = provider.default_model(false);
+            model_id = provider.default_model_for(model_class, false);
         }
 
         let mut loaded: Vec<LoadedRef> = Vec::new();
