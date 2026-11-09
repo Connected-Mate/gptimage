@@ -90,6 +90,10 @@ fn a_focus_tree_is_planned_as_one_set_without_duplicates() {
     // the brief names the focus from the localisation, without its formatting codes
     let brief = std::fs::read_to_string(h.root().join(format!(".hoi4-imagegen/plans/{}.json", steel["plan_id"].as_str().unwrap()))).unwrap();
     assert!(brief.contains("Steel for the Fleet") && brief.contains("More steel mills.") && brief.contains("One of 2 icons"), "{brief}");
+    // the colour follows the subject, and the country stays an accent
+    assert_eq!(steel["planned_colour"], "navy and sea blue", "{v:#}");
+    assert!(brief.contains("Colour: this icon is mainly navy and sea blue") && brief.contains("never the colour of the whole icon"), "{brief}");
+    assert!(v["variety"].is_null(), "nothing is generated, so nothing is measured");
     // every icon of the tree on request
     let all = set(&h, json!({"focus_tree": "common/national_focus/test_tree.txt", "only_missing": false})).unwrap();
     assert_eq!(all["planned"], 3);

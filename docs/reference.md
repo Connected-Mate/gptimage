@@ -66,6 +66,8 @@ Every icon gets the same `style_pack`, style anchors (`references`), `provider`,
 
 The reply lists every icon: the sprite the tree names, the asset, its focuses and their names, the plan id, the cost estimate and the sprite name its install registers (`installs_as`). The install names focus sprites `GFX_focus_<asset>`, so where `tree_names_it` is false, point the focus's `icon` at `installs_as`. `shared_sprites` lists the sprites several focuses share, and `dynamic` the icons built at run time, which cannot be planned.
 
+**Colour and variety (since 0.3.9).** A tree about one country used to come out in that country's colours on every icon, with no contrast between icons. Now the colour follows what each icon shows: every set icon's brief names a dominant colour planned from its subject words (navy and sea blue for fleets, steel grey and olive for armies, brass and amber for industry, pale blue and white for science, dark red for unrest, and so on), and the country's own colours and symbols are at most a small accent. No colour goes to more than a quarter of the set. The focus, idea spirit and general icon rules say the same, so single icons follow it too. With `generate: true` the reply has `variety`: each generated candidate's dominant hue (12 buckets of 30 degrees, or `neutral`), the share of the largest bucket and a verdict. `too_alike` means over 45 percent of the icons share one hue, or most are coloured and span fewer than three hues. It lists the icons in each bucket so the largest can be made again. `too_few` means fewer than five icons to judge. Each icon row carries `planned_colour` and, once generated, `dominant_hue`.
+
 ## Families
 
 There are 45 families in seven groups. The group names the tool that plans them.

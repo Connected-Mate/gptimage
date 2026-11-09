@@ -54,12 +54,15 @@ impl Engine {
         let profile = self.family_profile(Family::Focus)?.clone();
         let mut icons = Vec::new();
         let (mut total_usd, mut made, mut failed) = (0f64, 0usize, 0usize);
-        for icon in &chosen {
+        // the dominant colour of each icon follows its subject, never the country, so the set has contrast
+        let colours = set::colour_plan(&chosen);
+        let mut hues: Vec<(String, String)> = Vec::new();
+        for (icon, colour) in chosen.iter().zip(colours.iter()) {
             let mut req = json!({
                 "family": "focus",
                 "feature_slug": feature_slug,
                 "asset": icon.asset,
-                "brief": set::icon_brief(icon, chosen.len()),
+                "brief": set::icon_brief_coloured(icon, chosen.len(), colour),
                 "references": p.references.clone().unwrap_or_default(),
             });
             for (k, v) in [("provider", &p.provider), ("model", &p.model), ("quality", &p.quality), ("style_pack", &p.style_pack)] {
@@ -72,6 +75,7 @@ impl Engine {
                 .and_then(|files| export::sprite_entries(&profile, &feature_slug, &icon.asset, &files, None).ok().flatten())
                 .and_then(|(_, entries)| entries.first().map(|e| e.name.clone()));
             let mut row = json!({
+                "planned_colour": colour,
                 "sprite": icon.sprite,
                 "asset": icon.asset,
                 "focuses": icon.focuses,
@@ -98,7 +102,19 @@ impl Engine {
                 match self.generate(g) {
                     Ok(v) => {
                         made += 1;
-                        row["generated"] = v.get("candidates").cloned().unwrap_or(v);
+                        let candidates = v.get("candidates").cloned().unwrap_or(v);
+                        if let Some(hue) = candidates
+                            .get(0)
+                            .and_then(|c| c.get("path"))
+                            .and_then(Value::as_str)
+                            .and_then(|path| self.fs.read(path, 64 * 1024 * 1024).ok())
+                            .and_then(|b| imagegen_core::pixels::decode(&b, None, imagegen_core::pixels::DecodeLimits::default()).ok())
+                        {
+                            let hue = set::dominant_hue(&hue.0);
+                            row["dominant_hue"] = json!(hue);
+                            hues.push((icon.asset.clone(), hue));
+                        }
+                        row["generated"] = candidates;
                     }
                     Err(e) => {
                         failed += 1;
@@ -121,9 +137,10 @@ impl Engine {
             "shared_sprites": shared.iter().map(|i| json!({"sprite": i.sprite, "focuses": i.focuses})).collect::<Vec<_>>(),
             "estimate_usd": (total_usd * 10000.0).round() / 10000.0,
             "style": {"style_pack": p.style_pack, "references": p.references, "provider": p.provider, "model": p.model, "quality": p.quality},
+            "variety": if generate { json!(set::judge_variety(&hues)) } else { Value::Null },
             "icons": icons,
             "next": if generate {
-                "Process, validate, preview and review each candidate as usual. Where installs_as differs from the sprite the tree names, point the focus's icon at installs_as (or keep the tree's name with an alias in your .gfx)."
+                "Process, validate, preview and review each candidate as usual. Where installs_as differs from the sprite the tree names, point the focus's icon at installs_as (or keep the tree's name with an alias in your .gfx). Read variety: when the verdict is too_alike, make the icons in its largest bucket again."
             } else {
                 "The plans are free. For one shared look, generate one icon first, approve it, and pass it as a style_anchor reference (or a style_pack) when you run the set with generate: true and an idempotency_key."
             },

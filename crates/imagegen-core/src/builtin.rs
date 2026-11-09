@@ -66,10 +66,19 @@ const MODEL_CHECKS: &[&str] = &["size", "checker", "opaque", "plain_backdrop", "
 const ANIM_CHECKS: &[&str] = &["size", "alpha", "opaque_canvas", "margin", "frames", "animation", "checker", "style", "dds"];
 const SCROLL_CHECKS: &[&str] = &["size", "opaque", "frames", "animation", "checker", "style", "dds"];
 
+/// The colour rule of the national and general icon families. A tree or set about one country (an Ireland focus tree)
+/// otherwise comes out in that country's colours and symbols on every icon, with no contrast between icons.
+macro_rules! colour_by_subject_rule {
+    () => {
+        "Colour follows what the icon shows, not the country: steel grey and olive for armies and their equipment, navy and sea blue for fleets, brass and amber for industry and fire, red for unrest, green only for fields and forests, pale blue and white for science and air. A country named in the brief gets its colours and symbols as a small accent at most (a ribbon, a flag, one emblem), and only when the subject is the nation itself, never as the colour of the whole icon."
+    };
+}
+
 const ICON_RULES: &[&str] = &[
     "One centred subject with a strong, simple silhouette that stays readable at {w}x{h} pixels.",
     "Painterly, slightly aged texture in the style of Hearts of Iron IV interface art, with readable contrast.",
     "Real transparent background: no backdrop, no frame, no border, no plate behind the subject.",
+    colour_by_subject_rule!(),
     "Leave a small empty margin around the subject.",
 ];
 /// An icon family whose canvas has a side of this many pixels or fewer gets [`SMALL_CANVAS_RULE`], its negatives and
@@ -100,6 +109,7 @@ const FOCUS_RULES: &[&str] = &[
     "The subject is large: it fills most of the emblem and may overlap its frame, never a small figure inside a wide empty plaque.",
     "A strong central symbol that supports the focus's story, readable contrast at {w}x{h} pixels.",
     "Real transparent background around the emblem: no backdrop behind it.",
+    colour_by_subject_rule!(),
     "Leave a small empty margin around the emblem.",
 ];
 /// National spirits may be emblems, figures, objects or small scenes, so the form stays open and only readability at
@@ -108,6 +118,7 @@ const IDEA_SPIRIT_RULES: &[&str] = &[
     "One centred subject, an emblem, a figure, an object or a small scene, readable at {w}x{h} pixels: a few large, clear shapes with readable contrast and no fine detail that disappears at that size.",
     "Painterly, slightly aged texture in the style of Hearts of Iron IV interface art.",
     "Real transparent background: no backdrop, no frame, no border, no plate behind the subject.",
+    colour_by_subject_rule!(),
     "Leave a small empty margin around the subject.",
 ];
 const CONCERN_RULES: &[&str] = &[
@@ -1101,6 +1112,7 @@ mod tests {
         assert!(!r.contains("never a scene"));
         let focus = set[&Family::Focus].imagegen.prompt.rules.join(" ");
         assert!(focus.contains("invented colours, never a real country's flag, unless the brief names that country"));
+        assert!(focus.contains("Colour follows what the icon shows, not the country"), "{focus}");
     }
 
     #[test]
