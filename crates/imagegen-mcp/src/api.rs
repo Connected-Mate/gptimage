@@ -107,6 +107,9 @@ macro_rules! group_request {
             /// GUI textures only: the kind of texture (`button`, `frame`, `panel` or `background`). It adds that kind's vanilla form to the prompt and picks vanilla references of that kind. Refused for the others.
             #[serde(default)]
             pub texture_kind: Option<imagegen_core::GuiTextureKind>,
+            /// model_reference only: `grey` (default, a plain light grey backdrop) or `transparent` (the subject on real alpha, for an image-to-3D tool that takes RGBA such as Tripo or Meshy). Refused for the others.
+            #[serde(default)]
+            pub backdrop: Option<imagegen_core::profile::Backdrop>,
             /// With your own `style_anchor` references: `replace` (default) sends only yours, `add` also sends the automatic style references.
             #[serde(default)]
             pub style_mode: Option<imagegen_core::plan::StyleMode>,
@@ -159,6 +162,7 @@ macro_rules! group_request {
                     quality: self.quality,
                     canvas: self.canvas,
                     texture_kind: self.texture_kind,
+                    backdrop: self.backdrop,
                     style_mode: self.style_mode,
                     subfamily: self.subfamily,
                     style_pack: self.style_pack,
@@ -343,6 +347,9 @@ pub struct ImportSpec {
     /// pack applies when it covers the family; `none` turns that off.
     #[serde(default)]
     pub style_pack: Option<String>,
+    /// model_reference only: `transparent` checks and processes the import as a subject on real alpha. Default `grey`.
+    #[serde(default)]
+    pub backdrop: Option<imagegen_core::profile::Backdrop>,
 }
 
 /// `hoi4.image_process`

@@ -55,6 +55,10 @@ pub struct ProfileRef {
     /// profile (canvas, processing switches, checks) is the one the plan used. Not written when unset.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub style_pack: Option<String>,
+    /// A model reference's backdrop when it is not the default grey. Later steps apply it again, like the style pack.
+    /// Not written when unset.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub backdrop: Option<crate::profile::Backdrop>,
 }
 
 /// A reference as recorded.

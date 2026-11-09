@@ -40,6 +40,28 @@ pub enum Background {
     Opaque,
 }
 
+/// The backdrop of a `model_reference`: the plain light grey picture (the default), or the subject on real alpha.
+/// Image-to-3D tools such as Tripo and Meshy take either; real alpha spares them separating the subject.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum Backdrop {
+    /// A plain, flat light grey backdrop (opaque picture, `plain_backdrop` check).
+    #[default]
+    Grey,
+    /// Real transparency around the subject (`alpha` and `alpha_border` checks, the `cutout` recipe).
+    Transparent,
+}
+
+impl Backdrop {
+    /// Lower-case name.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Backdrop::Grey => "grey",
+            Backdrop::Transparent => "transparent",
+        }
+    }
+}
+
 /// File container of the installed asset.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -176,9 +198,50 @@ pub struct Profile {
     /// unset, so the hash of a profile without a pack is what it was before packs existed.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub pack: Option<crate::pack::PackProfile>,
+    /// A model reference's backdrop when it is not the default grey (see [`Profile::with_backdrop`]). Not written
+    /// when unset, so the hash of every other profile is what it was before the option existed.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub backdrop: Option<Backdrop>,
 }
 
 impl Profile {
+    /// This profile with a model reference's backdrop applied. `Grey` changes nothing. `Transparent` asks the model
+    /// for real alpha (the grey backdrop rule becomes a transparency rule), processes with the `cutout` recipe and
+    /// swaps the `opaque` and `plain_backdrop` checks for `alpha` and `alpha_border`. Refused for other families.
+    pub fn with_backdrop(&self, backdrop: Backdrop) -> Result<Profile> {
+        if self.family != Family::ModelReference {
+            return Err(Error::Invalid(format!("backdrop is for model_reference, not {}", self.family)));
+        }
+        let mut p = self.clone();
+        if backdrop == Backdrop::Grey || self.backdrop == Some(backdrop) {
+            return Ok(p);
+        }
+        p.backdrop = Some(backdrop);
+        p.imagegen.background = Background::Transparent;
+        for c in p.imagegen.checks.iter_mut() {
+            match c.as_str() {
+                "opaque" => *c = "alpha".to_string(),
+                "plain_backdrop" => *c = "alpha_border".to_string(),
+                _ => {}
+            }
+        }
+        let rules = &mut p.imagegen.prompt.rules;
+        match rules.iter().position(|r| r == crate::builtin::MODEL_GREY_BACKDROP_RULE) {
+            Some(i) => rules[i] = crate::builtin::MODEL_TRANSPARENT_BACKDROP_RULE.to_string(),
+            None => rules.push(crate::builtin::MODEL_TRANSPARENT_BACKDROP_RULE.to_string()),
+        }
+        p.imagegen.prompt.negative.push("a backdrop colour or a drawn checkerboard".to_string());
+        Ok(p)
+    }
+
+    /// This profile with an optional backdrop applied (`None` changes nothing).
+    pub fn with_backdrop_opt(&self, backdrop: Option<Backdrop>) -> Result<Profile> {
+        match backdrop {
+            Some(b) => self.with_backdrop(b),
+            None => Ok(self.clone()),
+        }
+    }
+
     /// The processing switches of the applied style pack (all off without a pack).
     pub fn processing(&self) -> crate::pack::ProcessingSwitches {
         self.pack.as_ref().map(|p| p.processing).unwrap_or_default()

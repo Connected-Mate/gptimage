@@ -37,6 +37,7 @@
 //! | `upright_print` v1 | report event, operation picture with a style pack's `upright_print` | `fit_subject` (art with alpha) or `cover_resize` (opaque art), or `conform` for imported finished art; no tilt, mask, tone or shadow |
 //! | `kept_unit_art` v2 | counters and the division emblem with a style pack's `keep_colours` | `fit_in_box` (or `area_fit`) into vanilla's glyph box in the art's own colours, `palette_snap` to the pack's measured palette (`snap_palette`), `nato_outline` for a counter, `edge_glow` (the pack's measured glow, `edge_glow`), or `conform` for imported finished art |
 //! | `filled_icon` v1 | transparent icon families with a style pack's `fill_canvas` | `cover_resize` (or `area_cover`) to the whole canvas, or `conform` |
+//! | `cutout` v1 | `model_reference` with `backdrop: "transparent"` | `solid_alpha` (alpha 240 and above to 255, 8 and below to 0), then `cover_resize` when the subject already has a 5 percent margin, else `fit_subject` with that margin, or `conform` for an import |
 //!
 //! A style pack's `crisp` switch keeps the recipe and swaps every Lanczos3 fit for its area-filter twin (`area_fit`,
 //! `area_cover`) and drops the defringe erosion (see `pack::ProcessingSwitches`).
@@ -59,6 +60,16 @@ pub const PRE_STEP_OPS: [&str; 4] = ["chroma_key", "crop_to_aspect", "defringe",
 
 /// What flat colour provider alpha is composited over in an opaque family.
 pub const FLATTEN_BACKGROUND: [u8; 3] = [0, 0, 0];
+
+/// The `cutout` recipe's `solid_alpha` limits: alpha at or below the first becomes 0, at or above the second 255. A
+/// generated cut-out's solid subject came back at alpha 252 to 254, which a 3D tool reads as faintly see-through.
+pub const CUTOUT_ALPHA: [u8; 2] = [8, 240];
+
+/// The margin the `cutout` recipe keeps around a transparent model reference's subject: 5 percent of the shorter
+/// side, past the 3 percent border ring that `alpha_border` measures.
+pub fn cutout_margin(canvas: [u32; 2]) -> u32 {
+    ((f64::from(canvas[0].min(canvas[1])) * 0.05).round() as u32).max(2)
+}
 
 /// The box a medal is fitted into on its 56x84 frame: vanilla's medal is 33 px wide and 56 px tall in the median of
 /// the 85 frames of its large strips (HOI4 1.19.4.1; margins 12 px at the sides, 13 at the top, 15 at the bottom), so
@@ -149,6 +160,8 @@ pub enum Recipe {
     FilledIcon,
     /// A balance of power side: the fitted emblem in colour, then its stages (standard grey, improved, optionally the cracked bad pair).
     BopSide,
+    /// A model reference on real alpha (`backdrop: "transparent"`): solid subject, clear surroundings, nothing moved.
+    Cutout,
 }
 
 impl Recipe {
@@ -180,6 +193,7 @@ impl Recipe {
             Recipe::KeptUnitArt => "kept_unit_art",
             Recipe::FilledIcon => "filled_icon",
             Recipe::BopSide => "bop_side",
+            Recipe::Cutout => "cutout",
         }
     }
 
@@ -238,6 +252,7 @@ pub fn recipe_of(profile: &Profile) -> Recipe {
         Family::AnimScroll => Recipe::AnimScroll,
         Family::AnimSpin => Recipe::AnimSpin,
         Family::BopSide => Recipe::BopSide,
+        Family::ModelReference if profile.imagegen.background == Background::Transparent => Recipe::Cutout,
         _ if sw.fill_canvas => Recipe::FilledIcon,
         _ if profile.imagegen.background == Background::Opaque => Recipe::Picture,
         _ => Recipe::Icon,
@@ -752,6 +767,31 @@ pub fn plan_finishing_with(
                 ops.push(Op::TechOverlay { overlay: overlay.clone() });
             }
         }
+        Recipe::Cutout => {
+            // a 3D tool reads the subject from the alpha: an opaque source (a grey fallback) has none to give
+            if !keyed && !img.has_transparency() {
+                return Err(Error::refused(
+                    "no_transparency_in_source",
+                    "the source is fully opaque, so this transparent model reference has no alpha: the backend fell back to a backdrop. Generate again, plan with the default grey backdrop, or pass a chroma_key pre-step if the backdrop is one flat colour",
+                    RetryClass::Terminal,
+                ));
+            }
+            ops.push(Op::SolidAlpha { low: CUTOUT_ALPHA[0], high: CUTOUT_ALPHA[1] });
+            // the model frames the tallest held item (a spear point, a raised blade) tight to the edge whatever the
+            // prompt says: on alpha the subject is fitted again with the margin a 3D tool needs. A picture that
+            // already has the margin at the canvas size is kept as it is
+            let margin = cutout_margin(canvas);
+            let roomy = size == canvas
+                && img.alpha_bbox(CUTOUT_ALPHA[0] + 1).is_some_and(|b| b[0].min(b[1]).min(size[0] - b[2]).min(size[1] - b[3]) >= margin);
+            if imported && accepted_single(size) {
+                ops.push(Op::Conform { width: size[0], height: size[1] });
+            } else if roomy {
+                ops.push(Op::CoverResize { width: canvas[0], height: canvas[1] });
+            } else {
+                ops.push(Op::FitSubject { width: canvas[0], height: canvas[1], margin, min_alpha: CUTOUT_ALPHA[0] + 1 });
+                notes.push(format!("the subject came within the {margin} px margin of the edge, so it was fitted again with that margin"));
+            }
+        }
     }
     if recipe == Recipe::BopSide {
         finishers.push(Finisher::BopStages);
@@ -783,6 +823,7 @@ pub fn required_stages(profile: &Profile) -> Vec<Vec<&'static str>> {
         Recipe::KeptUnitArt if counter => vec![vec!["fit_in_box", "area_fit", "conform"], vec!["nato_outline", "conform"]],
         Recipe::KeptUnitArt => vec![vec!["fit_in_box", "area_fit", "conform"]],
         Recipe::FilledIcon => vec![vec!["cover_resize", "area_cover", "conform"]],
+        Recipe::Cutout => vec![vec!["solid_alpha"], vec!["cover_resize", "fit_subject", "conform"]],
         Recipe::Picture => vec![vec!["flatten_on"], vec!["cover_resize", "conform"]],
         Recipe::ReportCard => vec![vec!["report_card", "conform"]],
         Recipe::PhaseCard => vec![vec!["phase_card", "conform"]],
@@ -913,6 +954,37 @@ mod tests {
             assert_eq!(err.code(), "chain_step_not_allowed", "{bad:?}");
             assert!(err.to_string().contains(bad.name()));
         }
+    }
+
+    #[test]
+    fn a_transparent_model_reference_is_a_cutout_and_a_grey_one_a_picture() {
+        use crate::profile::Backdrop;
+        let grey = prof(Family::ModelReference);
+        assert_eq!(recipe_of(&grey), Recipe::Picture);
+        let clear = grey.with_backdrop(Backdrop::Transparent).unwrap();
+        assert_eq!(recipe_of(&clear), Recipe::Cutout);
+        assert!(clear.imagegen.checks.iter().any(|c| c == "alpha_border") && !clear.imagegen.checks.iter().any(|c| c == "opaque"));
+        assert_eq!(grey.with_backdrop(Backdrop::Grey).unwrap(), grey);
+        assert!(prof(Family::Focus).with_backdrop(Backdrop::Transparent).is_err());
+        let mut cut = Rgba::new(40, 60);
+        cut.set_px(20, 30, [50, 50, 50, 252]);
+        let plan = plan_finishing(&clear, [40, 60], &cut, false, false, "00").unwrap();
+        assert_eq!(plan.ops[0], Op::SolidAlpha { low: CUTOUT_ALPHA[0], high: CUTOUT_ALPHA[1] });
+        // a subject with room is kept where it is
+        assert_eq!(plan.ops[1], Op::CoverResize { width: 40, height: 60 });
+        // a tip at the edge is fitted again with the margin, and the result keeps it
+        let mut tip = cut.clone();
+        for y in 0..40 {
+            tip.set_px(10, y, [50, 50, 50, 255]);
+        }
+        let plan = plan_finishing(&clear, [40, 60], &tip, false, false, "00").unwrap();
+        let margin = cutout_margin([40, 60]);
+        assert_eq!(plan.ops[1], Op::FitSubject { width: 40, height: 60, margin, min_alpha: CUTOUT_ALPHA[0] + 1 });
+        let out = plan.ops.iter().try_fold(tip, |img, op| crate::process::apply(&img, op)).unwrap();
+        let b = out.alpha_bbox(CUTOUT_ALPHA[0] + 1).unwrap();
+        assert!(b[1] >= margin && 60 - b[3] >= margin, "{b:?}");
+        let opaque = Rgba::filled(40, 60, [200, 200, 200, 255]);
+        assert!(plan_finishing(&clear, [40, 60], &opaque, false, false, "00").is_err());
     }
 
     #[test]
@@ -1364,7 +1436,7 @@ mod tests {
             pixels_sha256: if pixels.is_empty() { last } else { pixels.to_string() },
             size: [1, 1],
             steps: recs,
-            profile: ProfileRef { id: profile.id.clone(), hash: "h".into(), kit_sha256: None, style_pack: None },
+            profile: ProfileRef { id: profile.id.clone(), hash: "h".into(), kit_sha256: None, style_pack: None, backdrop: None },
             recipe: Some(RecipeRecord { id: recipe.id().into(), version: recipe.version(), finishers: fins }),
             companions: companions
                 .iter()

@@ -56,7 +56,7 @@ impl Engine {
     pub fn generate(&self, p: GenerateParams) -> EResult<Value> {
         validate_key(&p.idempotency_key)?;
         let plan = self.load_plan(&p.plan_id)?;
-        let profile = self.profile_with_pack(plan.request.family, plan.profile.style_pack.as_deref())?;
+        let profile = self.profile_with_pack(plan.request.family, plan.profile.style_pack.as_deref())?.with_backdrop_opt(plan.profile.backdrop)?;
         if plan.profile.id != plan.request.family.as_str() {
             return Err(EngineError::refused("GFX-FAMILY-MISMATCH", "the plan's profile is not its family's profile", RetryClass::Terminal));
         }

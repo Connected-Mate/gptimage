@@ -240,6 +240,7 @@ impl Engine {
             },
             None => base,
         };
+        let profile = profile.with_backdrop_opt(spec.backdrop)?;
         if self.config.policy.forbidden_families.contains(&spec.family) {
             return Err(EngineError::refused("family_forbidden_by_project", format!("this project forbids {}", spec.family), RetryClass::Terminal));
         }

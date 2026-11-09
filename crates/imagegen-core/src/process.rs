@@ -90,6 +90,15 @@ pub enum Op {
     },
     /// Convert colour to luminance, keep alpha (news pictures are black and white).
     Grayscale,
+    /// Make alpha binary away from the edge: alpha at or above `high` becomes 255 and alpha at or below `low` becomes
+    /// 0 (colour cleared), so a cut-out subject is fully solid and its surroundings fully clear. The soft edge in
+    /// between stays. A model that returns alpha 252 for a solid subject would otherwise leave it faintly see-through.
+    SolidAlpha {
+        /// Alpha at or below this becomes 0.
+        low: u8,
+        /// Alpha at or above this becomes 255.
+        high: u8,
+    },
     /// Composite over a flat colour and make the result fully opaque.
     FlattenOn {
         /// Background R, G, B.
@@ -283,6 +292,7 @@ impl Op {
             Op::Defringe { .. } => "defringe",
             Op::ChromaKey { .. } => "chroma_key",
             Op::Grayscale => "grayscale",
+            Op::SolidAlpha { .. } => "solid_alpha",
             Op::FlattenOn { .. } => "flatten_on",
             Op::Conform { .. } => "conform",
             Op::ReportCard { .. } => "report_card",
@@ -357,6 +367,7 @@ pub fn apply(img: &Rgba, op: &Op) -> Result<Rgba> {
         Op::Defringe { erosion } => defringe(img, *erosion, None),
         Op::ChromaKey { key, tolerance } => Ok(chroma_key(img, *key, *tolerance)),
         Op::Grayscale => Ok(grayscale(img)),
+        Op::SolidAlpha { low, high } => Ok(solid_alpha(img, *low, *high)),
         Op::FlattenOn { background } => Ok(flatten_on(img, *background)),
         Op::Conform { width, height } => {
             if (img.width, img.height) != (*width, *height) {
@@ -771,6 +782,18 @@ fn chroma_key(img: &Rgba, key: [u8; 3], tolerance: u8) -> Rgba {
     out
 }
 
+fn solid_alpha(img: &Rgba, low: u8, high: u8) -> Rgba {
+    let mut out = img.clone();
+    for p in out.data.chunks_exact_mut(4) {
+        if p[3] >= high {
+            p[3] = 255;
+        } else if p[3] <= low {
+            p.copy_from_slice(&[0, 0, 0, 0]);
+        }
+    }
+    out
+}
+
 fn grayscale(img: &Rgba) -> Rgba {
     let mut out = img.clone();
     for p in out.data.chunks_exact_mut(4) {
@@ -909,6 +932,19 @@ mod tests {
         assert_eq!(out.alpha(0, 0), 0);
         assert_eq!(out.alpha(7, 7), 255);
         assert_eq!(out.alpha(10, 10), 255);
+    }
+
+    #[test]
+    fn solid_alpha_makes_the_subject_solid_and_the_surround_clear_and_keeps_the_soft_edge() {
+        let mut img = Rgba::filled(4, 1, [90, 80, 70, 252]);
+        img.set_px(1, 0, [9, 9, 9, 5]);
+        img.set_px(2, 0, [90, 80, 70, 128]);
+        img.set_px(3, 0, [90, 80, 70, 240]);
+        let out = apply(&img, &Op::SolidAlpha { low: 8, high: 240 }).unwrap();
+        assert_eq!(out.px(0, 0), [90, 80, 70, 255]);
+        assert_eq!(out.px(1, 0), [0, 0, 0, 0]);
+        assert_eq!(out.px(2, 0), [90, 80, 70, 128]);
+        assert_eq!(out.px(3, 0), [90, 80, 70, 255]);
     }
 
     #[test]

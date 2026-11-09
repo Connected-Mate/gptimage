@@ -144,6 +144,7 @@ pub const ALL_CHECKS: &[&str] = &[
     "small_detail",
     "backdrop",
     "plain_backdrop",
+    "alpha_border",
     "style",
     "dds",
     "tga",
@@ -190,6 +191,44 @@ pub fn plain_backdrop(img: &Rgba) -> Option<([f64; 3], f64)> {
     let mean = [sum[0] / n, sum[1] / n, sum[2] / n];
     let spread = (0..3).map(|c| (sq[c] / n - mean[c] * mean[c]).max(0.0).sqrt()).sum::<f64>() / 3.0;
     Some((mean, spread))
+}
+
+/// Code of a transparent model reference whose border is not clear or whose subject is see-through (`alpha_border`).
+pub const ALPHA_BORDER_CODE: &str = "GFX-MODEL-ALPHA";
+/// Highest alpha a transparent model reference's border ring ([`PLAIN_BACKDROP_RING`]) counts as clear.
+pub const ALPHA_BORDER_CLEAR: u8 = 16;
+/// Largest share of the border ring that may be above [`ALPHA_BORDER_CLEAR`]: a grey fallback, a ground shadow or a
+/// subject that runs off the edge goes far past it.
+pub const ALPHA_BORDER_SHARE: f64 = 0.002;
+/// Alpha from which a visible pixel counts as solid in the `alpha_border` check.
+pub const ALPHA_SOLID: u8 = 240;
+/// Largest share of a transparent model reference's visible pixels (alpha above [`ALPHA_BORDER_CLEAR`]) that may be
+/// partly transparent. The soft edge of a large subject is a few percent; a subject that is see-through all over is not.
+pub const ALPHA_SEMI_SHARE: f64 = 0.10;
+
+/// The `alpha_border` measures of an image: the share of its border ring above [`ALPHA_BORDER_CLEAR`], and the share
+/// of its visible pixels below [`ALPHA_SOLID`]. `None` for an image too small to have a ring.
+pub fn alpha_border(img: &Rgba) -> Option<(f64, f64)> {
+    let (w, h) = (img.width, img.height);
+    let ring = ((f64::from(w.min(h)) * PLAIN_BACKDROP_RING).round() as u32).max(2);
+    if w <= 2 * ring || h <= 2 * ring {
+        return None;
+    }
+    let (mut border, mut border_hit, mut visible, mut semi) = (0u64, 0u64, 0u64, 0u64);
+    for y in 0..h {
+        for x in 0..w {
+            let a = img.px(x, y)[3];
+            if x < ring || x >= w - ring || y < ring || y >= h - ring {
+                border += 1;
+                border_hit += u64::from(a > ALPHA_BORDER_CLEAR);
+            }
+            if a > ALPHA_BORDER_CLEAR {
+                visible += 1;
+                semi += u64::from(a < ALPHA_SOLID);
+            }
+        }
+    }
+    Some((border_hit as f64 / border as f64, if visible == 0 { 0.0 } else { semi as f64 / visible as f64 }))
 }
 
 /// Code of a special project drawing with a filled area (`line_art` check).
@@ -730,6 +769,55 @@ pub fn validate_image(img: &Rgba, profile: &Profile, checks: &[String], opts: &O
                     None,
                     json!({"border_mean": mean}),
                 ));
+            }
+        }
+    }
+
+    if wants("alpha_border") {
+        run.push("alpha_border".into());
+        if let Some((border, semi)) = alpha_border(img) {
+            if border > ALPHA_BORDER_SHARE {
+                findings.push(Finding::new(
+                    ALPHA_BORDER_CODE,
+                    Level::Error,
+                    format!(
+                        "{:.1}% of the picture's border is not transparent (at most {:.1}%): the backend fell back to a backdrop, or the subject runs into the edge, or there is a ground or shadow. A transparent model reference needs the whole subject on real alpha with a clear margin",
+                        border * 100.0,
+                        ALPHA_BORDER_SHARE * 100.0
+                    ),
+                    None,
+                    json!({"border_share": border, "limit": ALPHA_BORDER_SHARE, "clear_alpha": ALPHA_BORDER_CLEAR}),
+                ));
+            }
+            if semi > ALPHA_SEMI_SHARE {
+                findings.push(Finding::new(
+                    ALPHA_BORDER_CODE,
+                    Level::Warning,
+                    format!(
+                        "{:.0}% of the subject is partly transparent (alpha under {ALPHA_SOLID}), more than a soft edge. A 3D tool reads it as see-through: process the candidate (solid_alpha) or generate again",
+                        semi * 100.0
+                    ),
+                    None,
+                    json!({"semi_share": semi, "limit": ALPHA_SEMI_SHARE, "solid_alpha": ALPHA_SOLID}),
+                ));
+            }
+            // a thin tip (a spear point, a tail) can reach into the ring and stay under the share above: name it
+            let ring = ((f64::from(img.width.min(img.height)) * PLAIN_BACKDROP_RING).round() as u32).max(2);
+            if border <= ALPHA_BORDER_SHARE {
+                if let Some(b) = img.alpha_bbox(ALPHA_BORDER_CLEAR + 1) {
+                    let margin = b[0].min(b[1]).min(img.width - b[2]).min(img.height - b[3]);
+                    if margin < ring {
+                        findings.push(Finding::new(
+                            ALPHA_BORDER_CODE,
+                            Level::Warning,
+                            format!(
+                                "part of the subject comes within {margin} px of the edge (the margin should be at least {ring} px): a tip may be cut off or clip in the 3D tool. Generate again, or plan a canvas with more room"
+                            ),
+                            None,
+                            json!({"margin": margin, "ring": ring, "bbox": b}),
+                        ));
+                    }
+                }
             }
         }
     }

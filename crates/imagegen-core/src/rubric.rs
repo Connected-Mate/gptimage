@@ -206,6 +206,36 @@ const MODEL_V3: &[Question] = &[
     NO_TEXT,
 ];
 
+/// `interface_model_v4`: the v3 questions plus the pose, believability, feature scale and fidelity questions
+/// that image-to-3D reviews kept failing on. The backdrop question covers the transparent backdrop too.
+const MODEL_V4: &[Question] = &[
+    SUBJECT,
+    ("whole_subject", "Is the one subject shown whole, with a margin on every side and nothing cropped?"),
+    (
+        "pose_ready",
+        "Does it face the camera straight on in a neutral pose, with the limbs (and any wings or tail) apart from the body and anything held gripped in a closed hand and clear of the body?",
+    ),
+    (
+        "believable_anatomy",
+        "Are the anatomy and materials believable, neither cartoony or toy-like nor a too-clean, uncanny CG render, and does a subject that is not human keep its own anatomy and face rather than a human body?",
+    ),
+    (
+        "feature_scale",
+        "Do the defining features (held equipment, wings, horns and the like) keep the size the subject's reference or the brief gives them, neither shrunk nor comically oversized?",
+    ),
+    (
+        "faithful_to_reference",
+        "Next to the subject's reference picture, if one was sent, is every detail kept and nothing invented, with no effects, scenery or loose objects that are not part of the model?",
+    ),
+    (
+        "plain_backdrop",
+        "Is the backdrop plain (light grey, or real transparency when the plan asked for it), with no scene, ground plane or cast shadow?",
+    ),
+    ("clean_detail", "Is the picture free of film grain, noise and painterly texture that would end up in the model's texture?"),
+    ("form_reads", "Does the lighting show the subject's whole form, so a 3D tool can rebuild it?"),
+    NO_TEXT,
+];
+
 /// Questions for a rubric id. Rubrics are per group (`icon`, `picture`, `portrait`, `flag`, `unit`, `interface`,
 /// `animation`) and versioned: `_v3` (current, asked against the vanilla references), `_v2` (icon only, the family
 /// form question) and `_v1`. Every family of a group, officer corps spirits included, gets its group's questions.
@@ -213,6 +243,9 @@ const MODEL_V3: &[Question] = &[
 pub fn questions(rubric: &str) -> &'static [Question] {
     if rubric == "icon_v1" {
         return ICON_V1;
+    }
+    if rubric == "interface_model_v4" {
+        return MODEL_V4;
     }
     if let Some(group) = rubric.strip_suffix("_v3") {
         return match group {
@@ -286,6 +319,12 @@ mod tests {
             answers.insert(SUBJECT.0.into(), json!(false));
             assert_eq!(check_answers(&id, &Value::Object(answers)).failed, vec![SUBJECT.0], "{id}");
         }
+        assert_eq!(questions("interface_model_v4")[0], SUBJECT);
+        for key in ["pose_ready", "believable_anatomy", "feature_scale", "faithful_to_reference", "plain_backdrop"] {
+            assert!(questions("interface_model_v4").iter().any(|q| q.0 == key), "{key}");
+            // reviews recorded under v3 keep their questions
+            assert_eq!(questions("interface_model_v3").iter().any(|q| q.0 == key), key == "plain_backdrop", "{key}");
+        }
         assert!(!questions("icon_v2").contains(&SUBJECT), "reviews recorded under v2 keep their questions");
     }
 
@@ -305,7 +344,7 @@ mod tests {
         // the 0.1 gap: officer spirits fell through to the generic rubric
         for f in crate::family::Family::ALL.iter().copied() {
             let id = crate::builtin::rubric_of(f);
-            assert!(id.ends_with("_v3"), "{f}: {id}");
+            assert!(id.ends_with("_v3") || id == "interface_model_v4", "{f}: {id}");
             assert_ne!(questions(&id), GENERIC_V3, "{f} resolves to the generic rubric");
             // every v3 rubric asks against the vanilla references
             assert!(questions(&id).iter().any(|q| q.1.contains("vanilla")), "{f}");

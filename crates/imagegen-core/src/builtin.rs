@@ -369,15 +369,34 @@ const NEWS_RULES: &[&str] = &[
     "Period newspaper look with natural grain.",
 ];
 const PICTURE_NEGATIVE: &[&str] = &["text, captions or headlines", "watermark or signature", "a frame or border"];
-/// A model reference is the input picture of an image-to-3D tool (Meshy): the whole subject, nothing cropped, on a
-/// plain backdrop the tool can separate, with no grain or noise that would end up in the model's texture.
+/// The default backdrop rule of a model reference. [`crate::profile::Profile::with_backdrop`] swaps it for
+/// [`MODEL_TRANSPARENT_BACKDROP_RULE`].
+pub const MODEL_GREY_BACKDROP_RULE: &str =
+    "A plain, flat light grey backdrop (about RGB 200, 200, 200) with no ground plane, no cast shadow, no horizon and no setting.";
+/// The backdrop rule of a model reference planned with `backdrop: "transparent"`.
+pub const MODEL_TRANSPARENT_BACKDROP_RULE: &str = "Real transparent background (alpha) around the subject: no backdrop colour, no drawn checkerboard, no ground plane, no cast shadow, no horizon and no setting. The subject itself is fully opaque, with no see-through parts that are not see-through in reality.";
+/// A model reference is the input picture of an image-to-3D tool (Tripo, Meshy): the whole subject, nothing cropped,
+/// facing the camera in a pose the tool can rebuild, believable rather than cartoony or glossy CG, true to the
+/// subject's own reference, on a plain backdrop the tool can separate, with no grain or noise that would end up in
+/// the model's texture. The rules stay general: nothing here names a kind of subject.
 const MODEL_RULES: &[&str] = &[
-    "One subject, shown whole from head to foot (or end to end), with a clear margin on every side and nothing cropped, composed for a {w}x{h} frame.",
-    "A three-quarter front view with natural perspective and even, soft studio lighting, so every part of the subject's form reads.",
-    "A plain, flat light grey backdrop (about RGB 200, 200, 200) with no ground plane, no cast shadow, no horizon and no setting.",
+    "One subject, shown whole from head to foot (or end to end), with an empty margin of about a twentieth of the frame on every side, the tips of anything held, worn or trailing included, and nothing cropped, composed for a {w}x{h} frame.",
+    "Seen straight from the front at eye level, in a neutral pose ready to be built as a 3D model: arms held out from the sides in a slight A-pose with backdrop showing under each arm and between each hand and the hip, the legs a little apart, any wings or tail clear of the body and limbs, and anything held gripped in a closed hand and kept clear of the body. Even, soft studio lighting, so every part of the form reads.",
+    "Believable anatomy and materials, as a real, physical subject would have: neither a cartoon or toy, nor a smooth, too-clean, uncanny CG render. A subject that is not human keeps its own anatomy, proportions and face, not a human body given its traits.",
+    "Defining features (held equipment, wings, horns and the like) keep the size and proportion the subject's reference shows, never shrunk and never comically oversized. Without a reference, size them against the body as the brief describes.",
+    "When a reference picture shows the subject, keep every detail it shows (shapes, markings, colours, equipment) and invent nothing it does not show. Leave out effects, scenery and anything loose (sparks, smoke, debris, separate animals) that is not part of the model.",
+    MODEL_GREY_BACKDROP_RULE,
     "Clean, sharp detail with no film grain, noise, blur or painterly texture: the picture becomes the model's texture.",
 ];
 const MODEL_NEGATIVE: &[&str] = &[
+    "a three-quarter, side or back view",
+    "limbs or held items pressed against the body",
+    "a cartoon, toy or chibi look",
+    "a glossy, plastic, too-clean CG look",
+    "a figurine, statue or action-figure sheen",
+    "shrunken or oversized held equipment, wings or horns",
+    "details the subject's reference does not show",
+    "magic effects, sparks, smoke or debris",
     "a landscape, room or other setting",
     "a ground plane, floor or cast shadow",
     "film grain, noise or texture overlays",
@@ -880,7 +899,7 @@ fn rows() -> Vec<Row> {
             rules: MODEL_RULES,
             negative: MODEL_NEGATIVE,
             sprite: None,
-            note: "Not game art: the input picture of an image-to-3D tool (Meshy), one whole subject on a plain light grey backdrop. The caller sets the canvas (portrait 2:3 for figures, landscape for animals and vehicles). Only the caller's own style anchors are sent, the raw or processed PNG is the result, and install refuses it.",
+            note: "Not game art: the input picture of an image-to-3D tool (Tripo, Meshy), one whole subject facing the camera in a neutral pose, on a plain light grey backdrop, or on real alpha with backdrop: \"transparent\". The caller sets the canvas (portrait 2:3 for figures, landscape for animals and vehicles). Only the caller's own references are sent, the raw or processed PNG is the result, and install refuses it.",
             ..base(ModelReference, [0, 0], &[], "docs/assets/{feature_slug}/model_reference", "model_reference_", "")
         },
         // ---- animation group: the canvas is a default; a plan may name the size of the element the strip sits on
@@ -965,7 +984,7 @@ pub fn animation_of(family: Family) -> Option<AnimationSpec> {
 /// every question against the vanilla references beside the candidate in the preview.
 pub fn rubric_of(family: Family) -> String {
     match family {
-        Family::ModelReference => "interface_model_v3".into(),
+        Family::ModelReference => "interface_model_v4".into(),
         _ => format!("{}_v3", family.group().as_str()),
     }
 }
@@ -1051,6 +1070,7 @@ pub fn profiles() -> Vec<Profile> {
                     animation: animation_of(r.family),
                 },
                 pack: None,
+                backdrop: None,
             }
         })
         .collect()

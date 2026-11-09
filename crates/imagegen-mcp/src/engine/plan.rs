@@ -49,6 +49,12 @@ impl Engine {
             (Some(c), Some(e)) => pack::apply_profile(&base_profile, &c.pack.name, e),
             _ => base_profile,
         };
+        // a model reference's backdrop: grey (the profile as it is) or real alpha, which changes the prompt rule,
+        // the recipe and the checks. Recorded on the profile ref, so processing and validation apply it again
+        if req.transparent.is_some() && req.family == Family::ModelReference {
+            return Err(EngineError::invalid("a model reference's background is set with backdrop (grey or transparent), not transparent"));
+        }
+        let profile = profile.with_backdrop_opt(req.backdrop)?;
         if let (Some(c), Some(r)) = (&pack_choice, &pack_resolved) {
             pack::verify_references(&self.fs, &c.pack.name, &r.references)?;
         }

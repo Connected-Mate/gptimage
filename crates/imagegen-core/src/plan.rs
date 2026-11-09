@@ -60,6 +60,11 @@ pub struct PlanRequest {
     /// the field existed keep their hash.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub texture_kind: Option<crate::family::GuiTextureKind>,
+    /// `model_reference` only: `grey` (the default, a plain light grey picture) or `transparent` (the subject on real
+    /// alpha, for an image-to-3D tool that takes RGBA). Refused for other families. Left out when unset, so plans
+    /// made before the field existed keep their hash.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub backdrop: Option<crate::profile::Backdrop>,
     /// How the caller's own `style_anchor` references combine with the automatic ones: `replace` (the default)
     /// sends only the caller's references, `add` sends the automatic tiers beside them. Left out when unset.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -567,6 +572,7 @@ mod tests {
                 model: None,
                 transparent: None,
                 variants: None,
+                backdrop: None,
                 budget_usd: None,
                 quality: None,
                 canvas: None,
@@ -576,7 +582,7 @@ mod tests {
                 style_pack: None,
             },
             asset_id: "iron.wall".into(),
-            profile: ProfileRef { id: "focus".into(), hash: "h".into(), kit_sha256: None, style_pack: None },
+            profile: ProfileRef { id: "focus".into(), hash: "h".into(), kit_sha256: None, style_pack: None, backdrop: None },
             canvas: [100, 88],
             source_canvas: None,
             frames: 1,

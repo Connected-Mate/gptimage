@@ -1159,20 +1159,31 @@ no vanilla super events; a mod's .gui names the sprite in full
 
 ### model_reference
 
-Not game art: the input picture of an image-to-3D tool such as Meshy, for the kit's `hoi4-3d-model-pipeline`.
+Not game art: the input picture of an image-to-3D tool such as Tripo or Meshy, for the kit's `hoi4-3d-model-pipeline`.
 
 | | |
 |---|---|
 | Group and tool | interface, `hoi4.image_interface` |
 | Canvas and frames | set by the caller (portrait 2:3 for figures, landscape for animals and vehicles), 1 frame |
-| Prompt | one subject shown whole with a margin, a three-quarter front view, even studio light, a plain light grey backdrop (about RGB 200, 200, 200) with no ground plane or cast shadow, and no grain or noise |
-| References | the caller's own style anchors only: no automatic vanilla set |
-| Checks | `size`, `checker`, `opaque`, `plain_backdrop` (the border ring is one plain backdrop: an error when it spreads more than 12 levels, which catches a subject that runs off the edge, a warning when it is not a light neutral grey), `style` |
-| Review | `interface_model_v3`: whole subject, plain backdrop, clean detail, readable form, no text |
+| Prompt | One subject shown whole with an empty margin of about a twentieth of the frame on every side, tips of anything held or trailing included. Seen straight from the front in a neutral pose ready for a 3D model, arms out from the sides in a slight A-pose with backdrop under each arm and between hand and hip, the legs a little apart, any wings or tail clear, anything held gripped in a closed hand and clear of the body. Believable anatomy and materials, neither a cartoon or toy nor a too-clean, uncanny CG render, and a non-human subject keeps its own anatomy and face. Defining features (held equipment, wings, horns) at the size the subject's reference shows, never shrunk or comically oversized. Every detail of the subject's reference kept and nothing invented, with no effects, scenery or loose animals. Even studio light, the chosen backdrop and no grain or noise. The rules name no kind of subject |
+| Backdrop | `backdrop: "grey"` (default): a plain light grey backdrop (about RGB 200, 200, 200) with no ground plane or cast shadow, an opaque picture. `backdrop: "transparent"`: real alpha around a fully opaque subject. Tripo and Meshy both take RGBA. Refused for other families |
+| References | the caller's own references only: no automatic vanilla set. Pass the subject's drawing as a `subject_anchor` |
+| Processing | grey: recipe `picture` (`flatten_on`, `cover_resize` or `conform`). Transparent: recipe `cutout` v1, `solid_alpha` (alpha 240 and above becomes 255 and 8 and below becomes 0, because a generated cut-out's solid subject comes back at alpha 252 to 254) then `cover_resize` when the subject already has a margin of 5 percent of the shorter side, else `fit_subject` with that margin (the model frames the tallest held item tight to the edge whatever the prompt says), or `conform` for an import. An opaque source is refused (`no_transparency_in_source`): the backend fell back to a backdrop |
+| Checks | grey: `size`, `checker`, `opaque`, `plain_backdrop` (the border ring is one plain backdrop: an error when it spreads more than 12 levels, which catches a subject that runs off the edge, a warning when it is not a light neutral grey), `style`. Transparent: `size`, `checker`, `alpha`, `alpha_border` (`GFX-MODEL-ALPHA`: an error when more than 0.2% of the border ring is above alpha 16, which catches a grey fallback, a ground shadow or a subject that runs off the edge, a warning when more than 10% of the subject is below alpha 240, and a warning when a thin tip such as a spear point comes inside the ring), `style` |
+| Review | `interface_model_v4`: brief subject, whole subject, pose ready for 3D, believable anatomy, feature scale, faithful to the subject's reference, plain backdrop, clean detail, readable form, no text. Reviews recorded under `interface_model_v3` keep their questions |
 | Install | refused (`install_not_game_art`). The result is the raw or processed PNG |
+
+Writing the brief:
+
+* Describe the subject. The family's rules already ask for the pose, the believability, the feature size and the fidelity, so a brief that repeats them only spends characters.
+* Size features by body landmarks ("the blade reaches from the hip to the ground", "the wings span twice the body's height"). The image model ignores numeric ratios.
+* When the drawing page holds detail studies (the head, a weapon, markings), pass the whole page, not a crop of the main figure, so no detail is lost.
+* To fix an approved picture, pass it as the first reference and change one thing in the brief ("keep everything, only straighten the left arm"). Several changes at once drift elsewhere.
+* Keep the brief under the 4000-character limit. The plan refuses a longer one.
 
 ```sh
 hoi4-imagegen call hoi4.image_interface '{"family": "model_reference", "feature_slug": "zin", "asset": "knight", "brief": "an armoured knight with a tower shield", "canvas": [1024, 1536]}'
+hoi4-imagegen call hoi4.image_interface '{"family": "model_reference", "feature_slug": "zin", "asset": "knight", "brief": "an armoured knight with a tower shield", "canvas": [1024, 1536], "backdrop": "transparent"}'
 ```
 
 ## Animated sprites

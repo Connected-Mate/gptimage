@@ -246,7 +246,7 @@ impl Engine {
     /// The profile of an artifact: always its own family's, never a caller's choice, with the style pack it was
     /// planned with applied again (its canvas, processing switches and checks).
     pub(crate) fn profile_of(&self, a: &Artifact) -> EResult<Profile> {
-        self.profile_with_pack(a.family, a.profile.style_pack.as_deref())
+        Ok(self.profile_with_pack(a.family, a.profile.style_pack.as_deref())?.with_backdrop_opt(a.profile.backdrop)?)
     }
 
     /// What the install gate expects of the records of an artifact with this effective profile.
@@ -260,6 +260,7 @@ impl Engine {
             hash: ProfileSet::profile_hash(p),
             kit_sha256: self.profiles.kit_sha256.clone(),
             style_pack: p.pack.as_ref().map(|x| x.name.clone()),
+            backdrop: p.backdrop,
         }
     }
 
